@@ -268,22 +268,34 @@ venha a existir no cliente (nenhum ainda documentado no SRS além de telefone).
 
 ## 6. Pontos em Aberto
 
-- ⚠️ Lista de valores para `segmento` e `origem_contato` — ainda não definida, validar com a Talita
-- ⚠️ Confirmar se Administrador Interno/Externo também podem clicar em "Criar acesso do cliente"
-  (Fluxo B), ou se essa ação é exclusiva do Administrador
-- ⚠️ Confirmar se existe algum campo de **valor financeiro** no cadastro do cliente além do
-  telefone — o SRS menciona "valor" em RF-020 mas nenhum RF anterior define esse campo
-  explicitamente no cadastro de Pessoa Jurídica
+Resolvidos durante a implementação da Sprint 2 (2026-09-09) — decisões registradas aqui
+para não se perderem, mas sem reabrir o desenho do módulo:
+
+- ~~Lista de valores para `segmento` e `origem_contato`~~ — implementado como texto livre
+  por enquanto (não bloqueante); troca por lista fechada fica para quando a Talita definir
+  os valores, sem exigir nova migration (`String` simples no schema).
+- ~~Confirmar se Administrador Interno/Externo podem "Criar acesso do cliente"~~ — não podem:
+  a ação cria uma linha em `usuarios`, e a política de RLS `usuarios_write` já restringe
+  isso ao ADMIN desde a Sprint 1. A escrita em todo o cadastro (Cliente, Responsável Legal,
+  Ponto de Contato, Pessoas do Operacional, Documentos) seguiu o mesmo padrão ADMIN-only de
+  `clientes_write`.
+- ~~Campo de valor financeiro~~ — não existe nenhum no cadastro de Pessoa Jurídica; RF-020
+  mascara telefone, e é o único campo sensível mascarado nesta sprint.
 
 ---
 
 ## 7. Próximos Passos
 
-Módulo pronto para a Sprint 2. Ao construir a versão visual/codada, usar a skill
-`frontend-design` (já com a identidade visual da marca registrada). Depois deste módulo:
+Módulo entregue na Sprint 2 (RF-001, 002, 003, 013, 020, 026 a 031) — schema, RLS,
+mascaramento de telefone via view Postgres, domínio, 29 testes (unit + integration +
+smoke) e interface com a identidade visual da marca aplicada de fato (gradiente
+institucional como "capa" no cabeçalho de Detalhe do Cliente, Archivo para dado/tabela,
+Source Serif 4 só para texto corrido). Ver memória do projeto (sessão Claude Code) para o
+detalhamento de dois bugs reais encontrados e corrigidos: view de mascaramento sem
+`security_invoker` ignorava RLS da tabela base; BrasilAPI exige header `User-Agent` no
+`fetch()` do Node (403 sem ele).
 
 1. Modelar o próximo módulo (Controle de Projetos e Tarefas)
-2. Resolver os pontos em aberto da Seção 6 antes ou durante a implementação
 
 ---
 
@@ -293,3 +305,4 @@ Módulo pronto para a Sprint 2. Ao construir a versão visual/codada, usar a ski
 |--------|------|-------|------------|
 | 1.0 | 02/09/2026 | André | Versão inicial — módulo Cadastro de Clientes (RF-001 a RF-003) |
 | 2.0 | 02/09/2026 | André | Expandido para Sprint 2: Responsável Legal, Ponto de Contato com herança, pessoas do operacional, documentos, criação/bloqueio de acesso do cliente, e mascaramento de dados sensíveis por perfil (RF-013, RF-020, RF-026 a RF-031). Nova tela de Detalhe do Cliente. |
+| 2.1 | 09/09/2026 | André (via Claude Code) | Sprint 2 implementada e entregue — pontos em aberto da Seção 6 resolvidos e documentados; Seção 7 atualizada. |
