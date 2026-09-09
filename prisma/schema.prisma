@@ -1,0 +1,146 @@
+// Modelo de dados — ver docs/architecture-multiplus-software.md, Seção 3.1 (ER) e 3.2 (RLS)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Perfil {
+  ADMIN // Talita — acesso total
+  ADMIN_INTERNO // atribuído por PROJETO
+  ADMIN_EXTERNO // atribuído por TAREFA
+  CLIENTE // vinculado a um Cliente, somente leitura
+}
+
+enum EntidadeTipo {
+  PROJETO
+  TAREFA
+}
+
+enum TipoToken {
+  DEFINIR_SENHA // RF-030 / RF-031 — primeiro acesso
+  RECUPERAR_SENHA // RF-032 — esqueci minha senha
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senhaHash String? // null até o usuário definir a senha via link de onboarding (RF-030/031)
+  perfil    Perfil   @default(CLIENTE)
+  ativo     Boolean  @default(true)
+
+  // Preenchido apenas para perfil CLIENTE — vincula o usuário à empresa que ele representa.
+  clienteId String?
+  cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  atribuicoes           Atribuicao[]
+  subtarefasAtribuidas  Subtarefa[]  @relation("SubtarefaAtribuidoA")
+  tokensAcesso          TokenAcesso[]
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id          String   @id @default(cuid())
+  razaoSocial String
+  cnpj        String   @unique
+
+  usuarios Usuario[]
+  projetos Projeto[]
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("clientes")
+}
+
+/// Escopo mínimo (id, cliente, status) para sustentar Atribuicao e RLS nesta sprint.
+/// Campos completos (prazos, licenças etc.) entram no módulo de Projetos/Tarefas.
+model Projeto {
+  id        String  @id @default(cuid())
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  nome      String
+  status    String  @default("ativo")
+
+  tarefas Tarefa[]
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("projetos")
+}
+
+model Tarefa {
+  id        String  @id @default(cuid())
+  projetoId String
+  projeto   Projeto @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  nome      String
+  status    String  @default("pendente")
+
+  subtarefas Subtarefa[]
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("tarefas")
+}
+
+model Subtarefa {
+  id        String  @id @default(cuid())
+  tarefaId  String
+  tarefa    Tarefa  @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  etiqueta  String
+  concluida Boolean @default(false)
+
+  // RF-021 / RN-004 — só esta pessoa (ou o ADMIN) pode marcar como concluída.
+  atribuidoAId String?
+  atribuidoA   Usuario? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("subtarefas")
+}
+
+/// Tabela polimórfica (ADR-004): registra que `usuario` tem acesso a `entidadeId`,
+/// que é um Projeto ou uma Tarefa conforme `entidadeTipo`. Sem FK nativa para
+/// entidadeId — validação de integridade fica na camada de aplicação.
+model Atribuicao {
+  id           String       @id @default(cuid())
+  usuarioId    String
+  usuario      Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  entidadeTipo EntidadeTipo
+  entidadeId   String
+
+  criadoEm DateTime @default(now())
+
+  @@unique([usuarioId, entidadeTipo, entidadeId])
+  @@index([entidadeTipo, entidadeId])
+  @@map("atribuicoes")
+}
+
+/// Token de uso único para definição de senha (primeiro acesso) e recuperação de
+/// senha (RF-030 a RF-032). O e-mail carrega apenas o token em texto puro; só o
+/// hash fica no banco.
+model TokenAcesso {
+  id        String    @id @default(cuid())
+  usuarioId String
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  tipo      TipoToken
+  expiraEm  DateTime
+  usadoEm   DateTime?
+
+  criadoEm DateTime @default(now())
+
+  @@map("tokens_acesso")
+}
