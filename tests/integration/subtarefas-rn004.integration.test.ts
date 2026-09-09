@@ -34,7 +34,12 @@ beforeAll(async () => {
   await limparFixtures();
 
   const cliente = await ownerDb.cliente.create({
-    data: { razaoSocial: "Cliente RN004 Ltda", cnpj: "33333333000103" },
+    data: {
+      razaoSocial: "Cliente RN004 Ltda",
+      cnpj: "33333333000103",
+      segmento: "Industrial",
+      origemContato: "Indicação",
+    },
   });
   const projetoX = await ownerDb.projeto.create({
     data: { clienteId: cliente.id, nome: "Projeto RN-004" },

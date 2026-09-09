@@ -1,7 +1,8 @@
 // Modelo de dados — ver docs/architecture-multiplus-software.md, Seção 3.1 (ER) e 3.2 (RLS)
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -49,17 +50,136 @@ model Usuario {
 }
 
 model Cliente {
-  id          String   @id @default(cuid())
-  razaoSocial String
-  cnpj        String   @unique
+  id            String  @id @default(cuid())
+  razaoSocial   String
+  cnpj          String  @unique
+  endereco      String?
+  segmento      String
+  origemContato String
 
-  usuarios Usuario[]
-  projetos Projeto[]
+  usuarios           Usuario[]
+  projetos           Projeto[]
+  responsavelLegal   ResponsavelLegal?
+  pontoContato       PontoContato?
+  pessoasOperacional PessoaOperacional[]
+  documentos         Documento[]
 
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@map("clientes")
+}
+
+/// RF-026 — dados do Responsável Legal da empresa. Telefone é campo sensível
+/// (RF-020): mascarado para ADMIN_INTERNO/EXTERNO via a view `ResponsavelLegalSeguro`,
+/// nunca lido diretamente por código de leitura/exibição.
+model ResponsavelLegal {
+  id        String  @id @default(cuid())
+  clienteId String  @unique
+  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  nome     String
+  endereco String
+  rg       String
+  cpf      String
+  telefone String
+  email    String
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("responsaveis_legais")
+}
+
+/// RF-027 — Ponto de Contato, pode ter dados herdados do Responsável Legal no
+/// momento do cadastro (decidido na camada de aplicação, não persistido aqui).
+/// Mesmo cuidado de RF-020 com `telefone` do ResponsavelLegal acima.
+model PontoContato {
+  id        String  @id @default(cuid())
+  clienteId String  @unique
+  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  nome     String
+  endereco String
+  rg       String
+  cpf      String
+  telefone String
+  email    String
+  cargo    String
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("pontos_contato")
+}
+
+/// RF-028 — pessoas do time operacional do cliente, cadastro opcional e múltiplo.
+model PessoaOperacional {
+  id        String  @id @default(cuid())
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  nome  String
+  cargo String
+  email String?
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("pessoas_operacional")
+}
+
+/// RF-013 — link de documento do Google Drive vinculado ao cliente (sem upload
+/// de arquivo). Vínculo a projeto fica para o módulo de Projetos/Tarefas.
+model Documento {
+  id        String  @id @default(cuid())
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  nome String
+  link String
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("documentos")
+}
+
+/// RF-020 — leitura segura do Responsável Legal: `telefone` só vem preenchido
+/// quando app_current_perfil() = 'ADMIN' (ver migration de RLS/views). Nunca usar
+/// o model `ResponsavelLegal` acima para exibir dados — só para escrita.
+view ResponsavelLegalSeguro {
+  id        String  @unique
+  clienteId String  @unique
+  nome      String
+  endereco  String
+  rg        String
+  cpf       String
+  telefone  String?
+  email     String
+
+  criadoEm    DateTime
+  atualizadoEm DateTime
+
+  @@map("responsaveis_legais_seguro")
+}
+
+/// RF-020 — leitura segura do Ponto de Contato, mesmo princípio da view acima.
+view PontoContatoSeguro {
+  id        String  @unique
+  clienteId String  @unique
+  nome      String
+  endereco  String
+  rg        String
+  cpf       String
+  telefone  String?
+  email     String
+  cargo     String
+
+  criadoEm    DateTime
+  atualizadoEm DateTime
+
+  @@map("pontos_contato_seguro")
 }
 
 /// Escopo mínimo (id, cliente, status) para sustentar Atribuicao e RLS nesta sprint.

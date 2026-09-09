@@ -37,9 +37,15 @@ export function comContextoDeUsuario<T>(
   ctx: ContextoUsuario,
   fn: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
-  return prismaApp.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT set_config('app.usuario_id', ${ctx.usuarioId}, true)`;
-    await tx.$executeRaw`SELECT set_config('app.perfil', ${ctx.perfil}, true)`;
-    return fn(tx);
-  });
+  return prismaApp.$transaction(
+    async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.usuario_id', ${ctx.usuarioId}, true)`;
+      await tx.$executeRaw`SELECT set_config('app.perfil', ${ctx.perfil}, true)`;
+      return fn(tx);
+    },
+    // Padrão do Prisma (maxWait 2s) estoura fácil em dev com Turbopack compilando a
+    // rota na hora (bloqueia a thread JS o suficiente pra perder a janela de espera
+    // por uma conexão livre do pool) — não é sinal de pool esgotado de verdade.
+    { maxWait: 10_000, timeout: 10_000 },
+  );
 }

@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
+/* Identidade visual Múltiplus Ambiental — ver docs/Identidade_Visual_Multiplus.md */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --azul: #0499f3;
+  --azul-esc: #0b6fb0;
+  --verde: #1ebd1f;
+  --verde-esc: #0e7a3c;
+
+  --tinta: #0b2530;
+  --tinta2: #12394a;
+  --papel: #f4f8f9;
+  --branco: #ffffff;
+  --cinza: #5d7079;
+  --linha: #dce6e9;
+
+  --ambar: #b45309;
+  --critico: #9a2a1e;
+  --verde-cl: #eef7f0;
+  --verde-borda: #bfe3c6;
+
+  --menu-inativo: #a9c4cd;
+  --menu-hover: #0e2e3c;
+  --menu-ativo: #103647;
+
+  --background: var(--papel);
+  --foreground: var(--tinta);
 }
 
 @theme inline {
+  --color-azul: var(--azul);
+  --color-azul-esc: var(--azul-esc);
+  --color-verde: var(--verde);
+  --color-verde-esc: var(--verde-esc);
+  --color-tinta: var(--tinta);
+  --color-tinta2: var(--tinta2);
+  --color-papel: var(--papel);
+  --color-branco: var(--branco);
+  --color-cinza: var(--cinza);
+  --color-linha: var(--linha);
+  --color-ambar: var(--ambar);
+  --color-critico: var(--critico);
+  --color-verde-cl: var(--verde-cl);
+  --color-verde-borda: var(--verde-borda);
+  --color-menu-inativo: var(--menu-inativo);
+  --color-menu-hover: var(--menu-hover);
+  --color-menu-ativo: var(--menu-ativo);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-interface: var(--font-archivo);
+  --font-leitura: var(--font-source-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-leitura), Georgia, serif;
+  font-size: 17px;
+  line-height: 1.62;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-interface), "Helvetica Neue", sans-serif;
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.021em;
+  margin: 0;
 }

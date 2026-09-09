@@ -29,10 +29,20 @@ beforeAll(async () => {
   await limparFixtures();
 
   clienteA = await ownerDb.cliente.create({
-    data: { razaoSocial: "Cliente A Ltda", cnpj: "11111111000101" },
+    data: {
+      razaoSocial: "Cliente A Ltda",
+      cnpj: "11111111000101",
+      segmento: "Industrial",
+      origemContato: "Indicação",
+    },
   });
   clienteB = await ownerDb.cliente.create({
-    data: { razaoSocial: "Cliente B Ltda", cnpj: "22222222000102" },
+    data: {
+      razaoSocial: "Cliente B Ltda",
+      cnpj: "22222222000102",
+      segmento: "Industrial",
+      origemContato: "Indicação",
+    },
   });
 
   projetoA1 = await ownerDb.projeto.create({

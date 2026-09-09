@@ -10,7 +10,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "test": "vitest run",
+    "test": "vitest run && vitest run --config vitest.unit.config.mts",
+    "test:unit": "vitest run --config vitest.unit.config.mts",
     "test:integration": "vitest run tests/integration",
     "test:smoke": "vitest run tests/smoke"
   },

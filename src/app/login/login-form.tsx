@@ -3,6 +3,9 @@
 import { useActionState } from "react";
 import { loginAction } from "./actions";
 
+const inputClass =
+  "rounded-[3px] border border-linha bg-branco px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] text-tinta focus:border-azul focus:outline-none";
+
 export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const [erro, formAction, pendente] = useActionState(loginAction, undefined);
 
@@ -10,22 +13,15 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-medium text-gray-700">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="email" className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">
           E-mail
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-        />
+        <input id="email" name="email" type="email" required autoComplete="email" className={inputClass} />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="senha" className="text-sm font-medium text-gray-700">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="senha" className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">
           Senha
         </label>
         <input
@@ -34,21 +30,25 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
           type="password"
           required
           autoComplete="current-password"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+          className={inputClass}
         />
       </div>
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && (
+        <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-3.5 py-2.5 text-[14px] text-critico">
+          {erro}
+        </p>
+      )}
 
       <button
         type="submit"
         disabled={pendente}
-        className="mt-2 rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="mt-2 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
       >
         {pendente ? "Entrando…" : "Entrar"}
       </button>
 
-      <a href="/esqueci-senha" className="text-center text-sm text-gray-500 hover:underline">
+      <a href="/esqueci-senha" className="text-center text-[14px] text-cinza hover:text-azul-esc hover:underline">
         Esqueci minha senha
       </a>
     </form>
