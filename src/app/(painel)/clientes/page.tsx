@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { obterContexto } from "@/server/auth/contexto";
 import { listarClientes } from "@/lib/clientes";
-import { formatarCnpj } from "@/lib/formatacao";
+import { documentoCliente } from "@/lib/formatacao";
 import { Etiqueta } from "./campo";
 
 export default async function ClientesPage({
@@ -39,7 +39,7 @@ export default async function ClientesPage({
           type="search"
           name="busca"
           defaultValue={busca}
-          placeholder="Buscar por razão social ou CNPJ"
+          placeholder="Buscar por razão social, CNPJ ou CPF"
           className="w-full rounded-[3px] border border-linha bg-branco px-4 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] placeholder:text-cinza focus:border-azul focus:outline-none"
         />
       </form>
@@ -59,7 +59,7 @@ export default async function ClientesPage({
               <th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">
                 Razão social
               </th>
-              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ</th>
+              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th>
               <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Segmento</th>
               <th className="rounded-r-[3px] px-5 py-3" />
             </tr>
@@ -72,7 +72,7 @@ export default async function ClientesPage({
                     {cliente.razaoSocial}
                   </Link>
                 </td>
-                <td className="px-5 py-4 tabular-nums text-cinza">{formatarCnpj(cliente.cnpj)}</td>
+                <td className="px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td>
                 <td className="px-5 py-4">
                   <Etiqueta>{cliente.segmento}</Etiqueta>
                 </td>

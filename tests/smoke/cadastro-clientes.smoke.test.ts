@@ -55,10 +55,11 @@ describe("cadastro de cliente → criar acesso → login do cliente", () => {
     const ctxAdmin = { usuarioId: admin.id, perfil: "ADMIN" as const };
 
     const cliente = await criarCliente(ctxAdmin, {
+      tipo: "PESSOA_JURIDICA",
       razaoSocial: "Ambiental Smoke Ltda",
       cnpj: "11.222.333/0001-81",
-      segmento: "Industrial",
-      origemContato: "Site",
+      segmento: "Indústria",
+      origemContato: "Google",
       responsavelLegal: {
         nome: "Responsável Smoke",
         endereco: "Rua Smoke, 1",
@@ -112,5 +113,57 @@ describe("cadastro de cliente → criar acesso → login do cliente", () => {
     // RF-020: como ADMIN, a leitura segura devolve o telefone normalmente.
     const detalhe = await buscarClienteDetalheSeguro(ctxAdmin, cliente.id);
     expect(detalhe?.responsavelLegal?.telefone).toBe("11988887777");
+  });
+});
+
+describe("cadastro de cliente Pessoa Física (RF-034/RF-035) → criar acesso → login", () => {
+  it("cadastra cliente PF sem Responsável Legal/Ponto de Contato, cria o acesso direto pra própria pessoa e ela loga", async () => {
+    const admin = await ownerDb.usuario.create({
+      data: { nome: "Talita", email: "talita.smoke-cadastro-pf@teste.local", perfil: "ADMIN" },
+    });
+    const ctxAdmin = { usuarioId: admin.id, perfil: "ADMIN" as const };
+
+    const cliente = await criarCliente(ctxAdmin, {
+      tipo: "PESSOA_FISICA",
+      nome: "Maria Proprietária Smoke",
+      cpf: "111.444.777-35",
+      rg: "9876543",
+      endereco: "Sítio Smoke, s/n",
+      cep: "18000-000",
+      municipio: "Votorantim",
+      email: "maria.smoke-pf@teste.local",
+      segmento: "Proprietário rural",
+      origemContato: "Indicação",
+      pessoasOperacional: [],
+    });
+
+    expect(cliente.tipo).toBe("PESSOA_FISICA");
+    expect(cliente.responsavelLegal).toBeNull();
+    expect(cliente.pontoContato).toBeNull();
+
+    // RF-031: para PF, o acesso vai direto pra própria pessoa, sem Ponto de Contato.
+    const resultadoAcesso = await criarAcessoCliente(cliente.id);
+    expect(resultadoAcesso).toEqual({ sucesso: true });
+
+    const emailEnviado = vi.mocked(enviarEmail).mock.calls[0]?.[0];
+    expect(emailEnviado?.to).toBe("maria.smoke-pf@teste.local");
+
+    const token = extrairTokenDoEmail(emailEnviado!.html);
+    const validacao = await validarTokenAcesso(token);
+    expect(validacao.valido).toBe(true);
+    if (!validacao.valido) throw new Error("token deveria ser válido");
+
+    await ownerDb.usuario.update({
+      where: { id: validacao.usuarioId },
+      data: { senhaHash: await hashSenha("SenhaClienteSmokePf123") },
+    });
+    await consumirTokenAcesso(validacao.tokenId);
+
+    const autenticado = await autenticarComCredenciais({
+      email: "maria.smoke-pf@teste.local",
+      senha: "SenhaClienteSmokePf123",
+    });
+    expect(autenticado?.perfil).toBe("CLIENTE");
+    expect(autenticado?.clienteId).toBe(cliente.id);
   });
 });

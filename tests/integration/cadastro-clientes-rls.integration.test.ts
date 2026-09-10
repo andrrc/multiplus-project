@@ -178,3 +178,68 @@ describe("RLS em cascata — Responsável Legal, Ponto de Contato, Pessoas do Op
     ).rejects.toThrow();
   });
 });
+
+describe("Cliente Pessoa Física (RF-034/RF-035, ADR-006)", () => {
+  it("cadastro PF não exige CNPJ e segue a mesma RLS em cascata de PJ", async () => {
+    const clientePF = await ownerDb.cliente.create({
+      data: {
+        tipo: "PESSOA_FISICA",
+        razaoSocial: "Maria Proprietária",
+        cpf: "22222222222",
+        rg: "2222222",
+        endereco: "Sítio B",
+        cep: "18000-001",
+        municipio: "Votorantim",
+        email: "maria-pf@teste.local",
+        segmento: "Proprietário rural",
+        origemContato: "Indicação",
+      },
+    });
+    expect(clientePF.cnpj).toBeNull();
+
+    const projetoPF = await ownerDb.projeto.create({
+      data: { clienteId: clientePF.id, nome: "Projeto PF" },
+    });
+    await ownerDb.atribuicao.create({
+      data: { usuarioId: usuarioAdminInterno.id, entidadeTipo: "PROJETO", entidadeId: projetoPF.id },
+    });
+
+    const ctxInterno = { usuarioId: usuarioAdminInterno.id, perfil: "ADMIN_INTERNO" as const };
+    const visto = await comoUsuario(ctxInterno, (tx) => tx.cliente.findUnique({ where: { id: clientePF.id } }));
+    expect(visto?.id).toBe(clientePF.id);
+
+    // Mesma cascata de clientes_select: ADMIN_INTERNO não atribuído não vê o cliente A (PJ).
+    const outroInvisivel = await comoUsuario(ctxInterno, (tx) =>
+      tx.cliente.findUnique({ where: { id: clienteB.id } }),
+    );
+    expect(outroInvisivel).toBeNull();
+  });
+
+  it("CPF é único — segundo cliente PF com o mesmo CPF é rejeitado", async () => {
+    await ownerDb.cliente.create({
+      data: {
+        tipo: "PESSOA_FISICA",
+        razaoSocial: "Primeiro Duplicado",
+        cpf: "33333333333",
+        rg: "3333333",
+        email: "duplicado1@teste.local",
+        segmento: "Parceiro",
+        origemContato: "Google",
+      },
+    });
+
+    await expect(
+      ownerDb.cliente.create({
+        data: {
+          tipo: "PESSOA_FISICA",
+          razaoSocial: "Segundo Duplicado",
+          cpf: "33333333333",
+          rg: "4444444",
+          email: "duplicado2@teste.local",
+          segmento: "Parceiro",
+          origemContato: "Google",
+        },
+      }),
+    ).rejects.toThrow();
+  });
+});

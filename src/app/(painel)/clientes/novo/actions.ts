@@ -3,8 +3,8 @@
 import { redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { criarCliente, type NovoClienteInput } from "@/lib/clientes";
-import { validarCnpj, consultarCnpj } from "@/lib/cnpj";
-import { validarCpf } from "@/lib/cpf";
+import { consultarCnpj, validarCnpj } from "@/lib/cnpj";
+import { validarNovoCliente } from "@/lib/validacao-cliente";
 
 export type EstadoNovoCliente = { erro?: string };
 
@@ -12,10 +12,8 @@ export async function criarClienteAction(dados: NovoClienteInput): Promise<Estad
   const ctx = await obterContexto();
   if (ctx.perfil !== "ADMIN") return { erro: "Ação restrita ao Administrador." };
 
-  if (!dados.razaoSocial.trim()) return { erro: "Informe a razão social." };
-  if (!validarCnpj(dados.cnpj)) return { erro: "CNPJ inválido." };
-  if (!validarCpf(dados.responsavelLegal.cpf)) return { erro: "CPF do Responsável Legal inválido." };
-  if (!validarCpf(dados.pontoContato.cpf)) return { erro: "CPF do Ponto de Contato inválido." };
+  const erroValidacao = validarNovoCliente(dados);
+  if (erroValidacao) return { erro: erroValidacao };
 
   let clienteId: string;
   try {
@@ -23,7 +21,12 @@ export async function criarClienteAction(dados: NovoClienteInput): Promise<Estad
     clienteId = cliente.id;
   } catch (error) {
     if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return { erro: "Já existe um cliente cadastrado com esse CNPJ." };
+      return {
+        erro:
+          dados.tipo === "PESSOA_JURIDICA"
+            ? "Já existe um cliente cadastrado com esse CNPJ."
+            : "Já existe um cliente cadastrado com esse CPF.",
+      };
     }
     throw error;
   }

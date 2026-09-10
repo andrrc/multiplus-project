@@ -2,9 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
-import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
-import { Etiqueta } from "../campo";
-import { FormularioDocumento, BotaoCriarAcesso, BotaoAlternarAcesso } from "./acoes-cliente";
+import { documentoCliente, formatarCpf, formatarTelefone } from "@/lib/formatacao";
+import {
+  FormularioDocumento,
+  FormularioPessoaOperacional,
+  BotaoCriarAcesso,
+  BotaoAlternarAcesso,
+} from "./acoes-cliente";
 
 function Bloco({ titulo, acao, children }: { titulo: string; acao?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -67,7 +71,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
         <div>
           <h1 className="text-[30px] text-branco">{cliente.razaoSocial}</h1>
           <div className="mt-3 flex items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
-            <span className="tabular-nums text-[#C4DCE4]">{formatarCnpj(cliente.cnpj)}</span>
+            <span className="tabular-nums text-[#C4DCE4]">{documentoCliente(cliente)}</span>
             <span className="rounded-[2px] bg-verde px-2.5 py-1 text-[13px] font-medium text-tinta">
               {cliente.segmento}
             </span>
@@ -83,10 +87,18 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
         )}
       </div>
 
-      <Bloco titulo="Dados da empresa">
+      <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
         <div className="grid grid-cols-3 gap-5">
           <Campo label="Origem do contato" valor={cliente.origemContato} />
           {cliente.endereco && <Campo label="Endereço" valor={cliente.endereco} />}
+          {cliente.tipo === "PESSOA_FISICA" && (
+            <>
+              {cliente.rg && <Campo label="RG" valor={cliente.rg} />}
+              {cliente.cep && <Campo label="CEP" valor={cliente.cep} />}
+              {cliente.municipio && <Campo label="Município" valor={cliente.municipio} />}
+              {cliente.email && <Campo label="E-mail" valor={cliente.email} />}
+            </>
+          )}
         </div>
       </Bloco>
 
@@ -116,7 +128,10 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
         </Bloco>
       )}
 
-      <Bloco titulo="Pessoas do operacional">
+      <Bloco
+        titulo="Pessoas do operacional"
+        acao={ctx.perfil === "ADMIN" ? <FormularioPessoaOperacional clienteId={id} /> : undefined}
+      >
         {pessoasOperacional.length === 0 ? (
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
             Nenhuma pessoa do operacional cadastrada.

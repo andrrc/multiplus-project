@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteParaEdicao } from "@/lib/clientes";
-import { formatarCnpj } from "@/lib/formatacao";
+import { formatarCnpj, formatarCpf } from "@/lib/formatacao";
 import { EditarClienteForm } from "./editar-cliente-form";
 
 export default async function EditarClientePage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +10,34 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
   if (ctx.perfil !== "ADMIN") redirect(`/clientes/${id}`);
 
   const dados = await buscarClienteParaEdicao(ctx, id);
-  if (!dados || !dados.responsavelLegal || !dados.pontoContato) notFound();
+  if (!dados) notFound();
+
+  const { cliente } = dados;
+
+  if (cliente.tipo === "PESSOA_JURIDICA") {
+    if (!dados.responsavelLegal || !dados.pontoContato) notFound();
+
+    return (
+      <div>
+        <h1 className="text-[28px]">Editar cliente</h1>
+        <div className="mt-8">
+          <EditarClienteForm
+            clienteId={id}
+            valoresIniciais={{
+              tipo: "PESSOA_JURIDICA",
+              cnpj: formatarCnpj(cliente.cnpj ?? ""),
+              razaoSocial: cliente.razaoSocial,
+              endereco: cliente.endereco ?? "",
+              segmento: cliente.segmento,
+              origemContato: cliente.origemContato,
+              responsavelLegal: dados.responsavelLegal,
+              pontoContato: dados.pontoContato,
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -18,14 +45,17 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
       <div className="mt-8">
         <EditarClienteForm
           clienteId={id}
-          cnpj={formatarCnpj(dados.cliente.cnpj)}
           valoresIniciais={{
-            razaoSocial: dados.cliente.razaoSocial,
-            endereco: dados.cliente.endereco ?? "",
-            segmento: dados.cliente.segmento,
-            origemContato: dados.cliente.origemContato,
-            responsavelLegal: dados.responsavelLegal,
-            pontoContato: dados.pontoContato,
+            tipo: "PESSOA_FISICA",
+            cpf: formatarCpf(cliente.cpf ?? ""),
+            nome: cliente.razaoSocial,
+            rg: cliente.rg ?? "",
+            endereco: cliente.endereco ?? "",
+            cep: cliente.cep ?? "",
+            municipio: cliente.municipio ?? "",
+            email: cliente.email ?? "",
+            segmento: cliente.segmento,
+            origemContato: cliente.origemContato,
           }}
         />
       </div>

@@ -2,7 +2,32 @@
 
 import { revalidatePath } from "next/cache";
 import { obterContexto, exigirAdmin } from "@/server/auth/contexto";
-import { adicionarDocumento, criarAcessoCliente, definirAcessoClienteAtivo } from "@/lib/clientes";
+import {
+  adicionarDocumento,
+  adicionarPessoaOperacional,
+  criarAcessoCliente,
+  definirAcessoClienteAtivo,
+} from "@/lib/clientes";
+
+export type EstadoAdicionarPessoaOperacional = { erro?: string; sucessoEm?: number };
+
+export async function adicionarPessoaOperacionalAction(
+  clienteId: string,
+  _estadoAnterior: EstadoAdicionarPessoaOperacional,
+  formData: FormData,
+): Promise<EstadoAdicionarPessoaOperacional> {
+  const ctx = await obterContexto();
+  if (ctx.perfil !== "ADMIN") return { erro: "Ação restrita ao Administrador." };
+
+  const nome = String(formData.get("nome") ?? "").trim();
+  const cargo = String(formData.get("cargo") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  if (!nome || !cargo) return { erro: "Preencha ao menos o nome e o cargo." };
+
+  await adicionarPessoaOperacional(ctx, clienteId, nome, cargo, email || undefined);
+  revalidatePath(`/clientes/${clienteId}`);
+  return { sucessoEm: Date.now() };
+}
 
 export type EstadoAdicionarDocumento = { erro?: string; sucessoEm?: number };
 

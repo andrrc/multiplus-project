@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { atualizarCliente, type AtualizarClienteInput } from "@/lib/clientes";
-import { validarCpf } from "@/lib/cpf";
+import { validarAtualizacaoCliente } from "@/lib/validacao-cliente";
 
 export type EstadoEditarCliente = { erro?: string };
 
@@ -14,9 +14,8 @@ export async function atualizarClienteAction(
   const ctx = await obterContexto();
   if (ctx.perfil !== "ADMIN") return { erro: "Ação restrita ao Administrador." };
 
-  if (!dados.razaoSocial.trim()) return { erro: "Informe a razão social." };
-  if (!validarCpf(dados.responsavelLegal.cpf)) return { erro: "CPF do Responsável Legal inválido." };
-  if (!validarCpf(dados.pontoContato.cpf)) return { erro: "CPF do Ponto de Contato inválido." };
+  const erroValidacao = validarAtualizacaoCliente(dados);
+  if (erroValidacao) return { erro: erroValidacao };
 
   await atualizarCliente(ctx, clienteId, dados);
   redirect(`/clientes/${clienteId}`);

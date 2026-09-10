@@ -27,6 +27,11 @@ enum TipoToken {
   RECUPERAR_SENHA // RF-032 — esqueci minha senha
 }
 
+enum TipoCliente {
+  PESSOA_FISICA // RF-035
+  PESSOA_JURIDICA // RF-001, default de migration pros clientes da Sprint 2 (ADR-006)
+}
+
 model Usuario {
   id        String   @id @default(cuid())
   nome      String
@@ -49,11 +54,30 @@ model Usuario {
   @@map("usuarios")
 }
 
+/// ADR-006 — tabela única para PF e PJ, discriminada por `tipo`. Colunas específicas de um
+/// tipo ficam nullable; a validação de "campo certo pro tipo certo" é responsabilidade da
+/// aplicação (src/lib/clientes.ts), não do banco.
 model Cliente {
-  id            String  @id @default(cuid())
-  razaoSocial   String
-  cnpj          String  @unique
-  endereco      String?
+  id   String      @id @default(cuid())
+  tipo TipoCliente @default(PESSOA_JURIDICA)
+
+  /// PJ: razão social. PF: nome da pessoa (RF-035) — mesmo campo, reaproveitado para não
+  /// exigir uma coluna `nome` paralela (menor custo de retrofit, ADR-006).
+  razaoSocial String
+
+  cnpj String? @unique // obrigatório só para PESSOA_JURIDICA
+  cpf  String? @unique // obrigatório só para PESSOA_FISICA
+  rg   String? // PESSOA_FISICA
+
+  endereco  String?
+  cep       String? // PESSOA_FISICA (RF-035)
+  municipio String? // PESSOA_FISICA (RF-035)
+
+  /// PESSOA_FISICA: necessário pra RF-031 (acesso criado direto pra própria pessoa, sem
+  /// Ponto de Contato intermediário) — RF-035 não lista o campo explicitamente, mas RF-031
+  /// não funciona sem ele. PESSOA_JURIDICA não usa (usa o e-mail do Ponto de Contato).
+  email String?
+
   segmento      String
   origemContato String
 

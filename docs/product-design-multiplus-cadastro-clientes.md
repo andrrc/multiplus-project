@@ -296,6 +296,10 @@ detalhamento de dois bugs reais encontrados e corrigidos: view de mascaramento s
 `fetch()` do Node (403 sem ele).
 
 1. Modelar o próximo módulo (Controle de Projetos e Tarefas)
+2. **Antes de desenhar a atribuição de tarefas nesse módulo**, resolver o ADR-005
+   (`docs/architecture-multiplus-software.md`) — sobreposição entre Administrador Externo
+   (RF-019) e Pessoa do Operacional (RF-028): na prática, quem executa uma tarefa costuma
+   ser alguém do próprio time do cliente, e hoje essas duas entidades não têm vínculo
 
 ---
 
@@ -306,3 +310,4 @@ detalhamento de dois bugs reais encontrados e corrigidos: view de mascaramento s
 | 1.0 | 02/09/2026 | André | Versão inicial — módulo Cadastro de Clientes (RF-001 a RF-003) |
 | 2.0 | 02/09/2026 | André | Expandido para Sprint 2: Responsável Legal, Ponto de Contato com herança, pessoas do operacional, documentos, criação/bloqueio de acesso do cliente, e mascaramento de dados sensíveis por perfil (RF-013, RF-020, RF-026 a RF-031). Nova tela de Detalhe do Cliente. |
 | 2.1 | 09/09/2026 | André (via Claude Code) | Sprint 2 implementada e entregue — pontos em aberto da Seção 6 resolvidos e documentados; Seção 7 atualizada. |
+| 2.2 | 09/09/2026 | André (via Claude Code) | Adicionado "+ Adicionar pessoa" na tela de Detalhe do Cliente (RF-028 não ficava só na criação). Registrado ADR-005 (sobreposição Administrador Externo / Pessoa do Operacional) como bloqueio a resolver antes do módulo de Projetos e Tarefas. |

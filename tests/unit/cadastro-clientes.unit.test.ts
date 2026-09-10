@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { heredarDadosPontoContato, type DadosPessoa } from "@/lib/heranca-pessoa";
 import { validarCpf } from "@/lib/cpf";
 import { validarCnpj, consultarCnpj } from "@/lib/cnpj";
+import { mascararCpf, mascararCnpj } from "@/lib/formatacao";
 
 describe("heredarDadosPontoContato (RF-027)", () => {
   it("copia todos os dados do Responsável Legal e usa o cargo informado", () => {
@@ -40,6 +41,36 @@ describe("validarCpf (RN — dígito verificador)", () => {
   it("rejeita sequência de dígitos repetidos e tamanho inválido", () => {
     expect(validarCpf("111.111.111-11")).toBe(false);
     expect(validarCpf("123")).toBe(false);
+  });
+});
+
+describe("mascararCpf/mascararCnpj — formatação ao vivo enquanto o usuário digita", () => {
+  it("formata CPF progressivamente conforme os dígitos são digitados", () => {
+    expect(mascararCpf("1")).toBe("1");
+    expect(mascararCpf("11")).toBe("11");
+    expect(mascararCpf("111")).toBe("111");
+    expect(mascararCpf("1114")).toBe("111.4");
+    expect(mascararCpf("111444")).toBe("111.444");
+    expect(mascararCpf("1114447")).toBe("111.444.7");
+    expect(mascararCpf("11144477735")).toBe("111.444.777-35");
+  });
+
+  it("ignora caracteres não numéricos e trunca em 11 dígitos", () => {
+    expect(mascararCpf("111.444.777-35")).toBe("111.444.777-35");
+    expect(mascararCpf("111444777359999")).toBe("111.444.777-35");
+  });
+
+  it("formata CNPJ progressivamente conforme os dígitos são digitados", () => {
+    expect(mascararCnpj("11")).toBe("11");
+    expect(mascararCnpj("112")).toBe("11.2");
+    expect(mascararCnpj("11222333")).toBe("11.222.333");
+    expect(mascararCnpj("112223330001")).toBe("11.222.333/0001");
+    expect(mascararCnpj("11222333000181")).toBe("11.222.333/0001-81");
+  });
+
+  it("ignora caracteres não numéricos e trunca em 14 dígitos", () => {
+    expect(mascararCnpj("11.222.333/0001-81")).toBe("11.222.333/0001-81");
+    expect(mascararCnpj("11222333000181999")).toBe("11.222.333/0001-81");
   });
 });
 
