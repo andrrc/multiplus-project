@@ -32,6 +32,11 @@ enum TipoCliente {
   PESSOA_JURIDICA // RF-001, default de migration pros clientes da Sprint 2 (ADR-006)
 }
 
+enum TipoPessoaEnvolvida {
+  PESSOA // nome, CPF (opcional), telefone, e-mail
+  EMPRESA // razão social (reaproveita a coluna `nome`), CNPJ (opcional), telefone, e-mail
+}
+
 model Usuario {
   id        String   @id @default(cuid())
   nome      String
@@ -44,8 +49,12 @@ model Usuario {
   clienteId String?
   cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
+  /// ADR-005/ADR-007 — vincula o Usuario Colaborador Externo à Pessoa Envolvida de origem
+  /// (RF-028/RF-033), quando houver. Cópia de dados só na criação, sem sincronização ao vivo.
+  pessoaEnvolvidaId String?          @unique
+  pessoaEnvolvida   PessoaEnvolvida? @relation(fields: [pessoaEnvolvidaId], references: [id])
+
   atribuicoes           Atribuicao[]
-  subtarefasAtribuidas  Subtarefa[]  @relation("SubtarefaAtribuidoA")
   tokensAcesso          TokenAcesso[]
 
   criadoEm    DateTime @default(now())
@@ -71,7 +80,11 @@ model Cliente {
 
   endereco  String?
   cep       String? // PESSOA_FISICA (RF-035)
-  municipio String? // PESSOA_FISICA (RF-035)
+  municipio String? // PF e PJ (RF-002c) — selecionado via API do IBGE, adicional a `endereco`
+  estado    String? // PF e PJ (RF-002c) — sigla UF, filtra as opções de `municipio`
+
+  atividadePrincipal String? // RF-002a — texto livre, PF e PJ
+  porte              String? // RF-002b — lista fixa, só PESSOA_JURIDICA
 
   /// PESSOA_FISICA: necessário pra RF-031 (acesso criado direto pra própria pessoa, sem
   /// Ponto de Contato intermediário) — RF-035 não lista o campo explicitamente, mas RF-031
@@ -81,12 +94,12 @@ model Cliente {
   segmento      String
   origemContato String
 
-  usuarios           Usuario[]
-  projetos           Projeto[]
-  responsavelLegal   ResponsavelLegal?
-  pontoContato       PontoContato?
-  pessoasOperacional PessoaOperacional[]
-  documentos         Documento[]
+  usuarios          Usuario[]
+  projetos          Projeto[]
+  responsavelLegal  ResponsavelLegal?
+  pontoContato      PontoContato?
+  pessoasEnvolvidas PessoaEnvolvida[]
+  documentos        Documento[]
 
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -102,12 +115,13 @@ model ResponsavelLegal {
   clienteId String  @unique
   cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
-  nome     String
-  endereco String
-  rg       String
-  cpf      String
-  telefone String
-  email    String
+  /// RF-002d — a seção inteira é opcional; só validação de formato quando preenchido.
+  nome     String?
+  endereco String?
+  rg       String?
+  cpf      String?
+  telefone String?
+  email    String?
 
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -123,13 +137,14 @@ model PontoContato {
   clienteId String  @unique
   cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
-  nome     String
-  endereco String
-  rg       String
-  cpf      String
-  telefone String
-  email    String
-  cargo    String
+  /// RF-002d — a seção inteira é opcional, `cargo` inclusive mesmo quando herdado.
+  nome     String?
+  endereco String?
+  rg       String?
+  cpf      String?
+  telefone String?
+  email    String?
+  cargo    String?
 
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -137,20 +152,35 @@ model PontoContato {
   @@map("pontos_contato")
 }
 
-/// RF-028 — pessoas do time operacional do cliente, cadastro opcional e múltiplo.
-model PessoaOperacional {
+/// RF-028/ADR-007 — Pessoas Envolvidas com o cliente (renomeada de "Pessoas do Operacional"),
+/// cadastro opcional e múltiplo, PF e PJ. `tipo` determina os campos exibidos no formulário
+/// (Pessoa: nome+CPF; Empresa: razão social, reaproveitando `nome`, +CNPJ). `temAcesso`
+/// controla se existe um `Usuario` Colaborador Externo vinculado (RF-028/RF-033).
+model PessoaEnvolvida {
   id        String  @id @default(cuid())
   clienteId String
   cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
-  nome  String
-  cargo String
-  email String?
+  tipo       TipoPessoaEnvolvida @default(PESSOA)
+  nome       String // Pessoa: nome. Empresa/PJ envolvida: razão social (ADR-006, mesmo padrão de reaproveitamento de coluna).
+  cpf        String? // só tipo PESSOA
+  cnpj       String? // só tipo EMPRESA
+  telefone   String?
+  email      String?
+  temAcesso  Boolean @default(false)
 
-  criadoEm    DateTime @default(now())
+  /// Legado da Sprint 2 (PessoaOperacional) — não faz parte do formulário novo, mantido só
+  /// para não perder dado de cadastros já existentes.
+  cargo String?
+
+  usuario               Usuario?
+  tarefasResponsavel    Tarefa[]    @relation("TarefaResponsavel")
+  subtarefasAtribuidas  Subtarefa[] @relation("SubtarefaAtribuidoA")
+
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  @@map("pessoas_operacional")
+  @@map("pessoas_envolvidas")
 }
 
 /// RF-013 — link de documento do Google Drive vinculado ao cliente (sem upload
@@ -175,12 +205,12 @@ model Documento {
 view ResponsavelLegalSeguro {
   id        String  @unique
   clienteId String  @unique
-  nome      String
-  endereco  String
-  rg        String
-  cpf       String
+  nome      String?
+  endereco  String?
+  rg        String?
+  cpf       String?
   telefone  String?
-  email     String
+  email     String?
 
   criadoEm    DateTime
   atualizadoEm DateTime
@@ -192,13 +222,13 @@ view ResponsavelLegalSeguro {
 view PontoContatoSeguro {
   id        String  @unique
   clienteId String  @unique
-  nome      String
-  endereco  String
-  rg        String
-  cpf       String
+  nome      String?
+  endereco  String?
+  rg        String?
+  cpf       String?
   telefone  String?
-  email     String
-  cargo     String
+  email     String?
+  cargo     String?
 
   criadoEm    DateTime
   atualizadoEm DateTime
@@ -230,6 +260,12 @@ model Tarefa {
   nome      String
   status    String  @default("pendente")
 
+  /// RF-005/RN-006 — qualquer Pessoa Envolvida, com ou sem acesso ao sistema. Quando tem
+  /// acesso (`temAcesso = true`), definir o responsável cria automaticamente o registro
+  /// correspondente em Atribuicao (ver src/lib/tarefas.ts#definirResponsavelTarefa).
+  responsavelId String?
+  responsavel   PessoaEnvolvida? @relation("TarefaResponsavel", fields: [responsavelId], references: [id])
+
   subtarefas Subtarefa[]
 
   criadoEm    DateTime @default(now())
@@ -245,9 +281,11 @@ model Subtarefa {
   etiqueta  String
   concluida Boolean @default(false)
 
-  // RF-021 / RN-004 — só esta pessoa (ou o ADMIN) pode marcar como concluída.
+  // RF-021 / RN-004 — só esta Pessoa Envolvida (ou o ADMIN) pode marcar como concluída.
+  // Migrada de FK Usuario pra FK PessoaEnvolvida no ADR-007 — RLS/trigger agora resolvem
+  // via Usuario.pessoaEnvolvidaId (reverso) pra comparar com este campo.
   atribuidoAId String?
-  atribuidoA   Usuario? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
+  atribuidoA   PessoaEnvolvida? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
 
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt

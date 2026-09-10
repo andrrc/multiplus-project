@@ -4,8 +4,9 @@ import { useActionState, useState, useTransition } from "react";
 import { inputClass } from "../campo";
 import {
   adicionarDocumentoAction,
-  adicionarPessoaOperacionalAction,
+  adicionarPessoaEnvolvidaAction,
   criarAcessoAction,
+  criarAcessoPessoaEnvolvidaAction,
   definirAcessoAtivoAction,
 } from "./actions";
 
@@ -22,10 +23,12 @@ function useFecharAoSucesso(sucessoEm: number | undefined, setAberto: (aberto: b
   }
 }
 
-export function FormularioPessoaOperacional({ clienteId }: { clienteId: string }) {
+/** RF-028/ADR-007 — tipo Pessoa ou Empresa/PJ envolvida determina os campos exibidos. */
+export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) {
   const [aberto, setAberto] = useState(false);
+  const [tipo, setTipo] = useState<"PESSOA" | "EMPRESA">("PESSOA");
   const [estado, formAction, pendente] = useActionState(
-    adicionarPessoaOperacionalAction.bind(null, clienteId),
+    adicionarPessoaEnvolvidaAction.bind(null, clienteId),
     {},
   );
 
@@ -38,16 +41,49 @@ export function FormularioPessoaOperacional({ clienteId }: { clienteId: string }
         onClick={() => setAberto(true)}
         className="text-[14px] font-medium text-azul-esc hover:underline"
       >
-        + Adicionar pessoa
+        + Adicionar pessoa envolvida
       </button>
     );
   }
 
   return (
     <form action={formAction} className="flex flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
-      <input name="nome" required placeholder="Nome" className={inputClass} />
-      <input name="cargo" required placeholder="Cargo" className={inputClass} />
-      <input name="email" type="email" placeholder="E-mail (opcional)" className={inputClass} />
+      <div className="flex gap-3">
+        <label className="flex items-center gap-1.5 text-[14px] text-tinta">
+          <input
+            type="radio"
+            name="tipo"
+            value="PESSOA"
+            checked={tipo === "PESSOA"}
+            onChange={() => setTipo("PESSOA")}
+            className="accent-verde"
+          />
+          Pessoa
+        </label>
+        <label className="flex items-center gap-1.5 text-[14px] text-tinta">
+          <input
+            type="radio"
+            name="tipo"
+            value="EMPRESA"
+            checked={tipo === "EMPRESA"}
+            onChange={() => setTipo("EMPRESA")}
+            className="accent-verde"
+          />
+          Empresa/PJ envolvida
+        </label>
+      </div>
+      <input name="nome" required placeholder={tipo === "EMPRESA" ? "Razão social" : "Nome"} className={inputClass} />
+      {tipo === "PESSOA" ? (
+        <input name="cpf" placeholder="CPF (opcional)" className={inputClass} />
+      ) : (
+        <input name="cnpj" placeholder="CNPJ (opcional)" className={inputClass} />
+      )}
+      <input name="telefone" required placeholder="Telefone" className={inputClass} />
+      <input name="email" required type="email" placeholder="E-mail" className={inputClass} />
+      <label className="flex items-center gap-2 text-[14px] text-tinta">
+        <input type="checkbox" name="temAcesso" className="h-4 w-4 accent-verde" />
+        É um colaborador? Um e-mail será enviado para definir a senha de acesso.
+      </label>
       {estado.erro && <p className="text-[14px] text-critico">{estado.erro}</p>}
       <div className="flex gap-2">
         <button
@@ -159,5 +195,36 @@ export function BotaoAlternarAcesso({
     >
       {ativo ? "Bloquear acesso" : "Desbloquear acesso"}
     </button>
+  );
+}
+
+/** RF-033 — "criar acesso depois" pra Pessoa Envolvida cadastrada sem acesso (tem_acesso = não). */
+export function BotaoCriarAcessoPessoaEnvolvida({
+  clienteId,
+  pessoaEnvolvidaId,
+}: {
+  clienteId: string;
+  pessoaEnvolvidaId: string;
+}) {
+  const [pendente, startTransition] = useTransition();
+  const [erro, setErro] = useState<string | null>(null);
+
+  return (
+    <span>
+      <button
+        type="button"
+        disabled={pendente}
+        onClick={() =>
+          startTransition(async () => {
+            const resultado = await criarAcessoPessoaEnvolvidaAction(clienteId, pessoaEnvolvidaId);
+            setErro(resultado.erro ?? null);
+          })
+        }
+        className="text-[13px] font-medium text-azul-esc hover:underline disabled:opacity-60"
+      >
+        {pendente ? "Criando…" : "Criar acesso"}
+      </button>
+      {erro && <p className="mt-1 text-[13px] text-critico">{erro}</p>}
+    </span>
   );
 }

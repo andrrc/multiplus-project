@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
 import { documentoCliente, formatarCpf, formatarTelefone } from "@/lib/formatacao";
+import { Etiqueta } from "../campo";
 import {
   FormularioDocumento,
-  FormularioPessoaOperacional,
+  FormularioPessoaEnvolvida,
   BotaoCriarAcesso,
+  BotaoCriarAcessoPessoaEnvolvida,
   BotaoAlternarAcesso,
 } from "./acoes-cliente";
 
@@ -33,9 +35,18 @@ function Campo({ label, valor }: { label: string; valor: React.ReactNode }) {
   );
 }
 
-function Telefone({ valor }: { valor: string | null }) {
+/**
+ * `valor === null` é ambíguo por natureza (RF-020 mascara o telefone via view, mas o campo
+ * também é opcional desde RF-002d) — `souAdmin` desfaz a ambiguidade pra mostrar a mensagem
+ * certa em cada caso.
+ */
+function Telefone({ valor, souAdmin }: { valor: string | null; souAdmin: boolean }) {
   if (valor === null) {
-    return <span className="font-[family-name:var(--font-leitura)] text-[14px] text-cinza italic">oculto para o seu perfil</span>;
+    return (
+      <span className="font-[family-name:var(--font-leitura)] text-[14px] text-cinza italic">
+        {souAdmin ? "não informado" : "oculto para o seu perfil"}
+      </span>
+    );
   }
   return <span className="tabular-nums">{formatarTelefone(valor)}</span>;
 }
@@ -52,7 +63,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
   const detalhe = await buscarClienteDetalheSeguro(ctx, id);
   if (!detalhe) notFound();
 
-  const { cliente, responsavelLegal, pontoContato, pessoasOperacional, documentos, usuarioAcesso } = detalhe;
+  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso } = detalhe;
 
   const statusChave = !usuarioAcesso
     ? null
@@ -89,63 +100,77 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
 
       <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
         <div className="grid grid-cols-3 gap-5">
-          <Campo label="Origem do contato" valor={cliente.origemContato} />
+          {cliente.origemContato && <Campo label="Origem do contato" valor={cliente.origemContato} />}
           {cliente.endereco && <Campo label="Endereço" valor={cliente.endereco} />}
+          {cliente.municipio && (
+            <Campo label="Município" valor={cliente.estado ? `${cliente.municipio} - ${cliente.estado}` : cliente.municipio} />
+          )}
+          {cliente.atividadePrincipal && <Campo label="Atividade principal" valor={cliente.atividadePrincipal} />}
+          {cliente.tipo === "PESSOA_JURIDICA" && cliente.porte && <Campo label="Porte" valor={cliente.porte} />}
           {cliente.tipo === "PESSOA_FISICA" && (
             <>
               {cliente.rg && <Campo label="RG" valor={cliente.rg} />}
               {cliente.cep && <Campo label="CEP" valor={cliente.cep} />}
-              {cliente.municipio && <Campo label="Município" valor={cliente.municipio} />}
               {cliente.email && <Campo label="E-mail" valor={cliente.email} />}
             </>
           )}
         </div>
       </Bloco>
 
-      {responsavelLegal && (
+      {responsavelLegal && (responsavelLegal.nome || responsavelLegal.email || responsavelLegal.cpf) && (
         <Bloco titulo="Responsável Legal">
           <div className="grid grid-cols-3 gap-5">
-            <Campo label="Nome" valor={responsavelLegal.nome} />
-            <Campo label="E-mail" valor={responsavelLegal.email} />
-            <Campo label="Telefone" valor={<Telefone valor={responsavelLegal.telefone} />} />
-            <Campo label="Endereço" valor={responsavelLegal.endereco} />
-            <Campo label="RG" valor={responsavelLegal.rg} />
-            <Campo label="CPF" valor={<span className="tabular-nums">{formatarCpf(responsavelLegal.cpf)}</span>} />
+            {responsavelLegal.nome && <Campo label="Nome" valor={responsavelLegal.nome} />}
+            {responsavelLegal.email && <Campo label="E-mail" valor={responsavelLegal.email} />}
+            <Campo label="Telefone" valor={<Telefone valor={responsavelLegal.telefone} souAdmin={ctx.perfil === "ADMIN"} />} />
+            {responsavelLegal.endereco && <Campo label="Endereço" valor={responsavelLegal.endereco} />}
+            {responsavelLegal.rg && <Campo label="RG" valor={responsavelLegal.rg} />}
+            {responsavelLegal.cpf && (
+              <Campo label="CPF" valor={<span className="tabular-nums">{formatarCpf(responsavelLegal.cpf)}</span>} />
+            )}
           </div>
         </Bloco>
       )}
 
-      {pontoContato && (
+      {pontoContato && (pontoContato.nome || pontoContato.email || pontoContato.cpf) && (
         <Bloco titulo="Ponto de Contato">
           <div className="grid grid-cols-3 gap-5">
-            <Campo label="Nome" valor={pontoContato.nome} />
-            <Campo label="Cargo" valor={pontoContato.cargo} />
-            <Campo label="E-mail" valor={pontoContato.email} />
-            <Campo label="Telefone" valor={<Telefone valor={pontoContato.telefone} />} />
-            <Campo label="Endereço" valor={pontoContato.endereco} />
-            <Campo label="CPF" valor={<span className="tabular-nums">{formatarCpf(pontoContato.cpf)}</span>} />
+            {pontoContato.nome && <Campo label="Nome" valor={pontoContato.nome} />}
+            {pontoContato.cargo && <Campo label="Cargo" valor={pontoContato.cargo} />}
+            {pontoContato.email && <Campo label="E-mail" valor={pontoContato.email} />}
+            <Campo label="Telefone" valor={<Telefone valor={pontoContato.telefone} souAdmin={ctx.perfil === "ADMIN"} />} />
+            {pontoContato.endereco && <Campo label="Endereço" valor={pontoContato.endereco} />}
+            {pontoContato.cpf && (
+              <Campo label="CPF" valor={<span className="tabular-nums">{formatarCpf(pontoContato.cpf)}</span>} />
+            )}
           </div>
         </Bloco>
       )}
 
       <Bloco
-        titulo="Pessoas do operacional"
-        acao={ctx.perfil === "ADMIN" ? <FormularioPessoaOperacional clienteId={id} /> : undefined}
+        titulo="Pessoas Envolvidas"
+        acao={ctx.perfil === "ADMIN" ? <FormularioPessoaEnvolvida clienteId={id} /> : undefined}
       >
-        {pessoasOperacional.length === 0 ? (
+        {pessoasEnvolvidas.length === 0 ? (
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
-            Nenhuma pessoa do operacional cadastrada.
+            Nenhuma pessoa envolvida cadastrada.
           </p>
         ) : (
           <ul className="flex flex-col gap-3">
-            {pessoasOperacional.map((pessoa) => (
+            {pessoasEnvolvidas.map((pessoa) => (
               <li
                 key={pessoa.id}
                 className="flex items-baseline gap-3 font-[family-name:var(--font-interface)] text-[14.5px]"
               >
                 <span className="font-medium text-tinta">{pessoa.nome}</span>
-                <span className="text-cinza">{pessoa.cargo}</span>
+                <span className="text-cinza">{pessoa.tipo === "EMPRESA" ? "Empresa" : "Pessoa"}</span>
+                {pessoa.telefone && <span className="text-cinza">· {pessoa.telefone}</span>}
                 {pessoa.email && <span className="text-cinza">· {pessoa.email}</span>}
+                {pessoa.temAcesso ? (
+                  <Etiqueta destaque>Colaborador</Etiqueta>
+                ) : ctx.perfil === "ADMIN" ? (
+                  <BotaoCriarAcessoPessoaEnvolvida clienteId={id} pessoaEnvolvidaId={pessoa.id} />
+                ) : null}
               </li>
             ))}
           </ul>

@@ -43,7 +43,7 @@ export async function limparFixtures(): Promise<void> {
   await ownerDb.projeto.deleteMany();
   await ownerDb.usuario.deleteMany();
   await ownerDb.documento.deleteMany();
-  await ownerDb.pessoaOperacional.deleteMany();
+  await ownerDb.pessoaEnvolvida.deleteMany();
   await ownerDb.pontoContato.deleteMany();
   await ownerDb.responsavelLegal.deleteMany();
   await ownerDb.cliente.deleteMany();

@@ -2,29 +2,40 @@
 
 import { revalidatePath } from "next/cache";
 import { obterContexto, exigirAdmin } from "@/server/auth/contexto";
+import { adicionarDocumento, criarAcessoCliente, definirAcessoClienteAtivo } from "@/lib/clientes";
 import {
-  adicionarDocumento,
-  adicionarPessoaOperacional,
-  criarAcessoCliente,
-  definirAcessoClienteAtivo,
-} from "@/lib/clientes";
+  adicionarPessoaEnvolvida,
+  criarAcessoPessoaEnvolvida,
+  validarPessoaEnvolvida,
+} from "@/lib/pessoas-envolvidas";
+import type { PessoaEnvolvidaInput } from "@/lib/clientes";
 
-export type EstadoAdicionarPessoaOperacional = { erro?: string; sucessoEm?: number };
+export type EstadoAdicionarPessoaEnvolvida = { erro?: string; sucessoEm?: number };
 
-export async function adicionarPessoaOperacionalAction(
+export async function adicionarPessoaEnvolvidaAction(
   clienteId: string,
-  _estadoAnterior: EstadoAdicionarPessoaOperacional,
+  _estadoAnterior: EstadoAdicionarPessoaEnvolvida,
   formData: FormData,
-): Promise<EstadoAdicionarPessoaOperacional> {
+): Promise<EstadoAdicionarPessoaEnvolvida> {
   const ctx = await obterContexto();
   if (ctx.perfil !== "ADMIN") return { erro: "Ação restrita ao Administrador." };
 
-  const nome = String(formData.get("nome") ?? "").trim();
-  const cargo = String(formData.get("cargo") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  if (!nome || !cargo) return { erro: "Preencha ao menos o nome e o cargo." };
+  const dados: PessoaEnvolvidaInput = {
+    tipo: formData.get("tipo") === "EMPRESA" ? "EMPRESA" : "PESSOA",
+    nome: String(formData.get("nome") ?? "").trim(),
+    cpf: String(formData.get("cpf") ?? "").trim() || undefined,
+    cnpj: String(formData.get("cnpj") ?? "").trim() || undefined,
+    telefone: String(formData.get("telefone") ?? "").trim(),
+    email: String(formData.get("email") ?? "").trim(),
+    temAcesso: formData.get("temAcesso") === "on",
+  };
 
-  await adicionarPessoaOperacional(ctx, clienteId, nome, cargo, email || undefined);
+  const erro = validarPessoaEnvolvida(dados);
+  if (erro) return { erro };
+
+  const pessoa = await adicionarPessoaEnvolvida(ctx, clienteId, dados);
+  if (dados.temAcesso) await criarAcessoPessoaEnvolvida(pessoa.id);
+
   revalidatePath(`/clientes/${clienteId}`);
   return { sucessoEm: Date.now() };
 }
@@ -75,4 +86,24 @@ export async function definirAcessoAtivoAction(
   await exigirAdmin();
   await definirAcessoClienteAtivo(usuarioId, ativo);
   revalidatePath(`/clientes/${clienteId}`);
+}
+
+export async function criarAcessoPessoaEnvolvidaAction(
+  clienteId: string,
+  pessoaEnvolvidaId: string,
+): Promise<EstadoCriarAcesso> {
+  await exigirAdmin();
+
+  const resultado = await criarAcessoPessoaEnvolvida(pessoaEnvolvidaId);
+  if (!resultado.sucesso) {
+    const mensagens: Record<typeof resultado.motivo, string> = {
+      nao_encontrada: "Cadastre um e-mail para essa pessoa antes de criar o acesso.",
+      ja_tem_acesso: "Essa pessoa já tem acesso.",
+      ja_existe: "Já existe um usuário cadastrado com esse e-mail.",
+    };
+    return { erro: mensagens[resultado.motivo] };
+  }
+
+  revalidatePath(`/clientes/${clienteId}`);
+  return {};
 }

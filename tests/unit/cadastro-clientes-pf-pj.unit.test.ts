@@ -29,7 +29,7 @@ const PJ_VALIDO: NovoClientePJInput = {
     email: "contato@teste.local",
     cargo: "Gerente",
   },
-  pessoasOperacional: [],
+  pessoasEnvolvidas: [],
 };
 
 const PF_VALIDO: NovoClientePFInput = {
@@ -43,7 +43,7 @@ const PF_VALIDO: NovoClientePFInput = {
   email: "maria@teste.local",
   segmento: "Proprietário rural",
   origemContato: "Indicação",
-  pessoasOperacional: [],
+  pessoasEnvolvidas: [],
 };
 
 describe("validarNovoCliente — Pessoa Jurídica (RF-001, RF-026, RF-027)", () => {
@@ -88,10 +88,12 @@ describe("validarNovoCliente — Pessoa Física (RF-034, RF-035)", () => {
     expect(validarNovoCliente({ ...PF_VALIDO, nome: "  " })).toBe("Informe o nome.");
   });
 
-  it("rejeita e-mail vazio — RF-031 depende dele pra criar o acesso", () => {
-    expect(validarNovoCliente({ ...PF_VALIDO, email: "" })).toBe(
-      "Informe o e-mail — é por onde o acesso é criado (RF-031).",
-    );
+  it("aceita e-mail vazio (RF-002d) — RF-031 só bloqueia a criação do acesso depois, não o cadastro", () => {
+    expect(validarNovoCliente({ ...PF_VALIDO, email: "" })).toBeNull();
+  });
+
+  it("rejeita e-mail mal formatado quando preenchido", () => {
+    expect(validarNovoCliente({ ...PF_VALIDO, email: "não-é-um-email" })).toBe("E-mail inválido.");
   });
 
   it("rejeita segmento que não é da lista de Pessoa Física (RF-002)", () => {

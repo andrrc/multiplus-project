@@ -1,7 +1,7 @@
 /**
  * RF-020 (telefone do Responsável Legal/Ponto de Contato oculto para Administrador
  * Interno/Externo) + RLS em cascata das tabelas do módulo Cadastro de Clientes
- * (Responsável Legal, Ponto de Contato, Pessoas do Operacional, Documentos).
+ * (Responsável Legal, Ponto de Contato, Pessoas Envolvidas, Documentos).
  * Módulo SRS: Cadastro de Clientes (Seção 3.1, 3.12, 3.13).
  *
  * O ponto central deste arquivo é confirmar, batendo direto no Postgres como a role
@@ -171,8 +171,8 @@ describe("RLS em cascata — Responsável Legal, Ponto de Contato, Pessoas do Op
 
     await expect(
       comoUsuario(ctx, (tx) =>
-        tx.pessoaOperacional.create({
-          data: { clienteId: clienteA.id, nome: "Alguém", cargo: "Analista" },
+        tx.pessoaEnvolvida.create({
+          data: { clienteId: clienteA.id, nome: "Alguém", tipo: "PESSOA" },
         }),
       ),
     ).rejects.toThrow();

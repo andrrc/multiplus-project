@@ -4,16 +4,20 @@
  * outra pessoa tenha acesso à tarefa/projeto".
  * Módulo SRS: Projetos e Tarefas (extensão) — Seção 3.9.
  *
- * Cobre os dois mecanismos que aplicam a regra: a política de RLS de UPDATE
+ * Pós-ADR-007: `Subtarefa.atribuidoAId` referencia `PessoaEnvolvida`, não mais `Usuario`
+ * direto. A verificação de RLS/trigger agora precisa do salto adicional Usuario ->
+ * usuarios.pessoaEnvolvidaId (reverso) -> comparar com atribuidoAId — exatamente o tipo de
+ * bug fácil de quebrar silenciosamente que o RF-021 da Sprint 1 já teve (memória do
+ * projeto). Cobre os dois mecanismos que aplicam a regra: a política de RLS de UPDATE
  * (quem chega a enxergar a linha pra tentar alterar) e a trigger
- * `subtarefas_enforce_rn004` (quem, mesmo enxergando a linha, pode de fato
- * mudar o campo "concluida"). Ver prisma/migrations/*_rls_policies e
- * *_fix_rn004_concluida_check.
+ * `subtarefas_enforce_rn004` (quem, mesmo enxergando a linha, pode de fato mudar o campo
+ * "concluida"). Ver prisma/migrations/20260910191124_pessoas_envolvidas_adr007.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ownerDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
 
 let tarefaX: { id: string };
+let pessoaEnvolvidaResponsavel: { id: string };
 
 let usuarioAdmin: { id: string };
 let usuarioResponsavel: { id: string };
@@ -25,7 +29,7 @@ async function criarSubtarefaAtribuida() {
     data: {
       tarefaId: tarefaX.id,
       etiqueta: "Enviar documento X",
-      atribuidoAId: usuarioResponsavel.id,
+      atribuidoAId: pessoaEnvolvidaResponsavel.id,
     },
   });
 }
@@ -51,9 +55,21 @@ beforeAll(async () => {
   usuarioAdmin = await ownerDb.usuario.create({
     data: { nome: "Talita", email: "talita.rn004@teste.local", perfil: "ADMIN" },
   });
-  usuarioResponsavel = await ownerDb.usuario.create({
-    data: { nome: "Responsável pela subtarefa", email: "responsavel.rn004@teste.local", perfil: "ADMIN_EXTERNO" },
+
+  // Pessoa Envolvida com acesso (ADR-007): o Usuario vinculado é quem loga; a subtarefa é
+  // atribuída à PessoaEnvolvida, não direto ao Usuario.
+  pessoaEnvolvidaResponsavel = await ownerDb.pessoaEnvolvida.create({
+    data: { clienteId: cliente.id, tipo: "PESSOA", nome: "Responsável pela subtarefa", temAcesso: true },
   });
+  usuarioResponsavel = await ownerDb.usuario.create({
+    data: {
+      nome: "Responsável pela subtarefa",
+      email: "responsavel.rn004@teste.local",
+      perfil: "ADMIN_EXTERNO",
+      pessoaEnvolvidaId: pessoaEnvolvidaResponsavel.id,
+    },
+  });
+
   usuarioAdminInternoDono = await ownerDb.usuario.create({
     data: { nome: "Dono do projeto", email: "dono-projeto.rn004@teste.local", perfil: "ADMIN_INTERNO" },
   });
@@ -79,7 +95,7 @@ afterAll(async () => {
   await fecharConexoes();
 });
 
-it("a pessoa atribuída à subtarefa consegue marcar concluida=true", async () => {
+it("a pessoa atribuída à subtarefa (via PessoaEnvolvida) consegue marcar concluida=true", async () => {
   const subtarefa = await criarSubtarefaAtribuida();
 
   const atualizada = await comoUsuario(
@@ -128,6 +144,22 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
 
     const inalterada = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
     expect(inalterada.concluida).toBe(false);
+  });
+
+  it("ADMIN (sem Pessoa Envolvida vinculada, caso do próprio Administrador — ADR-007) não é confundido com o atribuído", async () => {
+    // Regressão específica do salto adicional via pessoaEnvolvidaId: usuarioAdmin não tem
+    // pessoaEnvolvidaId (é null), então a comparação não deve casar acidentalmente com uma
+    // subtarefa cujo atribuidoAId também seja null.
+    const subtarefaSemAtribuido = await ownerDb.subtarefa.create({
+      data: { tarefaId: tarefaX.id, etiqueta: "Sem atribuído ainda" },
+    });
+
+    await expect(
+      comoUsuario(
+        { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
+        (tx) => tx.subtarefa.update({ where: { id: subtarefaSemAtribuido.id }, data: { concluida: true } }),
+      ),
+    ).rejects.toThrow(/RN-004/);
   });
 });
 

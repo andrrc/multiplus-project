@@ -2,13 +2,33 @@
 
 import { useState, useTransition } from "react";
 import type { TipoCliente } from "@prisma/client";
-import { heredarDadosPontoContato, type DadosPessoa } from "@/lib/heranca-pessoa";
-import { ORIGENS_CONTATO, segmentosPorTipo } from "@/lib/opcoes-cliente";
+import { heredarDadosPontoContato, PESSOA_VAZIA, type DadosPessoa } from "@/lib/heranca-pessoa";
+import { ORIGENS_CONTATO, PORTES_EMPRESA, ehOpcaoOutro, segmentosPorTipo } from "@/lib/opcoes-cliente";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
+import type { PessoaEnvolvidaInput } from "@/lib/clientes";
 import { Campo, SecaoNumerada, inputClass } from "../campo";
 import { criarClienteAction, consultarCnpjAction } from "./actions";
+import { SeletorLocalidade } from "../seletor-localidade";
 
-const PESSOA_VAZIA: DadosPessoa = { nome: "", endereco: "", rg: "", cpf: "", telefone: "", email: "" };
+type PessoaEnvolvidaForm = {
+  tipo: "PESSOA" | "EMPRESA";
+  nome: string;
+  cpf: string;
+  cnpj: string;
+  telefone: string;
+  email: string;
+  temAcesso: boolean;
+};
+
+const PESSOA_ENVOLVIDA_VAZIA: PessoaEnvolvidaForm = {
+  tipo: "PESSOA",
+  nome: "",
+  cpf: "",
+  cnpj: "",
+  telefone: "",
+  email: "",
+  temAcesso: false,
+};
 
 function CamposPessoa({
   valores,
@@ -26,9 +46,8 @@ function CamposPessoa({
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Campo label="Nome" obrigatorio>
+      <Campo label="Nome">
         <input
-          required
           disabled={disabled}
           value={valores.nome}
           onChange={(e) => set("nome", e.target.value)}
@@ -36,9 +55,8 @@ function CamposPessoa({
           id={`${prefixoId}-nome`}
         />
       </Campo>
-      <Campo label="E-mail" obrigatorio>
+      <Campo label="E-mail">
         <input
-          required
           type="email"
           disabled={disabled}
           value={valores.email}
@@ -46,36 +64,32 @@ function CamposPessoa({
           className={inputClass}
         />
       </Campo>
-      <Campo label="Endereço" obrigatorio>
+      <Campo label="Endereço">
         <input
-          required
           disabled={disabled}
           value={valores.endereco}
           onChange={(e) => set("endereco", e.target.value)}
           className={inputClass}
         />
       </Campo>
-      <Campo label="Telefone" obrigatorio>
+      <Campo label="Telefone">
         <input
-          required
           disabled={disabled}
           value={valores.telefone}
           onChange={(e) => set("telefone", e.target.value)}
           className={inputClass}
         />
       </Campo>
-      <Campo label="RG" obrigatorio>
+      <Campo label="RG">
         <input
-          required
           disabled={disabled}
           value={valores.rg}
           onChange={(e) => set("rg", e.target.value)}
           className={inputClass}
         />
       </Campo>
-      <Campo label="CPF" obrigatorio>
+      <Campo label="CPF">
         <input
-          required
           disabled={disabled}
           value={valores.cpf}
           onChange={(e) => set("cpf", mascararCpf(e.target.value))}
@@ -89,35 +103,48 @@ function CamposPessoa({
 function SeletorSegmento({
   tipo,
   value,
+  customizado,
   onChange,
+  onChangeCustomizado,
 }: {
   tipo: TipoCliente;
   value: string;
+  customizado: string;
   onChange: (valor: string) => void;
+  onChangeCustomizado: (valor: string) => void;
 }) {
+  const outroSelecionado = ehOpcaoOutro(tipo, value);
   return (
-    <Campo label="Segmento" obrigatorio>
-      <select required value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
-        <option value="" disabled>
-          Selecione
-        </option>
-        {segmentosPorTipo(tipo).map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-    </Campo>
+    <>
+      <Campo label="Segmento">
+        <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
+          <option value="">Selecione</option>
+          {segmentosPorTipo(tipo).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </Campo>
+      {outroSelecionado && (
+        <Campo label={`Qual "${value}"?`} obrigatorio>
+          <input
+            required
+            value={customizado}
+            onChange={(e) => onChangeCustomizado(e.target.value)}
+            className={inputClass}
+          />
+        </Campo>
+      )}
+    </>
   );
 }
 
 function SeletorOrigem({ value, onChange }: { value: string; onChange: (valor: string) => void }) {
   return (
-    <Campo label="Origem do contato" obrigatorio>
-      <select required value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
-        <option value="" disabled>
-          Selecione
-        </option>
+    <Campo label="Origem do contato">
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
+        <option value="">Selecione</option>
         {ORIGENS_CONTATO.map((o) => (
           <option key={o} value={o}>
             {o}
@@ -141,22 +168,24 @@ export function NovoClienteForm() {
   const [cargoContato, setCargoContato] = useState("");
   const [buscandoCnpj, startBuscaCnpj] = useTransition();
   const [mensagemCnpj, setMensagemCnpj] = useState<string | null>(null);
+  const [porte, setPorte] = useState("");
 
   // Pessoa Física
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [rg, setRg] = useState("");
   const [cep, setCep] = useState("");
-  const [municipio, setMunicipio] = useState("");
   const [emailPf, setEmailPf] = useState("");
 
   // Comuns
   const [endereco, setEndereco] = useState("");
+  const [estado, setEstado] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const [atividadePrincipal, setAtividadePrincipal] = useState("");
   const [segmento, setSegmento] = useState("");
+  const [segmentoCustomizado, setSegmentoCustomizado] = useState("");
   const [origemContato, setOrigemContato] = useState("");
-  const [pessoasOperacional, setPessoasOperacional] = useState<
-    { nome: string; cargo: string; email: string }[]
-  >([]);
+  const [pessoasEnvolvidas, setPessoasEnvolvidas] = useState<PessoaEnvolvidaForm[]>([]);
 
   const [enviando, startEnvio] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
@@ -196,45 +225,64 @@ export function NovoClienteForm() {
   function trocarTipo(novoTipo: TipoCliente) {
     setTipo(novoTipo);
     setSegmento("");
+    setSegmentoCustomizado("");
   }
 
-  const ultimaPessoa = pessoasOperacional[pessoasOperacional.length - 1];
-  const podeAdicionarPessoa = !ultimaPessoa || ultimaPessoa.nome.trim().length > 0;
+  const ultimaPessoa = pessoasEnvolvidas[pessoasEnvolvidas.length - 1];
+  const podeAdicionarPessoa =
+    !ultimaPessoa ||
+    (ultimaPessoa.nome.trim().length > 0 &&
+      ultimaPessoa.telefone.trim().length > 0 &&
+      ultimaPessoa.email.trim().length > 0);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!tipo) return;
     setErro(null);
     startEnvio(async () => {
-      const pessoasOperacionalFiltradas = pessoasOperacional
+      const pessoasEnvolvidasFiltradas: PessoaEnvolvidaInput[] = pessoasEnvolvidas
         .filter((p) => p.nome.trim().length > 0)
-        .map((p) => ({ nome: p.nome, cargo: p.cargo, email: p.email || undefined }));
+        .map((p) => ({
+          tipo: p.tipo,
+          nome: p.nome,
+          cpf: p.tipo === "PESSOA" ? p.cpf || undefined : undefined,
+          cnpj: p.tipo === "EMPRESA" ? p.cnpj || undefined : undefined,
+          telefone: p.telefone,
+          email: p.email,
+          temAcesso: p.temAcesso,
+        }));
+
+      const comuns = {
+        segmento,
+        segmentoCustomizado: segmentoCustomizado || undefined,
+        origemContato,
+        atividadePrincipal: atividadePrincipal || undefined,
+        estado: estado || undefined,
+        municipio: municipio || undefined,
+        pessoasEnvolvidas: pessoasEnvolvidasFiltradas,
+      };
 
       const resultado = await criarClienteAction(
         tipo === "PESSOA_JURIDICA"
           ? {
+              ...comuns,
               tipo: "PESSOA_JURIDICA",
               razaoSocial,
               cnpj,
               endereco: endereco || undefined,
-              segmento,
-              origemContato,
+              porte: porte || undefined,
               responsavelLegal,
               pontoContato: heredarDadosPontoContato(pontoContato, cargoContato),
-              pessoasOperacional: pessoasOperacionalFiltradas,
             }
           : {
+              ...comuns,
               tipo: "PESSOA_FISICA",
               nome,
               cpf,
-              rg,
+              rg: rg || undefined,
               endereco: endereco || undefined,
               cep: cep || undefined,
-              municipio: municipio || undefined,
-              email: emailPf,
-              segmento,
-              origemContato,
-              pessoasOperacional: pessoasOperacionalFiltradas,
+              email: emailPf || undefined,
             },
       );
       if (resultado?.erro) setErro(resultado.erro);
@@ -310,7 +358,36 @@ export function NovoClienteForm() {
               <Campo label="Endereço">
                 <input value={endereco} onChange={(e) => setEndereco(e.target.value)} className={inputClass} />
               </Campo>
-              <SeletorSegmento tipo={tipo} value={segmento} onChange={setSegmento} />
+              <Campo label="Atividade principal">
+                <input
+                  value={atividadePrincipal}
+                  onChange={(e) => setAtividadePrincipal(e.target.value)}
+                  className={inputClass}
+                />
+              </Campo>
+              <Campo label="Porte">
+                <select value={porte} onChange={(e) => setPorte(e.target.value)} className={inputClass}>
+                  <option value="">Selecione</option>
+                  {PORTES_EMPRESA.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </Campo>
+              <SeletorLocalidade
+                estado={estado}
+                municipio={municipio}
+                onChangeEstado={setEstado}
+                onChangeMunicipio={setMunicipio}
+              />
+              <SeletorSegmento
+                tipo={tipo}
+                value={segmento}
+                customizado={segmentoCustomizado}
+                onChange={setSegmento}
+                onChangeCustomizado={setSegmentoCustomizado}
+              />
               <SeletorOrigem value={origemContato} onChange={setOrigemContato} />
             </div>
           </div>
@@ -323,41 +400,41 @@ export function NovoClienteForm() {
             <Campo label="Nome" obrigatorio>
               <input required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} />
             </Campo>
-            <Campo label="E-mail" obrigatorio>
-              <input
-                required
-                type="email"
-                value={emailPf}
-                onChange={(e) => setEmailPf(e.target.value)}
-                className={inputClass}
-              />
-            </Campo>
             <Campo label="CPF" obrigatorio>
               <input required value={cpf} onChange={(e) => setCpf(mascararCpf(e.target.value))} className={inputClass} />
             </Campo>
-            <Campo label="RG" obrigatorio>
-              <input required value={rg} onChange={(e) => setRg(e.target.value)} className={inputClass} />
+            <Campo label="E-mail">
+              <input type="email" value={emailPf} onChange={(e) => setEmailPf(e.target.value)} className={inputClass} />
             </Campo>
-            <Campo label="Endereço" obrigatorio>
+            <Campo label="RG">
+              <input value={rg} onChange={(e) => setRg(e.target.value)} className={inputClass} />
+            </Campo>
+            <Campo label="Endereço">
+              <input value={endereco} onChange={(e) => setEndereco(e.target.value)} className={inputClass} />
+            </Campo>
+            <Campo label="CEP">
+              <input value={cep} onChange={(e) => setCep(e.target.value)} className={inputClass} />
+            </Campo>
+            <Campo label="Atividade principal">
               <input
-                required
-                value={endereco}
-                onChange={(e) => setEndereco(e.target.value)}
+                value={atividadePrincipal}
+                onChange={(e) => setAtividadePrincipal(e.target.value)}
                 className={inputClass}
               />
             </Campo>
-            <Campo label="CEP" obrigatorio>
-              <input required value={cep} onChange={(e) => setCep(e.target.value)} className={inputClass} />
-            </Campo>
-            <Campo label="Município" obrigatorio>
-              <input
-                required
-                value={municipio}
-                onChange={(e) => setMunicipio(e.target.value)}
-                className={inputClass}
-              />
-            </Campo>
-            <SeletorSegmento tipo={tipo} value={segmento} onChange={setSegmento} />
+            <SeletorLocalidade
+              estado={estado}
+              municipio={municipio}
+              onChangeEstado={setEstado}
+              onChangeMunicipio={setMunicipio}
+            />
+            <SeletorSegmento
+              tipo={tipo}
+              value={segmento}
+              customizado={segmentoCustomizado}
+              onChange={setSegmento}
+              onChangeCustomizado={setSegmentoCustomizado}
+            />
             <SeletorOrigem value={origemContato} onChange={setOrigemContato} />
           </div>
         </SecaoNumerada>
@@ -365,11 +442,11 @@ export function NovoClienteForm() {
 
       {tipo === "PESSOA_JURIDICA" && (
         <>
-          <SecaoNumerada numero={3} titulo="Responsável Legal">
+          <SecaoNumerada numero={3} titulo="Responsável Legal" descricao="Opcional.">
             <CamposPessoa valores={responsavelLegal} onChange={atualizarResponsavelLegal} prefixoId="responsavel" />
           </SecaoNumerada>
 
-          <SecaoNumerada numero={4} titulo="Ponto de Contato">
+          <SecaoNumerada numero={4} titulo="Ponto de Contato" descricao="Opcional.">
             <label className="mb-4 flex items-center gap-2 text-[15px] text-tinta">
               <input
                 type="checkbox"
@@ -387,9 +464,8 @@ export function NovoClienteForm() {
                 disabled={mesmaPessoa}
                 prefixoId="contato"
               />
-              <Campo label="Cargo" obrigatorio>
+              <Campo label="Cargo">
                 <input
-                  required
                   value={cargoContato}
                   onChange={(e) => setCargoContato(e.target.value)}
                   className={`${inputClass} max-w-xs`}
@@ -403,63 +479,96 @@ export function NovoClienteForm() {
       {tipo && (
         <SecaoNumerada
           numero={tipo === "PESSOA_JURIDICA" ? 5 : 3}
-          titulo="Pessoas do operacional"
+          titulo="Pessoas Envolvidas"
           descricao="Opcional — pode ser preenchido depois, na tela do cliente."
         >
           <div className="flex flex-col gap-3">
-            {pessoasOperacional.map((pessoa, i) => (
-              <div key={i} className="flex items-end gap-3">
-                <Campo label="Nome">
-                  <input
-                    value={pessoa.nome}
-                    onChange={(e) =>
-                      setPessoasOperacional((lista) =>
-                        lista.map((p, idx) => (idx === i ? { ...p, nome: e.target.value } : p)),
-                      )
-                    }
-                    className={inputClass}
-                  />
-                </Campo>
-                <Campo label="Cargo">
-                  <input
-                    value={pessoa.cargo}
-                    onChange={(e) =>
-                      setPessoasOperacional((lista) =>
-                        lista.map((p, idx) => (idx === i ? { ...p, cargo: e.target.value } : p)),
-                      )
-                    }
-                    className={inputClass}
-                  />
-                </Campo>
-                <Campo label="E-mail">
-                  <input
-                    type="email"
-                    value={pessoa.email}
-                    onChange={(e) =>
-                      setPessoasOperacional((lista) =>
-                        lista.map((p, idx) => (idx === i ? { ...p, email: e.target.value } : p)),
-                      )
-                    }
-                    className={inputClass}
-                  />
-                </Campo>
-                <button
-                  type="button"
-                  onClick={() => setPessoasOperacional((lista) => lista.filter((_, idx) => idx !== i))}
-                  className="mb-0.5 shrink-0 text-[14px] text-cinza hover:text-critico"
-                >
-                  Remover
-                </button>
-              </div>
-            ))}
+            {pessoasEnvolvidas.map((pessoa, i) => {
+              const set = <K extends keyof PessoaEnvolvidaForm>(campo: K, valor: PessoaEnvolvidaForm[K]) =>
+                setPessoasEnvolvidas((lista) => lista.map((p, idx) => (idx === i ? { ...p, [campo]: valor } : p)));
+
+              return (
+                <div key={i} className="flex flex-col gap-2 rounded-[3px] border border-linha p-3">
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
+                      <input
+                        type="radio"
+                        checked={pessoa.tipo === "PESSOA"}
+                        onChange={() => set("tipo", "PESSOA")}
+                        className="accent-verde"
+                      />
+                      Pessoa
+                    </label>
+                    <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
+                      <input
+                        type="radio"
+                        checked={pessoa.tipo === "EMPRESA"}
+                        onChange={() => set("tipo", "EMPRESA")}
+                        className="accent-verde"
+                      />
+                      Empresa/PJ envolvida
+                    </label>
+                  </div>
+                  <div className="flex items-end gap-3">
+                    <Campo label={pessoa.tipo === "EMPRESA" ? "Razão social" : "Nome"}>
+                      <input value={pessoa.nome} onChange={(e) => set("nome", e.target.value)} className={inputClass} />
+                    </Campo>
+                    {pessoa.tipo === "PESSOA" ? (
+                      <Campo label="CPF">
+                        <input
+                          value={pessoa.cpf}
+                          onChange={(e) => set("cpf", mascararCpf(e.target.value))}
+                          className={inputClass}
+                        />
+                      </Campo>
+                    ) : (
+                      <Campo label="CNPJ">
+                        <input
+                          value={pessoa.cnpj}
+                          onChange={(e) => set("cnpj", mascararCnpj(e.target.value))}
+                          className={inputClass}
+                        />
+                      </Campo>
+                    )}
+                    <Campo label="Telefone">
+                      <input value={pessoa.telefone} onChange={(e) => set("telefone", e.target.value)} className={inputClass} />
+                    </Campo>
+                    <Campo label="E-mail">
+                      <input
+                        type="email"
+                        value={pessoa.email}
+                        onChange={(e) => set("email", e.target.value)}
+                        className={inputClass}
+                      />
+                    </Campo>
+                    <button
+                      type="button"
+                      onClick={() => setPessoasEnvolvidas((lista) => lista.filter((_, idx) => idx !== i))}
+                      className="mb-0.5 shrink-0 text-[14px] text-cinza hover:text-critico"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                  <label className="flex items-center gap-2 text-[13.5px] text-tinta">
+                    <input
+                      type="checkbox"
+                      checked={pessoa.temAcesso}
+                      onChange={(e) => set("temAcesso", e.target.checked)}
+                      className="h-4 w-4 accent-verde"
+                    />
+                    É um colaborador? Um e-mail será enviado para definir a senha de acesso.
+                  </label>
+                </div>
+              );
+            })}
 
             <button
               type="button"
               disabled={!podeAdicionarPessoa}
-              onClick={() => setPessoasOperacional((lista) => [...lista, { nome: "", cargo: "", email: "" }])}
+              onClick={() => setPessoasEnvolvidas((lista) => [...lista, { ...PESSOA_ENVOLVIDA_VAZIA }])}
               className="self-start rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
             >
-              + Adicionar pessoa
+              + Adicionar pessoa envolvida
             </button>
           </div>
         </SecaoNumerada>

@@ -30,8 +30,27 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
               endereco: cliente.endereco ?? "",
               segmento: cliente.segmento,
               origemContato: cliente.origemContato,
-              responsavelLegal: dados.responsavelLegal,
-              pontoContato: dados.pontoContato,
+              atividadePrincipal: cliente.atividadePrincipal ?? "",
+              porte: cliente.porte ?? "",
+              estado: cliente.estado ?? "",
+              municipio: cliente.municipio ?? "",
+              responsavelLegal: {
+                nome: dados.responsavelLegal.nome ?? "",
+                endereco: dados.responsavelLegal.endereco ?? "",
+                rg: dados.responsavelLegal.rg ?? "",
+                cpf: dados.responsavelLegal.cpf ?? "",
+                telefone: dados.responsavelLegal.telefone ?? "",
+                email: dados.responsavelLegal.email ?? "",
+              },
+              pontoContato: {
+                nome: dados.pontoContato.nome ?? "",
+                endereco: dados.pontoContato.endereco ?? "",
+                rg: dados.pontoContato.rg ?? "",
+                cpf: dados.pontoContato.cpf ?? "",
+                telefone: dados.pontoContato.telefone ?? "",
+                email: dados.pontoContato.email ?? "",
+                cargo: dados.pontoContato.cargo ?? "",
+              },
             }}
           />
         </div>
@@ -53,6 +72,8 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
             endereco: cliente.endereco ?? "",
             cep: cliente.cep ?? "",
             municipio: cliente.municipio ?? "",
+            estado: cliente.estado ?? "",
+            atividadePrincipal: cliente.atividadePrincipal ?? "",
             email: cliente.email ?? "",
             segmento: cliente.segmento,
             origemContato: cliente.origemContato,

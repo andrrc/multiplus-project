@@ -1,10 +1,15 @@
 import { auth, signOut } from "@/server/auth";
 import { NavLink } from "./nav-link";
 
+/**
+ * Rótulos exibidos ao usuário (reunião de aprovação da Sprint 2) — os valores do enum
+ * `Perfil` no banco (ADMIN_INTERNO/ADMIN_EXTERNO) não mudam, só o texto na UI/e-mails.
+ * O perfil da Talita continua "Administrador".
+ */
 const NOME_PERFIL: Record<string, string> = {
   ADMIN: "Administrador",
-  ADMIN_INTERNO: "Administrador Interno",
-  ADMIN_EXTERNO: "Administrador Externo",
+  ADMIN_INTERNO: "Colaborador Interno",
+  ADMIN_EXTERNO: "Colaborador Externo",
   CLIENTE: "Cliente",
 };
 
