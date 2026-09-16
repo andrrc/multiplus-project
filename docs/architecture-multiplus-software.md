@@ -1,6 +1,6 @@
 # Architecture Design Document — Múltiplus Software
 
-**Versão:** 1.9
+**Versão:** 1.10
 **Data:** 16/09/2026
 **Autor:** André (Somma)
 **Baseado em:** SRS v2.1 (RF-001 a RF-047, incluindo RF-002a a RF-002d)
@@ -641,12 +641,30 @@ quebra nada visivelmente, só deixa vazar registro desativado.
   Duas colunas concorrentes dizendo se a pessoa entra no sistema seria pior que o
   reaproveitamento. O status de acesso da Tela A1 (Ativo / Pendente de ativação /
   Desativado) é derivado de `ativo` + `senha_hash`, também sem coluna nova.
-- **Escopo aplicado:** Cliente, Pessoa Envolvida, Documento e Usuário. Projeto, Tarefa e
-  Subtarefa entram na Sprint 4, quando essas tabelas tiverem CRUD.
+- **Escopo aplicado:** as colunas `ativo`/`desativado_em`/`desativado_por` ficam em Cliente,
+  Pessoa Envolvida, Documento e Usuário — Projeto, Tarefa e Subtarefa só as recebem na
+  Sprint 4, quando tiverem CRUD (sem CRUD não há o que desativar). A **herança de acesso**,
+  essa sim, vale para a cadeia inteira desde já, porque as três tabelas são filhas de
+  `Cliente` e têm RLS desde a Sprint 1: desativar o cliente torna seus projetos, tarefas e
+  subtarefas inacessíveis, e recusa escrita neles.
+- **Correção de 16/09/2026 (auditoria da Sprint 3, item 1):** a herança parou nas quatro
+  filhas diretas de `Cliente` na entrega original. Com o cliente desativado, um Colaborador
+  Interno atribuído deixava de ver o cliente e continuava vendo o projeto e as tarefas dele —
+  a "consequência que exige teste" registrada acima, acontecendo. A causa foi o plano da
+  sprint, que descreveu Projeto/Tarefa/Subtarefa como tabelas que "entram na Sprint 4, quando
+  existirem": elas existem desde a Sprint 1, e só o CRUD é da Sprint 4. Fechado antes de
+  haver dado real nessas tabelas.
+- **Uma função de herança por nível, nunca um subselect.** `cliente_esta_ativo("clienteId")`
+  serve quem tem a FK direta; `cliente_do_projeto_esta_ativo("projetoId")` e
+  `cliente_da_tarefa_esta_ativo("tarefaId")` servem os níveis que precisariam de um salto.
+  Alcançar o cliente por subselect na política de `subtarefas` expandiria `tarefas_select`
+  dentro dela — o caminho da recursão corrigida em
+  `20260903191825_fix_rls_projetos_tarefas_recursion`. As três devolvem `false`, nunca `NULL`.
 
 Migrations: `20260916110000_soft_delete_rf039` (colunas e índices, não-destrutiva — `ativo`
-entra `NOT NULL DEFAULT true`, sem nenhum `UPDATE` de dados) e
-`20260916110500_rls_soft_delete_cascata` (políticas e a função de herança).
+entra `NOT NULL DEFAULT true`, sem nenhum `UPDATE` de dados),
+`20260916110500_rls_soft_delete_cascata` (políticas e a função de herança das filhas diretas)
+e `20260916190000_rls_heranca_projetos_tarefas` (herança até Projeto, Tarefa e Subtarefa).
 
 ---
 
@@ -712,6 +730,7 @@ confortável mesmo com crescimento moderado de uso.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 1.10 | 16/09/2026 | André (Somma) | ADR-008 revisado após a auditoria da Sprint 3: a herança de acesso passa a valer para a cadeia inteira (Projeto, Tarefa e Subtarefa), separada da questão das colunas `ativo`, que seguem para a Sprint 4; registradas as três funções de herança (uma por nível, nunca subselect) e a correção da premissa do plano que gerou o vazamento. Migration `20260916190000_rls_heranca_projetos_tarefas` |
 | 1.9 | 16/09/2026 | André (Somma) | ADR-008 (soft delete com cascata por herança) registrado e implementado na Sprint 3, com as consequências que apareceram na implementação; ADR-009 (projeção de ocorrências recorrentes) registrado para a Sprint 4. Base atualizada para o SRS v2.1 |
 | 1.8 | 10/09/2026 | André (Somma) | Fechamento do ADR-007 (Pessoa Envolvida), com os dois bugs reais encontrados na implementação |
 

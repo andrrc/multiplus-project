@@ -9,6 +9,8 @@
  */
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ownerDb, appDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
+import { atualizarCliente } from "@/lib/clientes";
+import { PESSOA_VAZIA } from "@/lib/heranca-pessoa";
 
 type Fixture = Awaited<ReturnType<typeof montarFixture>>;
 
@@ -337,6 +339,28 @@ describe("RF-039 — registro desativado é somente leitura", () => {
     );
 
     expect(count).toBe(0);
+  });
+
+  it("a aplicação recusa editar o cadastro de um cliente desativado", async () => {
+    await desativar(f.clienteId);
+
+    // Esta é a metade que a RLS não cobre, e é por isso que `exigirClienteAtivo` existe:
+    // `clientes_write` precisa aceitar UPDATE em cliente desativado, senão não haveria como
+    // reativá-lo. Sem a guarda da aplicação, editar razão social, segmento ou endereço de um
+    // cliente desativado passaria direto (ADR-008).
+    await expect(
+      atualizarCliente(f.ctxAdmin, f.clienteId, {
+        tipo: "PESSOA_JURIDICA",
+        razaoSocial: "Nome Alterado À Força",
+        segmento: "Indústria",
+        origemContato: "Indicação",
+        responsavelLegal: { ...PESSOA_VAZIA, nome: "Ana", telefone: "11999990000" },
+        pontoContato: { ...PESSOA_VAZIA, nome: "Bruno", telefone: "11988880000" },
+      }),
+    ).rejects.toThrow(/desativado/i);
+
+    const cliente = await ownerDb.cliente.findUniqueOrThrow({ where: { id: f.clienteId } });
+    expect(cliente.razaoSocial).toBe("Empreendimento Alfa");
   });
 
   it("mas o Administrador continua podendo reativar o cliente", async () => {

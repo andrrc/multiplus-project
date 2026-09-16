@@ -58,7 +58,13 @@ de convite que a Sprint 2 já corrigiu.
   `PessoaEnvolvida`, `Documento`, `Usuario`
 - Migration **não-destrutiva**: todo registro existente recebe `ativo = true`
 - Índice em `ativo` nas tabelas com listagem
-- *Projeto, Tarefa e Subtarefa entram na Sprint 4, quando as tabelas existirem*
+- ~~*Projeto, Tarefa e Subtarefa entram na Sprint 4, quando as tabelas existirem*~~
+  **Corrigido em 16/09/2026 (auditoria, item 1):** a premissa estava errada. As três tabelas
+  existem desde a Sprint 1, com RLS — é só o **CRUD** delas que é da Sprint 4. O recorte
+  correto é: as colunas `ativo`/`desativado_em`/`desativado_por` esperam a Sprint 4 (não há o
+  que desativar sem CRUD), mas a **herança de acesso** tinha de entrar já, porque essas
+  tabelas são filhas de `Cliente` e a RLS delas existe desde a Sprint 1. Foi essa frase que
+  produziu o vazamento fechado pela migration `20260916190000_rls_heranca_projetos_tarefas`
 
 **A2. Retrofit de queries da Sprint 2 (RF-039, RN-009)**
 - Toda listagem e toda política de RLS existente passa a filtrar `ativo = true`
@@ -66,6 +72,10 @@ de convite que a Sprint 2 já corrigiu.
   testes da Sprint 2 precisa continuar passando sem alteração de comportamento esperado
 - Cascata por herança: desativar Cliente torna suas Pessoas Envolvidas e Documentos
   inacessíveis, **sem** marcar cada filho (ADR-008)
+  **Corrigido em 16/09/2026 (auditoria, item 1):** a lista de filhas está incompleta — falta
+  Responsável Legal, Ponto de Contato (essas duas foram implementadas) e **Projeto, Tarefa e
+  Subtarefa** (essas não foram, pelo mesmo motivo errado anotado em A1). Ler junto com a nota
+  da tarefa A1
 
 **A3. Migration — campos de usuário**
 - Confirmar/criar `nome`, `status_acesso` (Ativo / Pendente de ativação / Desativado)
@@ -173,7 +183,11 @@ revisões
       `Atribuicao` — testado no endpoint, não na UI
 - [x] **Teste de permissão/RLS:** usuário sem atribuição não enxerga nada ao logar
 - [x] **Teste de permissão/RLS (RF-039):** registro desativado não retorna para nenhum perfil
-- [x] **Teste de permissão/RLS (RF-043):** acesso direto por URL a rota fora do perfil é negado
+- [ ] **Teste de permissão/RLS (RF-043):** acesso direto por URL a rota fora do perfil é negado
+      — **desmarcado em 16/09/2026 (auditoria, § 5.3)**. O que existe é teste unitário da
+      função pura `perfilPodeAcessar`; nenhum teste passa pelo proxy nem por
+      `exigirAcessoARota`, e as páginas de `/clientes` e `/clientes/[id]` não chamam a guarda.
+      O teste passa sem cobrir o critério de aceite. Divergência aberta para a Sprint 4
 - [x] **Smoke test:** criar usuário → convite → definir senha → login → tela inicial correta
 - [x] **Smoke test:** desativar cliente → some da listagem → reativar → volta íntegro
 - [x] **Teste de integração:** recuperação de senha devolve resposta idêntica para e-mail
@@ -248,7 +262,11 @@ desativado. Vale rodar a suíte completa logo após A2, antes de seguir para B.
 - [x] Toda RN nova tem teste unitário com caso principal e caso-limite (RN-009)
 - [x] Todo dado sensível por perfil novo tem teste de permissão (RN-007)
 - [x] Fluxo principal tem smoke test do caminho feliz
-- [x] Suíte completa (Sprints 1, 2 e 3) passa antes do deploy — 152 testes (92 integração/smoke + 60 unitários), lint e build limpos
+- [x] Suíte completa (Sprints 1, 2 e 3) passa antes do deploy — **161 testes** (99 integração/smoke
+      + 62 unitários), lint e build limpos. *O número registrado antes era 152, de uma contagem
+      anterior ao commit `363d7c2` (campos extras de cadastro de usuário), que somou 9 testes —
+      corrigido em 16/09/2026 pela auditoria. Depois das correções da auditoria a suíte está em
+      **176** (114 + 62).*
 - [ ] Healthcheck validado em produção após o deploy — **pendente**, depende do deploy
 - [x] Comportamento de falha da integração externa testado (Resend)
 - [x] Documentação atualizada: SRS v2.1, ADD v1.9, PDD v1.1, históricos de revisão preenchidos
