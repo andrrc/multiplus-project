@@ -104,13 +104,47 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
   );
 }
 
+/**
+ * RF-030/RF-040 — retorno do cadastro que acabou de acontecer.
+ *
+ * O aviso de falha é o que importa aqui: quando o Resend está fora, o usuário é criado do
+ * mesmo jeito (`criarUsuarioInterno` não derruba a criação por causa do e-mail) e a única
+ * pista na listagem seria a etiqueta "Pendente de ativação" — idêntica à de um convite
+ * recém-enviado com sucesso. Sem esta faixa, a Talita concluiria que o convite saiu.
+ */
+function RetornoConvite({ convite }: { convite?: string }) {
+  if (convite === "enviado") {
+    return (
+      <p className="mt-5 rounded-[3px] border-l-[3px] border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
+        Usuário criado e convite enviado por e-mail.
+      </p>
+    );
+  }
+
+  if (convite === "falhou") {
+    return (
+      <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+        O usuário foi criado, mas o e-mail de convite não saiu. Use &ldquo;Reenviar
+        convite&rdquo; na linha dele para tentar de novo.
+      </p>
+    );
+  }
+
+  return null;
+}
+
 export default async function UsuariosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ busca?: string; perfil?: string; desativados?: string }>;
+  searchParams: Promise<{
+    busca?: string;
+    perfil?: string;
+    desativados?: string;
+    convite?: string;
+  }>;
 }) {
   const ctx = await exigirAcessoARota("/usuarios");
-  const { busca, perfil, desativados } = await searchParams;
+  const { busca, perfil, desativados, convite } = await searchParams;
 
   const perfilFiltrado = PERFIS_FILTRAVEIS.find((p) => p === perfil);
   const incluirDesativados = desativados === "1";
@@ -137,6 +171,8 @@ export default async function UsuariosPage({
           + Novo usuário
         </Link>
       </div>
+
+      <RetornoConvite convite={convite} />
 
       <form className="mt-7 flex flex-wrap items-center gap-3">
         <input
