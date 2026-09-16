@@ -605,16 +605,29 @@ export type ResultadoPerfil =
   | { sucesso: true }
   | { sucesso: false; motivo: "nome_obrigatorio" | "senha_atual_incorreta" | "senha_fraca" | "sem_senha" };
 
-/** RF-042 — o próprio usuário edita apenas o nome; e-mail e perfil são do Administrador. */
+/**
+ * RF-042 — o próprio usuário edita apenas o nome; e-mail e perfil são do Administrador.
+ *
+ * Roda na role dona pelo mesmo motivo de `alterarMinhaSenha` logo abaixo: a política
+ * `usuarios_write` é ADMIN-only, então pela role de aplicação esta escrita não passava e
+ * nenhum Colaborador conseguia salvar o próprio nome (auditoria da Sprint 3, item 5). Abrir
+ * a RLS para a própria linha resolveria o nome e abriria `perfil`, `email` e `ativo` de
+ * carona — escalada de privilégio atrás de um campo de texto.
+ *
+ * A segurança aqui é estrutural, não uma checagem: a linha alvo vem de `ctx.usuarioId` (a
+ * sessão) e a única coluna escrita está fixa no código. Não há entrada do cliente escolhendo
+ * quem é atualizado nem o que é atualizado.
+ */
 export async function atualizarMeuNome(
   ctx: ContextoUsuario,
   nome: string,
 ): Promise<ResultadoPerfil> {
   if (!nome.trim()) return { sucesso: false, motivo: "nome_obrigatorio" };
 
-  await comContextoDeUsuario(ctx, (tx) =>
-    tx.usuario.update({ where: { id: ctx.usuarioId }, data: { nome: nome.trim() } }),
-  );
+  await prisma.usuario.update({
+    where: { id: ctx.usuarioId },
+    data: { nome: nome.trim() },
+  });
   return { sucesso: true };
 }
 
