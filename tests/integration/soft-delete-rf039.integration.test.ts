@@ -42,6 +42,18 @@ async function montarFixture() {
   const projeto = await ownerDb.projeto.create({
     data: { clienteId: cliente.id, nome: "Licenciamento Alfa" },
   });
+
+  // Tarefa e subtarefa existem aqui para o caso-limite da cascata alcançar a cadeia inteira
+  // (cliente -> projeto -> tarefa -> subtarefa). Sem elas, o teste de "pai desativado com
+  // filhos ativos" cobria só as filhas diretas do cliente — que é por que o vazamento das
+  // políticas de projetos/tarefas/subtarefas passou pela Sprint 3 inteira.
+  const tarefa = await ownerDb.tarefa.create({
+    data: { projetoId: projeto.id, nome: "Protocolar EIA" },
+  });
+  const subtarefa = await ownerDb.subtarefa.create({
+    data: { tarefaId: tarefa.id, etiqueta: "Anexar ART" },
+  });
+
   const interno = await ownerDb.usuario.create({
     data: { nome: "Interno", email: "interno.softdelete@teste.local", perfil: "ADMIN_INTERNO" },
   });
@@ -65,6 +77,9 @@ async function montarFixture() {
     clienteId: cliente.id,
     pessoaId: pessoa.id,
     documentoId: documento.id,
+    projetoId: projeto.id,
+    tarefaId: tarefa.id,
+    subtarefaId: subtarefa.id,
   };
 }
 
@@ -165,6 +180,112 @@ describe("ADR-008 — cascata por herança, sem marcar os filhos", () => {
 
     expect(responsavel).toHaveLength(0);
     expect(ponto).toHaveLength(0);
+  });
+
+  it("a cascata alcança projeto, tarefa e subtarefa — não só as filhas diretas do cliente", async () => {
+    // O Colaborador Interno está atribuído ao projeto, então antes de desativar ele vê tudo:
+    // sem esta metade, "não vê depois" passaria por ele nunca ter visto.
+    const antes = await comoUsuario(f.ctxInterno, async (tx) => ({
+      clientes: await tx.cliente.findMany(),
+      projetos: await tx.projeto.findMany(),
+      tarefas: await tx.tarefa.findMany(),
+      subtarefas: await tx.subtarefa.findMany(),
+    }));
+
+    expect(antes.clientes).toHaveLength(1);
+    expect(antes.projetos).toHaveLength(1);
+    expect(antes.tarefas).toHaveLength(1);
+    expect(antes.subtarefas).toHaveLength(1);
+
+    await desativar(f.clienteId);
+
+    const depois = await comoUsuario(f.ctxInterno, async (tx) => ({
+      clientes: await tx.cliente.findMany(),
+      projetos: await tx.projeto.findMany(),
+      tarefas: await tx.tarefa.findMany(),
+      subtarefas: await tx.subtarefa.findMany(),
+    }));
+
+    expect(depois.clientes).toHaveLength(0);
+    expect(depois.projetos).toHaveLength(0);
+    expect(depois.tarefas).toHaveLength(0);
+    expect(depois.subtarefas).toHaveLength(0);
+
+    // ADR-008: nada foi marcado nos filhos — as três tabelas nem têm coluna `ativo` ainda
+    // (Sprint 4), e continuam com as linhas intactas no banco.
+    expect(await ownerDb.projeto.findUnique({ where: { id: f.projetoId } })).not.toBeNull();
+    expect(await ownerDb.tarefa.findUnique({ where: { id: f.tarefaId } })).not.toBeNull();
+    expect(await ownerDb.subtarefa.findUnique({ where: { id: f.subtarefaId } })).not.toBeNull();
+  });
+
+  it("reativar o cliente devolve projeto, tarefa e subtarefa", async () => {
+    await desativar(f.clienteId);
+    await ownerDb.cliente.update({
+      where: { id: f.clienteId },
+      data: { ativo: true, desativadoEm: null, desativadoPor: null },
+    });
+
+    const devolvidos = await comoUsuario(f.ctxInterno, async (tx) => ({
+      projetos: await tx.projeto.findMany(),
+      tarefas: await tx.tarefa.findMany(),
+      subtarefas: await tx.subtarefa.findMany(),
+    }));
+
+    expect(devolvidos.projetos).toHaveLength(1);
+    expect(devolvidos.tarefas).toHaveLength(1);
+    expect(devolvidos.subtarefas).toHaveLength(1);
+  });
+
+  it("o Administrador continua enxergando projeto e tarefa de cliente desativado — é ele quem reativa", async () => {
+    await desativar(f.clienteId);
+
+    const paraAdmin = await comoUsuario(f.ctxAdmin, async (tx) => ({
+      projetos: await tx.projeto.findMany(),
+      tarefas: await tx.tarefa.findMany(),
+      subtarefas: await tx.subtarefa.findMany(),
+    }));
+
+    expect(paraAdmin.projetos).toHaveLength(1);
+    expect(paraAdmin.tarefas).toHaveLength(1);
+    expect(paraAdmin.subtarefas).toHaveLength(1);
+  });
+
+  it("escrita em projeto, tarefa e subtarefa de cliente desativado é recusada, inclusive para o Administrador", async () => {
+    await desativar(f.clienteId);
+
+    // Mesmo comportamento que pessoas_envolvidas_write e documentos_write já tinham: o
+    // registro desativado é somente leitura (RF-039), e nem o Administrador escreve nele.
+    const projeto = await comoUsuario(f.ctxAdmin, (tx) =>
+      tx.projeto.updateMany({ where: { id: f.projetoId }, data: { nome: "Renomeado" } }),
+    );
+    const tarefa = await comoUsuario(f.ctxAdmin, (tx) =>
+      tx.tarefa.updateMany({ where: { id: f.tarefaId }, data: { nome: "Renomeada" } }),
+    );
+    const subtarefa = await comoUsuario(f.ctxAdmin, (tx) =>
+      tx.subtarefa.updateMany({ where: { id: f.subtarefaId }, data: { concluida: true } }),
+    );
+
+    expect(projeto.count).toBe(0);
+    expect(tarefa.count).toBe(0);
+    expect(subtarefa.count).toBe(0);
+
+    await expect(
+      comoUsuario(f.ctxAdmin, (tx) =>
+        tx.tarefa.create({ data: { projetoId: f.projetoId, nome: "Nova" } }),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("cliente_do_projeto_esta_ativo e cliente_da_tarefa_esta_ativo devolvem false, nunca NULL", async () => {
+    const [{ do_projeto, da_tarefa }] = await appDb.$queryRaw<
+      { do_projeto: boolean; da_tarefa: boolean }[]
+    >`
+      SELECT cliente_do_projeto_esta_ativo('nao-existe') AS do_projeto,
+             cliente_da_tarefa_esta_ativo('nao-existe')  AS da_tarefa
+    `;
+
+    expect(do_projeto).toBe(false);
+    expect(da_tarefa).toBe(false);
   });
 
   it("filho desativado some mesmo com o pai ativo", async () => {
