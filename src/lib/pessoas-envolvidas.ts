@@ -2,8 +2,7 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { normalizarCnpj, validarCnpj } from "@/lib/cnpj";
 import { normalizarCpf, validarCpf } from "@/lib/cpf";
 import { validarEmail } from "@/lib/validacao";
-import { criarTokenAcesso } from "@/lib/tokens";
-import { enviarEmail, linkDefinirSenha } from "@/lib/email";
+import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
 import { prisma } from "@/lib/prisma";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
 
@@ -59,7 +58,7 @@ export async function adicionarPessoaEnvolvida(
 }
 
 export type ResultadoCriarAcessoPessoaEnvolvida =
-  | { sucesso: true }
+  | { sucesso: true; convite: ResultadoConvite }
   | { sucesso: false; motivo: "nao_encontrada" | "ja_tem_acesso" | "ja_existe" };
 
 /**
@@ -85,12 +84,7 @@ export async function criarAcessoPessoaEnvolvida(
   });
   await prisma.pessoaEnvolvida.update({ where: { id: pessoa.id }, data: { temAcesso: true } });
 
-  const token = await criarTokenAcesso(usuario.id, "DEFINIR_SENHA");
-  await enviarEmail({
-    to: usuario.email,
-    subject: "Acesso ao Múltiplus — defina sua senha",
-    html: `<p>Olá, ${usuario.nome}. Você foi cadastrado como Colaborador Externo no Múltiplus. Defina sua senha de acesso: <a href="${linkDefinirSenha(token)}">${linkDefinirSenha(token)}</a></p>`,
-  });
+  const convite = await enviarConviteDefinicaoSenha(usuario, "COLABORADOR_EXTERNO");
 
-  return { sucesso: true };
+  return { sucesso: true, convite };
 }

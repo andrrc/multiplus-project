@@ -3,12 +3,35 @@ import type { ReactNode } from "react";
 export const inputClass =
   "min-h-11 w-full rounded-[3px] border border-linha bg-branco px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] text-tinta focus:border-azul disabled:bg-papel disabled:text-cinza";
 
-export function Etiqueta({ children, destaque }: { children: ReactNode; destaque?: boolean }) {
+/**
+ * `atencao` existe para o que o RF-040 chama de sinalização visual: um usuário pendente de
+ * ativação ou sem nenhuma atribuição não é um erro, mas é algo que a Talita precisa
+ * resolver. `apagado` marca o registro desativado (RF-039), que continua legível mas sai
+ * do primeiro plano.
+ */
+type TomEtiqueta = "neutro" | "positivo" | "atencao" | "apagado";
+
+const TONS: Record<TomEtiqueta, string> = {
+  neutro: "border-linha bg-branco text-tinta",
+  positivo: "border-verde-borda bg-verde-cl text-verde-esc",
+  atencao: "border-ambar/30 bg-ambar/8 text-ambar",
+  apagado: "border-linha bg-papel text-cinza",
+};
+
+export function Etiqueta({
+  children,
+  destaque,
+  tom,
+}: {
+  children: ReactNode;
+  destaque?: boolean;
+  tom?: TomEtiqueta;
+}) {
+  const tomFinal: TomEtiqueta = tom ?? (destaque ? "positivo" : "neutro");
+
   return (
     <span
-      className={`inline-block rounded-[2px] border px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium ${
-        destaque ? "border-verde-borda bg-verde-cl text-verde-esc" : "border-linha bg-branco text-tinta"
-      }`}
+      className={`inline-block rounded-[2px] border px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium ${TONS[tomFinal]}`}
     >
       {children}
     </span>

@@ -1,11 +1,11 @@
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { normalizarCnpj } from "@/lib/cnpj";
 import { normalizarCpf } from "@/lib/cpf";
-import { criarTokenAcesso } from "@/lib/tokens";
-import { enviarEmail, linkDefinirSenha } from "@/lib/email";
+import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
 import { prisma } from "@/lib/prisma";
 import { limparDadosPessoa, type DadosPessoa } from "@/lib/heranca-pessoa";
 import { criarAcessoPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
+import { exigirClienteAtivo } from "@/lib/desativacao";
 
 export type { DadosPessoa } from "@/lib/heranca-pessoa";
 export { heredarDadosPontoContato } from "@/lib/heranca-pessoa";
@@ -155,12 +155,26 @@ export async function criarCliente(ctx: ContextoUsuario, dados: NovoClienteInput
   return cliente;
 }
 
-/** RF-003 — painel central de clientes, com busca por razão social/CNPJ/CPF/cidade + filtro de cidade. */
-export async function listarClientes(ctx: ContextoUsuario, busca?: string, cidade?: string) {
+/**
+ * RF-003 — painel central de clientes, com busca por razão social/CNPJ/CPF/cidade +
+ * filtro de cidade.
+ *
+ * RF-039: desativados ficam de fora por padrão. `incluirDesativados` é o toggle "Mostrar
+ * desativados" da listagem — pedir por ele não dá acesso a nada: a RLS só devolve linha
+ * desativada para o Administrador, então para qualquer outro perfil o parâmetro não muda
+ * o resultado (ver migration 20260916110500_rls_soft_delete_cascata).
+ */
+export async function listarClientes(
+  ctx: ContextoUsuario,
+  busca?: string,
+  cidade?: string,
+  incluirDesativados = false,
+) {
   return comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
       where: {
         AND: [
+          incluirDesativados ? {} : { ativo: true },
           busca
             ? {
                 OR: [
@@ -183,7 +197,8 @@ export async function listarClientes(ctx: ContextoUsuario, busca?: string, cidad
 export async function listarCidadesComCliente(ctx: ContextoUsuario): Promise<string[]> {
   const clientes = await comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
-      where: { municipio: { not: null } },
+      // RF-039 — cidade cujo único cliente foi desativado sai do dropdown junto.
+      where: { municipio: { not: null }, ativo: true },
       distinct: ["municipio"],
       select: { municipio: true },
       orderBy: { municipio: "asc" },
@@ -198,7 +213,13 @@ export async function listarCidadesComCliente(ctx: ContextoUsuario): Promise<str
  * ver migration `cadastro_clientes_rls_masking`) — nunca os models base
  * `responsavelLegal`/`pontoContato`, que só devem ser usados para escrita.
  */
-export async function buscarClienteDetalheSeguro(ctx: ContextoUsuario, clienteId: string) {
+export async function buscarClienteDetalheSeguro(
+  ctx: ContextoUsuario,
+  clienteId: string,
+  incluirDesativados = false,
+) {
+  const soAtivos = incluirDesativados ? {} : { ativo: true };
+
   return comContextoDeUsuario(ctx, async (tx) => {
     const cliente = await tx.cliente.findUnique({ where: { id: clienteId } });
     if (!cliente) return null;
@@ -207,8 +228,14 @@ export async function buscarClienteDetalheSeguro(ctx: ContextoUsuario, clienteId
       await Promise.all([
         tx.responsavelLegalSeguro.findUnique({ where: { clienteId } }),
         tx.pontoContatoSeguro.findUnique({ where: { clienteId } }),
-        tx.pessoaEnvolvida.findMany({ where: { clienteId }, orderBy: { nome: "asc" } }),
-        tx.documento.findMany({ where: { clienteId }, orderBy: { criadoEm: "desc" } }),
+        tx.pessoaEnvolvida.findMany({
+          where: { clienteId, ...soAtivos },
+          orderBy: { nome: "asc" },
+        }),
+        tx.documento.findMany({
+          where: { clienteId, ...soAtivos },
+          orderBy: { criadoEm: "desc" },
+        }),
         tx.usuario.findFirst({
           where: { clienteId, perfil: "CLIENTE" },
           select: { id: true, ativo: true, senhaHash: true },
@@ -261,6 +288,11 @@ export async function atualizarCliente(
   clienteId: string,
   dados: AtualizarClienteInput,
 ) {
+  // RF-039 — cliente desativado é somente leitura. A RLS sozinha não cobre este caso:
+  // `clientes_write` precisa aceitar UPDATE em cliente desativado, senão não haveria como
+  // reativá-lo.
+  await exigirClienteAtivo(ctx, clienteId);
+
   return comContextoDeUsuario(ctx, (tx) => {
     if (dados.tipo === "PESSOA_JURIDICA") {
       const responsavelLegal = limparDadosPessoa(dados.responsavelLegal, normalizarCpf);
@@ -335,7 +367,7 @@ export async function adicionarDocumento(
 }
 
 export type ResultadoCriarAcesso =
-  | { sucesso: true }
+  | { sucesso: true; convite: ResultadoConvite }
   | { sucesso: false; motivo: "sem_email" | "ja_existe" };
 
 /**
@@ -370,14 +402,9 @@ export async function criarAcessoCliente(clienteId: string): Promise<ResultadoCr
     data: { nome, email, perfil: "CLIENTE", clienteId },
   });
 
-  const token = await criarTokenAcesso(usuario.id, "DEFINIR_SENHA");
-  await enviarEmail({
-    to: usuario.email,
-    subject: "Acesso ao Múltiplus — defina sua senha",
-    html: `<p>Olá, ${usuario.nome}. Defina sua senha de acesso: <a href="${linkDefinirSenha(token)}">${linkDefinirSenha(token)}</a></p>`,
-  });
+  const convite = await enviarConviteDefinicaoSenha(usuario, "CLIENTE");
 
-  return { sucesso: true };
+  return { sucesso: true, convite };
 }
 
 /** RF-029 — bloqueio/desbloqueio de acesso do cliente reaproveita `usuarios.ativo`. */

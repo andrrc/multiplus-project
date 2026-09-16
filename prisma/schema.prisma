@@ -45,6 +45,13 @@ model Usuario {
   perfil    Perfil   @default(CLIENTE)
   ativo     Boolean  @default(true)
 
+  /// RF-039/ADR-008 — auditoria da desativação. `ativo` já existia desde a Sprint 1 com a
+  /// semântica do RF-029 (bloquear acesso do cliente): é a mesma operação, então é
+  /// reaproveitada aqui em vez de uma coluna paralela. O status de acesso da Tela A1 (Ativo /
+  /// Pendente de ativação / Desativado) é derivado de `ativo` + `senhaHash`, não persistido.
+  desativadoEm  DateTime?
+  desativadoPor String?
+
   // Preenchido apenas para perfil CLIENTE — vincula o usuário à empresa que ele representa.
   clienteId String?
   cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
@@ -60,6 +67,7 @@ model Usuario {
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
   @@map("usuarios")
 }
 
@@ -94,6 +102,13 @@ model Cliente {
   segmento      String
   origemContato String
 
+  /// RF-039/ADR-008 — desativação (soft delete). `desativadoPor` guarda o id do Usuario sem
+  /// FK nativa, mesmo princípio do ADR-004: é campo de auditoria, e quatro relações reversas
+  /// só pra isso poluiriam o model Usuario sem nenhum ganho real de integridade.
+  ativo         Boolean   @default(true)
+  desativadoEm  DateTime?
+  desativadoPor String?
+
   usuarios          Usuario[]
   projetos          Projeto[]
   responsavelLegal  ResponsavelLegal?
@@ -104,6 +119,7 @@ model Cliente {
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
   @@map("clientes")
 }
 
@@ -173,6 +189,11 @@ model PessoaEnvolvida {
   /// para não perder dado de cadastros já existentes.
   cargo String?
 
+  /// RF-039/ADR-008 — desativação (soft delete). Ver comentário em `Cliente`.
+  ativo         Boolean   @default(true)
+  desativadoEm  DateTime?
+  desativadoPor String?
+
   usuario               Usuario?
   tarefasResponsavel    Tarefa[]    @relation("TarefaResponsavel")
   subtarefasAtribuidas  Subtarefa[] @relation("SubtarefaAtribuidoA")
@@ -180,6 +201,7 @@ model PessoaEnvolvida {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
   @@map("pessoas_envolvidas")
 }
 
@@ -193,9 +215,15 @@ model Documento {
   nome String
   link String
 
+  /// RF-039/ADR-008 — desativação (soft delete). Ver comentário em `Cliente`.
+  ativo         Boolean   @default(true)
+  desativadoEm  DateTime?
+  desativadoPor String?
+
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
   @@map("documentos")
 }
 

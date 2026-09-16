@@ -2,12 +2,14 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { inputClass } from "@/ui/campo";
+import type { EntidadeDesativavel } from "@/lib/desativacao";
 import {
   adicionarDocumentoAction,
   adicionarPessoaEnvolvidaAction,
   criarAcessoAction,
   criarAcessoPessoaEnvolvidaAction,
   definirAcessoAtivoAction,
+  definirAtivoAction,
 } from "./actions";
 
 /**
@@ -195,6 +197,79 @@ export function BotaoAlternarAcesso({
     >
       {ativo ? "Bloquear acesso" : "Desbloquear acesso"}
     </button>
+  );
+}
+
+/**
+ * RF-039 — desativar/reativar. A confirmação explica o efeito antes de acontecer, porque
+ * "desativar" some com o registro das listagens sem apagá-lo, e essa diferença é
+ * justamente o que a Talita precisa entender para usar o botão sem medo.
+ */
+export function BotaoDesativar({
+  clienteId,
+  entidade,
+  id,
+  ativo,
+  efeito,
+  tamanho = "normal",
+}: {
+  clienteId: string;
+  entidade: EntidadeDesativavel;
+  id: string;
+  ativo: boolean;
+  /** O que sai do ar ao desativar — dito em português, não em nome de tabela. */
+  efeito: string;
+  tamanho?: "normal" | "pequeno";
+}) {
+  const [pendente, startTransition] = useTransition();
+  const [erro, setErro] = useState<string | null>(null);
+  const [confirmando, setConfirmando] = useState(false);
+
+  const classe =
+    tamanho === "pequeno"
+      ? "text-[13px] font-medium text-azul-esc hover:underline disabled:opacity-60"
+      : "text-[14px] font-medium text-azul-esc hover:underline disabled:opacity-60";
+
+  function executar() {
+    startTransition(async () => {
+      const resultado = await definirAtivoAction(clienteId, entidade, id, !ativo);
+      setErro(resultado.erro ?? null);
+      setConfirmando(false);
+    });
+  }
+
+  if (confirmando) {
+    return (
+      <span className="flex flex-col gap-1.5">
+        <span className="text-[13px] text-cinza">{efeito} Você pode reativar depois.</span>
+        <span className="flex gap-3">
+          <button type="button" onClick={executar} disabled={pendente} className={classe}>
+            {pendente ? "Desativando…" : "Confirmar"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmando(false)}
+            className="text-[13px] text-cinza hover:text-tinta"
+          >
+            Cancelar
+          </button>
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <span>
+      <button
+        type="button"
+        disabled={pendente}
+        onClick={() => (ativo ? setConfirmando(true) : executar())}
+        className={classe}
+      >
+        {ativo ? "Desativar" : pendente ? "Reativando…" : "Reativar"}
+      </button>
+      {erro && <p className="mt-1 text-[13px] text-critico">{erro}</p>}
+    </span>
   );
 }
 

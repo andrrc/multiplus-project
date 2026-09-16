@@ -8,6 +8,7 @@ import {
   criarAcessoPessoaEnvolvida,
   validarPessoaEnvolvida,
 } from "@/lib/pessoas-envolvidas";
+import { definirAtivo, type EntidadeDesativavel } from "@/lib/desativacao";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
 
 export type EstadoAdicionarPessoaEnvolvida = { erro?: string; sucessoEm?: number };
@@ -86,6 +87,34 @@ export async function definirAcessoAtivoAction(
   await exigirAdmin();
   await definirAcessoClienteAtivo(usuarioId, ativo);
   revalidatePath(`/clientes/${clienteId}`);
+}
+
+/**
+ * RF-039 — desativação/reativação a partir da tela de detalhe: o próprio cliente, uma
+ * pessoa envolvida ou um documento. A mesma action serve às três porque a regra é a mesma
+ * (RN-007, só Administrador) e o serviço é um só.
+ */
+export async function definirAtivoAction(
+  clienteId: string,
+  entidade: EntidadeDesativavel,
+  id: string,
+  ativo: boolean,
+): Promise<EstadoCriarAcesso> {
+  const ctx = await exigirAdmin();
+
+  const resultado = await definirAtivo(ctx, entidade, id, ativo);
+  if (!resultado.sucesso) {
+    const mensagens: Record<typeof resultado.motivo, string> = {
+      sem_permissao: "Ação restrita ao Administrador.",
+      auto_desativacao: "Você não pode desativar o próprio acesso.",
+      nao_encontrado: "Registro não encontrado.",
+    };
+    return { erro: mensagens[resultado.motivo] };
+  }
+
+  revalidatePath(`/clientes/${clienteId}`);
+  revalidatePath("/clientes");
+  return {};
 }
 
 export async function criarAcessoPessoaEnvolvidaAction(

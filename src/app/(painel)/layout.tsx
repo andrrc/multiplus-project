@@ -1,4 +1,6 @@
+import type { Perfil } from "@prisma/client";
 import { auth, signOut } from "@/server/auth";
+import { menuDoPerfil } from "@/lib/navegacao";
 import { NavLink } from "./nav-link";
 import { MenuMobile } from "./menu-mobile";
 
@@ -14,11 +16,15 @@ const NOME_PERFIL: Record<string, string> = {
   CLIENTE: "Cliente",
 };
 
-function Navegacao() {
+/** RF-043 — o menu mostra só o que o perfil acessa; item inacessível não aparece. */
+function Navegacao({ perfil }: { perfil: Perfil }) {
   return (
     <>
-      <NavLink href="/">Painel</NavLink>
-      <NavLink href="/clientes">Clientes</NavLink>
+      {menuDoPerfil(perfil).map((item) => (
+        <NavLink key={item.href} href={item.href}>
+          {item.rotulo}
+        </NavLink>
+      ))}
     </>
   );
 }
@@ -57,7 +63,7 @@ export default async function PainelLayout({ children }: { children: React.React
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       <MenuMobile
-        navegacao={<Navegacao />}
+        navegacao={<Navegacao perfil={usuario.perfil} />}
         usuario={<BlocoUsuario nome={usuario.name} perfil={usuario.perfil} />}
       />
 
@@ -73,7 +79,7 @@ export default async function PainelLayout({ children }: { children: React.React
         </div>
 
         <nav className="flex flex-col gap-0.5 px-3">
-          <Navegacao />
+          <Navegacao perfil={usuario.perfil} />
         </nav>
 
         <div className="mt-auto border-t border-[color:var(--tinta2)] px-6 py-5">

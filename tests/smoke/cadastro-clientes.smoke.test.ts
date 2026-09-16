@@ -95,7 +95,7 @@ describe("cadastro de cliente → criar acesso → login do cliente", () => {
 
     // RF-031: cria o acesso do cliente a partir do Ponto de Contato.
     const resultadoAcesso = await criarAcessoCliente(cliente.id);
-    expect(resultadoAcesso).toEqual({ sucesso: true });
+    expect(resultadoAcesso).toEqual({ sucesso: true, convite: "enviado" });
 
     const emailEnviado = vi.mocked(enviarEmail).mock.calls[0]?.[0];
     expect(emailEnviado?.to).toBe("contato.smoke@teste.local");
@@ -153,7 +153,7 @@ describe("cadastro de cliente Pessoa Física (RF-034/RF-035) → criar acesso �
 
     // RF-031: para PF, o acesso vai direto pra própria pessoa, sem Ponto de Contato.
     const resultadoAcesso = await criarAcessoCliente(cliente.id);
-    expect(resultadoAcesso).toEqual({ sucesso: true });
+    expect(resultadoAcesso).toEqual({ sucesso: true, convite: "enviado" });
 
     const emailEnviado = vi.mocked(enviarEmail).mock.calls[0]?.[0];
     expect(emailEnviado?.to).toBe("maria.smoke-pf@teste.local");
@@ -208,7 +208,7 @@ describe("Pessoa Envolvida — colaborador com acesso, e promoção posterior (R
     expect(pessoa.temAcesso).toBe(false);
 
     const resultado = await criarAcessoPessoaEnvolvida(pessoa.id);
-    expect(resultado).toEqual({ sucesso: true });
+    expect(resultado).toEqual({ sucesso: true, convite: "enviado" });
 
     const pessoaAtualizada = await prisma.pessoaEnvolvida.findUniqueOrThrow({ where: { id: pessoa.id } });
     expect(pessoaAtualizada.temAcesso).toBe(true);
@@ -311,7 +311,7 @@ describe("Pessoa Envolvida — colaborador com acesso, e promoção posterior (R
       temAcesso: true,
     });
     const resultado = await criarAcessoPessoaEnvolvida(pessoa.id);
-    expect(resultado).toEqual({ sucesso: true });
+    expect(resultado).toEqual({ sucesso: true, convite: "enviado" });
 
     const usuarioColaborador = await prisma.usuario.findUnique({ where: { email: "carlos.add@teste.local" } });
     expect(usuarioColaborador?.perfil).toBe("ADMIN_EXTERNO");

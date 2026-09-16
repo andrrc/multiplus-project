@@ -10,6 +10,7 @@ import {
   BotaoCriarAcesso,
   BotaoCriarAcessoPessoaEnvolvida,
   BotaoAlternarAcesso,
+  BotaoDesativar,
 } from "./acoes-cliente";
 
 function Bloco({ titulo, acao, children }: { titulo: string; acao?: React.ReactNode; children: React.ReactNode }) {
@@ -57,10 +58,21 @@ const STATUS_ACESSO: Record<string, { texto: string; cor: string }> = {
   ativo: { texto: "Ativo", cor: "bg-verde-esc" },
 };
 
-export default async function DetalheClientePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DetalheClientePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ desativados?: string }>;
+}) {
   const { id } = await params;
+  const { desativados } = await searchParams;
   const ctx = await obterContexto();
-  const detalhe = await buscarClienteDetalheSeguro(ctx, id);
+
+  // RF-039 — o toggle só faz sentido para quem pode reativar; para os demais perfis a RLS
+  // já não devolve registro desativado, então pedir por ele não muda nada.
+  const mostrarDesativados = desativados === "1" && ctx.perfil === "ADMIN";
+  const detalhe = await buscarClienteDetalheSeguro(ctx, id, mostrarDesativados);
   if (!detalhe) notFound();
 
   const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso } = detalhe;
@@ -88,7 +100,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
             </span>
           </div>
         </div>
-        {ctx.perfil === "ADMIN" && (
+        {ctx.perfil === "ADMIN" && cliente.ativo && (
           <Link
             href={`/clientes/${id}/editar`}
             className="flex min-h-11 shrink-0 items-center self-start rounded-[3px] border border-[#2C5567] px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-[#C4DCE4] hover:border-[#C4DCE4] hover:text-branco"
@@ -97,6 +109,26 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
           </Link>
         )}
       </div>
+
+      {/* RF-039 — cliente desativado é somente leitura; a faixa diz isso antes de a pessoa
+          procurar o botão de editar que não está mais lá. */}
+      {!cliente.ativo && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border-l-[3px] border-ambar bg-branco px-5 py-4">
+          <p className="text-[14.5px] text-ambar">
+            Cliente desativado. O cadastro e tudo que depende dele estão em modo somente
+            leitura.
+          </p>
+          {ctx.perfil === "ADMIN" && (
+            <BotaoDesativar
+              clienteId={id}
+              entidade="cliente"
+              id={id}
+              ativo={false}
+              efeito=""
+            />
+          )}
+        </div>
+      )}
 
       <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -149,7 +181,11 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
 
       <Bloco
         titulo="Pessoas Envolvidas"
-        acao={ctx.perfil === "ADMIN" ? <FormularioPessoaEnvolvida clienteId={id} /> : undefined}
+        acao={
+          ctx.perfil === "ADMIN" && cliente.ativo ? (
+            <FormularioPessoaEnvolvida clienteId={id} />
+          ) : undefined
+        }
       >
         {pessoasEnvolvidas.length === 0 ? (
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
@@ -162,22 +198,40 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
                 key={pessoa.id}
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-[family-name:var(--font-interface)] text-[14.5px]"
               >
-                <span className="font-medium text-tinta">{pessoa.nome}</span>
+                <span className={`font-medium ${pessoa.ativo ? "text-tinta" : "text-cinza"}`}>
+                  {pessoa.nome}
+                </span>
                 <span className="text-cinza">{pessoa.tipo === "EMPRESA" ? "Empresa" : "Pessoa"}</span>
                 {pessoa.telefone && <span className="text-cinza">· {pessoa.telefone}</span>}
                 {pessoa.email && <span className="text-cinza">· {pessoa.email}</span>}
+                {!pessoa.ativo && <Etiqueta tom="apagado">Desativada</Etiqueta>}
                 {pessoa.temAcesso ? (
                   <Etiqueta destaque>Colaborador</Etiqueta>
-                ) : ctx.perfil === "ADMIN" ? (
+                ) : ctx.perfil === "ADMIN" && cliente.ativo && pessoa.ativo ? (
                   <BotaoCriarAcessoPessoaEnvolvida clienteId={id} pessoaEnvolvidaId={pessoa.id} />
                 ) : null}
+                {ctx.perfil === "ADMIN" && cliente.ativo && (
+                  <BotaoDesativar
+                    clienteId={id}
+                    entidade="pessoaEnvolvida"
+                    id={pessoa.id}
+                    ativo={pessoa.ativo}
+                    efeito={`${pessoa.nome} sai das listagens deste cliente.`}
+                    tamanho="pequeno"
+                  />
+                )}
               </li>
             ))}
           </ul>
         )}
       </Bloco>
 
-      <Bloco titulo="Documentos" acao={ctx.perfil === "ADMIN" ? <FormularioDocumento clienteId={id} /> : undefined}>
+      <Bloco
+        titulo="Documentos"
+        acao={
+          ctx.perfil === "ADMIN" && cliente.ativo ? <FormularioDocumento clienteId={id} /> : undefined
+        }
+      >
         {documentos.length === 0 ? (
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
             Nenhum documento vinculado ainda.
@@ -185,15 +239,62 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
         ) : (
           <ul className="flex flex-col gap-2">
             {documentos.map((doc) => (
-              <li key={doc.id} className="font-[family-name:var(--font-interface)] text-[14.5px]">
+              <li
+                key={doc.id}
+                className="flex flex-wrap items-baseline gap-x-3 font-[family-name:var(--font-interface)] text-[14.5px]"
+              >
                 <a href={doc.link} target="_blank" rel="noreferrer" className="text-azul-esc hover:underline">
                   {doc.nome}
                 </a>
+                {!doc.ativo && <Etiqueta tom="apagado">Desativado</Etiqueta>}
+                {ctx.perfil === "ADMIN" && cliente.ativo && (
+                  <BotaoDesativar
+                    clienteId={id}
+                    entidade="documento"
+                    id={doc.id}
+                    ativo={doc.ativo}
+                    efeito={`O link "${doc.nome}" sai da lista de documentos.`}
+                    tamanho="pequeno"
+                  />
+                )}
               </li>
             ))}
           </ul>
         )}
       </Bloco>
+
+      {/* RF-039 — o toggle fica ao lado das duas listas que ele revela, não no topo da
+          tela: é ali que a ausência de um registro desativado é percebida. */}
+      {ctx.perfil === "ADMIN" && (
+        <Link
+          href={`/clientes/${id}${mostrarDesativados ? "" : "?desativados=1"}`}
+          className="self-start text-[14px] font-medium text-azul-esc hover:underline"
+        >
+          {mostrarDesativados
+            ? "Ocultar pessoas e documentos desativados"
+            : "Mostrar pessoas e documentos desativados"}
+        </Link>
+      )}
+
+      {ctx.perfil === "ADMIN" && cliente.ativo && (
+        <Bloco
+          titulo="Cadastro"
+          acao={
+            <BotaoDesativar
+              clienteId={id}
+              entidade="cliente"
+              id={id}
+              ativo
+              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os documentos dele."
+            />
+          }
+        >
+          <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+            Desativar mantém tudo registrado — o cadastro apenas deixa de aparecer nas
+            listagens e não pode mais ser editado.
+          </p>
+        </Bloco>
+      )}
 
       {ctx.perfil === "ADMIN" && (
         <Bloco titulo="Acesso do cliente">

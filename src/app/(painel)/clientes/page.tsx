@@ -7,12 +7,17 @@ import { Etiqueta, inputClass } from "@/ui/campo";
 export default async function ClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ busca?: string; cidade?: string }>;
+  searchParams: Promise<{ busca?: string; cidade?: string; desativados?: string }>;
 }) {
-  const { busca, cidade } = await searchParams;
+  const { busca, cidade, desativados } = await searchParams;
   const ctx = await obterContexto();
+
+  // RF-039 — só o Administrador reativa, então só ele tem o toggle; para os demais a RLS
+  // já não devolve cliente desativado, e o parâmetro na URL não muda nada.
+  const mostrarDesativados = desativados === "1" && ctx.perfil === "ADMIN";
+
   const [clientes, cidades] = await Promise.all([
-    listarClientes(ctx, busca, cidade),
+    listarClientes(ctx, busca, cidade, mostrarDesativados),
     listarCidadesComCliente(ctx),
   ]);
 
@@ -53,6 +58,18 @@ export default async function ClientesPage({
             </option>
           ))}
         </select>
+        {ctx.perfil === "ADMIN" && (
+          <label className="flex min-h-11 items-center gap-2 text-[14px] text-tinta">
+            <input
+              type="checkbox"
+              name="desativados"
+              value="1"
+              defaultChecked={mostrarDesativados}
+              className="h-4 w-4 accent-verde"
+            />
+            Mostrar desativados
+          </label>
+        )}
         <button
           type="submit"
           className="min-h-11 w-full rounded-[3px] border border-linha px-4 py-2.5 text-[14px] font-medium text-tinta hover:border-azul sm:w-auto"
@@ -78,10 +95,15 @@ export default async function ClientesPage({
                 href={`/clientes/${cliente.id}`}
                 className="block rounded-[3px] border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul"
               >
-                <p className="text-[15px] font-medium text-tinta">{cliente.razaoSocial}</p>
+                <p className={`text-[15px] font-medium ${cliente.ativo ? "text-tinta" : "text-cinza"}`}>
+                  {cliente.razaoSocial}
+                </p>
                 <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente)}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <Etiqueta>{cliente.segmento}</Etiqueta>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <Etiqueta>{cliente.segmento}</Etiqueta>
+                    {!cliente.ativo && <Etiqueta tom="apagado">Desativado</Etiqueta>}
+                  </span>
                   <span className="text-[14px] text-cinza">{cliente.municipio ?? "—"}</span>
                 </div>
               </Link>
@@ -103,11 +125,21 @@ export default async function ClientesPage({
           </thead>
           <tbody>
             {clientes.map((cliente) => (
-              <tr key={cliente.id} className="border-t border-linha bg-branco transition-colors hover:bg-verde-cl">
+              <tr
+                key={cliente.id}
+                className={`border-t border-linha transition-colors hover:bg-verde-cl ${
+                  cliente.ativo ? "bg-branco" : "bg-papel"
+                }`}
+              >
                 <td className="px-5 py-4 font-medium text-tinta">
                   <Link href={`/clientes/${cliente.id}`} className="hover:text-azul-esc">
                     {cliente.razaoSocial}
                   </Link>
+                  {!cliente.ativo && (
+                    <span className="ml-2 align-middle">
+                      <Etiqueta tom="apagado">Desativado</Etiqueta>
+                    </span>
+                  )}
                 </td>
                 <td className="px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td>
                 <td className="px-5 py-4">
