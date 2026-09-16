@@ -59,7 +59,10 @@ export async function adicionarPessoaEnvolvida(
 
 export type ResultadoCriarAcessoPessoaEnvolvida =
   | { sucesso: true; convite: ResultadoConvite }
-  | { sucesso: false; motivo: "nao_encontrada" | "ja_tem_acesso" | "ja_existe" };
+  | {
+      sucesso: false;
+      motivo: "nao_encontrada" | "ja_tem_acesso" | "ja_existe" | "cliente_desativado";
+    };
 
 /**
  * RF-028 (checkbox inline no cadastro) / RF-033 (criar acesso depois) — cria o `Usuario`
@@ -71,10 +74,18 @@ export type ResultadoCriarAcessoPessoaEnvolvida =
 export async function criarAcessoPessoaEnvolvida(
   pessoaEnvolvidaId: string,
 ): Promise<ResultadoCriarAcessoPessoaEnvolvida> {
-  const pessoa = await prisma.pessoaEnvolvida.findUnique({ where: { id: pessoaEnvolvidaId } });
+  const pessoa = await prisma.pessoaEnvolvida.findUnique({
+    where: { id: pessoaEnvolvidaId },
+    include: { cliente: { select: { ativo: true } } },
+  });
   if (!pessoa) return { sucesso: false, motivo: "nao_encontrada" };
   if (pessoa.temAcesso) return { sucesso: false, motivo: "ja_tem_acesso" };
   if (!pessoa.email) return { sucesso: false, motivo: "nao_encontrada" };
+
+  // RF-039 — mesmo motivo de `criarAcessoCliente`: esta função roda na role dona, então a
+  // herança da RLS (que já impede escrever em pessoa de cliente desativado) não alcança este
+  // caminho. Sem esta linha, desativar o cliente não impediria criar o acesso da pessoa dele.
+  if (!pessoa.cliente.ativo) return { sucesso: false, motivo: "cliente_desativado" };
 
   const existente = await prisma.usuario.findUnique({ where: { email: pessoa.email } });
   if (existente) return { sucesso: false, motivo: "ja_existe" };

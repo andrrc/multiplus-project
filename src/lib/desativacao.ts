@@ -66,12 +66,14 @@ export async function definirAtivo(
 export async function exigirClienteAtivo(
   ctx: ContextoUsuario,
   clienteId: string,
+  /** Completa a mensagem de erro com a ação que foi barrada — "…antes de <acao>." */
+  acao = "editar o cadastro",
 ): Promise<void> {
   const cliente = await comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findUnique({ where: { id: clienteId }, select: { ativo: true } }),
   );
   if (!cliente) throw new Error("Cliente não encontrado.");
   if (!cliente.ativo) {
-    throw new Error("Este cliente está desativado. Reative-o antes de editar o cadastro.");
+    throw new Error(`Este cliente está desativado. Reative-o antes de ${acao}.`);
   }
 }

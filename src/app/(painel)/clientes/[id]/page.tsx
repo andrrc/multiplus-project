@@ -296,7 +296,10 @@ export default async function DetalheClientePage({
         </Bloco>
       )}
 
-      {ctx.perfil === "ADMIN" && (
+      {/* RF-039 — o bloco sai de cena junto com o cadastro, como os vizinhos: criar acesso
+          faz nascer um Usuario e dispara e-mail de definição de senha, que é justamente o
+          que "somente leitura" veda. Reativar o cliente devolve o bloco. */}
+      {ctx.perfil === "ADMIN" && cliente.ativo && (
         <Bloco titulo="Acesso do cliente">
           {!usuarioAcesso || !statusChave ? (
             <BotaoCriarAcesso clienteId={id} />

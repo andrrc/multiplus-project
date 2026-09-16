@@ -8,8 +8,29 @@ import {
   criarAcessoPessoaEnvolvida,
   validarPessoaEnvolvida,
 } from "@/lib/pessoas-envolvidas";
-import { definirAtivo, type EntidadeDesativavel } from "@/lib/desativacao";
+import { definirAtivo, exigirClienteAtivo, type EntidadeDesativavel } from "@/lib/desativacao";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
+import type { ContextoUsuario } from "@/lib/prisma-app";
+
+/**
+ * RF-039 — converte o `throw` de `exigirClienteAtivo` em erro de formulário. Devolve
+ * `null` quando o cliente está ativo e pode seguir.
+ *
+ * Não é exportada: num arquivo "use server" toda export vira Server Action, e esta é uma
+ * guarda interna, não um endpoint.
+ */
+async function barrarClienteDesativado(
+  ctx: ContextoUsuario,
+  clienteId: string,
+  acao: string,
+): Promise<{ erro: string } | null> {
+  try {
+    await exigirClienteAtivo(ctx, clienteId, acao);
+    return null;
+  } catch (erro) {
+    return { erro: erro instanceof Error ? erro.message : "Cliente indisponível." };
+  }
+}
 
 export type EstadoAdicionarPessoaEnvolvida = { erro?: string; sucessoEm?: number };
 
@@ -63,16 +84,23 @@ export async function adicionarDocumentoAction(
 export type EstadoCriarAcesso = { erro?: string };
 
 export async function criarAcessoAction(clienteId: string): Promise<EstadoCriarAcesso> {
-  await exigirAdmin();
+  const ctx = await exigirAdmin();
+
+  // RF-039 — segunda camada: `criarAcessoCliente` já recusa cliente desativado, mas ela roda
+  // na role dona. Esta guarda passa pela RLS, então cobre também o caso de o cliente nem ser
+  // visível para quem chamou.
+  const barrado = await barrarClienteDesativado(ctx, clienteId, "criar o acesso");
+  if (barrado) return barrado;
 
   const resultado = await criarAcessoCliente(clienteId);
   if (!resultado.sucesso) {
-    return {
-      erro:
-        resultado.motivo === "sem_email"
-          ? "Cadastre o Ponto de Contato antes de criar o acesso."
-          : "Já existe um usuário cadastrado com esse e-mail.",
+    const mensagens: Record<typeof resultado.motivo, string> = {
+      sem_email: "Cadastre o Ponto de Contato antes de criar o acesso.",
+      ja_existe: "Já existe um usuário cadastrado com esse e-mail.",
+      cliente_desativado:
+        "Este cliente está desativado. Reative-o antes de criar o acesso.",
     };
+    return { erro: mensagens[resultado.motivo] };
   }
 
   revalidatePath(`/clientes/${clienteId}`);
@@ -121,7 +149,10 @@ export async function criarAcessoPessoaEnvolvidaAction(
   clienteId: string,
   pessoaEnvolvidaId: string,
 ): Promise<EstadoCriarAcesso> {
-  await exigirAdmin();
+  const ctx = await exigirAdmin();
+
+  const barrado = await barrarClienteDesativado(ctx, clienteId, "criar o acesso");
+  if (barrado) return barrado;
 
   const resultado = await criarAcessoPessoaEnvolvida(pessoaEnvolvidaId);
   if (!resultado.sucesso) {
@@ -129,6 +160,8 @@ export async function criarAcessoPessoaEnvolvidaAction(
       nao_encontrada: "Cadastre um e-mail para essa pessoa antes de criar o acesso.",
       ja_tem_acesso: "Essa pessoa já tem acesso.",
       ja_existe: "Já existe um usuário cadastrado com esse e-mail.",
+      cliente_desativado:
+        "Este cliente está desativado. Reative-o antes de criar o acesso.",
     };
     return { erro: mensagens[resultado.motivo] };
   }

@@ -20,7 +20,13 @@ vi.mock("@/lib/email", async (importOriginal) => {
 import { ownerDb, limparFixtures, fecharConexoes } from "../integration/setup/helpers";
 import { criarUsuarioInterno, listarUsuarios, reenviarConvite } from "@/lib/usuarios";
 import { definirAtivo } from "@/lib/desativacao";
-import { listarClientes, buscarClienteDetalheSeguro, criarCliente } from "@/lib/clientes";
+import {
+  listarClientes,
+  buscarClienteDetalheSeguro,
+  criarCliente,
+  criarAcessoCliente,
+} from "@/lib/clientes";
+import { criarAcessoPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
 import { validarTokenAcesso, consumirTokenAcesso } from "@/lib/tokens";
 import { hashSenha } from "@/lib/senha";
 import { autenticarComCredenciais } from "@/server/auth/credentials";
@@ -293,6 +299,75 @@ describe("RF-039 — desativar cliente → some da listagem → reativar → vol
 
     // Desativar nunca apaga: o registro continua lá, com o histórico atrelado a ele.
     expect(await ownerDb.usuario.findUnique({ where: { id: usuario.id } })).not.toBeNull();
+  });
+
+  it("cliente desativado não aceita criação de acesso, e nenhum e-mail é disparado", async () => {
+    const ctxAdmin = await criarAdmin("talita.smoke-acessodesativado@teste.local");
+
+    const cliente = await criarCliente(ctxAdmin, {
+      tipo: "PESSOA_JURIDICA",
+      razaoSocial: "Empreendimento Zeta",
+      cnpj: "66777888000136",
+      segmento: "Indústria",
+      origemContato: "Indicação",
+      responsavelLegal: { ...PESSOA_VAZIA, nome: "Ana", telefone: "11999990000" },
+      pontoContato: {
+        ...PESSOA_VAZIA,
+        nome: "Bruno",
+        telefone: "11988880000",
+        email: "bruno.smoke-acessodesativado@teste.local",
+      },
+      pessoasEnvolvidas: [
+        {
+          tipo: "PESSOA",
+          nome: "Carlos",
+          telefone: "11977770000",
+          email: "carlos.smoke-acessodesativado@teste.local",
+          temAcesso: false,
+        },
+      ],
+    });
+
+    const detalhe = await buscarClienteDetalheSeguro(ctxAdmin, cliente.id);
+    const pessoaId = detalhe!.pessoasEnvolvidas[0].id;
+
+    expect(await definirAtivo(ctxAdmin, "cliente", cliente.id, false)).toEqual({ sucesso: true });
+    emailMock.mockClear();
+
+    // Antes desta correção os dois caminhos passavam: o bloco "Acesso do cliente" não era
+    // condicionado a cliente.ativo, e os dois serviços rodam na role dona, então a herança da
+    // RLS não os alcançava. Resultado: nascia um Usuario e saía e-mail de definição de senha
+    // para um cadastro que acabou de sair do ar.
+    expect(await criarAcessoCliente(cliente.id)).toEqual({
+      sucesso: false,
+      motivo: "cliente_desativado",
+    });
+    expect(await criarAcessoPessoaEnvolvida(pessoaId)).toEqual({
+      sucesso: false,
+      motivo: "cliente_desativado",
+    });
+
+    expect(emailMock).not.toHaveBeenCalled();
+    expect(await ownerDb.usuario.findUnique({ where: { id: cliente.id } })).toBeNull();
+    expect(
+      await ownerDb.usuario.findUnique({
+        where: { email: "bruno.smoke-acessodesativado@teste.local" },
+      }),
+    ).toBeNull();
+    expect(
+      await ownerDb.usuario.findUnique({
+        where: { email: "carlos.smoke-acessodesativado@teste.local" },
+      }),
+    ).toBeNull();
+
+    // A pessoa envolvida não fica marcada como tendo acesso por uma tentativa recusada.
+    const pessoa = await ownerDb.pessoaEnvolvida.findUniqueOrThrow({ where: { id: pessoaId } });
+    expect(pessoa.temAcesso).toBe(false);
+
+    // Reativar devolve o caminho: o mesmo serviço, no mesmo cliente, agora cria o acesso.
+    expect(await definirAtivo(ctxAdmin, "cliente", cliente.id, true)).toEqual({ sucesso: true });
+    expect(await criarAcessoCliente(cliente.id)).toEqual({ sucesso: true, convite: "enviado" });
+    expect(emailMock).toHaveBeenCalledTimes(1);
   });
 
   it("a Talita não consegue desativar o próprio acesso", async () => {

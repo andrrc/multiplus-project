@@ -368,7 +368,7 @@ export async function adicionarDocumento(
 
 export type ResultadoCriarAcesso =
   | { sucesso: true; convite: ResultadoConvite }
-  | { sucesso: false; motivo: "sem_email" | "ja_existe" };
+  | { sucesso: false; motivo: "sem_email" | "ja_existe" | "cliente_desativado" };
 
 /**
  * RF-031 — cria o login do cliente e reaproveita o fluxo de onboarding da Sprint 1
@@ -380,6 +380,12 @@ export type ResultadoCriarAcesso =
 export async function criarAcessoCliente(clienteId: string): Promise<ResultadoCriarAcesso> {
   const cliente = await prisma.cliente.findUnique({ where: { id: clienteId } });
   if (!cliente) return { sucesso: false, motivo: "sem_email" };
+
+  // RF-039 — cliente desativado é somente leitura, e criar acesso é a escrita mais visível
+  // que existe aqui: nasce um Usuario e sai um e-mail de definição de senha. A checagem mora
+  // nesta função, e não só na Server Action, porque ela roda na role dona (`usuarios_write`
+  // é ADMIN-only via RLS, mas quem chama já vem pré-autorizado) — a RLS não barraria.
+  if (!cliente.ativo) return { sucesso: false, motivo: "cliente_desativado" };
 
   let nome: string;
   let email: string;
