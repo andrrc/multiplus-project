@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { criarTokenAcesso } from "@/lib/tokens";
 import { enviarEmail, linkDefinirSenha } from "@/lib/email";
 import { registrarTentativa } from "@/lib/rate-limit";
+import { agendarPosResposta } from "@/lib/pos-resposta";
 
 const schema = z.object({ email: z.string().email() });
 
@@ -55,12 +56,19 @@ export async function esqueciSenhaAction(
 
   const usuario = await prisma.usuario.findUnique({ where: { email } });
 
+  // RF-032 — a resposta não espera nada que só acontece quando a conta existe. A mensagem já
+  // era idêntica nos dois casos; o tempo não era, e media-se com um cronômetro: gravar o
+  // token e aguardar o POST ao Resend custava centenas de milissegundos que o caminho do
+  // e-mail inexistente não pagava. Agora as duas saídas fazem o mesmo trabalho antes de
+  // responder — parse, limite e um SELECT — e o resto vai para depois da resposta.
   if (usuario && usuario.ativo) {
-    const token = await criarTokenAcesso(usuario.id, "RECUPERAR_SENHA");
-    await enviarEmail({
-      to: usuario.email,
-      subject: "Redefinição de senha — Múltiplus Software",
-      html: `<p>Olá, ${usuario.nome}.</p><p>Clique no link abaixo para redefinir sua senha (válido por 1 hora):</p><p><a href="${linkDefinirSenha(token)}">${linkDefinirSenha(token)}</a></p>`,
+    agendarPosResposta("recuperacao-de-senha", async () => {
+      const token = await criarTokenAcesso(usuario.id, "RECUPERAR_SENHA");
+      await enviarEmail({
+        to: usuario.email,
+        subject: "Redefinição de senha — Múltiplus Software",
+        html: `<p>Olá, ${usuario.nome}.</p><p>Clique no link abaixo para redefinir sua senha (válido por 1 hora):</p><p><a href="${linkDefinirSenha(token)}">${linkDefinirSenha(token)}</a></p>`,
+      });
     });
   }
 

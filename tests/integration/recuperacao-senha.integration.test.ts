@@ -25,6 +25,7 @@ import { criarTokenAcesso, validarTokenAcesso, consumirTokenAcesso } from "@/lib
 import { esqueciSenhaAction } from "@/app/esqueci-senha/actions";
 import { enviarEmail } from "@/lib/email";
 import { limparRateLimit } from "@/lib/rate-limit";
+import { aguardarPosResposta } from "@/lib/pos-resposta";
 
 const emailMock = vi.mocked(enviarEmail);
 
@@ -35,8 +36,12 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  // RF-032 — o envio saiu da frente da resposta (src/lib/pos-resposta.ts). Drenar antes de
+  // limpar as fixtures evita que um token em vôo tente gravar para um usuário já apagado.
+  await aguardarPosResposta();
   await limparFixtures();
   vi.clearAllMocks();
+  emailMock.mockImplementation(async () => {});
 });
 
 afterAll(async () => {
@@ -116,12 +121,14 @@ describe("RF-032 — recuperação de senha devolve sempre a mesma resposta", ()
     await criarUsuarioAtivo("existe2.recuperacao@teste.local");
 
     await esqueciSenhaAction({}, formDataCom("existe2.recuperacao@teste.local"));
+    await aguardarPosResposta();
     expect(emailMock).toHaveBeenCalledTimes(1);
 
     emailMock.mockClear();
     limparRateLimit();
 
     await esqueciSenhaAction({}, formDataCom("naoexiste2.recuperacao@teste.local"));
+    await aguardarPosResposta();
     expect(emailMock).not.toHaveBeenCalled();
   });
 
@@ -130,10 +137,44 @@ describe("RF-032 — recuperação de senha devolve sempre a mesma resposta", ()
     await ownerDb.usuario.update({ where: { id: usuario.id }, data: { ativo: false } });
 
     const resposta = await esqueciSenhaAction({}, formDataCom("desativado.recuperacao@teste.local"));
+    await aguardarPosResposta();
 
     expect(resposta.erro).toBeUndefined();
     expect(resposta.mensagem).toBeTruthy();
     expect(emailMock).not.toHaveBeenCalled();
+  });
+
+  it("o tempo de resposta não depende de a conta existir, mesmo com o Resend lento", async () => {
+    await criarUsuarioAtivo("cronometro.recuperacao@teste.local");
+
+    // Sem isto o teste não prova nada: com o envio mockado como no-op, a diferença de tempo
+    // que existia em produção (o POST ao Resend) não aparece. Aqui o envio demora de
+    // propósito, encenando o serviço lento — que é o cenário em que o oráculo era mais fácil
+    // de medir.
+    const DEMORA_DO_ENVIO_MS = 500;
+    emailMock.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, DEMORA_DO_ENVIO_MS));
+    });
+
+    const inicioComCadastro = Date.now();
+    await esqueciSenhaAction({}, formDataCom("cronometro.recuperacao@teste.local"));
+    const comCadastro = Date.now() - inicioComCadastro;
+
+    limparRateLimit();
+
+    const inicioSemCadastro = Date.now();
+    await esqueciSenhaAction({}, formDataCom("naoexiste.cronometro@teste.local"));
+    const semCadastro = Date.now() - inicioSemCadastro;
+
+    // Margem tolerante de propósito: o alvo é ordem de grandeza, não milissegundo. Antes da
+    // correção `comCadastro` era >= 500ms e `semCadastro` ficava perto de zero.
+    const MARGEM_MS = DEMORA_DO_ENVIO_MS / 2;
+    expect(comCadastro).toBeLessThan(MARGEM_MS);
+    expect(Math.abs(comCadastro - semCadastro)).toBeLessThan(MARGEM_MS);
+
+    // E o envio continua acontecendo — só saiu da frente da resposta.
+    await aguardarPosResposta();
+    expect(emailMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -145,6 +186,7 @@ describe("RF-032 (B2) — limite de tentativas no endpoint", () => {
     for (let i = 0; i < 5; i++) {
       respostas.push(await esqueciSenhaAction({}, formDataCom("flood.recuperacao@teste.local")));
     }
+    await aguardarPosResposta();
 
     // O limite por e-mail é 3; as duas últimas não devem disparar envio.
     expect(emailMock).toHaveBeenCalledTimes(3);
@@ -162,6 +204,7 @@ describe("RF-032 (B2) — limite de tentativas no endpoint", () => {
     for (let i = 0; i < 12; i++) {
       await esqueciSenhaAction({}, formDataCom(`varredura${i}.recuperacao@teste.local`));
     }
+    await aguardarPosResposta();
 
     // Limite por IP é 10, e cada e-mail é diferente (então o limite por e-mail não atua).
     expect(emailMock).toHaveBeenCalledTimes(10);
@@ -175,10 +218,12 @@ describe("RF-032 (B2) — limite de tentativas no endpoint", () => {
     for (let i = 0; i < 11; i++) {
       await esqueciSenhaAction({}, formDataCom("ip1.recuperacao@teste.local"));
     }
+    await aguardarPosResposta();
     const enviadosPrimeiroIp = emailMock.mock.calls.length;
 
     ipFalso.valor = "203.0.113.12";
     await esqueciSenhaAction({}, formDataCom("ip2.recuperacao@teste.local"));
+    await aguardarPosResposta();
 
     expect(emailMock.mock.calls.length).toBe(enviadosPrimeiroIp + 1);
   });
