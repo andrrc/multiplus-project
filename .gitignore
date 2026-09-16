@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# artefatos de trabalho (screenshots de revisão, patches de transferência de docs)
+/report/
+docs/*.patch
