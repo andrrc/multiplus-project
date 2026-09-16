@@ -5,7 +5,7 @@ import type { TipoCliente } from "@prisma/client";
 import { heredarDadosPontoContato, type DadosPessoa } from "@/lib/heranca-pessoa";
 import { ORIGENS_CONTATO, PORTES_EMPRESA, ehOpcaoOutro, ehSegmentoCustomizado, segmentosPorTipo } from "@/lib/opcoes-cliente";
 import { mascararCpf } from "@/lib/formatacao";
-import { Campo, SecaoNumerada, inputClass } from "../../campo";
+import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import { SeletorLocalidade } from "../../seletor-localidade";
 import { atualizarClienteAction } from "./actions";
 
@@ -24,7 +24,7 @@ function CamposPessoa({
     onChange({ ...valores, [campo]: valor });
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Campo label="Nome">
         <input disabled={disabled} value={valores.nome} onChange={(e) => set("nome", e.target.value)} className={inputClass} />
       </Campo>
@@ -229,14 +229,14 @@ export function EditarClienteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-[720px] flex-col gap-10">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-[720px] flex-col gap-10">
       {tipo === "PESSOA_JURIDICA" ? (
         <SecaoNumerada numero={1} titulo="Dados da empresa">
           <div className="flex flex-col gap-4">
             <Campo label="CNPJ">
               <input disabled value={valoresIniciais.cnpj} className={inputClass} />
             </Campo>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Campo label="Razão social" obrigatorio>
                 <input required value={razaoSocial} onChange={(e) => setRazaoSocial(e.target.value)} className={inputClass} />
               </Campo>
@@ -270,7 +270,7 @@ export function EditarClienteForm({
         </SecaoNumerada>
       ) : (
         <SecaoNumerada numero={1} titulo="Dados pessoais">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo label="CPF">
               <input disabled value={valoresIniciais.cpf} className={inputClass} />
             </Campo>
@@ -325,7 +325,7 @@ export function EditarClienteForm({
             <div className="flex flex-col gap-4">
               <CamposPessoa valores={mesmaPessoa ? responsavelLegal : pontoContato} onChange={setPontoContato} disabled={mesmaPessoa} />
               <Campo label="Cargo">
-                <input value={cargoContato} onChange={(e) => setCargoContato(e.target.value)} className={`${inputClass} max-w-xs`} />
+                <input value={cargoContato} onChange={(e) => setCargoContato(e.target.value)} className={`${inputClass} sm:max-w-xs`} />
               </Campo>
             </div>
           </SecaoNumerada>

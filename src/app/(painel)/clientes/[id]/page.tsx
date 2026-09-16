@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
 import { documentoCliente, formatarCpf, formatarTelefone } from "@/lib/formatacao";
-import { Etiqueta } from "../campo";
+import { Etiqueta } from "@/ui/campo";
 import {
   FormularioDocumento,
   FormularioPessoaEnvolvida,
@@ -14,8 +14,8 @@ import {
 
 function Bloco({ titulo, acao, children }: { titulo: string; acao?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-[3px] border border-linha bg-branco px-6 py-[22px]">
-      <div className="flex items-center justify-between">
+    <section className="rounded-[3px] border border-linha bg-branco px-5 py-[22px] sm:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[16px]">{titulo}</h2>
         {acao}
       </div>
@@ -74,14 +74,14 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
         : "pendente";
 
   return (
-    <div className="flex max-w-[880px] flex-col gap-5">
+    <div className="flex w-full max-w-[880px] flex-col gap-5">
       <div
-        className="flex items-start justify-between rounded-[4px] px-10 py-9"
+        className="flex flex-col gap-4 rounded-[4px] px-6 py-7 sm:flex-row sm:items-start sm:justify-between sm:px-10 sm:py-9"
         style={{ background: "linear-gradient(112deg, #0B2530 0%, #14485C 58%, #12703F 130%)" }}
       >
         <div>
-          <h1 className="text-[30px] text-branco">{cliente.razaoSocial}</h1>
-          <div className="mt-3 flex items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
+          <h1 className="text-[24px] text-branco sm:text-[30px]">{cliente.razaoSocial}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
             <span className="tabular-nums text-[#C4DCE4]">{documentoCliente(cliente)}</span>
             <span className="rounded-[2px] bg-verde px-2.5 py-1 text-[13px] font-medium text-tinta">
               {cliente.segmento}
@@ -91,7 +91,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
         {ctx.perfil === "ADMIN" && (
           <Link
             href={`/clientes/${id}/editar`}
-            className="shrink-0 rounded-[3px] border border-[#2C5567] px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-[#C4DCE4] hover:border-[#C4DCE4] hover:text-branco"
+            className="flex min-h-11 shrink-0 items-center self-start rounded-[3px] border border-[#2C5567] px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-[#C4DCE4] hover:border-[#C4DCE4] hover:text-branco"
           >
             Editar
           </Link>
@@ -99,7 +99,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
       </div>
 
       <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {cliente.origemContato && <Campo label="Origem do contato" valor={cliente.origemContato} />}
           {cliente.endereco && <Campo label="Endereço" valor={cliente.endereco} />}
           {cliente.municipio && (
@@ -119,7 +119,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
 
       {responsavelLegal && (responsavelLegal.nome || responsavelLegal.email || responsavelLegal.cpf) && (
         <Bloco titulo="Responsável Legal">
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {responsavelLegal.nome && <Campo label="Nome" valor={responsavelLegal.nome} />}
             {responsavelLegal.email && <Campo label="E-mail" valor={responsavelLegal.email} />}
             <Campo label="Telefone" valor={<Telefone valor={responsavelLegal.telefone} souAdmin={ctx.perfil === "ADMIN"} />} />
@@ -134,7 +134,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
 
       {pontoContato && (pontoContato.nome || pontoContato.email || pontoContato.cpf) && (
         <Bloco titulo="Ponto de Contato">
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pontoContato.nome && <Campo label="Nome" valor={pontoContato.nome} />}
             {pontoContato.cargo && <Campo label="Cargo" valor={pontoContato.cargo} />}
             {pontoContato.email && <Campo label="E-mail" valor={pontoContato.email} />}
@@ -160,7 +160,7 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
             {pessoasEnvolvidas.map((pessoa) => (
               <li
                 key={pessoa.id}
-                className="flex items-baseline gap-3 font-[family-name:var(--font-interface)] text-[14.5px]"
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-[family-name:var(--font-interface)] text-[14.5px]"
               >
                 <span className="font-medium text-tinta">{pessoa.nome}</span>
                 <span className="text-cinza">{pessoa.tipo === "EMPRESA" ? "Empresa" : "Pessoa"}</span>
@@ -200,8 +200,8 @@ export default async function DetalheClientePage({ params }: { params: Promise<{
           {!usuarioAcesso || !statusChave ? (
             <BotaoCriarAcesso clienteId={id} />
           ) : (
-            <div className="flex items-center gap-3">
-              <span className={`h-[7px] w-[7px] rounded-full ${STATUS_ACESSO[statusChave].cor}`} />
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`h-[7px] w-[7px] shrink-0 rounded-full ${STATUS_ACESSO[statusChave].cor}`} />
               <p className="font-[family-name:var(--font-interface)] text-[14.5px] text-tinta">
                 {STATUS_ACESSO[statusChave].texto}
               </p>

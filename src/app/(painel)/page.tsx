@@ -11,7 +11,7 @@ export default async function Home() {
 
   return (
     <div>
-      <h1 className="text-[26px]">Olá, {usuario.name?.split(" ")[0] ?? usuario.email}</h1>
+      <h1 className="text-[22px] sm:text-[26px]">Olá, {usuario.name?.split(" ")[0] ?? usuario.email}</h1>
       <p className="mt-2 max-w-[60ch] text-[15px] text-cinza">
         Este é o painel da Múltiplus. Por enquanto, o cadastro de clientes é o módulo
         disponível — os módulos de projetos, tarefas e prazos chegam nas próximas sprints.
@@ -19,7 +19,7 @@ export default async function Home() {
 
       <Link
         href="/clientes"
-        className="mt-8 flex max-w-sm items-center justify-between rounded-[3px] border border-linha bg-branco px-6 py-5 hover:border-azul"
+        className="mt-8 flex w-full items-center justify-between rounded-[3px] border border-linha bg-branco px-6 py-5 hover:border-azul sm:max-w-sm"
       >
         <span>
           <span className="block font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">

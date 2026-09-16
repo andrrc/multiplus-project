@@ -6,7 +6,7 @@ import { heredarDadosPontoContato, PESSOA_VAZIA, type DadosPessoa } from "@/lib/
 import { ORIGENS_CONTATO, PORTES_EMPRESA, ehOpcaoOutro, segmentosPorTipo } from "@/lib/opcoes-cliente";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
-import { Campo, SecaoNumerada, inputClass } from "../campo";
+import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import { criarClienteAction, consultarCnpjAction } from "./actions";
 import { SeletorLocalidade } from "../seletor-localidade";
 
@@ -45,7 +45,7 @@ function CamposPessoa({
     onChange({ ...valores, [campo]: valor });
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Campo label="Nome">
         <input
           disabled={disabled}
@@ -290,9 +290,9 @@ export function NovoClienteForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-[720px] flex-col gap-10">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-[720px] flex-col gap-10">
       <SecaoNumerada numero={1} titulo="Tipo de cliente">
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => trocarTipo("PESSOA_JURIDICA")}
@@ -326,7 +326,7 @@ export function NovoClienteForm() {
         >
           <div className="flex flex-col gap-4">
             <Campo label="CNPJ" obrigatorio>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input
                   required
                   value={cnpj}
@@ -338,7 +338,7 @@ export function NovoClienteForm() {
                   type="button"
                   onClick={buscarCnpj}
                   disabled={buscandoCnpj || !cnpj}
-                  className="shrink-0 rounded-[3px] border border-linha px-4 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
+                  className="min-h-11 shrink-0 rounded-[3px] border border-linha px-4 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
                 >
                   {buscandoCnpj ? "Buscando…" : "Buscar"}
                 </button>
@@ -346,7 +346,7 @@ export function NovoClienteForm() {
               {mensagemCnpj && <p className="mt-1 text-[14px] text-cinza">{mensagemCnpj}</p>}
             </Campo>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Campo label="Razão social" obrigatorio>
                 <input
                   required
@@ -396,7 +396,7 @@ export function NovoClienteForm() {
 
       {tipo === "PESSOA_FISICA" && (
         <SecaoNumerada numero={2} titulo="Dados pessoais">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo label="Nome" obrigatorio>
               <input required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} />
             </Campo>
@@ -468,7 +468,7 @@ export function NovoClienteForm() {
                 <input
                   value={cargoContato}
                   onChange={(e) => setCargoContato(e.target.value)}
-                  className={`${inputClass} max-w-xs`}
+                  className={`${inputClass} sm:max-w-xs`}
                 />
               </Campo>
             </div>
@@ -489,27 +489,36 @@ export function NovoClienteForm() {
 
               return (
                 <div key={i} className="flex flex-col gap-2 rounded-[3px] border border-linha p-3">
-                  <div className="flex gap-3">
-                    <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
-                      <input
-                        type="radio"
-                        checked={pessoa.tipo === "PESSOA"}
-                        onChange={() => set("tipo", "PESSOA")}
-                        className="accent-verde"
-                      />
-                      Pessoa
-                    </label>
-                    <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
-                      <input
-                        type="radio"
-                        checked={pessoa.tipo === "EMPRESA"}
-                        onChange={() => set("tipo", "EMPRESA")}
-                        className="accent-verde"
-                      />
-                      Empresa/PJ envolvida
-                    </label>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-3">
+                      <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
+                        <input
+                          type="radio"
+                          checked={pessoa.tipo === "PESSOA"}
+                          onChange={() => set("tipo", "PESSOA")}
+                          className="accent-verde"
+                        />
+                        Pessoa
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
+                        <input
+                          type="radio"
+                          checked={pessoa.tipo === "EMPRESA"}
+                          onChange={() => set("tipo", "EMPRESA")}
+                          className="accent-verde"
+                        />
+                        Empresa/PJ envolvida
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPessoasEnvolvidas((lista) => lista.filter((_, idx) => idx !== i))}
+                      className="-my-2 -mr-2 ml-auto px-2 py-2 text-[14px] text-cinza hover:text-critico"
+                    >
+                      Remover
+                    </button>
                   </div>
-                  <div className="flex items-end gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <Campo label={pessoa.tipo === "EMPRESA" ? "Razão social" : "Nome"}>
                       <input value={pessoa.nome} onChange={(e) => set("nome", e.target.value)} className={inputClass} />
                     </Campo>
@@ -541,13 +550,6 @@ export function NovoClienteForm() {
                         className={inputClass}
                       />
                     </Campo>
-                    <button
-                      type="button"
-                      onClick={() => setPessoasEnvolvidas((lista) => lista.filter((_, idx) => idx !== i))}
-                      className="mb-0.5 shrink-0 text-[14px] text-cinza hover:text-critico"
-                    >
-                      Remover
-                    </button>
                   </div>
                   <label className="flex items-center gap-2 text-[13.5px] text-tinta">
                     <input
@@ -566,7 +568,7 @@ export function NovoClienteForm() {
               type="button"
               disabled={!podeAdicionarPessoa}
               onClick={() => setPessoasEnvolvidas((lista) => [...lista, { ...PESSOA_ENVOLVIDA_VAZIA }])}
-              className="self-start rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
+              className="min-h-11 self-start rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
             >
               + Adicionar pessoa envolvida
             </button>

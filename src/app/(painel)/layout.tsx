@@ -1,5 +1,6 @@
 import { auth, signOut } from "@/server/auth";
 import { NavLink } from "./nav-link";
+import { MenuMobile } from "./menu-mobile";
 
 /**
  * Rótulos exibidos ao usuário (reunião de aprovação da Sprint 2) — os valores do enum
@@ -13,13 +14,54 @@ const NOME_PERFIL: Record<string, string> = {
   CLIENTE: "Cliente",
 };
 
+function Navegacao() {
+  return (
+    <>
+      <NavLink href="/">Painel</NavLink>
+      <NavLink href="/clientes">Clientes</NavLink>
+    </>
+  );
+}
+
+function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }) {
+  return (
+    <>
+      <p className="truncate font-[family-name:var(--font-interface)] text-[13px] font-medium text-branco">
+        {nome}
+      </p>
+      <p className="mt-0.5 text-[12px] tracking-[0.02em] text-menu-inativo">
+        {NOME_PERFIL[perfil] ?? perfil}
+      </p>
+      <form
+        action={async () => {
+          "use server";
+          await signOut({ redirectTo: "/login" });
+        }}
+        className="mt-3"
+      >
+        <button
+          type="submit"
+          className="font-[family-name:var(--font-interface)] text-[12px] font-medium text-menu-inativo hover:text-branco"
+        >
+          Sair
+        </button>
+      </form>
+    </>
+  );
+}
+
 export default async function PainelLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const usuario = session!.user;
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="relative flex w-[250px] shrink-0 flex-col bg-tinta">
+    <div className="flex min-h-screen flex-col lg:flex-row">
+      <MenuMobile
+        navegacao={<Navegacao />}
+        usuario={<BlocoUsuario nome={usuario.name} perfil={usuario.perfil} />}
+      />
+
+      <aside className="relative hidden w-[250px] shrink-0 flex-col bg-tinta lg:flex">
         <div
           className="absolute inset-x-0 top-0 h-[3px]"
           style={{ background: "linear-gradient(112deg, #0499f3 0%, #1ebd1f 130%)" }}
@@ -31,35 +73,15 @@ export default async function PainelLayout({ children }: { children: React.React
         </div>
 
         <nav className="flex flex-col gap-0.5 px-3">
-          <NavLink href="/">Painel</NavLink>
-          <NavLink href="/clientes">Clientes</NavLink>
+          <Navegacao />
         </nav>
 
         <div className="mt-auto border-t border-[color:var(--tinta2)] px-6 py-5">
-          <p className="truncate font-[family-name:var(--font-interface)] text-[13px] font-medium text-branco">
-            {usuario.name}
-          </p>
-          <p className="mt-0.5 text-[12px] tracking-[0.02em] text-menu-inativo">
-            {NOME_PERFIL[usuario.perfil] ?? usuario.perfil}
-          </p>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-            className="mt-3"
-          >
-            <button
-              type="submit"
-              className="font-[family-name:var(--font-interface)] text-[12px] font-medium text-menu-inativo hover:text-branco"
-            >
-              Sair
-            </button>
-          </form>
+          <BlocoUsuario nome={usuario.name} perfil={usuario.perfil} />
         </div>
       </aside>
 
-      <main className="flex-1 overflow-x-hidden bg-papel px-8 pt-[52px] pb-16 lg:px-16">
+      <main className="flex-1 overflow-x-hidden bg-papel px-5 pt-8 pb-12 sm:px-8 lg:px-16 lg:pt-[52px] lg:pb-16">
         <div className="mx-auto max-w-[1420px]">{children}</div>
       </main>
     </div>

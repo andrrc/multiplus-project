@@ -1,12 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
+import { inputClass } from "@/ui/campo";
 import { definirSenhaAction, type EstadoDefinirSenha } from "./actions";
 
 const ESTADO_INICIAL: EstadoDefinirSenha = {};
-
-const inputClass =
-  "rounded-[3px] border border-linha bg-branco px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] text-tinta focus:border-azul focus:outline-none";
 
 export function DefinirSenhaForm({ token }: { token: string }) {
   const [estado, formAction, pendente] = useActionState(definirSenhaAction, ESTADO_INICIAL);
@@ -19,7 +17,7 @@ export function DefinirSenhaForm({ token }: { token: string }) {
         </p>
         <a
           href="/login"
-          className="rounded-[3px] bg-tinta px-3.5 py-2.5 text-center font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2"
+          className="min-h-11 rounded-[3px] bg-tinta px-3.5 py-2.5 text-center font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2"
         >
           Ir para o login
         </a>
@@ -73,7 +71,7 @@ export function DefinirSenhaForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pendente}
-        className="mt-2 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+        className="mt-2 min-h-11 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
       >
         {pendente ? "Salvando…" : "Definir senha"}
       </button>

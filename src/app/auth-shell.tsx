@@ -22,7 +22,7 @@ export function AuthShell({
         </p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-papel px-6">
+      <div className="flex flex-1 items-center justify-center bg-papel px-5 py-10 sm:px-6">
         <div className="w-full max-w-sm">
           <h1 className="text-[22px]">{titulo}</h1>
           <p className="mt-1.5 text-[15px] text-cinza">{subtitulo}</p>

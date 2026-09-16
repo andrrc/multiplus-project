@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { inputClass } from "../campo";
+import { inputClass } from "@/ui/campo";
 import {
   adicionarDocumentoAction,
   adicionarPessoaEnvolvidaAction,
@@ -47,8 +47,8 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
-      <div className="flex gap-3">
+    <form action={formAction} className="flex w-full flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
+      <div className="flex flex-wrap gap-3">
         <label className="flex items-center gap-1.5 text-[14px] text-tinta">
           <input
             type="radio"
@@ -127,7 +127,7 @@ export function FormularioDocumento({ clienteId }: { clienteId: string }) {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
+    <form action={formAction} className="flex w-full flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
       <input name="nome" required placeholder="Nome do documento" className={inputClass} />
       <input name="link" required type="url" placeholder="Link do Google Drive" className={inputClass} />
       {estado.erro && <p className="text-[14px] text-critico">{estado.erro}</p>}

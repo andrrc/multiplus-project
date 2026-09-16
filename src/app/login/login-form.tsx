@@ -1,10 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { inputClass } from "@/ui/campo";
 import { loginAction } from "./actions";
-
-const inputClass =
-  "rounded-[3px] border border-linha bg-branco px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] text-tinta focus:border-azul focus:outline-none";
 
 export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const [erro, formAction, pendente] = useActionState(loginAction, undefined);
@@ -43,7 +41,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
       <button
         type="submit"
         disabled={pendente}
-        className="mt-2 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+        className="mt-2 min-h-11 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
       >
         {pendente ? "Entrando…" : "Entrar"}
       </button>

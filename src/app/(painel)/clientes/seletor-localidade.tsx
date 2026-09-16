@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Campo, inputClass } from "./campo";
+import { Campo, inputClass } from "@/ui/campo";
 import { listarEstadosAction, listarMunicipiosAction } from "./novo/actions";
 import type { Estado, Municipio } from "@/lib/localidades";
 
