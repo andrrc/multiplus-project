@@ -86,10 +86,10 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
         <Atribuicoes usuario={usuario} />
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-start gap-x-4 gap-y-1 sm:w-[200px] sm:justify-end">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 sm:w-[200px] sm:justify-end">
         <Link
           href={`/usuarios/${usuario.id}/editar`}
-          className="font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline"
+          className="inline-flex min-h-6 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline"
         >
           Editar
         </Link>

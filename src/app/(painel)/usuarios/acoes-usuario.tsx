@@ -9,7 +9,7 @@ import {
 } from "./actions";
 
 const linkAcao =
-  "font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline disabled:opacity-60";
+  "inline-flex min-h-6 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline disabled:opacity-60";
 
 function Retorno({ estado }: { estado: EstadoAcaoUsuario | null }) {
   if (!estado?.erro && !estado?.mensagem) return null;
@@ -68,7 +68,7 @@ export function BotaoDesativarUsuario({
   }
 
   return (
-    <span>
+    <span className="inline-flex flex-col">
       <button
         type="button"
         disabled={pendente}
@@ -87,7 +87,7 @@ export function BotaoReenviarConvite({ usuarioId }: { usuarioId: string }) {
   const [estado, setEstado] = useState<EstadoAcaoUsuario | null>(null);
 
   return (
-    <span>
+    <span className="inline-flex flex-col">
       <button
         type="button"
         disabled={pendente}
@@ -112,7 +112,7 @@ export function BotaoRemoverAtribuicao({
   const [estado, setEstado] = useState<EstadoAcaoUsuario | null>(null);
 
   return (
-    <span>
+    <span className="inline-flex flex-col">
       <button
         type="button"
         disabled={pendente}
