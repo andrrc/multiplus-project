@@ -1,9 +1,9 @@
 # Architecture Design Document — Múltiplus Software
 
-**Versão:** 1.8
-**Data:** 10/09/2026
+**Versão:** 1.9
+**Data:** 16/09/2026
 **Autor:** André (Somma)
-**Baseado em:** SRS v1.8 (RF-001 a RF-035, incluindo RF-002a a RF-002d)
+**Baseado em:** SRS v2.1 (RF-001 a RF-047, incluindo RF-002a a RF-002d)
 
 ---
 
@@ -121,6 +121,13 @@ erDiagram
 em vez de duas tabelas separadas (`atribuicao_projeto`, `atribuicao_tarefa`) — mais fácil de
 consultar numa política de RLS única, ao custo de não ter FK nativa do Postgres apontando pra
 `entidade_id` (validação de integridade fica na aplicação, não no banco).
+
+**Nota sobre desativação (RF-039/ADR-008):** o esboço acima continua simplificado de
+propósito. As colunas `ativo`, `desativado_em` e `desativado_por` existem em `CLIENTE`,
+`PESSOA_ENVOLVIDA`, `DOCUMENTO` e `USUARIO` (nesta última, `ativo` desde a Sprint 1, pelo
+RF-029), e entram em `PROJETO`, `TAREFA` e `SUBTAREFA` na Sprint 4. O schema completo, com
+todas as tabelas e colunas, é `prisma/schema.prisma` — este diagrama existe para mostrar a
+forma das relações que sustentam a RLS, não para duplicá-lo.
 
 ### 3.2 Estratégia de RLS
 
@@ -589,6 +596,80 @@ exercitam o caminho real de criação inline — antes só havia teste do fluxo 
 
 ---
 
+### ADR-008: Soft delete com cascata por herança, sem marcação de filhos
+
+**Contexto:** decidido no planejamento das Sprints 3 e 4 que o sistema não oferece exclusão
+permanente de registros, apenas desativação (RF-039). Um registro desativado sai das
+listagens e de todo cálculo, mas continua no banco com o histórico intacto.
+
+**Opção escolhida:** colunas `ativo` (boolean, padrão `true`), `desativado_em` e
+`desativado_por`. A desativação de um pai torna os filhos inacessíveis por **herança de
+acesso**, sem marcar cada filho individualmente.
+
+**Opção descartada:** propagar a marcação para cada filho. Tornaria a reativação uma
+operação destrutiva de informação, porque não haveria como distinguir o filho que já estava
+desativado antes do que foi desativado pela cascata.
+
+**Consequência que exige teste:** as políticas de RLS e todas as queries de indicador
+precisam considerar `ativo` subindo a cadeia inteira (subtarefa → tarefa → projeto →
+cliente). É a mesma categoria de erro silencioso do ADR-007: um `ativo` esquecido não
+quebra nada visivelmente, só deixa vazar registro desativado.
+
+**Como ficou na implementação (Sprint 3, 16/09/2026):**
+
+- **Duas camadas com responsabilidades diferentes.** A RLS esconde o registro desativado de
+  todo perfil que não seja o Administrador; a aplicação filtra `ativo = true` por padrão nas
+  listagens, e o toggle "Mostrar desativados" desliga esse filtro. Não dá para esconder o
+  desativado do Administrador no banco — é ele quem precisa enxergá-lo para reativar. O
+  toggle, portanto, é conveniência de UI para quem a RLS já autoriza a ver tudo; pedir por
+  ele como outro perfil não revela nada.
+- **A herança é resolvida por uma função `SECURITY DEFINER`** (`cliente_esta_ativo`) em vez
+  de um `EXISTS` direto em `clientes` dentro da política de cada filho. Um subselect faria o
+  Postgres expandir `clientes_select` inteira (que já referencia projetos, tarefas e
+  atribuicoes) ao montar o plano — exatamente o caminho que gerou a recursão corrigida na
+  migration `20260903191825_fix_rls_projetos_tarefas_recursion`.
+- **A função devolve `false`, nunca `NULL`, para cliente inexistente.** Numa cláusula
+  `USING` os dois excluiriam a linha igual, mas o valor explícito impede que um futuro
+  `NOT cliente_esta_ativo(...)` repita o bug de `NULL` corrigido no ADR-007.
+- **"Somente leitura" tem duas metades.** As políticas `*_write` das tabelas filhas exigem
+  cliente ativo, então o banco recusa criar ou editar filho de cliente desativado. Já
+  `clientes_write` precisa continuar aceitando `UPDATE` em cliente desativado, porque é esse
+  o comando que o reativa — a guarda contra editar o cadastro de um cliente desativado fica
+  na aplicação (`src/lib/desativacao.ts#exigirClienteAtivo`), coberta por teste.
+- **`usuarios.ativo` foi reaproveitada, não duplicada.** A coluna já existia desde a Sprint 1
+  com a semântica do RF-029 (bloquear acesso do cliente), que é a mesma operação do RF-039.
+  Duas colunas concorrentes dizendo se a pessoa entra no sistema seria pior que o
+  reaproveitamento. O status de acesso da Tela A1 (Ativo / Pendente de ativação /
+  Desativado) é derivado de `ativo` + `senha_hash`, também sem coluna nova.
+- **Escopo aplicado:** Cliente, Pessoa Envolvida, Documento e Usuário. Projeto, Tarefa e
+  Subtarefa entram na Sprint 4, quando essas tabelas tiverem CRUD.
+
+Migrations: `20260916110000_soft_delete_rf039` (colunas e índices, não-destrutiva — `ativo`
+entra `NOT NULL DEFAULT true`, sem nenhum `UPDATE` de dados) e
+`20260916110500_rls_soft_delete_cascata` (políticas e a função de herança).
+
+---
+
+### ADR-009: Projeção visual de ocorrências recorrentes na agenda
+
+**Contexto:** o RF-036 exige que a agenda mostre ocorrências recorrentes, mas o RF-006 só as
+cria quando a anterior é concluída ou vence — meses futuros ficariam vazios.
+
+**Opção escolhida:** calcular e exibir as ocorrências futuras em tempo de renderização, sem
+persistir. São itens indicativos, não editáveis.
+
+**Opção descartada:** gerar ocorrências antecipadamente no banco (por exemplo, manter as
+próximas 12). Exigiria decidir a janela, tratar o cancelamento de série (RN-008) e evitar
+poluir o Painel de Prazos com tarefas que ninguém criou.
+
+**Consequência que exige teste:** a função de projeção precisa de teste unitário para cada
+periodicidade, incluindo o caso-limite de meses com menos dias (prazo 31/01 mensal → 28/02).
+
+**Status:** decisão registrada; implementação na Sprint 4, junto do módulo de Projetos e
+Tarefas.
+
+---
+
 ### Nota de arquitetura — API de localidades (Município/Estado)
 
 A pedido da Talita (RF-002c), o cadastro de cliente passa a consultar uma API pública de
@@ -627,7 +708,14 @@ confortável mesmo com crescimento moderado de uso.
 
 ---
 
-## Histórico de Revisõe
+## Histórico de Revisões
+
+| Versão | Data | Autor | Alterações |
+| ------- | ---- | ----- | ---------- |
+| 1.9 | 16/09/2026 | André (Somma) | ADR-008 (soft delete com cascata por herança) registrado e implementado na Sprint 3, com as consequências que apareceram na implementação; ADR-009 (projeção de ocorrências recorrentes) registrado para a Sprint 4. Base atualizada para o SRS v2.1 |
+| 1.8 | 10/09/2026 | André (Somma) | Fechamento do ADR-007 (Pessoa Envolvida), com os dois bugs reais encontrados na implementação |
+
+> As versões anteriores do documento seguem abaixo, na íntegra, em ordem decrescente.
 
 # Architecture Design Document — Múltiplus Software
 

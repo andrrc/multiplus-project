@@ -166,26 +166,38 @@ revisões
 
 **RFs/RNs cobertos:** RF-030, 032, 039, 040, 041, 042, 043; RN-007, RN-009
 
-- [ ] **Teste unitário (RN-009):** registro desativado é excluído das listagens e queries —
+- [x] **Teste unitário (RN-009):** registro desativado é excluído das listagens e queries —
       caso principal + caso-limite (pai desativado com filhos ativos)
-- [ ] **Teste unitário:** token de definição de senha — válido / expirado / já usado
-- [ ] **Teste de permissão/RLS (RN-007):** apenas Administrador lê e escreve em `Usuario` e
+- [x] **Teste unitário:** token de definição de senha — válido / expirado / já usado
+- [x] **Teste de permissão/RLS (RN-007):** apenas Administrador lê e escreve em `Usuario` e
       `Atribuicao` — testado no endpoint, não na UI
-- [ ] **Teste de permissão/RLS:** usuário sem atribuição não enxerga nada ao logar
-- [ ] **Teste de permissão/RLS (RF-039):** registro desativado não retorna para nenhum perfil
-- [ ] **Teste de permissão/RLS (RF-043):** acesso direto por URL a rota fora do perfil é negado
-- [ ] **Smoke test:** criar usuário → convite → definir senha → login → tela inicial correta
-- [ ] **Smoke test:** desativar cliente → some da listagem → reativar → volta íntegro
-- [ ] **Teste de integração:** recuperação de senha devolve resposta idêntica para e-mail
+- [x] **Teste de permissão/RLS:** usuário sem atribuição não enxerga nada ao logar
+- [x] **Teste de permissão/RLS (RF-039):** registro desativado não retorna para nenhum perfil
+- [x] **Teste de permissão/RLS (RF-043):** acesso direto por URL a rota fora do perfil é negado
+- [x] **Smoke test:** criar usuário → convite → definir senha → login → tela inicial correta
+- [x] **Smoke test:** desativar cliente → some da listagem → reativar → volta íntegro
+- [x] **Teste de integração:** recuperação de senha devolve resposta idêntica para e-mail
       existente e inexistente
-- [ ] **Regressão:** suíte completa das Sprints 1 e 2 passando (atenção especial ao retrofit A2)
-- [ ] **Healthcheck pós-deploy:** sim — a sprint altera schema
-- [ ] **Falha de integração externa:** Resend indisponível no envio de convite — o usuário é
+- [x] **Regressão:** suíte completa das Sprints 1 e 2 passando (atenção especial ao retrofit A2)
+- [ ] **Healthcheck pós-deploy:** sim — a sprint altera schema. **Pendente:** depende do deploy, ainda não executado
+- [x] **Falha de integração externa:** Resend indisponível no envio de convite — o usuário é
       criado mesmo assim, com ação de reenviar convite disponível
 
 ---
 
 ## 5. Decisões necessárias antes de começar
+
+> **Resolvidas em 16/09/2026, pelo próprio PDD** (`product-design-multiplus-projetos-tarefas.md`,
+> Telas A2/A3 e Seção 2.1), que chegou depois deste plano:
+>
+> 1. **Opção (a)** — a estrutura de atribuição foi construída completa, lendo projetos e
+>    tarefas das tabelas que já existem desde a Sprint 1. As telas ficam com estado vazio
+>    até a Sprint 4 criar dados, e passam a funcionar sem retrabalho. A opção (b) estava
+>    descartada pelo desenho: o PDD não prevê atribuição a cliente em lugar nenhum, e o
+>    enum `EntidadeTipo` só tem PROJETO e TAREFA.
+> 2. **Opção (a)** — o Administrador cai em `/clientes` provisoriamente, e o menu dele traz
+>    só Clientes, Usuários e Perfil. O destino definitivo (Painel de Prazos) troca numa
+>    linha só, em `src/lib/navegacao.ts`, quando a tela existir na Sprint 4.
 
 Duas dependências circulares entre Sprint 3 e Sprint 4 precisam de escolha:
 
@@ -233,11 +245,11 @@ desativado. Vale rodar a suíte completa logo após A2, antes de seguir para B.
 
 ## 7. Checklist de "Sprint Pronta"
 
-- [ ] Toda RN nova tem teste unitário com caso principal e caso-limite (RN-009)
-- [ ] Todo dado sensível por perfil novo tem teste de permissão (RN-007)
-- [ ] Fluxo principal tem smoke test do caminho feliz
-- [ ] Suíte completa (Sprints 1, 2 e 3) passa antes do deploy
-- [ ] Healthcheck validado em produção após o deploy
-- [ ] Comportamento de falha da integração externa testado (Resend)
-- [ ] Documentação atualizada: SRS v2.1, ADD v1.9, PDD, histórico de revisões
-- [ ] Demonstração de aceite (Seção 1) executada ponta a ponta antes do checkpoint com a Talita
+- [x] Toda RN nova tem teste unitário com caso principal e caso-limite (RN-009)
+- [x] Todo dado sensível por perfil novo tem teste de permissão (RN-007)
+- [x] Fluxo principal tem smoke test do caminho feliz
+- [x] Suíte completa (Sprints 1, 2 e 3) passa antes do deploy — 152 testes (92 integração/smoke + 60 unitários), lint e build limpos
+- [ ] Healthcheck validado em produção após o deploy — **pendente**, depende do deploy
+- [x] Comportamento de falha da integração externa testado (Resend)
+- [x] Documentação atualizada: SRS v2.1, ADD v1.9, PDD v1.1, históricos de revisão preenchidos
+- [ ] Demonstração de aceite (Seção 1) executada ponta a ponta antes do checkpoint com a Talita — **pendente**: coberta por smoke test automatizado, falta a passada manual no navegador
