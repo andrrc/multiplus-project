@@ -594,6 +594,25 @@ disparada imediatamente quando o checkbox vem marcado. Coberto por 2 smoke tests
 exercitam o caminho real de criação inline — antes só havia teste do fluxo separado
 "criar acesso depois" (RF-033).
 
+**Terceiro bug da mesma família, com o sinal trocado (Sprint 3, registrado em 16/09/2026 pela
+auditoria):** o primeiro bug acima ensinou "cuidado com `NULL` em SQL". A lição verdadeira é
+mais larga — **a semântica de nulo muda de um lado da fronteira para o outro**, e o mesmo
+raciocínio que protege em PL/pgSQL desprotege em TypeScript.
+
+Na Sprint 3, a origem de uma atribuição (Manual x Automática, RF-041/RN-006) é decidida
+comparando `Usuario.pessoaEnvolvidaId` com `Tarefa.responsavelId` — dois campos nulos com
+frequência. Em SQL, `NULL = NULL` não bloqueia porque não é verdadeiro. Em JavaScript,
+`null === null` **é** `true`: sem as checagens `!= null` explícitas dos dois lados, toda
+atribuição de um usuário sem Pessoa Envolvida a uma tarefa sem responsável seria classificada
+como "automática" — e portanto **não removível**, porque a remoção manual é bloqueada nas
+automáticas. Ninguém conseguiria desfazer uma atribuição feita à mão.
+
+O código traz as duas guardas (`src/lib/usuarios.ts`, `listarAtribuicoesDetalhadas`) e um
+caso-limite de integração ("usuário sem Pessoa Envolvida em tarefa sem responsável é MANUAL,
+não automática"). Registrado aqui porque a regra prática vale para toda comparação futura que
+atravesse a fronteira banco ↔ aplicação: **decidir em qual das duas linguagens a comparação
+acontece antes de escrevê-la**, e tratar nulo explicitamente em qualquer das duas.
+
 ---
 
 ### ADR-008: Soft delete com cascata por herança, sem marcação de filhos

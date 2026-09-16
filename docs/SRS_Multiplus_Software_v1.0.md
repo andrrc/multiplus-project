@@ -1,6 +1,6 @@
 # Especificação de Requisitos — Múltiplus Software
 
-**Versão:** 2.1
+**Versão:** 2.2
 **Data:** 16/09/2026
 **Autor:** André (Somma)
 **Status:** Rascunho — módulo de Administração e Acesso (Sprint 3) especificado e implementado. RF-039 a RF-047 e RN-007 a RN-009 incorporados a partir do documento complementar `docs/rfs-novos-srs-multiplus.md`
@@ -642,6 +642,7 @@ link — não há upload direto de arquivos dentro do sistema nesta fase.
 | **Prioridade** | Must |
 | **Critério de aceite** | Dado o Administrador logado, quando acessar a listagem de usuários, então deve visualizar todos os usuários internos com perfil e status. Dado um usuário desativado, quando ele tentar logar, então o acesso deve ser negado, mas seu histórico de comentários e conclusões permanece visível no sistema. Dado um usuário com zero atribuições, quando a listagem for exibida, então essa condição deve ser sinalizada visualmente |
 | **Nota** | Desativar um usuário nunca apaga seu histórico — mesma lógica do RF-029 para o cliente. O status de acesso é derivado de `ativo` mais a existência de senha definida; não é um campo à parte |
+| **Nota — troca de perfil descarta atribuições** | Alterar o perfil de um usuário existente **remove as atribuições da granularidade antiga**, porque a granularidade é consequência do perfil (RN-005): as linhas de Colaborador Interno (por projeto) não valem para um Colaborador Externo (por tarefa), e mantê-las deixaria atribuições que a RLS nunca honra — a listagem anunciaria um acesso que não existe. O sistema informa quantas atribuições saíram, em vez de fazer isso em silêncio, e refazê-las é manual. Consequência prática: trocar o perfil de alguém **perde a informação de a quais projetos ou tarefas ele estava vinculado**. Comportamento identificado na auditoria da Sprint 3 (achado D): era decisão de implementação, correta, mas não constava de requisito nenhum |
 
 #### RF-041 — Gestão de atribuições
 
@@ -867,6 +868,7 @@ natural após este SRS.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 2.2 | 16/09/2026 | André (Somma) | Nota nova no RF-040: trocar o perfil de um usuário descarta as atribuições da granularidade antiga (RN-005) e essa informação não é recuperável — comportamento que existia na implementação desde a Sprint 3 sem constar de requisito nenhum, identificado na auditoria (achado D) |
 | 2.1 | 16/09/2026 | André (Somma) | Campos opcionais de cadastro do usuário (cargo, telefone, CPF/CNPJ, observações) acrescentados ao RF-030, e busca por cargo no RF-040. Módulo de Administração e Acesso (Sprint 3): RF-039 a RF-043 na nova seção 3.16; complementos das Sprints 4 e 7 (RF-038, RF-044 a RF-047) nas seções 3.17 e 3.18; RN-007, RN-008 e RN-009; RN-002 e RN-004 revisadas; RF-044 vinculado ao critério de aceite global de migração. Origem: `docs/rfs-novos-srs-multiplus.md` e a sessão de planejamento das Sprints 3 e 4 (14/09/2026) |
 | 1.8 | 10/09/2026 | André (Somma) | Itens da reunião de aprovação da Sprint 2 implementados e validados; RN-006 fechada (a troca de responsável remove a atribuição da pessoa anterior) |
 
