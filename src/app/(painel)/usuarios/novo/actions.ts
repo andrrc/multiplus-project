@@ -35,6 +35,13 @@ export async function criarUsuarioAction(
     nome: String(formData.get("nome") ?? ""),
     email: String(formData.get("email") ?? ""),
     perfil,
+    cargo: String(formData.get("cargo") ?? ""),
+    telefone: String(formData.get("telefone") ?? ""),
+    // O formulário só envia o documento do tipo escolhido; o outro vem vazio e é
+    // descartado na normalização.
+    cpf: String(formData.get("cpf") ?? ""),
+    cnpj: String(formData.get("cnpj") ?? ""),
+    observacoes: String(formData.get("observacoes") ?? ""),
     atribuicoes: lerAtribuicoes(formData),
   });
 
@@ -49,6 +56,12 @@ export async function criarUsuarioAction(
       perfil_invalido: { erro: "Escolha um perfil de acesso." },
       atribuicao_incompativel: {
         erro: "As atribuições não correspondem à granularidade do perfil escolhido.",
+      },
+      cpf_invalido: { erro: "CPF inválido.", campo: "cpf" },
+      cnpj_invalido: { erro: "CNPJ inválido.", campo: "cnpj" },
+      cpf_e_cnpj: {
+        erro: "Informe CPF ou CNPJ, não os dois — a pessoa é física ou jurídica.",
+        campo: "cpf",
       },
     };
     return mensagens[resultado.motivo];

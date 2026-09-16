@@ -11,6 +11,7 @@ import {
   statusAcesso,
   type AtribuicaoDetalhada,
 } from "@/lib/usuarios";
+import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import { BotaoRemoverAtribuicao } from "../acoes-usuario";
 import { AdicionarAtribuicao } from "./adicionar-atribuicao";
@@ -133,6 +134,46 @@ export default async function DetalheUsuarioPage({
         <span className="text-[14px] text-cinza">{GRANULARIDADE[usuario.perfil]}</span>
       </div>
 
+      {(usuario.cargo ||
+        usuario.telefone ||
+        usuario.cpf ||
+        usuario.cnpj ||
+        usuario.observacoes) && (
+        <section className="mt-7 rounded-[3px] border border-linha bg-branco px-5 py-[22px] sm:px-6">
+          <h2 className="text-[16px]">Dados de cadastro</h2>
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {usuario.cargo && <DadoCadastral rotulo="Cargo ou função" valor={usuario.cargo} />}
+            {usuario.telefone && (
+              <DadoCadastral
+                rotulo="Telefone"
+                valor={<span className="tabular-nums">{formatarTelefone(usuario.telefone)}</span>}
+              />
+            )}
+            {usuario.cpf && (
+              <DadoCadastral
+                rotulo="CPF"
+                valor={<span className="tabular-nums">{formatarCpf(usuario.cpf)}</span>}
+              />
+            )}
+            {usuario.cnpj && (
+              <DadoCadastral
+                rotulo="CNPJ"
+                valor={<span className="tabular-nums">{formatarCnpj(usuario.cnpj)}</span>}
+              />
+            )}
+          </div>
+          {usuario.observacoes && (
+            <div className="mt-5 border-t border-linha pt-4">
+              <p className="font-[family-name:var(--font-interface)] text-[11.5px] font-medium tracking-[0.04em] text-cinza uppercase">
+                Observações
+              </p>
+              <p className="mt-1.5 max-w-[70ch] text-[15px] whitespace-pre-line">
+                {usuario.observacoes}
+              </p>
+            </div>
+          )}
+        </section>
+      )}
 
       {atribuicoesRemovidas && (
         <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">

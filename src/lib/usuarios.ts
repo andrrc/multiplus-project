@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
 import { validarEmail } from "@/lib/validacao";
+import { normalizarCpf, validarCpf } from "@/lib/cpf";
+import { normalizarCnpj, validarCnpj } from "@/lib/cnpj";
 import { hashSenha, verificarSenha } from "@/lib/senha";
 import { validarPoliticaSenha } from "@/lib/politica-senha";
 
@@ -57,6 +59,7 @@ export type UsuarioDaListagem = {
   id: string;
   nome: string;
   email: string;
+  cargo: string | null;
   perfil: Perfil;
   ativo: boolean;
   status: StatusAcesso;
@@ -94,6 +97,7 @@ export async function listarUsuarios(
               OR: [
                 { nome: { contains: filtros.busca, mode: "insensitive" as const } },
                 { email: { contains: filtros.busca, mode: "insensitive" as const } },
+                { cargo: { contains: filtros.busca, mode: "insensitive" as const } },
               ],
             }
           : {}),
@@ -102,6 +106,7 @@ export async function listarUsuarios(
         id: true,
         nome: true,
         email: true,
+        cargo: true,
         perfil: true,
         ativo: true,
         senhaHash: true,
@@ -116,6 +121,7 @@ export async function listarUsuarios(
     id: u.id,
     nome: u.nome,
     email: u.email,
+    cargo: u.cargo,
     perfil: u.perfil,
     ativo: u.ativo,
     status: statusAcesso(u),
@@ -135,12 +141,28 @@ export async function buscarUsuario(ctx: ContextoUsuario, usuarioId: string) {
 
 export type AtribuicaoInput = { entidadeTipo: EntidadeTipo; entidadeId: string };
 
+/**
+ * RF-030/RF-040 — dados de cadastro, todos opcionais. Campo em branco vira `undefined`
+ * (NULL no banco), nunca string vazia persistida — mesmo tratamento que `limparDadosPessoa`
+ * dá aos campos do cliente (RF-002d).
+ *
+ * `cpf` e `cnpj` são mutuamente exclusivos na prática (a pessoa é PF ou PJ), mas nada no
+ * banco impede os dois: a checagem fica aqui, onde dá para explicar o motivo em português.
+ */
+export type DadosCadastraisUsuario = {
+  cargo?: string;
+  telefone?: string;
+  cpf?: string;
+  cnpj?: string;
+  observacoes?: string;
+};
+
 export type NovoUsuarioInput = {
   nome: string;
   email: string;
   perfil: Perfil;
   atribuicoes: AtribuicaoInput[];
-};
+} & DadosCadastraisUsuario;
 
 export type MotivoRecusaUsuario =
   | "sem_permissao"
@@ -148,7 +170,40 @@ export type MotivoRecusaUsuario =
   | "email_invalido"
   | "email_duplicado"
   | "perfil_invalido"
-  | "atribuicao_incompativel";
+  | "atribuicao_incompativel"
+  | "cpf_invalido"
+  | "cnpj_invalido"
+  | "cpf_e_cnpj";
+
+/**
+ * RF-030/RF-040 — normaliza os dados de cadastro para persistir: em branco vira
+ * `undefined`, e CPF/CNPJ saem sem máscara, prontos para gravar.
+ */
+function limparDadosCadastrais(dados: DadosCadastraisUsuario) {
+  const cpf = dados.cpf?.trim();
+  const cnpj = dados.cnpj?.trim();
+
+  return {
+    cargo: dados.cargo?.trim() || undefined,
+    telefone: dados.telefone?.trim() || undefined,
+    cpf: cpf ? normalizarCpf(cpf) : undefined,
+    cnpj: cnpj ? normalizarCnpj(cnpj) : undefined,
+    observacoes: dados.observacoes?.trim() || undefined,
+  };
+}
+
+/** Só valida o que foi preenchido (RF-002d) — os campos são todos opcionais. */
+function validarDadosCadastrais(dados: DadosCadastraisUsuario): MotivoRecusaUsuario | null {
+  const cpf = dados.cpf?.trim();
+  const cnpj = dados.cnpj?.trim();
+
+  // A pessoa é PF ou PJ, não as duas. Aceitar os dois deixaria a tela de detalhe sem saber
+  // qual documento mostrar, e a edição sem saber qual campo pré-selecionar.
+  if (cpf && cnpj) return "cpf_e_cnpj";
+  if (cpf && !validarCpf(cpf)) return "cpf_invalido";
+  if (cnpj && !validarCnpj(cnpj)) return "cnpj_invalido";
+  return null;
+}
 
 export type ResultadoCriarUsuario =
   | { sucesso: true; usuarioId: string; convite: ResultadoConvite }
@@ -156,11 +211,15 @@ export type ResultadoCriarUsuario =
 
 /** Valida o que não depende do banco — reusado na criação e na edição. */
 function validarDadosUsuario(
-  dados: Pick<NovoUsuarioInput, "nome" | "email" | "perfil" | "atribuicoes">,
+  dados: Pick<NovoUsuarioInput, "nome" | "email" | "perfil" | "atribuicoes"> &
+    DadosCadastraisUsuario,
 ): MotivoRecusaUsuario | null {
   if (!dados.nome.trim()) return "nome_obrigatorio";
   if (!validarEmail(dados.email)) return "email_invalido";
   if (!PERFIS_INTERNOS.includes(dados.perfil)) return "perfil_invalido";
+
+  const erroCadastral = validarDadosCadastrais(dados);
+  if (erroCadastral) return erroCadastral;
 
   // RN-005 — atribuir uma tarefa a um Colaborador Interno (ou um projeto a um Externo)
   // não é só inconsistente na tela: a RLS resolve o acesso pela granularidade do perfil,
@@ -201,6 +260,7 @@ export async function criarUsuarioInterno(
       nome: dados.nome.trim(),
       email,
       perfil: dados.perfil,
+      ...limparDadosCadastrais(dados),
     },
   });
 
@@ -221,7 +281,7 @@ export type AtualizarUsuarioInput = {
   nome: string;
   email: string;
   perfil: Perfil;
-};
+} & DadosCadastraisUsuario;
 
 export type ResultadoAtualizarUsuario =
   | { sucesso: true; atribuicoesRemovidas: number }
@@ -261,6 +321,15 @@ export async function atualizarUsuario(
         nome: dados.nome.trim(),
         email,
         perfil: dados.perfil,
+        // `?? null` e não `undefined`: apagar o conteúdo de um campo no formulário precisa
+        // limpar a coluna, e `undefined` faria o Prisma ignorar o campo, mantendo o valor
+        // antigo — o campo voltaria preenchido depois de a pessoa apagá-lo e salvar.
+        ...Object.fromEntries(
+          Object.entries(limparDadosCadastrais(dados)).map(([campo, valor]) => [
+            campo,
+            valor ?? null,
+          ]),
+        ),
       },
     });
 

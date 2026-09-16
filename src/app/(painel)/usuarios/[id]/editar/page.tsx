@@ -29,6 +29,11 @@ export default async function EditarUsuarioPage({
         nome: usuario.nome,
         email: usuario.email,
         perfil: usuario.perfil,
+        cargo: usuario.cargo,
+        telefone: usuario.telefone,
+        cpf: usuario.cpf,
+        cnpj: usuario.cnpj,
+        observacoes: usuario.observacoes,
       }}
       opcoesProjeto={opcoesProjeto}
       opcoesTarefa={opcoesTarefa}

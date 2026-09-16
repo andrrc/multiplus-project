@@ -1,6 +1,7 @@
 import type { Perfil } from "@prisma/client";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarUsuario, listarAtribuicoesDetalhadas } from "@/lib/usuarios";
+import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import { FormularioDados, FormularioSenha } from "./formularios";
 
@@ -44,6 +45,47 @@ export default async function MeuPerfilPage() {
           />
         </div>
 
+        {/* RF-042 dá ao próprio usuário apenas o nome para editar; cargo e documento são
+            definição da administração, então aparecem aqui só para conferência. */}
+        {(usuario.cargo || usuario.telefone || usuario.cpf || usuario.cnpj) && (
+          <dl className="mt-7 grid max-w-sm grid-cols-1 gap-4 border-t border-linha pt-6 sm:grid-cols-2">
+            {usuario.cargo && (
+              <div>
+                <dt className="text-[13px] text-cinza">Cargo ou função</dt>
+                <dd className="font-[family-name:var(--font-interface)] text-[14.5px] text-tinta">
+                  {usuario.cargo}
+                </dd>
+              </div>
+            )}
+            {usuario.telefone && (
+              <div>
+                <dt className="text-[13px] text-cinza">Telefone</dt>
+                <dd className="font-[family-name:var(--font-interface)] text-[14.5px] tabular-nums text-tinta">
+                  {formatarTelefone(usuario.telefone)}
+                </dd>
+              </div>
+            )}
+            {usuario.cpf && (
+              <div>
+                <dt className="text-[13px] text-cinza">CPF</dt>
+                <dd className="font-[family-name:var(--font-interface)] text-[14.5px] tabular-nums text-tinta">
+                  {formatarCpf(usuario.cpf)}
+                </dd>
+              </div>
+            )}
+            {usuario.cnpj && (
+              <div>
+                <dt className="text-[13px] text-cinza">CNPJ</dt>
+                <dd className="font-[family-name:var(--font-interface)] text-[14.5px] tabular-nums text-tinta">
+                  {formatarCnpj(usuario.cnpj)}
+                </dd>
+              </div>
+            )}
+            <p className="text-[13px] text-cinza sm:col-span-2">
+              Para corrigir estes dados, fale com a administração.
+            </p>
+          </dl>
+        )}
       </section>
 
       <section className="mt-10 border-t border-linha pt-8">

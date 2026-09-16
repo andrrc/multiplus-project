@@ -63,6 +63,9 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
         >
           {usuario.nome}
         </Link>
+        {usuario.cargo && (
+          <p className="text-[13.5px] text-tinta">{usuario.cargo}</p>
+        )}
         <p className="truncate text-[14px] text-cinza">{usuario.email}</p>
         {usuario.origemPessoaEnvolvida && (
           <p className="mt-1 text-[13px] text-cinza">
@@ -140,7 +143,7 @@ export default async function UsuariosPage({
           type="search"
           name="busca"
           defaultValue={busca}
-          placeholder="Buscar por nome ou e-mail"
+          placeholder="Buscar por nome, e-mail ou cargo"
           className={`${inputClass} placeholder:text-cinza sm:max-w-sm`}
         />
         <select name="perfil" defaultValue={perfilFiltrado ?? ""} className={`${inputClass} sm:w-auto`}>

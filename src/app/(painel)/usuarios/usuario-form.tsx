@@ -9,7 +9,7 @@ import type { OpcaoAtribuicao } from "@/lib/usuarios";
 export type EstadoFormularioUsuario = {
   erro?: string;
   /** Campo a destacar no formulário, para o erro aparecer junto do que precisa mudar. */
-  campo?: "email" | "nome";
+  campo?: "email" | "nome" | "cpf" | "cnpj";
 };
 
 export type AcaoFormularioUsuario = (
@@ -104,6 +104,11 @@ export function UsuarioForm({
     nome: string;
     email: string;
     perfil: Perfil;
+    cargo: string | null;
+    telefone: string | null;
+    cpf: string | null;
+    cnpj: string | null;
+    observacoes: string | null;
   };
   opcoesProjeto: OpcaoAtribuicao[];
   opcoesTarefa: OpcaoAtribuicao[];
@@ -113,6 +118,13 @@ export function UsuarioForm({
 }) {
   const [estado, formAction, pendente] = useActionState(acao, {});
   const [perfil, setPerfil] = useState<Perfil>(inicial?.perfil ?? "ADMIN_INTERNO");
+
+  // Detectado, não persistido: qual documento vale é dado por qual veio preenchido. Mesmo
+  // princípio de `ehSegmentoCustomizado` na Sprint 2 — uma coluna `tipo` aqui seria um
+  // terceiro registro da mesma informação, com chance de discordar dos outros dois.
+  const [tipoPessoa, setTipoPessoa] = useState<"PESSOA" | "EMPRESA">(
+    inicial?.cnpj ? "EMPRESA" : "PESSOA",
+  );
 
   const descricaoPerfil = PERFIS.find((p) => p.valor === perfil)?.explicacao;
 
@@ -129,7 +141,7 @@ export function UsuarioForm({
         <SecaoNumerada
           numero={1}
           titulo="Identificação"
-          descricao="Nome e e-mail são obrigatórios."
+          descricao="Só nome e e-mail são obrigatórios; o resto ajuda a distinguir quem é quem."
         >
           <div className="flex flex-col gap-4">
             <Campo label="Nome" obrigatorio>
@@ -156,6 +168,86 @@ export function UsuarioForm({
               <p className="text-[14px] text-critico">{estado.erro}</p>
             )}
 
+            <Campo label="Cargo ou função">
+              <input
+                name="cargo"
+                defaultValue={inicial?.cargo ?? ""}
+                placeholder="Bióloga, Engenheiro Ambiental, Estagiário…"
+                autoComplete="off"
+                className={`${inputClass} placeholder:text-cinza`}
+              />
+            </Campo>
+
+            <Campo label="Telefone">
+              <input
+                name="telefone"
+                type="tel"
+                defaultValue={inicial?.telefone ?? ""}
+                autoComplete="off"
+                className={inputClass}
+              />
+            </Campo>
+
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-1.5 text-[14px] text-tinta">
+                <input
+                  type="radio"
+                  name="tipoPessoa"
+                  value="PESSOA"
+                  checked={tipoPessoa === "PESSOA"}
+                  onChange={() => setTipoPessoa("PESSOA")}
+                  className="accent-verde"
+                />
+                Pessoa física
+              </label>
+              <label className="flex items-center gap-1.5 text-[14px] text-tinta">
+                <input
+                  type="radio"
+                  name="tipoPessoa"
+                  value="EMPRESA"
+                  checked={tipoPessoa === "EMPRESA"}
+                  onChange={() => setTipoPessoa("EMPRESA")}
+                  className="accent-verde"
+                />
+                Pessoa jurídica
+              </label>
+            </div>
+
+            {/* Só o campo do tipo escolhido é renderizado, então o outro nem chega ao
+                servidor — é isso que impede CPF e CNPJ de virem preenchidos juntos. */}
+            {tipoPessoa === "PESSOA" ? (
+              <Campo label="CPF">
+                <input
+                  name="cpf"
+                  defaultValue={inicial?.cpf ?? ""}
+                  autoComplete="off"
+                  className={inputClass}
+                  aria-invalid={estado.campo === "cpf" || undefined}
+                />
+              </Campo>
+            ) : (
+              <Campo label="CNPJ">
+                <input
+                  name="cnpj"
+                  defaultValue={inicial?.cnpj ?? ""}
+                  autoComplete="off"
+                  className={inputClass}
+                  aria-invalid={estado.campo === "cnpj" || undefined}
+                />
+              </Campo>
+            )}
+            {(estado.campo === "cpf" || estado.campo === "cnpj") && estado.erro && (
+              <p className="text-[14px] text-critico">{estado.erro}</p>
+            )}
+
+            <Campo label="Observações">
+              <textarea
+                name="observacoes"
+                rows={3}
+                defaultValue={inicial?.observacoes ?? ""}
+                className={`${inputClass} min-h-[84px] resize-y py-2.5`}
+              />
+            </Campo>
           </div>
         </SecaoNumerada>
 

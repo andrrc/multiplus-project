@@ -235,6 +235,158 @@ describe("RF-040 — e-mail único", () => {
   });
 });
 
+describe("RF-030/RF-040 — campos de cadastro", () => {
+  it("grava cargo, telefone, CPF e observações, com CPF sem máscara", async () => {
+    const resultado = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "Bióloga",
+      email: "biologa.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      atribuicoes: [],
+      cargo: "Bióloga",
+      telefone: "(19) 99999-0000",
+      cpf: "111.444.777-35",
+      observacoes: "Responsável pelos laudos de fauna.",
+    });
+
+    expect(resultado.sucesso).toBe(true);
+    if (!resultado.sucesso) return;
+
+    const usuario = await ownerDb.usuario.findUniqueOrThrow({
+      where: { id: resultado.usuarioId },
+    });
+    expect(usuario.cargo).toBe("Bióloga");
+    expect(usuario.telefone).toBe("(19) 99999-0000");
+    expect(usuario.cpf).toBe("11144477735");
+    expect(usuario.cnpj).toBeNull();
+    expect(usuario.observacoes).toBe("Responsável pelos laudos de fauna.");
+  });
+
+  it("campo em branco vira NULL, não string vazia", async () => {
+    const resultado = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "Sem extras",
+      email: "semextras.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      atribuicoes: [],
+      cargo: "   ",
+      telefone: "",
+      cpf: "",
+      observacoes: "",
+    });
+
+    expect(resultado.sucesso).toBe(true);
+    if (!resultado.sucesso) return;
+
+    const usuario = await ownerDb.usuario.findUniqueOrThrow({
+      where: { id: resultado.usuarioId },
+    });
+    expect(usuario.cargo).toBeNull();
+    expect(usuario.telefone).toBeNull();
+    expect(usuario.cpf).toBeNull();
+    expect(usuario.observacoes).toBeNull();
+  });
+
+  it("aceita CNPJ para colaborador pessoa jurídica", async () => {
+    const resultado = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "Consultoria Terceirizada",
+      email: "consultoria.cadastro@teste.local",
+      perfil: "ADMIN_EXTERNO",
+      atribuicoes: [],
+      cnpj: "11.222.333/0001-81",
+    });
+
+    expect(resultado.sucesso).toBe(true);
+    if (!resultado.sucesso) return;
+
+    const usuario = await ownerDb.usuario.findUniqueOrThrow({
+      where: { id: resultado.usuarioId },
+    });
+    expect(usuario.cnpj).toBe("11222333000181");
+    expect(usuario.cpf).toBeNull();
+  });
+
+  it("recusa CPF e CNPJ inválidos, sem criar o usuário", async () => {
+    const comCpfRuim = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "CPF ruim",
+      email: "cpfruim.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      atribuicoes: [],
+      cpf: "111.111.111-11",
+    });
+    expect(comCpfRuim).toEqual({ sucesso: false, motivo: "cpf_invalido" });
+
+    const comCnpjRuim = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "CNPJ ruim",
+      email: "cnpjruim.cadastro@teste.local",
+      perfil: "ADMIN_EXTERNO",
+      atribuicoes: [],
+      cnpj: "11.111.111/1111-11",
+    });
+    expect(comCnpjRuim).toEqual({ sucesso: false, motivo: "cnpj_invalido" });
+
+    expect(
+      await ownerDb.usuario.count({
+        where: { email: { in: ["cpfruim.cadastro@teste.local", "cnpjruim.cadastro@teste.local"] } },
+      }),
+    ).toBe(0);
+  });
+
+  it("recusa CPF e CNPJ preenchidos ao mesmo tempo", async () => {
+    const resultado = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "Os dois",
+      email: "osdois.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      atribuicoes: [],
+      cpf: "111.444.777-35",
+      cnpj: "11.222.333/0001-81",
+    });
+
+    expect(resultado).toEqual({ sucesso: false, motivo: "cpf_e_cnpj" });
+  });
+
+  it("apagar um campo na edição limpa a coluna, em vez de manter o valor antigo", async () => {
+    const criacao = await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "Com cargo",
+      email: "comcargo.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      atribuicoes: [],
+      cargo: "Estagiário",
+      telefone: "(19) 98888-0000",
+    });
+    expect(criacao.sucesso).toBe(true);
+    if (!criacao.sucesso) return;
+
+    // Caso-limite que o `undefined` do Prisma esconderia: sem tratar, o campo esvaziado no
+    // formulário voltaria preenchido depois de salvar.
+    await atualizarUsuario(f.ctxAdmin, criacao.usuarioId, {
+      nome: "Com cargo",
+      email: "comcargo.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      cargo: "",
+      telefone: "",
+    });
+
+    const usuario = await ownerDb.usuario.findUniqueOrThrow({
+      where: { id: criacao.usuarioId },
+    });
+    expect(usuario.cargo).toBeNull();
+    expect(usuario.telefone).toBeNull();
+  });
+
+  it("a busca da listagem alcança o cargo, não só nome e e-mail", async () => {
+    await criarUsuarioInterno(f.ctxAdmin, {
+      nome: "Pessoa Qualquer",
+      email: "qualquer.cadastro@teste.local",
+      perfil: "ADMIN_INTERNO",
+      atribuicoes: [],
+      cargo: "Engenheira Ambiental",
+    });
+
+    const achados = await listarUsuarios(f.ctxAdmin, { busca: "Engenheira" });
+    expect(achados.map((u) => u.email)).toEqual(["qualquer.cadastro@teste.local"]);
+    expect(achados[0].cargo).toBe("Engenheira Ambiental");
+  });
+});
+
 describe("RF-041 / RN-006 — origem da atribuição", () => {
   it("atribuição manual pode ser removida", async () => {
     await adicionarAtribuicao(f.ctxAdmin, f.internoId, {

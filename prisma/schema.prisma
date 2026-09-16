@@ -45,6 +45,25 @@ model Usuario {
   perfil    Perfil   @default(CLIENTE)
   ativo     Boolean  @default(true)
 
+  /// RF-030/RF-040 — dados de cadastro, todos opcionais (mesmo princípio do RF-002d no
+  /// Cadastro de Clientes: em branco vira NULL, com validação de formato só quando
+  /// preenchido). Não travam a criação de um acesso urgente.
+  ///
+  /// `cpf` e `cnpj` seguem o par PF/PJ já usado em `Cliente` (ADR-006) e
+  /// `PessoaEnvolvida` (ADR-007), mas **sem** coluna discriminadora: qual dos dois vale
+  /// é dado por qual está preenchido, e o formulário detecta isso ao editar — mesmo
+  /// padrão de `ehSegmentoCustomizado` na Sprint 2. Uma coluna `tipo` aqui seria um
+  /// terceiro registro da mesma informação, com chance de discordar dos outros dois.
+  ///
+  /// Sem `@unique` em cpf/cnpj de propósito: quem identifica o usuário é o e-mail, que já
+  /// é único. Um unique aqui transformaria um documento repetido — que acontece, por
+  /// exemplo, com MEI cadastrado como pessoa e como empresa — em erro de banco.
+  cargo       String?
+  telefone    String?
+  cpf         String?
+  cnpj        String?
+  observacoes String?
+
   /// RF-039/ADR-008 — auditoria da desativação. `ativo` já existia desde a Sprint 1 com a
   /// semântica do RF-029 (bloquear acesso do cliente): é a mesma operação, então é
   /// reaproveitada aqui em vez de uma coluna paralela. O status de acesso da Tela A1 (Ativo /
