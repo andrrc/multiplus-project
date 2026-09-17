@@ -1,6 +1,6 @@
 # Especificação de Requisitos — Múltiplus Software
 
-**Versão:** 2.2
+**Versão:** 2.3
 **Data:** 16/09/2026
 **Autor:** André (Somma)
 **Status:** Rascunho — módulo de Administração e Acesso (Sprint 3) especificado e implementado. RF-039 a RF-047 e RN-007 a RN-009 incorporados a partir do documento complementar `docs/rfs-novos-srs-multiplus.md`
@@ -456,11 +456,37 @@ link — não há upload direto de arquivos dentro do sistema nesta fase.
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **ID**                   | RF-024                                                                                                                                                  |
 | **Módulo**              | Projetos e Tarefas (extensão)                                                                                                                          |
-| **Descrição**          | Projetos e tarefas devem ter um campo de status fixo (ex.: em andamento, concluído, atrasado), distinto do cálculo automático de "% em dia" (RF-009) |
+| **Descrição**          | Projetos e tarefas devem ter um campo de status fixo, escolhido numa lista fechada (abaixo), distinto do cálculo automático de "% em dia" (RF-009). São coisas diferentes: o status é declarado por quem opera; o "% em dia" é derivado do prazo e da conclusão (RN-001) |
 | **Prioridade**           | Must                                                                                                                                                    |
 | **Critério de aceite**  | Dado um projeto ou tarefa, quando o usuário alterar o status, então o novo valor deve ser exibido no painel correspondente                            |
 | **User Story vinculada** | —                                                                                                                                                      |
-| **Nota**                 | ⚠️ Lista de valores de status ainda não definida — a validar com a Talita                                                                           |
+| **Nota**                 | Lista validada com a Talita em 16/09/2026. Apenas o Administrador escolhe livremente entre os valores; o colaborador tem uma única ação, "Marcar como concluída" (RN-007) |
+
+**Status de projeto (4), padrão "A iniciar":**
+
+| Valor | Observação |
+|---|---|
+| A iniciar | padrão na criação (RF-038) |
+| Em andamento | |
+| Concluído | |
+| Cancelado | |
+
+**Status de tarefa (9), padrão "A iniciar":**
+
+| Valor | Observação |
+|---|---|
+| A iniciar | padrão na criação |
+| Em andamento | |
+| Aguardando documento do cliente | |
+| Visita/reunião agendada | ganha marcador próprio na Agenda (RF-036) |
+| Protocolado | |
+| Sob análise do órgão ambiental | |
+| Com exigência a cumprir | |
+| Concluído | único valor que o colaborador alcança, e só na tarefa atribuída a ele (RN-007) |
+| Cancelado | encerra a série inteira de uma tarefa recorrente (RN-008) |
+
+Os valores são fechados no banco (enum) desde a Sprint 4A. Acrescentar ou renomear um valor
+depois exige migration: a lista muda por decisão registrada, não por ajuste de tela.
 
 #### RF-025 — Etiquetas em subtarefa
 
@@ -803,7 +829,7 @@ link — não há upload direto de arquivos dentro do sistema nesta fase.
 | RN-001 | *(a validar)* Uma tarefa é considerada "atrasada" para fins do indicador de % em dia quando seu prazo vence sem que ela esteja marcada como concluída                                                                                                                                                                                                                                                                                                                | Tarefa com prazo 10/09 não concluída até 11/09 conta como atrasada                                                                                                                                                                                                                          |
 | RN-002 | *(a validar)* A recorrência de uma tarefa é definida por tipo de condicionante/licença. Complementada pela RN-008 quanto à ancoragem do cálculo (prazo original, não data de conclusão) e ao efeito do cancelamento (encerra a série inteira)                                                                                                                                                                                                                                                                                                                                                                              | Renovação de LO pode ser anual; outros condicionantes podem ter periodicidade diferente                                                                                                                                                                                                      |
 | RN-003 | O cliente final tem acesso somente de leitura aos próprios dados, sem poder editar tarefas, prazos ou documentos                                                                                                                                                                                                                                                                                                                                                        | Cliente acessa o painel mas os botões de edição ficam ocultos/desabilitados                                                                                                                                                                                                                 |
-| RN-004 | O check de uma subtarefa só pode ser feito por quem está atribuído a ela especificamente, ou pelo Administrador (Talita) — independente de outro perfil ter acesso à tarefa/projeto. Esta é uma permissão distinta de "gerir o checklist" (criar, editar, reordenar e remover itens), que **passou a ser exclusiva do Administrador** com a RN-007 — antes seguia o escopo normal de acesso à tarefa/projeto. A distinção continua valendo no outro eixo: mesmo o Administrador criando os itens, a conclusão segue restrita a quem está atribuído àquela subtarefa                                                                                                                                                               | Um Colaborador Interno com acesso ao projeto inteiro não pode marcar uma subtarefa atribuída a outra pessoa como concluída, mas pode ver/editar o checklist                                                                                                                                 |
+| RN-004 | O check de uma subtarefa só pode ser feito por quem está atribuído a ela especificamente, ou pelo Administrador (Talita) — independente de outro perfil ter acesso à tarefa/projeto. Esta é uma permissão distinta de "gerir o checklist" (criar, editar, reordenar e remover itens), que **passou a ser exclusiva do Administrador** com a RN-007 — antes seguia o escopo normal de acesso à tarefa/projeto. A distinção continua valendo no outro eixo: mesmo o Administrador criando os itens, a conclusão segue restrita a quem está atribuído àquela subtarefa                                                                                                                                                               | Um Colaborador Interno com acesso ao projeto inteiro vê o checklist, mas não marca como concluída uma subtarefa atribuída a outra pessoa — e, desde a RN-007, também não cria, edita nem remove itens                                                                                                                                 |
 | RN-005 | Colaborador Interno é atribuído por projeto inteiro; Colaborador Externo é atribuído por tarefa específica — granularidades diferentes de escopo                                                                                                                                                                                                                                                                                                                   | Colaborador Interno vê todas as tarefas do Projeto X; Colaborador Externo só vê a Tarefa Y dentro do Projeto X                                                                                                                                                                              |
 | RN-006 | Definir uma Pessoa Envolvida com acesso (`tem_acesso = sim`) como responsável de uma tarefa implica atribuição automática de visualização daquela tarefa a ela — as duas ações (responsável + atribuição) deixam de ser independentes nesse caso específico. Ao **trocar** o responsável de uma tarefa, o `Atribuicao` da pessoa anterior é **removido automaticamente** — ela deixa de ver a tarefa assim que deixa de ser responsável | A Talita marca José (Colaborador Externo) como responsável da Tarefa X; o sistema cria automaticamente o registro de`Atribuicao` da Tarefa X pra ele. Se depois ela troca o responsável pra Maria, o `Atribuicao` do José pra aquela tarefa é removido, e um novo é criado pra Maria |
 | RN-007 | Apenas o Administrador cria, edita, desativa e reativa registros (projeto, tarefa, subtarefa, item de checklist, documento, usuário). Colaborador Interno e Externo têm exatamente duas ações de escrita: marcar como concluída uma tarefa atribuída, e marcar como concluída uma subtarefa atribuída a si (RN-004). Colaborador **não tem seletor de status** — tem uma única ação "Marcar como concluída", que move a tarefa para "Concluído"; os outros oito valores do RF-024 são exclusivos do Administrador | Um Colaborador Interno atribuído ao Projeto X vê todas as tarefas, pode concluir as suas, mas não consegue criar uma tarefa nova nem mover uma tarefa para "Protocolado" |
@@ -860,7 +886,7 @@ natural após este SRS.
 - [ ] O cliente final consegue logar e visualizar o andamento do próprio projeto, sem acesso a dados de terceiros
 - [ ] Migração assistida dos dados existentes (planilhas/Trello/Drive) realizada conforme proposta — formalizada como **RF-044**, alocada à Sprint 7
 - [ ] RN-001 e RN-002 validados com a Talita antes do início do desenvolvimento
-- [ ] Lista de valores de status (RF-024) validada com a Talita
+- [x] Lista de valores de status (RF-024) validada com a Talita — 16/09/2026
 
 ---
 
@@ -868,6 +894,7 @@ natural após este SRS.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 2.3 | 16/09/2026 | André (Somma) | RF-024 deixa de ser genérico: as duas listas de status (4 de projeto, 9 de tarefa) validadas com a Talita em 16/09/2026, com o padrão "A iniciar" e a nota de que só o Administrador escolhe livremente (RN-007). Exemplo da RN-004 corrigido — afirmava que o Colaborador Interno "pode ver/editar o checklist", contradizendo o texto da própria regra depois da RN-007. Critério de Aceite Global correspondente marcado. Esta versão edita a 2.2 no lugar, sem duplicá-la abaixo: a mudança é pontual e o git guarda o texto anterior |
 | 2.2 | 16/09/2026 | André (Somma) | Nota nova no RF-040: trocar o perfil de um usuário descarta as atribuições da granularidade antiga (RN-005) e essa informação não é recuperável — comportamento que existia na implementação desde a Sprint 3 sem constar de requisito nenhum, identificado na auditoria (achado D) |
 | 2.1 | 16/09/2026 | André (Somma) | Campos opcionais de cadastro do usuário (cargo, telefone, CPF/CNPJ, observações) acrescentados ao RF-030, e busca por cargo no RF-040. Módulo de Administração e Acesso (Sprint 3): RF-039 a RF-043 na nova seção 3.16; complementos das Sprints 4 e 7 (RF-038, RF-044 a RF-047) nas seções 3.17 e 3.18; RN-007, RN-008 e RN-009; RN-002 e RN-004 revisadas; RF-044 vinculado ao critério de aceite global de migração. Origem: `docs/rfs-novos-srs-multiplus.md` e a sessão de planejamento das Sprints 3 e 4 (14/09/2026) |
 | 1.8 | 10/09/2026 | André (Somma) | Itens da reunião de aprovação da Sprint 2 implementados e validados; RN-006 fechada (a troca de responsável remove a atribuição da pessoa anterior) |
