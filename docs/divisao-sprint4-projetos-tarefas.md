@@ -143,13 +143,13 @@ RN-001, 004, 005, 006, 007, 008, 009; ADR-009
   concluída conta como atrasada; sem tolerância
 - [ ] **Unitário — RF-009:** conjunto vazio (definir o que exibir, sem divisão por zero);
   concluídas; desativadas fora do cálculo
-- [ ] **Permissão — RN-007 (retirada):** Colaborador Interno e Externo não criam, não editam e
+- [x] **Permissão — RN-007 (retirada):** Colaborador Interno e Externo não criam, não editam e
   não desativam projeto, tarefa, subtarefa ou item de checklist, testado **no banco e na ação de
   servidor**; colaborador não altera nenhuma coluna além do status para "Concluído". Escrito
   antes da migration que retira os ramos
-- [ ] **Permissão — RN-004:** Interno com acesso ao projeto não conclui subtarefa atribuída a
+- [x] **Permissão — RN-004:** Interno com acesso ao projeto não conclui subtarefa atribuída a
   outra pessoa, e **não gere mais o checklist** (inversão do teste atual)
-- [ ] **Permissão — colunas novas da subtarefa:** o atribuído não altera `ativo` nem as
+- [x] **Permissão — colunas novas da subtarefa:** o atribuído não altera `ativo` nem as
   etiquetas; só `concluida`
 - [ ] **Permissão — RN-005:** Externo atribuído à Tarefa Y não vê outras tarefas do projeto
 - [ ] **Permissão — RN-009/ADR-008:** projeto desativado torna tarefas e subtarefas

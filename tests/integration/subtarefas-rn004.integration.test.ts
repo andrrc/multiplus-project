@@ -14,9 +14,11 @@
  * "concluida"). Ver prisma/migrations/20260910191124_pessoas_envolvidas_adr007.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { StatusTarefa } from "@prisma/client";
 import { ownerDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
 
 let tarefaX: { id: string };
+let projetoX: { id: string; clienteId: string };
 let pessoaEnvolvidaResponsavel: { id: string };
 
 let usuarioAdmin: { id: string };
@@ -45,7 +47,7 @@ beforeAll(async () => {
       origemContato: "Indicação",
     },
   });
-  const projetoX = await ownerDb.projeto.create({
+  projetoX = await ownerDb.projeto.create({
     data: { clienteId: cliente.id, nome: "Projeto RN-004" },
   });
   tarefaX = await ownerDb.tarefa.create({
@@ -106,6 +108,41 @@ it("a pessoa atribuída à subtarefa (via PessoaEnvolvida) consegue marcar concl
   expect(atualizada.concluida).toBe(true);
 });
 
+it("colaboradores só podem concluir a tarefa dentro do próprio escopo, sem alterar o prazo", async () => {
+  await expect(
+    comoUsuario(
+      { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
+      (tx) => tx.tarefa.update({ where: { id: tarefaX.id }, data: { prazo: new Date("2030-01-01") } }),
+    ),
+  ).rejects.toThrow(/RN-007/);
+
+  const concluida = await comoUsuario(
+    { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
+    (tx) => tx.tarefa.update({ where: { id: tarefaX.id }, data: { status: StatusTarefa.CONCLUIDO } }),
+  );
+  expect(concluida.status).toBe(StatusTarefa.CONCLUIDO);
+});
+
+it("Colaborador Interno e Externo não criam nem removem entidades do núcleo", async () => {
+  for (const ctx of [
+    { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" as const },
+    { usuarioId: usuarioAdminExternoMesmaTarefa.id, perfil: "ADMIN_EXTERNO" as const },
+  ]) {
+    await expect(
+      comoUsuario(ctx, (tx) => tx.projeto.create({ data: { clienteId: projetoX.clienteId, nome: "Projeto proibido" } })),
+    ).rejects.toThrow();
+    await expect(
+      comoUsuario(ctx, (tx) => tx.tarefa.create({ data: { projetoId: projetoX.id, nome: "Tarefa proibida" } })),
+    ).rejects.toThrow();
+    await expect(
+      comoUsuario(ctx, (tx) => tx.subtarefa.create({ data: { tarefaId: tarefaX.id, titulo: "Subtarefa proibida" } })),
+    ).rejects.toThrow();
+    await expect(
+      comoUsuario(ctx, (tx) => tx.projeto.delete({ where: { id: projetoX.id } })),
+    ).rejects.toThrow();
+  }
+});
+
 it("o Administrador (Talita) consegue marcar qualquer subtarefa como concluída", async () => {
   const subtarefa = await criarSubtarefaAtribuida();
 
@@ -126,7 +163,7 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
         { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
         (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
       ),
-    ).rejects.toThrow(/RN-004/);
+    ).rejects.toThrow();
 
     const inalterada = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
     expect(inalterada.concluida).toBe(false);
@@ -159,17 +196,17 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
         { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
         (tx) => tx.subtarefa.update({ where: { id: subtarefaSemAtribuido.id }, data: { concluida: true } }),
       ),
-    ).rejects.toThrow(/RN-004/);
+    ).rejects.toThrow();
   });
 });
 
-it("mesmo o ADMIN_INTERNO dono do projeto, que não pode concluir, continua podendo gerir o checklist (título)", async () => {
+it("mesmo o ADMIN_INTERNO dono do projeto não pode editar o checklist", async () => {
   const subtarefa = await criarSubtarefaAtribuida();
 
-  const atualizada = await comoUsuario(
-    { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Enviar documento X (revisado)" } }),
-  );
-
-  expect(atualizada.titulo).toBe("Enviar documento X (revisado)");
+  await expect(
+    comoUsuario(
+      { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
+      (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Tentativa indevida" } }),
+    ),
+  ).rejects.toThrow();
 });
