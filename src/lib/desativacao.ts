@@ -4,7 +4,14 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
  * RF-039 / RN-007 / ADR-008 — desativação (soft delete) das entidades que já existem.
  * Projeto, Tarefa e Subtarefa entram aqui na Sprint 4, quando tiverem CRUD.
  */
-export type EntidadeDesativavel = "cliente" | "pessoaEnvolvida" | "documento" | "usuario";
+export type EntidadeDesativavel =
+  | "cliente"
+  | "pessoaEnvolvida"
+  | "documento"
+  | "usuario"
+  | "projeto"
+  | "tarefa"
+  | "subtarefa";
 
 export type ResultadoDesativacao =
   | { sucesso: true }
@@ -48,6 +55,12 @@ export async function definirAtivo(
         return (await tx.documento.updateMany({ where: { id }, data: dados })).count;
       case "usuario":
         return (await tx.usuario.updateMany({ where: { id }, data: dados })).count;
+      case "projeto":
+        return (await tx.projeto.updateMany({ where: { id }, data: dados })).count;
+      case "tarefa":
+        return (await tx.tarefa.updateMany({ where: { id }, data: dados })).count;
+      case "subtarefa":
+        return (await tx.subtarefa.updateMany({ where: { id }, data: dados })).count;
     }
   });
 
