@@ -1,0 +1,156 @@
+# Tarefas 0.2 e 0.3 — o gate que o Padrão de Testes § 5 pressupõe desde a Sprint 1 e que a
+# auditoria da Sprint 3 mostrou não existir.
+#
+# Os dois jobs vivem no mesmo arquivo de propósito: o `needs: verificacao` é o que faz a suíte
+# vermelha bloquear o deploy. Em arquivos separados o acoplamento viraria convenção, e
+# convenção não segura deploy.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verificacao:
+    name: Typecheck, lint e suíte completa
+    runs-on: ubuntu-latest
+
+    services:
+      # Os testes de RLS precisam de Postgres de verdade: a metade que importa deles roda
+      # dentro do banco, como política e trigger, e some com qualquer mock.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: multiplus
+          POSTGRES_PASSWORD: senha-de-ci
+          POSTGRES_DB: multiplus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U multiplus"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Senhas efêmeras do runner, não são segredo: o banco nasce e morre com o job, e nunca
+      # há dado real dentro dele. Deixá-las à vista poupa quatro secrets que não protegem nada.
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: multiplus
+      PGPASSWORD: senha-de-ci
+      TEST_DATABASE_URL: postgresql://multiplus:senha-de-ci@localhost:5432/multiplus_test?schema=public
+      TEST_APP_DATABASE_URL: postgresql://multiplus_app:senha-app-de-ci@localhost:5432/multiplus_test?schema=public
+      AUTH_SECRET: segredo-de-ci-sem-uso-fora-do-runner
+      AUTH_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Mesma major do runtime de produção (ver Dockerfile, node:20-alpine).
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Preparar o banco de teste
+        # O `globalSetup` da suíte já cria o banco e aplica as migrations, mas a role
+        # `multiplus_app` nasce **sem senha** (ver 20260903155236_rls_policies: a senha fica
+        # fora do controle de versão, por ALTER ROLE). Em máquina de dev isso foi feito uma
+        # vez, à mão; no runner o banco é novo a cada execução, então a senha precisa entrar
+        # aqui — depois do migrate, que é quem cria a role, e antes dos testes, que conectam
+        # com ela. Rodando agora, o `globalSetup` vira no-op.
+        run: |
+          psql -d postgres -c 'CREATE DATABASE "multiplus_test"'
+          DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
+          psql -d multiplus_test -c "ALTER ROLE multiplus_app WITH PASSWORD 'senha-app-de-ci'"
+
+      - name: Suíte completa
+        run: npm test
+
+  # DORMENTE ATÉ EXISTIR VPS (16/09/2026). Não há produção: o `.env` aponta para localhost,
+  # o domínio do `.env.example` não resolve, e as três ações do ADR-002 seguem desmarcadas.
+  #
+  # O job está escrito e pronto, mas não roda enquanto a variável `DEPLOY_ATIVO` não existir.
+  # Sem essa guarda ele rodaria em todo push na `main`, falharia por falta de secrets e
+  # deixaria o CI permanentemente vermelho — e um CI que está sempre vermelho não é gate: é
+  # ruído que ensina a ignorar o sinal.
+  #
+  # Para ligar, quando a VPS existir: criar a variável de repositório `DEPLOY_ATIVO = true`
+  # (Settings › Secrets and variables › Actions › Variables) e os cinco secrets que o
+  # primeiro passo confere. Ver também a decisão D9 — as migrations precisam de um serviço
+  # próprio no compose, com a role dona, antes de o app subir.
+  deploy:
+    name: Deploy na Contabo, com verificação
+    needs: verificacao
+    if: >-
+      github.ref == 'refs/heads/main'
+      && github.event_name == 'push'
+      && vars.DEPLOY_ATIVO == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Conferir os secrets de deploy
+        # Sem isto, a ausência de um secret aparece como erro de SSH três passos adiante.
+        run: |
+          faltando=""
+          for nome in DEPLOY_HOST DEPLOY_USER DEPLOY_PATH DEPLOY_SSH_KEY DEPLOY_HEALTH_URL; do
+            eval "valor=\${$nome}"
+            if [ -z "$valor" ]; then faltando="$faltando $nome"; fi
+          done
+          if [ -n "$faltando" ]; then
+            echo "::error::Secrets de deploy ausentes:$faltando (Settings › Secrets and variables › Actions)"
+            exit 1
+          fi
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HEALTH_URL: ${{ secrets.DEPLOY_HEALTH_URL }}
+
+      - name: Abrir sessão SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Subir a versão nova
+        # ATENÇÃO — migrations não entram aqui. Em produção `DATABASE_URL` do container `app`
+        # é a role restrita por RLS (ver docker-compose.yml: `APP_DATABASE_URL`), que não tem
+        # permissão para alterar schema, então um `prisma migrate deploy` de dentro do
+        # container falharia. Como isso é feito hoje precisa ser confirmado antes da Sprint
+        # 4A, que é a primeira a mexer em schema com dado real no ar.
+        run: |
+          ssh -i ~/.ssh/id_deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd '${{ secrets.DEPLOY_PATH }}' && git pull --ff-only && docker compose up -d --build app"
+
+      - name: Verificar /api/health
+        # É o passo que dá sentido ao job: sem ele, "deploy verde" significa apenas que o
+        # `docker compose` aceitou o comando — não que a aplicação subiu e alcança o banco.
+        run: |
+          for tentativa in $(seq 1 20); do
+            codigo=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 \
+              "${{ secrets.DEPLOY_HEALTH_URL }}" || echo "000")
+            if [ "$codigo" = "200" ]; then
+              echo "healthcheck respondeu 200 na tentativa $tentativa"
+              exit 0
+            fi
+            echo "tentativa $tentativa/20: HTTP $codigo"
+            sleep 5
+          done
+          echo "::error::/api/health não respondeu 200 em ~100s — o deploy subiu quebrado"
+          exit 1
