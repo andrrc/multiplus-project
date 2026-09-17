@@ -43,6 +43,71 @@ export type DadosDocumentoProjeto = {
   link: string;
 };
 
+export async function listarClientesParaProjeto(ctx: ContextoUsuario) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.cliente.findMany({ where: { ativo: true }, select: { id: true, razaoSocial: true }, orderBy: { razaoSocial: "asc" } }),
+  );
+}
+
+export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: string) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.pessoaEnvolvida.findMany({
+      where: { clienteId, ativo: true },
+      select: { id: true, nome: true, temAcesso: true },
+      orderBy: { nome: "asc" },
+    }),
+  );
+}
+
+export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.projeto.findMany({
+      where: incluirDesativados ? {} : { ativo: true },
+      include: { cliente: { select: { razaoSocial: true } }, _count: { select: { tarefas: true } } },
+      orderBy: [{ ativo: "desc" }, { atualizadoEm: "desc" }],
+    }),
+  );
+}
+
+export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, incluirDesativados = false) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.projeto.findFirst({
+      where: { id: projetoId, ...(incluirDesativados ? {} : { ativo: true }) },
+      include: {
+        cliente: { select: { id: true, razaoSocial: true } },
+        tarefas: {
+          where: incluirDesativados ? {} : { ativo: true },
+          include: { responsavel: { select: { nome: true } }, subtarefas: { where: incluirDesativados ? {} : { ativo: true } } },
+          orderBy: [{ prazo: "asc" }, { nome: "asc" }],
+        },
+        documentos: { where: incluirDesativados ? {} : { ativo: true }, orderBy: { criadoEm: "desc" } },
+      },
+    }),
+  );
+}
+
+export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, incluirDesativados = false) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.tarefa.findFirst({
+      where: { id: tarefaId, ...(incluirDesativados ? {} : { ativo: true }) },
+      include: {
+        projeto: { include: { cliente: { select: { razaoSocial: true } } } },
+        responsavel: { select: { id: true, nome: true, temAcesso: true } },
+        subtarefas: {
+          where: incluirDesativados ? {} : { ativo: true },
+          include: { atribuidoA: { select: { nome: true } } },
+          orderBy: { criadoEm: "asc" },
+        },
+      },
+    }),
+  );
+}
+
 function exigirAdministrador(ctx: ContextoUsuario): void {
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
 }

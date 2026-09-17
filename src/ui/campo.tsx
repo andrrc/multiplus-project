@@ -9,13 +9,14 @@ export const inputClass =
  * resolver. `apagado` marca o registro desativado (RF-039), que continua legível mas sai
  * do primeiro plano.
  */
-type TomEtiqueta = "neutro" | "positivo" | "atencao" | "apagado";
+type TomEtiqueta = "neutro" | "positivo" | "atencao" | "apagado" | "padrao";
 
 const TONS: Record<TomEtiqueta, string> = {
   neutro: "border-linha bg-branco text-tinta",
   positivo: "border-verde-borda bg-verde-cl text-verde-esc",
   atencao: "border-ambar/30 bg-ambar/8 text-ambar",
   apagado: "border-linha bg-papel text-cinza",
+  padrao: "border-linha bg-branco text-tinta",
 };
 
 export function Etiqueta({
@@ -64,7 +65,7 @@ export function SecaoNumerada({
   descricao,
   children,
 }: {
-  numero: number;
+  numero: number | string;
   titulo: string;
   descricao?: string;
   children: ReactNode;

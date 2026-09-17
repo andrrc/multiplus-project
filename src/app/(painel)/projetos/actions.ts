@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import {
   atualizarProjeto,
@@ -50,6 +51,11 @@ export async function criarProjetoAction(formData: FormData) {
   return projeto;
 }
 
+export async function criarProjetoERedirecionarAction(formData: FormData) {
+  const projeto = await criarProjetoAction(formData);
+  redirect(`/projetos/${projeto.id}`);
+}
+
 export async function atualizarProjetoAction(projetoId: string, formData: FormData) {
   const ctx = await obterContexto();
   const projeto = await atualizarProjeto(ctx, projetoId, {
@@ -62,6 +68,11 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
   revalidatePath(`/projetos/${projetoId}`);
   revalidatePath("/projetos");
   return projeto;
+}
+
+export async function atualizarProjetoERedirecionarAction(projetoId: string, formData: FormData) {
+  await atualizarProjetoAction(projetoId, formData);
+  redirect(`/projetos/${projetoId}`);
 }
 
 export async function criarTarefaAction(formData: FormData) {
@@ -81,6 +92,11 @@ export async function criarTarefaAction(formData: FormData) {
   return tarefa;
 }
 
+export async function criarTarefaERedirecionarAction(formData: FormData) {
+  const tarefa = await criarTarefaAction(formData);
+  redirect(`/tarefas/${tarefa.id}`);
+}
+
 export async function atualizarTarefaAction(tarefaId: string, formData: FormData) {
   const ctx = await obterContexto();
   const tarefa = await atualizarTarefa(ctx, tarefaId, {
@@ -97,6 +113,11 @@ export async function atualizarTarefaAction(tarefaId: string, formData: FormData
   return tarefa;
 }
 
+export async function atualizarTarefaERedirecionarAction(tarefaId: string, formData: FormData) {
+  await atualizarTarefaAction(tarefaId, formData);
+  redirect(`/tarefas/${tarefaId}`);
+}
+
 export async function criarSubtarefaAction(formData: FormData) {
   const ctx = await obterContexto();
   const subtarefa = await criarSubtarefa(ctx, {
@@ -108,7 +129,11 @@ export async function criarSubtarefaAction(formData: FormData) {
     atribuidoAId: texto(formData, "atribuidoAId") || null,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
-  return subtarefa;
+  void subtarefa;
+}
+
+export async function criarSubtarefaFormAction(formData: FormData): Promise<void> {
+  await criarSubtarefaAction(formData);
 }
 
 export async function atualizarSubtarefaAction(subtarefaId: string, formData: FormData) {
@@ -133,7 +158,11 @@ export async function criarDocumentoProjetoAction(formData: FormData) {
     link: texto(formData, "link"),
   });
   revalidatePath(`/projetos/${documento.projetoId ?? ""}`);
-  return documento;
+  void documento;
+}
+
+export async function criarDocumentoProjetoFormAction(formData: FormData): Promise<void> {
+  await criarDocumentoProjetoAction(formData);
 }
 
 export async function concluirTarefaAction(tarefaId: string) {
@@ -142,14 +171,22 @@ export async function concluirTarefaAction(tarefaId: string) {
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${resultado.tarefa.projetoId}`);
   revalidatePath("/prazos");
-  return resultado;
+  void resultado;
+}
+
+export async function concluirTarefaFormAction(tarefaId: string): Promise<void> {
+  await concluirTarefaAction(tarefaId);
 }
 
 export async function concluirSubtarefaAction(subtarefaId: string) {
   const ctx = await obterContexto();
   const subtarefa = await concluirSubtarefa(ctx, subtarefaId);
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
-  return subtarefa;
+  void subtarefa;
+}
+
+export async function concluirSubtarefaFormAction(subtarefaId: string): Promise<void> {
+  await concluirSubtarefaAction(subtarefaId);
 }
 
 export async function definirAtivoProjetoAction(id: string, ativo: boolean) {
@@ -157,7 +194,11 @@ export async function definirAtivoProjetoAction(id: string, ativo: boolean) {
   const resultado = await desativarOuReativar(ctx, "projeto", id, ativo);
   revalidatePath("/projetos");
   revalidatePath(`/projetos/${id}`);
-  return resultado;
+  void resultado;
+}
+
+export async function definirAtivoProjetoFormAction(id: string, ativo: boolean): Promise<void> {
+  await definirAtivoProjetoAction(id, ativo);
 }
 
 export async function definirAtivoTarefaAction(id: string, ativo: boolean) {
