@@ -28,7 +28,7 @@ async function criarSubtarefaAtribuida() {
   return ownerDb.subtarefa.create({
     data: {
       tarefaId: tarefaX.id,
-      etiqueta: "Enviar documento X",
+      titulo: "Enviar documento X",
       atribuidoAId: pessoaEnvolvidaResponsavel.id,
     },
   });
@@ -151,7 +151,7 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
     // pessoaEnvolvidaId (é null), então a comparação não deve casar acidentalmente com uma
     // subtarefa cujo atribuidoAId também seja null.
     const subtarefaSemAtribuido = await ownerDb.subtarefa.create({
-      data: { tarefaId: tarefaX.id, etiqueta: "Sem atribuído ainda" },
+      data: { tarefaId: tarefaX.id, titulo: "Sem atribuído ainda" },
     });
 
     await expect(
@@ -163,13 +163,13 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
   });
 });
 
-it("mesmo o ADMIN_INTERNO dono do projeto, que não pode concluir, continua podendo gerir o checklist (etiqueta)", async () => {
+it("mesmo o ADMIN_INTERNO dono do projeto, que não pode concluir, continua podendo gerir o checklist (título)", async () => {
   const subtarefa = await criarSubtarefaAtribuida();
 
   const atualizada = await comoUsuario(
     { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { etiqueta: "Enviar documento X (revisado)" } }),
+    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Enviar documento X (revisado)" } }),
   );
 
-  expect(atualizada.etiqueta).toBe("Enviar documento X (revisado)");
+  expect(atualizada.titulo).toBe("Enviar documento X (revisado)");
 });

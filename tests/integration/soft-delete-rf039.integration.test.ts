@@ -53,7 +53,7 @@ async function montarFixture() {
     data: { projetoId: projeto.id, nome: "Protocolar EIA" },
   });
   const subtarefa = await ownerDb.subtarefa.create({
-    data: { tarefaId: tarefa.id, etiqueta: "Anexar ART" },
+    data: { tarefaId: tarefa.id, titulo: "Anexar ART" },
   });
 
   const interno = await ownerDb.usuario.create({

@@ -37,13 +37,40 @@ enum TipoPessoaEnvolvida {
   EMPRESA // razão social (reaproveita a coluna `nome`), CNPJ (opcional), telefone, e-mail
 }
 
+enum StatusProjeto {
+  A_INICIAR    @map("A iniciar")
+  EM_ANDAMENTO @map("Em andamento")
+  CONCLUIDO    @map("Concluído")
+  CANCELADO    @map("Cancelado")
+}
+
+enum StatusTarefa {
+  A_INICIAR                    @map("A iniciar")
+  EM_ANDAMENTO                 @map("Em andamento")
+  AGUARDANDO_DOCUMENTO_CLIENTE @map("Aguardando documento do cliente")
+  VISITA_REUNIAO_AGENDADA      @map("Visita/reunião agendada")
+  PROTOCOLADO                  @map("Protocolado")
+  SOB_ANALISE_ORGAO_AMBIENTAL  @map("Sob análise do órgão ambiental")
+  COM_EXIGENCIA_A_CUMPRIR      @map("Com exigência a cumprir")
+  CONCLUIDO                    @map("Concluído")
+  CANCELADO                    @map("Cancelado")
+}
+
+enum Periodicidade {
+  SEMANAL
+  MENSAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
 model Usuario {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   nome      String
-  email     String   @unique
+  email     String  @unique
   senhaHash String? // null até o usuário definir a senha via link de onboarding (RF-030/031)
-  perfil    Perfil   @default(CLIENTE)
-  ativo     Boolean  @default(true)
+  perfil    Perfil  @default(CLIENTE)
+  ativo     Boolean @default(true)
 
   /// RF-030/RF-040 — dados de cadastro, todos opcionais (mesmo princípio do RF-002d no
   /// Cadastro de Clientes: em branco vira NULL, com validação de formato só quando
@@ -80,10 +107,10 @@ model Usuario {
   pessoaEnvolvidaId String?          @unique
   pessoaEnvolvida   PessoaEnvolvida? @relation(fields: [pessoaEnvolvidaId], references: [id])
 
-  atribuicoes           Atribuicao[]
-  tokensAcesso          TokenAcesso[]
+  atribuicoes  Atribuicao[]
+  tokensAcesso TokenAcesso[]
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([ativo])
@@ -135,7 +162,7 @@ model Cliente {
   pessoasEnvolvidas PessoaEnvolvida[]
   documentos        Documento[]
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([ativo])
@@ -158,7 +185,7 @@ model ResponsavelLegal {
   telefone String?
   email    String?
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@map("responsaveis_legais")
@@ -181,7 +208,7 @@ model PontoContato {
   email    String?
   cargo    String?
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@map("pontos_contato")
@@ -196,13 +223,13 @@ model PessoaEnvolvida {
   clienteId String
   cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
-  tipo       TipoPessoaEnvolvida @default(PESSOA)
-  nome       String // Pessoa: nome. Empresa/PJ envolvida: razão social (ADR-006, mesmo padrão de reaproveitamento de coluna).
-  cpf        String? // só tipo PESSOA
-  cnpj       String? // só tipo EMPRESA
-  telefone   String?
-  email      String?
-  temAcesso  Boolean @default(false)
+  tipo      TipoPessoaEnvolvida @default(PESSOA)
+  nome      String // Pessoa: nome. Empresa/PJ envolvida: razão social (ADR-006, mesmo padrão de reaproveitamento de coluna).
+  cpf       String? // só tipo PESSOA
+  cnpj      String? // só tipo EMPRESA
+  telefone  String?
+  email     String?
+  temAcesso Boolean             @default(false)
 
   /// Legado da Sprint 2 (PessoaOperacional) — não faz parte do formulário novo, mantido só
   /// para não perder dado de cadastros já existentes.
@@ -213,9 +240,9 @@ model PessoaEnvolvida {
   desativadoEm  DateTime?
   desativadoPor String?
 
-  usuario               Usuario?
-  tarefasResponsavel    Tarefa[]    @relation("TarefaResponsavel")
-  subtarefasAtribuidas  Subtarefa[] @relation("SubtarefaAtribuidoA")
+  usuario              Usuario?
+  tarefasResponsavel   Tarefa[]    @relation("TarefaResponsavel")
+  subtarefasAtribuidas Subtarefa[] @relation("SubtarefaAtribuidoA")
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -227,9 +254,11 @@ model PessoaEnvolvida {
 /// RF-013 — link de documento do Google Drive vinculado ao cliente (sem upload
 /// de arquivo). Vínculo a projeto fica para o módulo de Projetos/Tarefas.
 model Documento {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   clienteId String
-  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  projetoId String?
+  projeto   Projeto? @relation(fields: [projetoId], references: [id], onDelete: SetNull)
 
   nome String
   link String
@@ -239,10 +268,11 @@ model Documento {
   desativadoEm  DateTime?
   desativadoPor String?
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([ativo])
+  @@index([projetoId])
   @@map("documentos")
 }
 
@@ -259,7 +289,7 @@ view ResponsavelLegalSeguro {
   telefone  String?
   email     String?
 
-  criadoEm    DateTime
+  criadoEm     DateTime
   atualizadoEm DateTime
 
   @@map("responsaveis_legais_seguro")
@@ -277,35 +307,53 @@ view PontoContatoSeguro {
   email     String?
   cargo     String?
 
-  criadoEm    DateTime
+  criadoEm     DateTime
   atualizadoEm DateTime
 
   @@map("pontos_contato_seguro")
 }
 
-/// Escopo mínimo (id, cliente, status) para sustentar Atribuicao e RLS nesta sprint.
-/// Campos completos (prazos, licenças etc.) entram no módulo de Projetos/Tarefas.
+/// RF-004/RF-038 — projeto e seus prazos gerenciais. `ativo` e os campos de auditoria
+/// sustentam o soft delete por herança do RF-039/ADR-008.
 model Projeto {
-  id        String  @id @default(cuid())
-  clienteId String
-  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  nome      String
-  status    String  @default("ativo")
+  id                    String        @id @default(cuid())
+  clienteId             String
+  cliente               Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  nome                  String
+  descricao             String?
+  dataInicio            DateTime?
+  dataPrevistaConclusao DateTime?
+  status                StatusProjeto @default(A_INICIAR)
+  ativo                 Boolean       @default(true)
+  desativadoEm          DateTime?
+  desativadoPor         String?
 
-  tarefas Tarefa[]
+  tarefas    Tarefa[]
+  documentos Documento[]
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
   @@map("projetos")
 }
 
 model Tarefa {
-  id        String  @id @default(cuid())
-  projetoId String
-  projeto   Projeto @relation(fields: [projetoId], references: [id], onDelete: Cascade)
-  nome      String
-  status    String  @default("pendente")
+  id               String         @id @default(cuid())
+  projetoId        String
+  projeto          Projeto        @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  nome             String
+  descricao        String?
+  prazo            DateTime?
+  status           StatusTarefa   @default(A_INICIAR)
+  periodicidade    Periodicidade?
+  serieId          String?
+  prazoOriginal    DateTime?
+  serieEncerradaEm DateTime?
+  diasAntecedencia Int?
+  ativo            Boolean        @default(true)
+  desativadoEm     DateTime?
+  desativadoPor    String?
 
   /// RF-005/RN-006 — qualquer Pessoa Envolvida, com ou sem acesso ao sistema. Quando tem
   /// acesso (`temAcesso = true`), definir o responsável cria automaticamente o registro
@@ -315,18 +363,24 @@ model Tarefa {
 
   subtarefas Subtarefa[]
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
+  @@index([serieId])
   @@map("tarefas")
 }
 
 model Subtarefa {
-  id        String  @id @default(cuid())
-  tarefaId  String
-  tarefa    Tarefa  @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
-  etiqueta  String
-  concluida Boolean @default(false)
+  id            String    @id @default(cuid())
+  tarefaId      String
+  tarefa        Tarefa    @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  titulo        String
+  etiquetas     String[]  @default([])
+  concluida     Boolean   @default(false)
+  ativo         Boolean   @default(true)
+  desativadoEm  DateTime?
+  desativadoPor String?
 
   // RF-021 / RN-004 — só esta Pessoa Envolvida (ou o ADMIN) pode marcar como concluída.
   // Migrada de FK Usuario pra FK PessoaEnvolvida no ADR-007 — RLS/trigger agora resolvem
@@ -334,9 +388,10 @@ model Subtarefa {
   atribuidoAId String?
   atribuidoA   PessoaEnvolvida? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
 
-  criadoEm    DateTime @default(now())
+  criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  @@index([ativo])
   @@map("subtarefas")
 }
 
