@@ -108,6 +108,53 @@ export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, inclu
   );
 }
 
+export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Visão exclusiva do Colaborador Interno.");
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const atribuicoes = await tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO" }, select: { entidadeId: true } });
+    return tx.projeto.findMany({
+      where: { id: { in: atribuicoes.map((a) => a.entidadeId) }, ativo: true },
+      include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true } } },
+      orderBy: { dataPrevistaConclusao: "asc" },
+    });
+  });
+}
+
+export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: string) {
+  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Visão exclusiva do Colaborador Interno.");
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const acesso = await tx.atribuicao.findFirst({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO", entidadeId: projetoId } });
+    if (!acesso) return null;
+    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { concluida: true } } }, orderBy: { prazo: "asc" } } } });
+  });
+}
+
+export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva do Colaborador Externo.");
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const atribuicoes = await tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "TAREFA" }, select: { entidadeId: true } });
+    return tx.tarefa.findMany({
+      where: { id: { in: atribuicoes.map((a) => a.entidadeId) }, ativo: true },
+      include: { projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } }, subtarefas: { where: { ativo: true }, select: { concluida: true } } },
+      orderBy: [{ prazo: "asc" }, { nome: "asc" }],
+    });
+  });
+}
+
+export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId: string) {
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.tarefa.findFirst({
+      where: { id: tarefaId, ativo: true },
+      select: {
+        id: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true,
+        projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
+        subtarefas: { where: { ativo: true }, select: { id: true, titulo: true, etiquetas: true, concluida: true, atribuidoAId: true } },
+      },
+    }),
+  );
+}
+
 function exigirAdministrador(ctx: ContextoUsuario): void {
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
 }

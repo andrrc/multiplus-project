@@ -1,40 +1,7 @@
+import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { listarAtribuicoesDetalhadas } from "@/lib/usuarios";
-
-/**
- * Tela inicial do Colaborador Interno (RF-043). A Tela 9 completa — com prazos, status e
- * o que mais o PDD descreve — é da Sprint 4, quando o módulo de Projetos existir. O que
- * está aqui já é real: são as atribuições do próprio usuário, lidas com a RLS ativa, e é o
- * que permite demonstrar que a atribuição feita pela Talita chegou do outro lado.
- */
-export default async function MeusProjetosPage() {
-  const ctx = await exigirAcessoARota("/meus-projetos");
-  const atribuicoes = await listarAtribuicoesDetalhadas(ctx, ctx.usuarioId);
-  const projetos = atribuicoes.filter((a) => a.entidadeTipo === "PROJETO");
-
-  return (
-    <div className="w-full max-w-[900px]">
-      <h1 className="text-[24px] sm:text-[28px]">Meus projetos</h1>
-      <p className="mt-1.5 text-[15px] text-cinza">
-        Os projetos em que você está atribuído.
-      </p>
-
-      {projetos.length === 0 ? (
-        <p className="mt-7 rounded-[3px] border border-linha bg-branco px-6 py-8 text-center text-[15px] text-cinza">
-          Nenhum projeto atribuído a você ainda.
-        </p>
-      ) : (
-        <ul className="mt-7 overflow-hidden rounded-[3px] border border-linha bg-branco">
-          {projetos.map((projeto) => (
-            <li key={projeto.id} className="border-b border-linha px-5 py-4 last:border-b-0">
-              <p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">
-                {projeto.entidadeNome ?? "(projeto removido)"}
-              </p>
-              <p className="text-[14px] text-cinza">{projeto.cliente ?? "—"}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+import { listarProjetosAtribuidos } from "@/lib/projetos-tarefas";
+import { Etiqueta } from "@/ui/campo";
+const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
+const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
+export default async function MeusProjetosPage() { const ctx = await exigirAcessoARota("/meus-projetos"); const projetos = await listarProjetosAtribuidos(ctx); return <div className="w-full max-w-[1000px]"><h1 className="text-[28px]">Meus projetos</h1><p className="mt-1.5 text-[15px] text-cinza">Acompanhe os projetos que estão sob sua responsabilidade.</p>{projetos.length === 0 ? <div className="mt-8 border border-dashed border-linha bg-branco px-8 py-14 text-center text-[15px] text-cinza">Nenhum projeto atribuído a você ainda. A Talita poderá incluir projetos no seu acesso.</div> : <div className="mt-7 grid gap-4 md:grid-cols-2">{projetos.map(p => <article key={p.id} className="border border-linha border-l-linha border-l-[3px] border-l-azul bg-branco p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-[family-name:var(--font-interface)] text-[17px] font-semibold text-tinta">{p.nome}</p><p className="mt-1 text-[14px] text-cinza">{p.cliente.razaoSocial}</p></div><Etiqueta>{status[p.status]}</Etiqueta></div><div className="mt-5 flex justify-between text-[13px] text-cinza"><span>{p.tarefas.length} {p.tarefas.length === 1 ? "tarefa" : "tarefas"}</span><span>Até {data(p.dataPrevistaConclusao)}</span></div><Link href={`/meus-projetos/${p.id}`} className="mt-5 inline-block font-[family-name:var(--font-interface)] text-[13px] text-azul-esc hover:underline">Abrir projeto</Link></article>)}</div>}</div>; }

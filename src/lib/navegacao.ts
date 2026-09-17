@@ -89,6 +89,8 @@ export function proxyAvaliaCaminho(pathname: string): boolean {
 export function perfilPodeAcessar(perfil: Perfil, pathname: string): boolean {
   if (pathname === "/") return true;
 
+  if (pathname.startsWith("/minhas-tarefas/") && perfil === "ADMIN_INTERNO") return true;
+
   const item = MENU.find(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),
   );

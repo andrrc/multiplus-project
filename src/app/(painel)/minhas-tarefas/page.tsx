@@ -1,46 +1,7 @@
+import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { listarAtribuicoesDetalhadas } from "@/lib/usuarios";
+import { listarTarefasAtribuidas } from "@/lib/projetos-tarefas";
 import { Etiqueta } from "@/ui/campo";
-
-/**
- * Tela inicial do Colaborador Externo (RF-043). Mesma situação da tela de Meus Projetos: a
- * Tela 10 completa é da Sprint 4; o que está aqui são as atribuições reais do usuário.
- *
- * O nome do cliente aparece — e só ele (RF-046): nada de CNPJ, endereço ou qualquer outro
- * dado cadastral, porque o Colaborador Externo pode ser um terceiro de fora da Múltiplus.
- */
-export default async function MinhasTarefasPage() {
-  const ctx = await exigirAcessoARota("/minhas-tarefas");
-  const atribuicoes = await listarAtribuicoesDetalhadas(ctx, ctx.usuarioId);
-  const tarefas = atribuicoes.filter((a) => a.entidadeTipo === "TAREFA");
-
-  return (
-    <div className="w-full max-w-[900px]">
-      <h1 className="text-[24px] sm:text-[28px]">Minhas tarefas</h1>
-      <p className="mt-1.5 text-[15px] text-cinza">As tarefas atribuídas a você.</p>
-
-      {tarefas.length === 0 ? (
-        <p className="mt-7 rounded-[3px] border border-linha bg-branco px-6 py-8 text-center text-[15px] text-cinza">
-          Nenhuma tarefa atribuída a você ainda.
-        </p>
-      ) : (
-        <ul className="mt-7 overflow-hidden rounded-[3px] border border-linha bg-branco">
-          {tarefas.map((tarefa) => (
-            <li
-              key={tarefa.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 last:border-b-0"
-            >
-              <div>
-                <p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">
-                  {tarefa.entidadeNome ?? "(tarefa removida)"}
-                </p>
-                <p className="text-[14px] text-cinza">{tarefa.cliente ?? "—"}</p>
-              </div>
-              {tarefa.origem === "AUTOMATICA" && <Etiqueta>Você é o responsável</Etiqueta>}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
+const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
+export default async function MinhasTarefasPage() { const ctx = await exigirAcessoARota("/minhas-tarefas"); const tarefas = await listarTarefasAtribuidas(ctx); return <div className="w-full max-w-[1000px]"><h1 className="text-[28px]">Minhas tarefas</h1><p className="mt-1.5 text-[15px] text-cinza">O que precisa da sua atenção, em ordem de prazo.</p>{tarefas.length === 0 ? <div className="mt-8 border border-dashed border-linha bg-branco px-8 py-14 text-center text-[15px] text-cinza">Nenhuma tarefa atribuída a você ainda.</div> : <div className="mt-7 overflow-hidden border border-linha bg-branco">{tarefas.map(t => <Link href={`/minhas-tarefas/${t.id}`} key={t.id} className="flex flex-wrap items-center justify-between gap-4 border-b border-linha px-5 py-4 hover:bg-verde-cl last:border-b-0"><div className="min-w-0"><p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{t.nome}</p><p className="mt-1 text-[14px] text-cinza">{t.projeto.cliente.razaoSocial} · {t.projeto.nome}</p><p className="mt-2 text-[13px] text-cinza">{t.subtarefas.filter(s => s.concluida).length}/{t.subtarefas.length} itens concluídos</p></div><div className="flex shrink-0 items-center gap-4"><span className="text-right font-[family-name:var(--font-interface)] text-[13px] text-cinza"><span className="block text-[11px] uppercase tracking-[0.06em]">Prazo</span>{data(t.prazo)}</span><Etiqueta tom={t.status === "CONCLUIDO" ? "positivo" : undefined}>{status[t.status]}</Etiqueta></div></Link>)}</div>}</div>; }
