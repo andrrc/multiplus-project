@@ -132,16 +132,16 @@ recursão. Revisar toda comparação de coluna nullable nas políticas novas.
 **RFs/RNs cobertos:** RF-004, 005, 006, 008, 009, 013, 018 a 021, 024, 025, 037, 038, 039, 046;
 RN-001, 004, 005, 006, 007, 008, 009; ADR-009
 
-- [ ] **Unitário — RN-008:** prazo 10/09 mensal concluído em 20/09 gera 10/10; 31/01 mensal gera
+- [x] **Unitário — RN-008:** prazo 10/09 mensal concluído em 20/09 gera 10/10; 31/01 mensal gera
   28/02 (e 29/02 em ano bissexto); a ocorrência seguinte a 28/02 volta a 31/03, ancorada no
   prazo original da série e não no anterior; semanal, trimestral, semestral e anual; tarefa
   cancelada não gera próxima
-- [ ] **Unitário — ADR-009 (projeção):** a ocorrência seguinte aparece mesmo com a anterior
+- [x] **Unitário — ADR-009 (projeção):** a ocorrência seguinte aparece mesmo com a anterior
   vencida e não concluída; série cancelada não projeta; ocorrência já materializada não aparece
   duplicada
-- [ ] **Unitário — RN-001:** prazo hoje e não concluída conta como em dia; prazo ontem e não
+- [x] **Unitário — RN-001:** prazo hoje e não concluída conta como em dia; prazo ontem e não
   concluída conta como atrasada; sem tolerância
-- [ ] **Unitário — RF-009:** conjunto vazio (definir o que exibir, sem divisão por zero);
+- [x] **Unitário — RF-009:** conjunto vazio (exibe percentual nulo, renderizado como \"—\", sem divisão por zero);
   concluídas; desativadas fora do cálculo
 - [x] **Permissão — RN-007 (retirada):** Colaborador Interno e Externo não criam, não editam e
   não desativam projeto, tarefa, subtarefa ou item de checklist, testado **no banco e na ação de
