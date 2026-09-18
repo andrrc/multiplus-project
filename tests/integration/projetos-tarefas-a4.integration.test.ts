@@ -121,13 +121,22 @@ describe("CRUD protegido no servidor", () => {
     expect(documento.projetoId).toBe(projeto.id);
   });
 
+  it("recusa responsável de subtarefa ausente ou que não pertence ao cliente", async () => {
+    await expect(
+      criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Sem responsável", atribuidoAId: "" }),
+    ).rejects.toThrow(/Selecione o responsável/);
+    await expect(
+      criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Pessoa incorreta", atribuidoAId: "pessoa-inexistente" }),
+    ).rejects.toThrow(/pessoa ativa deste cliente/);
+  });
+
   it("colaborador não acessa CRUD administrativo", async () => {
     await expect(atualizarProjeto(ctxInterno(), projeto.id, { nome: "Tentativa" })).rejects.toThrow(/Administrador/);
     await expect(
       criarProjeto(ctxExterno(), { clienteId: cliente.id, nome: "Projeto proibido" }),
     ).rejects.toThrow(/Administrador/);
     await expect(
-      criarSubtarefa(ctxExterno(), { tarefaId: tarefa.id, titulo: "Subtarefa proibida" }),
+      criarSubtarefa(ctxExterno(), { tarefaId: tarefa.id, titulo: "Subtarefa proibida", atribuidoAId: pessoa.id }),
     ).rejects.toThrow(/Administrador/);
   });
 });
@@ -152,7 +161,7 @@ describe("conclusão transacional", () => {
     const atribuida = await ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: tarefa.id } });
     await expect(concluirSubtarefa(ctxExterno(), atribuida.id)).resolves.toMatchObject({ concluida: true });
 
-    const outra = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Outra subtarefa" });
+    const outra = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Outra subtarefa", atribuidoAId: pessoa.id });
     const colega = await ownerDb.usuario.create({
       data: { nome: "Colega A4", email: "colega.a4@teste.local", perfil: "ADMIN_EXTERNO" },
     });

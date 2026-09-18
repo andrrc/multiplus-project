@@ -154,7 +154,7 @@ export async function criarSubtarefaAction(formData: FormData) {
     etiquetas: texto(formData, "etiquetas")
       ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
       : [],
-    atribuidoAId: texto(formData, "atribuidoAId") || null,
+    atribuidoAId: texto(formData, "atribuidoAId"),
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
   void subtarefa;
@@ -190,10 +190,14 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
     etiquetas: texto(formData, "etiquetas")
       ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
       : [],
-    atribuidoAId: texto(formData, "atribuidoAId") || null,
+    atribuidoAId: texto(formData, "atribuidoAId"),
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
   return subtarefa;
+}
+
+export async function atualizarSubtarefaFormAction(subtarefaId: string, formData: FormData): Promise<void> {
+  await atualizarSubtarefaAction(subtarefaId, formData);
 }
 
 export async function criarDocumentoProjetoAction(formData: FormData) {

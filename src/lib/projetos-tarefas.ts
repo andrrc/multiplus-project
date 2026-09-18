@@ -36,7 +36,7 @@ export type DadosSubtarefa = {
   tarefaId: string;
   titulo: string;
   etiquetas?: string[];
-  atribuidoAId?: string | null;
+  atribuidoAId: string;
 };
 
 export type DadosDocumentoProjeto = {
@@ -281,6 +281,24 @@ async function validarResponsavel(
   }
 }
 
+/** Checklist é composto por passos executáveis: cada subtarefa nasce com uma pessoa ativa do cliente. */
+async function validarResponsavelSubtarefa(
+  tx: Prisma.TransactionClient,
+  tarefaId: string,
+  pessoaEnvolvidaId: string,
+): Promise<void> {
+  if (!pessoaEnvolvidaId) throw new Error("Selecione o responsável pela subtarefa.");
+  const pessoa = await tx.pessoaEnvolvida.findFirst({
+    where: {
+      id: pessoaEnvolvidaId,
+      ativo: true,
+      cliente: { projetos: { some: { tarefas: { some: { id: tarefaId } } } } },
+    },
+    select: { id: true },
+  });
+  if (!pessoa) throw new Error("O responsável da subtarefa precisa ser uma pessoa ativa deste cliente.");
+}
+
 export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
   exigirAdministrador(ctx);
   validarDatasProjeto(dados);
@@ -414,16 +432,17 @@ export async function atualizarTarefa(
 
 export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.subtarefa.create({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    await validarResponsavelSubtarefa(tx, dados.tarefaId, dados.atribuidoAId);
+    return tx.subtarefa.create({
       data: {
         tarefaId: dados.tarefaId,
         titulo: validarNome(dados.titulo, "da subtarefa"),
         etiquetas: dados.etiquetas ?? [],
-        atribuidoAId: dados.atribuidoAId ?? null,
+        atribuidoAId: dados.atribuidoAId,
       },
-    }),
-  );
+    });
+  });
 }
 
 export async function atualizarSubtarefa(
@@ -432,16 +451,18 @@ export async function atualizarSubtarefa(
   dados: Omit<DadosSubtarefa, "tarefaId">,
 ) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.subtarefa.update({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
+    await validarResponsavelSubtarefa(tx, atual.tarefaId, dados.atribuidoAId);
+    return tx.subtarefa.update({
       where: { id: subtarefaId },
       data: {
         titulo: validarNome(dados.titulo, "da subtarefa"),
         etiquetas: dados.etiquetas ?? [],
-        atribuidoAId: dados.atribuidoAId ?? null,
+        atribuidoAId: dados.atribuidoAId,
       },
-    }),
-  );
+    });
+  });
 }
 
 export async function criarDocumentoProjeto(ctx: ContextoUsuario, dados: DadosDocumentoProjeto) {
