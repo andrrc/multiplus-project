@@ -44,6 +44,11 @@ function responsavel(valor: string): { responsavelId: string | null; responsavel
   return { responsavelId: valor || null, responsavelUsuarioId: null };
 }
 
+function responsavelSubtarefa(valor: string): { atribuidoAId: string | null; atribuidoAUsuarioId: string | null } {
+  if (valor.startsWith("usuario:")) return { atribuidoAId: null, atribuidoAUsuarioId: valor.slice("usuario:".length) || null };
+  return { atribuidoAId: valor || null, atribuidoAUsuarioId: null };
+}
+
 /** Aceita a saída do campo monetário (`1234.56`) e também vírgula em chamadas diretas. */
 function valorContratado(valor: string): Prisma.Decimal {
   if (!/^\d+(?:[.,]\d{1,2})?$/.test(valor)) {
@@ -148,13 +153,14 @@ export async function atualizarTarefaERedirecionarAction(tarefaId: string, formD
 
 export async function criarSubtarefaAction(formData: FormData) {
   const ctx = await obterContexto();
+  const dadosResponsavel = responsavelSubtarefa(texto(formData, "responsavelId"));
   const subtarefa = await criarSubtarefa(ctx, {
     tarefaId: texto(formData, "tarefaId"),
     titulo: texto(formData, "titulo"),
     etiquetas: texto(formData, "etiquetas")
       ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
       : [],
-    atribuidoAId: texto(formData, "atribuidoAId"),
+    ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
   void subtarefa;
@@ -185,12 +191,13 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
 
 export async function atualizarSubtarefaAction(subtarefaId: string, formData: FormData) {
   const ctx = await obterContexto();
+  const dadosResponsavel = responsavelSubtarefa(texto(formData, "responsavelId"));
   const subtarefa = await atualizarSubtarefa(ctx, subtarefaId, {
     titulo: texto(formData, "titulo"),
     etiquetas: texto(formData, "etiquetas")
       ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
       : [],
-    atribuidoAId: texto(formData, "atribuidoAId"),
+    ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
   return subtarefa;

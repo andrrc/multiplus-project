@@ -117,6 +117,7 @@ model Usuario {
 
   atribuicoes  Atribuicao[]
   tarefasResponsavel Tarefa[] @relation("TarefaResponsavelUsuario")
+  subtarefasResponsavel Subtarefa[] @relation("SubtarefaResponsavelUsuario")
   comentarios  Comentario[]
   notificacoes Notificacao[]
   tokensAcesso TokenAcesso[]
@@ -410,17 +411,20 @@ model Subtarefa {
   desativadoEm  DateTime?
   desativadoPor String?
 
-  // RF-021 / RN-004 — só esta Pessoa Envolvida (ou o ADMIN) pode marcar como concluída.
-  // Migrada de FK Usuario pra FK PessoaEnvolvida no ADR-007 — RLS/trigger agora resolvem
-  // via Usuario.pessoaEnvolvidaId (reverso) pra comparar com este campo.
+  // RF-021 / RN-004 — o responsável pode ser uma Pessoa Envolvida do cliente ou um
+  // integrante ativo da equipe. As duas FKs são mutuamente exclusivas; RLS/trigger
+  // conferem o responsável antes de permitir a conclusão.
   atribuidoAId String?
   atribuidoA   PessoaEnvolvida? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
+  atribuidoAUsuarioId String?
+  atribuidoAUsuario Usuario? @relation("SubtarefaResponsavelUsuario", fields: [atribuidoAUsuarioId], references: [id], onDelete: SetNull)
   comentarios  Comentario[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([ativo])
+  @@index([atribuidoAUsuarioId])
   @@map("subtarefas")
 }
 

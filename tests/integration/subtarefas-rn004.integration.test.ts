@@ -25,6 +25,7 @@ let usuarioAdmin: { id: string };
 let usuarioResponsavel: { id: string };
 let usuarioAdminInternoDono: { id: string };
 let usuarioAdminExternoMesmaTarefa: { id: string };
+let usuarioEquipeResponsavel: { id: string };
 
 async function criarSubtarefaAtribuida() {
   return ownerDb.subtarefa.create({
@@ -32,6 +33,16 @@ async function criarSubtarefaAtribuida() {
       tarefaId: tarefaX.id,
       titulo: "Enviar documento X",
       atribuidoAId: pessoaEnvolvidaResponsavel.id,
+    },
+  });
+}
+
+async function criarSubtarefaAtribuidaAEquipe() {
+  return ownerDb.subtarefa.create({
+    data: {
+      tarefaId: tarefaX.id,
+      titulo: "Revisar parecer técnico",
+      atribuidoAUsuarioId: usuarioEquipeResponsavel.id,
     },
   });
 }
@@ -78,6 +89,9 @@ beforeAll(async () => {
   usuarioAdminExternoMesmaTarefa = await ownerDb.usuario.create({
     data: { nome: "Colega na mesma tarefa", email: "colega-tarefa.rn004@teste.local", perfil: "ADMIN_EXTERNO" },
   });
+  usuarioEquipeResponsavel = await ownerDb.usuario.create({
+    data: { nome: "Técnica responsável", email: "tecnica.rn004@teste.local", perfil: "ADMIN_INTERNO" },
+  });
 
   // usuarioAdminInternoDono tem acesso à tarefa via atribuição de PROJETO (RF-018) —
   // mas não é o atribuído da subtarefa.
@@ -106,6 +120,31 @@ it("a pessoa atribuída à subtarefa (via PessoaEnvolvida) consegue marcar concl
   );
 
   expect(atualizada.concluida).toBe(true);
+});
+
+it("integrante da equipe atribuído diretamente também consegue concluir a própria subtarefa", async () => {
+  const subtarefa = await criarSubtarefaAtribuidaAEquipe();
+
+  const atualizada = await comoUsuario(
+    { usuarioId: usuarioEquipeResponsavel.id, perfil: "ADMIN_INTERNO" },
+    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
+  );
+
+  expect(atualizada.concluida).toBe(true);
+});
+
+it("integrante da equipe responsável não consegue editar a subtarefa nem reabri-la", async () => {
+  const subtarefa = await criarSubtarefaAtribuidaAEquipe();
+  const ctx = { usuarioId: usuarioEquipeResponsavel.id, perfil: "ADMIN_INTERNO" as const };
+
+  await expect(
+    comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Alteração indevida" } })),
+  ).rejects.toThrow(/RN-004/);
+
+  await comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }));
+  await expect(
+    comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: false } })),
+  ).rejects.toThrow(/RN-004/);
 });
 
 it("colaboradores só podem concluir a tarefa dentro do próprio escopo, sem alterar o prazo", async () => {

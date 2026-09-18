@@ -34,7 +34,8 @@ export default async function TarefaDetalhePage({ params }: { params: Promise<{ 
   const { id } = await params;
   const t = await buscarTarefa(ctx, id, true);
   if (!t) notFound();
-  const { pessoas } = await listarPessoasParaProjeto(ctx, t.projeto.clienteId);
+  const { pessoas, usuarios } = await listarPessoasParaProjeto(ctx, t.projeto.clienteId);
+  const haResponsaveis = pessoas.length + usuarios.length > 0;
 
   return (
     <div className="w-full max-w-[980px]">
@@ -62,7 +63,7 @@ export default async function TarefaDetalhePage({ params }: { params: Promise<{ 
       <section className="mt-9 max-w-[860px]">
         <div>
           <h2 className="text-[21px]">Subtarefas <span className="font-[family-name:var(--font-interface)] text-[14px] text-cinza">({t.subtarefas.filter(s => s.concluida).length}/{t.subtarefas.length})</span></h2>
-          <p className="mt-1 text-[14px] text-cinza">Checklist da tarefa: cada etapa menor tem uma pessoa responsável.</p>
+          <p className="mt-1 text-[14px] text-cinza">Checklist da tarefa: cada etapa menor tem um responsável da equipe ou do cliente.</p>
         </div>
 
         <div className="mt-4 overflow-hidden rounded-[3px] border border-linha bg-branco">
@@ -73,7 +74,7 @@ export default async function TarefaDetalhePage({ params }: { params: Promise<{ 
                 <div>
                   <p className={s.concluida ? "text-cinza line-through" : "text-tinta"}>{s.titulo}</p>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 font-[family-name:var(--font-interface)] text-[12px] text-cinza">
-                    <span>Responsável: <strong className="font-medium text-tinta">{s.atribuidoA?.nome ?? "Não definido"}</strong></span>
+                    <span>Responsável: <strong className="font-medium text-tinta">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Não definido"}</strong></span>
                     {s.etiquetas.length > 0 && <span>{s.etiquetas.join(" · ")}</span>}
                   </div>
                 </div>
@@ -85,9 +86,14 @@ export default async function TarefaDetalhePage({ params }: { params: Promise<{ 
                     <input type="hidden" name="titulo" value={s.titulo} />
                     <input type="hidden" name="etiquetas" value={s.etiquetas.join(", ")} />
                     <label className="sr-only" htmlFor={`responsavel-${s.id}`}>Responsável por {s.titulo}</label>
-                    <select id={`responsavel-${s.id}`} name="atribuidoAId" required defaultValue={s.atribuidoAId ?? ""} className="min-h-9 max-w-[210px] rounded-[3px] border border-linha bg-branco px-2 text-[13px] text-tinta focus:border-azul focus:outline-none">
+                    <select id={`responsavel-${s.id}`} name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className="min-h-9 max-w-[210px] rounded-[3px] border border-linha bg-branco px-2 text-[13px] text-tinta focus:border-azul focus:outline-none">
                       <option value="" disabled>Selecione o responsável</option>
-                      {pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}
+                      <optgroup label="Equipe Múltiplus">
+                        {usuarios.map((usuario) => <option key={usuario.id} value={`usuario:${usuario.id}`}>{usuario.nome}{usuario.perfil === "ADMIN" ? " · Administrador" : " · Equipe"}</option>)}
+                      </optgroup>
+                      <optgroup label="Pessoas envolvidas">
+                        {pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}
+                      </optgroup>
                     </select>
                     <button className="min-h-9 rounded-[3px] border border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] text-tinta hover:border-azul">Atualizar</button>
                   </form>
@@ -98,16 +104,24 @@ export default async function TarefaDetalhePage({ params }: { params: Promise<{ 
           ))}
         </div>
 
-        {t.ativo && (pessoas.length > 0 ? (
+        {t.ativo && (haResponsaveis ? (
           <form action={criarSubtarefaAction} className="mt-4 grid gap-2 rounded-[3px] border border-linha bg-branco p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_210px_210px_auto]">
             <input type="hidden" name="tarefaId" value={t.id} />
             <input name="titulo" required placeholder="Nova subtarefa" className={inputClass} />
-            <select name="atribuidoAId" required defaultValue="" className={inputClass}><option value="" disabled>Responsável</option>{pessoas.map(pessoa => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}</select>
+            <select name="responsavelId" required defaultValue="" className={inputClass}>
+              <option value="" disabled>Responsável</option>
+              <optgroup label="Equipe Múltiplus">
+                {usuarios.map((usuario) => <option key={usuario.id} value={`usuario:${usuario.id}`}>{usuario.nome}{usuario.perfil === "ADMIN" ? " · Administrador" : " · Equipe"}</option>)}
+              </optgroup>
+              <optgroup label="Pessoas envolvidas">
+                {pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}
+              </optgroup>
+            </select>
             <input name="etiquetas" placeholder="Etiquetas, separadas por vírgula" className={inputClass} />
             <button className="min-h-11 rounded-[3px] bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">Adicionar</button>
           </form>
         ) : (
-          <p className="mt-4 rounded-[3px] border border-dashed border-linha bg-branco px-4 py-3 text-[14px] text-cinza">Cadastre uma Pessoa Envolvida ativa para atribuir subtarefas deste cliente.</p>
+          <p className="mt-4 rounded-[3px] border border-dashed border-linha bg-branco px-4 py-3 text-[14px] text-cinza">Cadastre uma pessoa envolvida ou um integrante ativo da equipe para atribuir subtarefas.</p>
         ))}
       </section>
 

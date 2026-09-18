@@ -121,6 +121,17 @@ describe("CRUD protegido no servidor", () => {
     expect(documento.projetoId).toBe(projeto.id);
   });
 
+  it("Administrador pode atribuir uma subtarefa à Talita ou a integrante ativa da equipe", async () => {
+    const subtarefa = await criarSubtarefa(ctxAdmin(), {
+      tarefaId: tarefa.id,
+      titulo: "Validar documentação",
+      atribuidoAUsuarioId: admin.id,
+    });
+
+    expect(subtarefa.atribuidoAUsuarioId).toBe(admin.id);
+    expect(subtarefa.atribuidoAId).toBeNull();
+  });
+
   it("recusa responsável de subtarefa ausente ou que não pertence ao cliente", async () => {
     await expect(
       criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Sem responsável", atribuidoAId: "" }),
@@ -128,6 +139,14 @@ describe("CRUD protegido no servidor", () => {
     await expect(
       criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Pessoa incorreta", atribuidoAId: "pessoa-inexistente" }),
     ).rejects.toThrow(/pessoa ativa deste cliente/);
+    await expect(
+      criarSubtarefa(ctxAdmin(), {
+        tarefaId: tarefa.id,
+        titulo: "Dois responsáveis",
+        atribuidoAId: pessoa.id,
+        atribuidoAUsuarioId: admin.id,
+      }),
+    ).rejects.toThrow(/apenas um responsável/);
   });
 
   it("colaborador não acessa CRUD administrativo", async () => {
