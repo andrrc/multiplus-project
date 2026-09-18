@@ -24,9 +24,15 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
             </div>
             <p className="mt-2 whitespace-pre-wrap text-[14px] leading-6 text-tinta">{comentario.texto}</p>
             {comentario.imagemChave && (
-              /* Imagem autenticada é entregue por rota interna, não por um host configurável do next/image. */
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={`/api/comentarios/imagem/${comentario.id}`} alt="Imagem anexada ao comentário" className="mt-3 max-h-72 max-w-full object-contain" />
+              <div className="mt-3">
+                {/* Imagem autenticada é entregue por rota interna, não por um host configurável do next/image. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/api/comentarios/imagem/${comentario.id}`} alt="Imagem anexada ao comentário" className="max-h-72 max-w-full object-contain" />
+                <a href={`/api/comentarios/imagem/${comentario.id}?download=1`} download className="mt-2 inline-flex min-h-9 items-center gap-2 border border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-azul-esc hover:border-azul hover:bg-papel">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]"><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></svg>
+                  Salvar imagem
+                </a>
+              </div>
             )}
             {comentario.link && (
               <a href={comentario.link} target="_blank" rel="noreferrer" title={comentario.link} className="mt-3 flex items-center gap-3 border-l-[3px] border-verde bg-verde-cl px-3 py-2.5 font-[family-name:var(--font-interface)] hover:bg-branco focus-visible:outline-none">
