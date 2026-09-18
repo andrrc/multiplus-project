@@ -14,19 +14,21 @@ function pertenceAoGrupo(pathname: string) {
   );
 }
 
-function GrupoProjetosETarefas({ itens }: { itens: ItemMenu[] }) {
-  const pathname = usePathname();
-  const [aberto, setAberto] = useState(false);
-
-  const grupoAtivo = pertenceAoGrupo(pathname);
-  const expandido = grupoAtivo || aberto;
+function GrupoProjetosETarefas({
+  itens,
+  grupoAtivo,
+}: {
+  itens: ItemMenu[];
+  grupoAtivo: boolean;
+}) {
+  const [aberto, setAberto] = useState(grupoAtivo);
 
   return (
     <div className="mt-0.5">
       <button
         type="button"
         onClick={() => setAberto((valor) => !valor)}
-        aria-expanded={expandido}
+        aria-expanded={aberto}
         aria-controls="menu-projetos-e-tarefas"
         className={`flex w-full items-center justify-between border-l-[3px] py-2.5 pr-4 pl-[13px] text-left font-[family-name:var(--font-interface)] text-[14px] font-medium transition-colors ${
           grupoAtivo
@@ -38,7 +40,7 @@ function GrupoProjetosETarefas({ itens }: { itens: ItemMenu[] }) {
         <svg
           aria-hidden="true"
           viewBox="0 0 16 16"
-          className={`h-4 w-4 shrink-0 transition-transform ${expandido ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 transition-transform ${aberto ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -47,7 +49,7 @@ function GrupoProjetosETarefas({ itens }: { itens: ItemMenu[] }) {
         </svg>
       </button>
 
-      {expandido ? (
+      {aberto ? (
         <div id="menu-projetos-e-tarefas" className="mt-0.5 border-l border-[color:var(--tinta2)]">
           {itens.map((item) => (
             <NavLink key={item.href} href={item.href} nivel="filho">
@@ -63,6 +65,7 @@ function GrupoProjetosETarefas({ itens }: { itens: ItemMenu[] }) {
 /** A organização visual não altera o MENU, que também é a fonte das permissões de rota. */
 export function NavegacaoPainel({ perfil }: { perfil: Perfil }) {
   const itens = menuDoPerfil(perfil);
+  const pathname = usePathname();
 
   if (perfil !== "ADMIN") {
     return itens.map((item) => (
@@ -89,7 +92,11 @@ export function NavegacaoPainel({ perfil }: { perfil: Perfil }) {
           {item.rotulo}
         </NavLink>
       ))}
-      <GrupoProjetosETarefas itens={grupo} />
+      <GrupoProjetosETarefas
+        key={pathname}
+        itens={grupo}
+        grupoAtivo={pertenceAoGrupo(pathname)}
+      />
       {diretos.slice(1).map((item) => (
         <NavLink key={item.href} href={item.href}>
           {item.rotulo}
