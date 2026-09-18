@@ -14,6 +14,7 @@ import {
   buscarTarefa,
   buscarTarefaParaColaborador,
   buscarProjetoAtribuido,
+  listarProjetosAtribuidos,
   listarTarefasAtribuidas,
 } from "@/lib/projetos-tarefas";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
@@ -24,7 +25,7 @@ const data = (valor: string) => new Date(`${valor}T00:00:00.000Z`);
 let admin: { id: string };
 let interno: { id: string };
 let externo: { id: string };
-let cliente: { id: string };
+let cliente: { id: string; razaoSocial: string };
 let pessoa: { id: string };
 let projeto: { id: string; clienteId: string; status: StatusProjeto };
 let tarefa: { id: string; projetoId: string; serieId: string | null; periodicidade: Periodicidade | null; prazoOriginal: Date | null };
@@ -155,7 +156,7 @@ describe("CRUD protegido no servidor", () => {
     expect(atualizada).toMatchObject({ atribuidoAUsuarioId: interno.id, atribuidoAId: null });
   });
 
-  it("responsável apenas por subtarefa encontra a tarefa, mas não ganha acesso ao projeto inteiro", async () => {
+  it("responsável por subtarefa vê o cliente e projeto relacionados, mas somente a tarefa em que foi mencionado", async () => {
     const minha = await criarSubtarefa(ctxAdmin(), {
       tarefaId: tarefa.id,
       titulo: "Item do colaborador interno",
@@ -174,9 +175,50 @@ describe("CRUD protegido no servidor", () => {
     expect(detalhe?.subtarefas.map((item) => item.id)).toContain(minha.id);
     expect(detalhe?.subtarefas.every((item) => item.atribuidoAUsuarioId === interno.id)).toBe(true);
     expect(detalhe?.podeConcluirTarefa).toBe(false);
-    await expect(buscarProjetoAtribuido(ctxInterno(), projeto.id)).resolves.toBeNull();
+    const projetoVisivel = await buscarProjetoAtribuido(ctxInterno(), projeto.id);
+    expect(projetoVisivel?.cliente.razaoSocial).toBe(cliente.razaoSocial);
+    expect(projetoVisivel?.tarefas.map((item) => item.id)).toEqual([tarefa.id]);
+    const outroProjeto = await criarProjeto(ctxAdmin(), { clienteId: cliente.id, nome: "Projeto sem menção" });
+    await criarTarefa(ctxAdmin(), { projetoId: outroProjeto.id, nome: "Tarefa de outra equipe", prazo: data("2026-07-01") });
+    const projetos = await listarProjetosAtribuidos(ctxInterno());
+    expect(projetos.map((item) => item.id)).toContain(projeto.id);
+    expect(projetos.map((item) => item.id)).not.toContain(outroProjeto.id);
+    await expect(buscarProjetoAtribuido(ctxInterno(), outroProjeto.id)).resolves.toBeNull();
+    expect(await ownerDb.usuario.findUnique({ where: { id: interno.id }, select: { pessoaEnvolvidaId: true } })).toEqual({ pessoaEnvolvidaId: null });
+    expect(await ownerDb.atribuicao.findMany({ where: { usuarioId: interno.id } })).toEqual([]);
     await expect(concluirSubtarefa(ctxInterno(), minha.id)).resolves.toMatchObject({ concluida: true });
     await expect(concluirTarefa(ctxInterno(), tarefa.id)).rejects.toThrow();
+  });
+
+  it("responsável direto da tarefa vê apenas o projeto e a tarefa relacionados", async () => {
+    const projetoDireto = await criarProjeto(ctxAdmin(), { clienteId: cliente.id, nome: "Projeto de responsabilidade direta" });
+    const minhaTarefa = await criarTarefa(ctxAdmin(), {
+      projetoId: projetoDireto.id,
+      nome: "Tarefa do colaborador interno",
+      prazo: data("2026-08-10"),
+      responsavelUsuarioId: interno.id,
+    });
+    await criarTarefa(ctxAdmin(), { projetoId: projetoDireto.id, nome: "Tarefa não atribuída", prazo: data("2026-08-11") });
+
+    const detalhe = await buscarProjetoAtribuido(ctxInterno(), projetoDireto.id);
+    expect(detalhe?.cliente.razaoSocial).toBe(cliente.razaoSocial);
+    expect(detalhe?.tarefas.map((item) => item.id)).toEqual([minhaTarefa.id]);
+    expect((await buscarTarefaParaColaborador(ctxInterno(), minhaTarefa.id))?.podeConcluirTarefa).toBe(true);
+    await expect(concluirTarefa(ctxInterno(), minhaTarefa.id)).resolves.toMatchObject({ tarefa: { id: minhaTarefa.id } });
+  });
+
+  it("colaborador externo responsável só por subtarefa vê o mesmo contexto restrito", async () => {
+    const externoDireto = await ownerDb.usuario.create({
+      data: { nome: "Externo de subtarefa", email: "externo-subtarefa@teste.local", perfil: "ADMIN_EXTERNO" },
+    });
+    const projetoExterno = await criarProjeto(ctxAdmin(), { clienteId: cliente.id, nome: "Projeto de subtarefa externa" });
+    const minhaTarefa = await criarTarefa(ctxAdmin(), { projetoId: projetoExterno.id, nome: "Tarefa visível ao externo", prazo: data("2026-09-10") });
+    await criarTarefa(ctxAdmin(), { projetoId: projetoExterno.id, nome: "Tarefa invisível ao externo", prazo: data("2026-09-11") });
+    await criarSubtarefa(ctxAdmin(), { tarefaId: minhaTarefa.id, titulo: "Item externo", atribuidoAUsuarioId: externoDireto.id });
+
+    const projetoVisivel = await buscarProjetoAtribuido({ usuarioId: externoDireto.id, perfil: "ADMIN_EXTERNO" }, projetoExterno.id);
+    expect(projetoVisivel?.cliente.razaoSocial).toBe(cliente.razaoSocial);
+    expect(projetoVisivel?.tarefas.map((item) => item.id)).toEqual([minhaTarefa.id]);
   });
 
   it("recusa responsável de subtarefa ausente ou que não pertence ao cliente", async () => {

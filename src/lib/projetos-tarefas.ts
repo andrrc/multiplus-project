@@ -171,11 +171,14 @@ export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, inclu
 }
 
 export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
-  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Visão exclusiva do Colaborador Interno.");
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
-    const atribuicoes = await tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO" }, select: { entidadeId: true } });
+    const [atribuicoes, tarefas] = await Promise.all([
+      tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO" }, select: { entidadeId: true } }),
+      tx.tarefa.findMany({ where: { ativo: true }, select: { projetoId: true } }),
+    ]);
     return tx.projeto.findMany({
-      where: { id: { in: atribuicoes.map((a) => a.entidadeId) }, ativo: true },
+      where: { id: { in: [...atribuicoes.map((a) => a.entidadeId), ...tarefas.map((tarefa) => tarefa.projetoId)] }, ativo: true },
       include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true } } },
       orderBy: { dataPrevistaConclusao: "asc" },
     });
@@ -183,10 +186,13 @@ export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
 }
 
 export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: string) {
-  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Visão exclusiva do Colaborador Interno.");
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
-    const acesso = await tx.atribuicao.findFirst({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO", entidadeId: projetoId } });
-    if (!acesso) return null;
+    const [acessoAoProjeto, tarefas] = await Promise.all([
+      tx.atribuicao.findFirst({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO", entidadeId: projetoId } }),
+      tx.tarefa.findMany({ where: { projetoId, ativo: true }, select: { id: true } }),
+    ]);
+    if (!acessoAoProjeto && tarefas.length === 0) return null;
     return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { concluida: true } } }, orderBy: { prazo: "asc" } } } });
   });
 }
@@ -206,11 +212,18 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
         ...(usuario?.pessoaEnvolvidaId ? [{ atribuidoAId: usuario.pessoaEnvolvidaId }] : []),
       ],
     };
+    const responsavelDaTarefa = {
+      OR: [
+        { responsavelUsuarioId: ctx.usuarioId },
+        ...(usuario?.pessoaEnvolvidaId ? [{ responsavelId: usuario.pessoaEnvolvidaId }] : []),
+      ],
+    };
     return tx.tarefa.findMany({
       where: {
         ativo: true,
         OR: [
           { id: { in: atribuicoes.map((a) => a.entidadeId) } },
+          responsavelDaTarefa,
           { subtarefas: { some: { ativo: true, ...responsavelDaSubtarefa } } },
         ],
       },
@@ -228,7 +241,7 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       tx.tarefa.findFirst({
       where: { id: tarefaId, ativo: true },
       select: {
-        id: true, projetoId: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true,
+        id: true, projetoId: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true, responsavelUsuarioId: true,
         projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
         subtarefas: {
           where: { ativo: true },
@@ -248,9 +261,11 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       where: { usuarioId: ctx.usuarioId, OR: [{ entidadeTipo: "PROJETO", entidadeId: tarefa.projetoId }, { entidadeTipo: "TAREFA", entidadeId: tarefa.id }] },
       select: { entidadeTipo: true },
     });
-    const podeConcluirTarefa = ctx.perfil === "ADMIN_INTERNO"
+    const responsavelDiretoDaTarefa = tarefa.responsavelUsuarioId === ctx.usuarioId
+      || (usuario?.pessoaEnvolvidaId != null && tarefa.responsavelId === usuario.pessoaEnvolvidaId);
+    const podeConcluirTarefa = responsavelDiretoDaTarefa || (ctx.perfil === "ADMIN_INTERNO"
       ? atribuicoes.some((a) => a.entidadeTipo === "PROJETO")
-      : atribuicoes.some((a) => a.entidadeTipo === "TAREFA");
+      : atribuicoes.some((a) => a.entidadeTipo === "TAREFA"));
 
     return {
       ...tarefa,

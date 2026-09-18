@@ -124,9 +124,9 @@ describe("RF-043 — guarda de rota", () => {
     expect(JSON.parse(literal!)).toBe(PADRAO_ROTAS_DO_PROXY);
   });
 
-  it("colaborador interno pode abrir a lista de tarefas, mas externo não alcança Meus Projetos", () => {
+  it("colaboradores podem abrir as listas contextuais de tarefas e projetos", () => {
     expect(perfilPodeAcessar("ADMIN_INTERNO", "/minhas-tarefas")).toBe(true);
-    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-projetos")).toBe(false);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-projetos")).toBe(true);
   });
 });
 
