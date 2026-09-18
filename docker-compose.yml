@@ -57,7 +57,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       APP_DATABASE_URL: postgresql://multiplus_app:${APP_DATABASE_PASSWORD:-dev-local-only-app}@postgres:5432/${POSTGRES_DB}?schema=public
       AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_URL: ${AUTH_URL}
+      AUTH_URL: https://${APP_DOMAIN}
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_USE_SSL: "false"
