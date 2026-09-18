@@ -16,6 +16,7 @@ import {
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
 import { StatusProjeto, StatusTarefa, Periodicidade } from "@prisma/client";
+import { criarComentario } from "@/lib/comentarios";
 
 function texto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
@@ -134,6 +135,17 @@ export async function criarSubtarefaAction(formData: FormData) {
 
 export async function criarSubtarefaFormAction(formData: FormData): Promise<void> {
   await criarSubtarefaAction(formData);
+}
+
+export async function criarComentarioAction(formData: FormData): Promise<void> {
+  const ctx = await obterContexto();
+  const nivel = texto(formData, "nivel");
+  const id = texto(formData, "entidadeId");
+  const alvo = nivel === "projeto" ? { projetoId: id } : nivel === "tarefa" ? { tarefaId: id } : { subtarefaId: id };
+  await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"));
+  if (nivel === "projeto") revalidatePath(`/projetos/${id}`);
+  if (nivel === "tarefa") revalidatePath(`/tarefas/${id}`);
+  if (nivel === "subtarefa") revalidatePath(`/tarefas/${texto(formData, "tarefaId")}`);
 }
 
 export async function atualizarSubtarefaAction(subtarefaId: string, formData: FormData) {

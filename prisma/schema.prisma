@@ -108,6 +108,7 @@ model Usuario {
   pessoaEnvolvida   PessoaEnvolvida? @relation(fields: [pessoaEnvolvidaId], references: [id])
 
   atribuicoes  Atribuicao[]
+  comentarios  Comentario[]
   tokensAcesso TokenAcesso[]
 
   criadoEm     DateTime @default(now())
@@ -161,6 +162,7 @@ model Cliente {
   pontoContato      PontoContato?
   pessoasEnvolvidas PessoaEnvolvida[]
   documentos        Documento[]
+  comentarios       Comentario[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -328,8 +330,9 @@ model Projeto {
   desativadoEm          DateTime?
   desativadoPor         String?
 
-  tarefas    Tarefa[]
-  documentos Documento[]
+  tarefas     Tarefa[]
+  documentos  Documento[]
+  comentarios Comentario[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -361,7 +364,8 @@ model Tarefa {
   responsavelId String?
   responsavel   PessoaEnvolvida? @relation("TarefaResponsavel", fields: [responsavelId], references: [id])
 
-  subtarefas Subtarefa[]
+  subtarefas  Subtarefa[]
+  comentarios Comentario[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -387,12 +391,37 @@ model Subtarefa {
   // via Usuario.pessoaEnvolvidaId (reverso) pra comparar com este campo.
   atribuidoAId String?
   atribuidoA   PessoaEnvolvida? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
+  comentarios  Comentario[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([ativo])
   @@map("subtarefas")
+}
+
+/// RF-016/RF-047 — comentário imutável, ligado a exatamente um nível da hierarquia.
+model Comentario {
+  id          String     @id @default(cuid())
+  texto       String
+  link        String?
+  imagemChave String?
+  autorId     String
+  autor       Usuario    @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  projetoId   String?
+  projeto     Projeto?   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  tarefaId    String?
+  tarefa      Tarefa?    @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  subtarefaId String?
+  subtarefa   Subtarefa? @relation(fields: [subtarefaId], references: [id], onDelete: Cascade)
+  criadoEm    DateTime   @default(now())
+  cliente     Cliente?   @relation(fields: [clienteId], references: [id])
+  clienteId   String?
+
+  @@index([projetoId, criadoEm])
+  @@index([tarefaId, criadoEm])
+  @@index([subtarefaId, criadoEm])
+  @@map("comentarios")
 }
 
 /// Tabela polimórfica (ADR-004): registra que `usuario` tem acesso a `entidadeId`,
