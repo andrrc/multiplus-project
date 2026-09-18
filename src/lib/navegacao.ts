@@ -28,7 +28,7 @@ export const MENU: ItemMenu[] = [
   { href: "/notificacoes", rotulo: "Notificações", perfis: ["ADMIN"] },
   { href: "/tarefas", rotulo: "Tarefas", perfis: ["ADMIN"] },
   { href: "/meus-projetos", rotulo: "Meus Projetos", perfis: ["ADMIN_INTERNO"] },
-  { href: "/minhas-tarefas", rotulo: "Minhas Tarefas", perfis: ["ADMIN_EXTERNO"] },
+  { href: "/minhas-tarefas", rotulo: "Minhas Tarefas", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },
   {
     href: "/meu-perfil",
     rotulo: "Meu Perfil",
@@ -53,7 +53,7 @@ export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
  */
 export const TELA_INICIAL: Record<Perfil, string> = {
   ADMIN: "/prazos",
-  ADMIN_INTERNO: "/meus-projetos",
+  ADMIN_INTERNO: "/minhas-tarefas",
   ADMIN_EXTERNO: "/minhas-tarefas",
   CLIENTE: "/meu-perfil",
 };
@@ -91,8 +91,6 @@ export function proxyAvaliaCaminho(pathname: string): boolean {
 
 export function perfilPodeAcessar(perfil: Perfil, pathname: string): boolean {
   if (pathname === "/") return true;
-
-  if (pathname.startsWith("/minhas-tarefas/") && perfil === "ADMIN_INTERNO") return true;
 
   const item = MENU.find(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),

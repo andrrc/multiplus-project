@@ -12,6 +12,9 @@ import {
   desativarOuReativar,
   atualizarSubtarefa,
   buscarTarefa,
+  buscarTarefaParaColaborador,
+  buscarProjetoAtribuido,
+  listarTarefasAtribuidas,
 } from "@/lib/projetos-tarefas";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
 import { comoUsuario, ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
@@ -152,6 +155,30 @@ describe("CRUD protegido no servidor", () => {
     expect(atualizada).toMatchObject({ atribuidoAUsuarioId: interno.id, atribuidoAId: null });
   });
 
+  it("responsável apenas por subtarefa encontra a tarefa, mas não ganha acesso ao projeto inteiro", async () => {
+    const minha = await criarSubtarefa(ctxAdmin(), {
+      tarefaId: tarefa.id,
+      titulo: "Item do colaborador interno",
+      atribuidoAUsuarioId: interno.id,
+    });
+    await criarSubtarefa(ctxAdmin(), {
+      tarefaId: tarefa.id,
+      titulo: "Item de outra pessoa",
+      atribuidoAUsuarioId: admin.id,
+    });
+
+    const tarefas = await listarTarefasAtribuidas(ctxInterno());
+    expect(tarefas.map((item) => item.id)).toContain(tarefa.id);
+
+    const detalhe = await buscarTarefaParaColaborador(ctxInterno(), tarefa.id);
+    expect(detalhe?.subtarefas.map((item) => item.id)).toContain(minha.id);
+    expect(detalhe?.subtarefas.every((item) => item.atribuidoAUsuarioId === interno.id)).toBe(true);
+    expect(detalhe?.podeConcluirTarefa).toBe(false);
+    await expect(buscarProjetoAtribuido(ctxInterno(), projeto.id)).resolves.toBeNull();
+    await expect(concluirSubtarefa(ctxInterno(), minha.id)).resolves.toMatchObject({ concluida: true });
+    await expect(concluirTarefa(ctxInterno(), tarefa.id)).rejects.toThrow();
+  });
+
   it("recusa responsável de subtarefa ausente ou que não pertence ao cliente", async () => {
     await expect(
       criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Sem responsável", atribuidoAId: "" }),
@@ -197,7 +224,7 @@ describe("conclusão transacional", () => {
   });
 
   it("responsável conclui subtarefa, mas colaborador sem atribuição específica não consegue", async () => {
-    const atribuida = await ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: tarefa.id } });
+    const atribuida = await ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: tarefa.id, atribuidoAId: pessoa.id } });
     await expect(concluirSubtarefa(ctxExterno(), atribuida.id)).resolves.toMatchObject({ concluida: true });
 
     const outra = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Outra subtarefa", atribuidoAId: pessoa.id });

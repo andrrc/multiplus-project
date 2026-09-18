@@ -192,11 +192,28 @@ export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: st
 }
 
 export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
-  if (ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva do Colaborador Externo.");
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") {
+    throw new Error("Visão exclusiva de colaboradores.");
+  }
   return comContextoDeUsuario(ctx, async (tx) => {
-    const atribuicoes = await tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "TAREFA" }, select: { entidadeId: true } });
+    const [usuario, atribuicoes] = await Promise.all([
+      tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } }),
+      tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "TAREFA" }, select: { entidadeId: true } }),
+    ]);
+    const responsavelDaSubtarefa = {
+      OR: [
+        { atribuidoAUsuarioId: ctx.usuarioId },
+        ...(usuario?.pessoaEnvolvidaId ? [{ atribuidoAId: usuario.pessoaEnvolvidaId }] : []),
+      ],
+    };
     return tx.tarefa.findMany({
-      where: { id: { in: atribuicoes.map((a) => a.entidadeId) }, ativo: true },
+      where: {
+        ativo: true,
+        OR: [
+          { id: { in: atribuicoes.map((a) => a.entidadeId) } },
+          { subtarefas: { some: { ativo: true, ...responsavelDaSubtarefa } } },
+        ],
+      },
       include: { projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } }, subtarefas: { where: { ativo: true }, select: { concluida: true } } },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
@@ -205,11 +222,13 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
 
 export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId: string) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.tarefa.findFirst({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const [usuario, tarefa] = await Promise.all([
+      tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } }),
+      tx.tarefa.findFirst({
       where: { id: tarefaId, ativo: true },
       select: {
-        id: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true,
+        id: true, projetoId: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true,
         projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
         subtarefas: {
           where: { ativo: true },
@@ -221,8 +240,28 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
           },
         },
       },
-    }),
-  );
+      }),
+    ]);
+    if (!tarefa) return null;
+
+    const atribuicoes = await tx.atribuicao.findMany({
+      where: { usuarioId: ctx.usuarioId, OR: [{ entidadeTipo: "PROJETO", entidadeId: tarefa.projetoId }, { entidadeTipo: "TAREFA", entidadeId: tarefa.id }] },
+      select: { entidadeTipo: true },
+    });
+    const podeConcluirTarefa = ctx.perfil === "ADMIN_INTERNO"
+      ? atribuicoes.some((a) => a.entidadeTipo === "PROJETO")
+      : atribuicoes.some((a) => a.entidadeTipo === "TAREFA");
+
+    return {
+      ...tarefa,
+      podeConcluirTarefa,
+      subtarefas: tarefa.subtarefas.map((subtarefa) => ({
+        ...subtarefa,
+        responsavelDaSessao: subtarefa.atribuidoAUsuarioId === ctx.usuarioId
+          || (usuario?.pessoaEnvolvidaId != null && subtarefa.atribuidoAId === usuario.pessoaEnvolvidaId),
+      })),
+    };
+  });
 }
 
 function exigirAdministrador(ctx: ContextoUsuario): void {
