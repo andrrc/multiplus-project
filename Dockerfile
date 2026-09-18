@@ -12,6 +12,8 @@ RUN npm ci
 # --- builder: gera o build de produção (standalone) ---
 FROM base AS builder
 WORKDIR /app
+ARG APP_DATABASE_URL=postgresql://multiplus_app:build-only@localhost:5432/multiplus
+ENV APP_DATABASE_URL=${APP_DATABASE_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

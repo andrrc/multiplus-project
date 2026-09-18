@@ -54,7 +54,8 @@ services:
       minio:
         condition: service_healthy
     environment:
-      DATABASE_URL: ${APP_DATABASE_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      APP_DATABASE_URL: postgresql://multiplus_app:${APP_DATABASE_PASSWORD:-dev-local-only-app}@postgres:5432/${POSTGRES_DB}?schema=public
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: ${AUTH_URL}
       MINIO_ENDPOINT: minio
