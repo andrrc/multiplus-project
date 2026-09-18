@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import type { TipoCliente } from "@prisma/client";
 import { heredarDadosPontoContato, type DadosPessoa } from "@/lib/heranca-pessoa";
 import { ORIGENS_CONTATO, PORTES_EMPRESA, ehOpcaoOutro, ehSegmentoCustomizado, segmentosPorTipo } from "@/lib/opcoes-cliente";
-import { mascararCpf } from "@/lib/formatacao";
+import { formatarCnpj, formatarCpf, mascararCpf } from "@/lib/formatacao";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import { SeletorLocalidade } from "../../seletor-localidade";
 import { atualizarClienteAction } from "./actions";
@@ -41,7 +41,7 @@ function CamposPessoa({
         <input disabled={disabled} value={valores.rg} onChange={(e) => set("rg", e.target.value)} className={inputClass} />
       </Campo>
       <Campo label="CPF">
-        <input disabled={disabled} value={valores.cpf} onChange={(e) => set("cpf", mascararCpf(e.target.value))} className={inputClass} />
+        <input disabled={disabled} value={mascararCpf(valores.cpf)} onChange={(e) => set("cpf", mascararCpf(e.target.value))} inputMode="numeric" placeholder="000.000.000-00" className={inputClass} />
       </Campo>
     </div>
   );
@@ -234,7 +234,7 @@ export function EditarClienteForm({
         <SecaoNumerada numero={1} titulo="Dados da empresa">
           <div className="flex flex-col gap-4">
             <Campo label="CNPJ">
-              <input disabled value={valoresIniciais.cnpj} className={inputClass} />
+              <input disabled value={formatarCnpj(valoresIniciais.cnpj)} className={inputClass} />
             </Campo>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Campo label="Razão social" obrigatorio>
@@ -272,7 +272,7 @@ export function EditarClienteForm({
         <SecaoNumerada numero={1} titulo="Dados pessoais">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo label="CPF">
-              <input disabled value={valoresIniciais.cpf} className={inputClass} />
+              <input disabled value={formatarCpf(valoresIniciais.cpf)} className={inputClass} />
             </Campo>
             <Campo label="Nome" obrigatorio>
               <input required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} />

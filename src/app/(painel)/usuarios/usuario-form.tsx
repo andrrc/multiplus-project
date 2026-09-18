@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import type { Perfil } from "@prisma/client";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import type { OpcaoAtribuicao } from "@/lib/usuarios";
+import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
 
 export type EstadoFormularioUsuario = {
   erro?: string;
@@ -125,6 +126,8 @@ export function UsuarioForm({
   const [tipoPessoa, setTipoPessoa] = useState<"PESSOA" | "EMPRESA">(
     inicial?.cnpj ? "EMPRESA" : "PESSOA",
   );
+  const [cpf, setCpf] = useState(() => (inicial?.cpf ? mascararCpf(inicial.cpf) : ""));
+  const [cnpj, setCnpj] = useState(() => (inicial?.cnpj ? mascararCnpj(inicial.cnpj) : ""));
 
   const descricaoPerfil = PERFIS.find((p) => p.valor === perfil)?.explicacao;
 
@@ -219,8 +222,11 @@ export function UsuarioForm({
               <Campo label="CPF">
                 <input
                   name="cpf"
-                  defaultValue={inicial?.cpf ?? ""}
+                  value={cpf}
+                  onChange={(evento) => setCpf(mascararCpf(evento.target.value))}
                   autoComplete="off"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
                   className={inputClass}
                   aria-invalid={estado.campo === "cpf" || undefined}
                 />
@@ -229,8 +235,11 @@ export function UsuarioForm({
               <Campo label="CNPJ">
                 <input
                   name="cnpj"
-                  defaultValue={inicial?.cnpj ?? ""}
+                  value={cnpj}
+                  onChange={(evento) => setCnpj(mascararCnpj(evento.target.value))}
                   autoComplete="off"
+                  inputMode="numeric"
+                  placeholder="00.000.000/0000-00"
                   className={inputClass}
                   aria-invalid={estado.campo === "cnpj" || undefined}
                 />

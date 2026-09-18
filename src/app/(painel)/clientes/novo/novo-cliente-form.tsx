@@ -91,8 +91,10 @@ function CamposPessoa({
       <Campo label="CPF">
         <input
           disabled={disabled}
-          value={valores.cpf}
+          value={mascararCpf(valores.cpf)}
           onChange={(e) => set("cpf", mascararCpf(e.target.value))}
+          inputMode="numeric"
+          placeholder="000.000.000-00"
           className={inputClass}
         />
       </Campo>
@@ -331,6 +333,7 @@ export function NovoClienteForm() {
                   required
                   value={cnpj}
                   onChange={(e) => setCnpj(mascararCnpj(e.target.value))}
+                  inputMode="numeric"
                   className={`${inputClass} flex-1`}
                   placeholder="00.000.000/0000-00"
                 />
@@ -401,7 +404,7 @@ export function NovoClienteForm() {
               <input required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} />
             </Campo>
             <Campo label="CPF" obrigatorio>
-              <input required value={cpf} onChange={(e) => setCpf(mascararCpf(e.target.value))} className={inputClass} />
+              <input required value={cpf} onChange={(e) => setCpf(mascararCpf(e.target.value))} inputMode="numeric" placeholder="000.000.000-00" className={inputClass} />
             </Campo>
             <Campo label="E-mail">
               <input type="email" value={emailPf} onChange={(e) => setEmailPf(e.target.value)} className={inputClass} />
@@ -527,6 +530,8 @@ export function NovoClienteForm() {
                         <input
                           value={pessoa.cpf}
                           onChange={(e) => set("cpf", mascararCpf(e.target.value))}
+                          inputMode="numeric"
+                          placeholder="000.000.000-00"
                           className={inputClass}
                         />
                       </Campo>
@@ -535,6 +540,8 @@ export function NovoClienteForm() {
                         <input
                           value={pessoa.cnpj}
                           onChange={(e) => set("cnpj", mascararCnpj(e.target.value))}
+                          inputMode="numeric"
+                          placeholder="00.000.000/0000-00"
                           className={inputClass}
                         />
                       </Campo>

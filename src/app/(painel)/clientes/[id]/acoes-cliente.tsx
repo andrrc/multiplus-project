@@ -3,6 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { inputClass } from "@/ui/campo";
 import type { EntidadeDesativavel } from "@/lib/desativacao";
+import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
 import {
   adicionarDocumentoAction,
   adicionarPessoaEnvolvidaAction,
@@ -29,6 +30,8 @@ function useFecharAoSucesso(sucessoEm: number | undefined, setAberto: (aberto: b
 export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) {
   const [aberto, setAberto] = useState(false);
   const [tipo, setTipo] = useState<"PESSOA" | "EMPRESA">("PESSOA");
+  const [cpf, setCpf] = useState("");
+  const [cnpj, setCnpj] = useState("");
   const [estado, formAction, pendente] = useActionState(
     adicionarPessoaEnvolvidaAction.bind(null, clienteId),
     {},
@@ -76,9 +79,23 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
       </div>
       <input name="nome" required placeholder={tipo === "EMPRESA" ? "Razão social" : "Nome"} className={inputClass} />
       {tipo === "PESSOA" ? (
-        <input name="cpf" placeholder="CPF (opcional)" className={inputClass} />
+        <input
+          name="cpf"
+          value={cpf}
+          onChange={(evento) => setCpf(mascararCpf(evento.target.value))}
+          inputMode="numeric"
+          placeholder="CPF (opcional): 000.000.000-00"
+          className={inputClass}
+        />
       ) : (
-        <input name="cnpj" placeholder="CNPJ (opcional)" className={inputClass} />
+        <input
+          name="cnpj"
+          value={cnpj}
+          onChange={(evento) => setCnpj(mascararCnpj(evento.target.value))}
+          inputMode="numeric"
+          placeholder="CNPJ (opcional): 00.000.000/0000-00"
+          className={inputClass}
+        />
       )}
       <input name="telefone" required placeholder="Telefone" className={inputClass} />
       <input name="email" required type="email" placeholder="E-mail" className={inputClass} />
