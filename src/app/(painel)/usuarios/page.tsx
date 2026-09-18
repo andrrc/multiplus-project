@@ -56,7 +56,7 @@ function Atribuicoes({ usuario }: { usuario: UsuarioDaListagem }) {
 function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
   return (
     <li
-      className={`flex flex-col gap-3 border-b border-linha px-5 py-4 last:border-b-0 sm:flex-row sm:items-center sm:gap-5 ${
+      className={`flex flex-col gap-5 border-b border-linha px-5 py-5 last:border-b-0 md:flex-row md:items-start md:justify-between ${
         usuario.ativo ? "bg-branco" : "bg-papel"
       }`}
     >
@@ -76,35 +76,43 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
             Pessoa envolvida de {usuario.origemPessoaEnvolvida.cliente}
           </p>
         )}
+
+        <dl className="mt-4 grid max-w-[690px] gap-x-6 gap-y-3 sm:grid-cols-3">
+          <div>
+            <dt className="text-[12px] text-cinza">Perfil</dt>
+            <dd className="mt-0.5 text-[14px] text-tinta">{NOME_PERFIL[usuario.perfil]}</dd>
+          </div>
+          <div>
+            <dt className="text-[12px] text-cinza">Situação</dt>
+            <dd className="mt-1"><EtiquetaStatus usuario={usuario} /></dd>
+          </div>
+          <div>
+            <dt className="text-[12px] text-cinza">Acesso</dt>
+            <dd className="mt-1"><Atribuicoes usuario={usuario} /></dd>
+          </div>
+        </dl>
       </div>
 
-      <div className="w-full shrink-0 sm:w-[150px]">
-        <span className="text-[14px] text-tinta">{NOME_PERFIL[usuario.perfil]}</span>
-      </div>
-
-      <div className="w-full shrink-0 sm:w-[170px]">
-        <EtiquetaStatus usuario={usuario} />
-      </div>
-
-      <div className="w-full shrink-0 sm:w-[230px]">
-        <Atribuicoes usuario={usuario} />
-      </div>
-
-      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 sm:w-[200px] sm:justify-end">
-        <Link
-          href={`/usuarios/${usuario.id}/editar`}
-          className="inline-flex min-h-6 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline"
-        >
-          Editar
-        </Link>
-        {usuario.status === "PENDENTE" && <BotaoReenviarConvite usuarioId={usuario.id} />}
-        {usuario.status === "PENDENTE" && <BotaoGerarLinkConvite usuarioId={usuario.id} />}
-        <BotaoDesativarUsuario
-          usuarioId={usuario.id}
-          nome={usuario.nome}
-          ativo={usuario.ativo}
-        />
-      </div>
+      <aside className="w-full shrink-0 border-t border-linha pt-4 md:w-[210px] md:border-t-0 md:border-l md:pl-5 md:pt-0">
+        <p className="font-[family-name:var(--font-interface)] text-[12px] font-medium text-cinza">
+          Ações
+        </p>
+        <div className="mt-2.5 flex flex-wrap items-start gap-x-4 gap-y-2 md:flex-col md:gap-2">
+          <Link
+            href={`/usuarios/${usuario.id}/editar`}
+            className="inline-flex min-h-6 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline"
+          >
+            Editar dados
+          </Link>
+          {usuario.status === "PENDENTE" && <BotaoGerarLinkConvite usuarioId={usuario.id} />}
+          {usuario.status === "PENDENTE" && <BotaoReenviarConvite usuarioId={usuario.id} />}
+          <BotaoDesativarUsuario
+            usuarioId={usuario.id}
+            nome={usuario.nome}
+            ativo={usuario.ativo}
+          />
+        </div>
+      </aside>
     </li>
   );
 }
