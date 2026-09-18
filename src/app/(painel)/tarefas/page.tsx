@@ -1,5 +1,16 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { exigirAcessoARota } from "@/server/auth/contexto";
+import { listarPrazos } from "@/lib/projetos-tarefas";
+import { Etiqueta } from "@/ui/campo";
 
-export default function TarefasPage() {
-  redirect("/projetos");
+const status: Record<string, string> = {
+  A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento do cliente", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência a cumprir", CONCLUIDO: "Concluída", CANCELADO: "Cancelada",
+};
+const data = (valor: Date | null) => valor ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor) : "Sem prazo";
+
+export default async function TarefasPage() {
+  const ctx = await exigirAcessoARota("/tarefas");
+  const tarefas = await listarPrazos(ctx, { pendentes: false });
+
+  return <div className="w-full max-w-[1120px]"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="font-[family-name:var(--font-interface)] text-[12px] font-semibold uppercase tracking-[0.08em] text-verde-esc">Operação</p><h1 className="mt-1 text-[30px]">Tarefas</h1><p className="mt-2 text-[15px] text-cinza">Acompanhe todas as tarefas ativas dos projetos.</p></div><Link href="/projetos" className="rounded-[3px] bg-verde px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">Ver projetos</Link></div>{tarefas.length === 0 ? <div className="mt-8 border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma tarefa ativa.</p><p className="mt-2 text-[14px] text-cinza">Crie uma tarefa dentro do projeto correspondente.</p></div> : <div className="mt-8 overflow-hidden border border-linha bg-branco"><table className="hidden w-full border-collapse text-left text-[14px] md:table"><thead className="bg-tinta font-[family-name:var(--font-interface)] text-[11px] uppercase tracking-[0.06em] text-branco"><tr><th className="px-5 py-3">Tarefa</th><th className="px-5 py-3">Projeto / cliente</th><th className="px-5 py-3">Prazo</th><th className="px-5 py-3">Status</th></tr></thead><tbody>{tarefas.map(tarefa => <tr key={tarefa.id} className="border-t border-linha hover:bg-verde-cl"><td className="px-5 py-4 font-medium"><Link href={`/tarefas/${tarefa.id}`} className="hover:text-azul-esc hover:underline">{tarefa.nome}</Link>{tarefa.responsavel && <span className="ml-2 text-[12px] font-normal text-cinza">· {tarefa.responsavel.nome}</span>}</td><td className="px-5 py-4 text-cinza">{tarefa.projeto.nome}<span className="block text-[12px]">{tarefa.projeto.cliente.razaoSocial}</span></td><td className="px-5 py-4 tabular-nums">{data(tarefa.prazo)}</td><td className="px-5 py-4"><Etiqueta tom={tarefa.status === "CONCLUIDO" ? "positivo" : undefined}>{status[tarefa.status]}</Etiqueta></td></tr>)}</tbody></table><ul className="divide-y divide-linha md:hidden">{tarefas.map(tarefa => <li key={tarefa.id}><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4 hover:bg-verde-cl"><div className="flex items-start justify-between gap-3"><p className="font-medium">{tarefa.nome}</p><Etiqueta tom={tarefa.status === "CONCLUIDO" ? "positivo" : undefined}>{status[tarefa.status]}</Etiqueta></div><p className="mt-1 text-[13px] text-cinza">{tarefa.projeto.nome} · {tarefa.projeto.cliente.razaoSocial}</p><p className="mt-1 text-[12px] text-cinza">{data(tarefa.prazo)}{tarefa.responsavel ? ` · ${tarefa.responsavel.nome}` : ""}</p></Link></li>)}</ul></div>}</div>;
 }
