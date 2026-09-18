@@ -247,8 +247,21 @@ export async function definirAtivoProjetoFormAction(id: string, ativo: boolean):
 export async function definirAtivoTarefaAction(id: string, ativo: boolean) {
   const ctx = await obterContexto();
   const resultado = await desativarOuReativar(ctx, "tarefa", id, ativo);
+  revalidatePath("/tarefas");
+  revalidatePath(`/tarefas/${id}`);
   revalidatePath("/prazos");
+  revalidatePath("/agenda");
   return resultado;
+}
+
+export async function definirAtivoTarefaFormAction(id: string, ativo: boolean): Promise<void> {
+  await definirAtivoTarefaAction(id, ativo);
+}
+
+/** RF-039 — exclusão lógica: preserva histórico, comentários e checklist. */
+export async function excluirTarefaAction(id: string): Promise<void> {
+  await definirAtivoTarefaAction(id, false);
+  redirect("/tarefas");
 }
 
 export async function definirAtivoSubtarefaAction(id: string, ativo: boolean) {

@@ -165,4 +165,19 @@ describe("soft delete do núcleo", () => {
     expect(depoisDeReativar.desativadoEm).toBeNull();
     expect(depoisDeReativar.desativadoPor).toBeNull();
   });
+
+  it("Administrador exclui tarefa apenas de forma lógica e pode restaurá-la", async () => {
+    expect(await desativarOuReativar(ctxAdmin(), "tarefa", tarefa.id, false)).toEqual({ sucesso: true });
+    const desativada = await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefa.id } });
+    expect(desativada.ativo).toBe(false);
+    expect(desativada.desativadoPor).toBe(admin.id);
+    expect(desativada.desativadoEm).not.toBeNull();
+
+    await expect(desativarOuReativar(ctxExterno(), "tarefa", tarefa.id, true)).rejects.toThrow(/Administrador/);
+    expect(await desativarOuReativar(ctxAdmin(), "tarefa", tarefa.id, true)).toEqual({ sucesso: true });
+    const reativada = await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefa.id } });
+    expect(reativada.ativo).toBe(true);
+    expect(reativada.desativadoEm).toBeNull();
+    expect(reativada.desativadoPor).toBeNull();
+  });
 });
