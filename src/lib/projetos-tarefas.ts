@@ -6,8 +6,7 @@ import {
   type Periodicidade,
 } from "@prisma/client";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
-import { calcularProximaOcorrencia } from "@/lib/regras-projetos-tarefas";
-import { calcularPercentualEmDia } from "@/lib/regras-projetos-tarefas";
+import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 
 export type DadosProjeto = {
@@ -85,6 +84,36 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
     include: { projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } }, responsavel: { select: { nome: true } } },
     orderBy: [{ prazo: "asc" }, { nome: "asc" }],
   }));
+}
+
+export type ItemAgenda = {
+  id: string;
+  nome: string;
+  prazo: Date;
+  status: StatusTarefa;
+  projeto: { id: string; nome: string; cliente: { id: string; razaoSocial: string } };
+  responsavel: { nome: string } | null;
+  projetada: boolean;
+};
+
+export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim: Date, filtros: { projetoId?: string; clienteId?: string; visitas?: boolean } = {}): Promise<ItemAgenda[]> {
+  const tarefas = await listarPrazos(ctx, { projetoId: filtros.projetoId, clienteId: filtros.clienteId, pendentes: false });
+  const noPeriodo = (prazo: Date | null): prazo is Date => Boolean(prazo && prazo >= inicio && prazo <= fim);
+  const itens: ItemAgenda[] = [];
+  const materializadas = tarefas.map((t) => ({ serieId: t.serieId, prazo: t.prazo ?? inicio }));
+  for (const tarefa of tarefas) {
+    if (noPeriodo(tarefa.prazo) && (!filtros.visitas || tarefa.status === StatusTarefa.VISITA_REUNIAO_AGENDADA)) {
+      itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel, projetada: false });
+    }
+    if (!tarefa.periodicidade || !tarefa.prazo) continue;
+    for (const prazo of projetarOcorrenciasFuturas(tarefa, inicio, fim, materializadas)) {
+      if (filtros.visitas && tarefa.status !== StatusTarefa.VISITA_REUNIAO_AGENDADA) continue;
+      itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel, projetada: true });
+    }
+  }
+  const unicos = new Map<string, ItemAgenda>();
+  for (const item of itens) unicos.set(`${item.projeto.id}:${item.nome}:${item.prazo.toISOString()}`, item);
+  return [...unicos.values()].sort((a, b) => a.prazo.getTime() - b.prazo.getTime());
 }
 
 export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusTarefa }>) {
