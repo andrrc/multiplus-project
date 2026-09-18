@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarTarefa, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
 import {
-  atualizarSubtarefaFormAction,
   concluirSubtarefaAction,
   concluirTarefaAction,
   criarSubtarefaAction,
@@ -12,6 +11,7 @@ import {
 } from "@/app/(painel)/projetos/actions";
 import { Etiqueta, inputClass } from "@/ui/campo";
 import { Comentarios } from "@/app/(painel)/projetos/comentarios";
+import { ResponsavelSubtarefa } from "./responsavel-subtarefa";
 
 const statuses: Record<string, string> = {
   A_INICIAR: "A iniciar",
@@ -82,21 +82,19 @@ export default async function TarefaDetalhePage({ params }: { params: Promise<{ 
 
               {t.ativo && (
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                  <form action={atualizarSubtarefaFormAction.bind(null, s.id)} className="flex flex-wrap items-center gap-2">
-                    <input type="hidden" name="titulo" value={s.titulo} />
-                    <input type="hidden" name="etiquetas" value={s.etiquetas.join(", ")} />
-                    <label className="sr-only" htmlFor={`responsavel-${s.id}`}>Responsável por {s.titulo}</label>
-                    <select id={`responsavel-${s.id}`} name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className="min-h-9 max-w-[210px] rounded-[3px] border border-linha bg-branco px-2 text-[13px] text-tinta focus:border-azul focus:outline-none">
-                      <option value="" disabled>Selecione o responsável</option>
-                      <optgroup label="Equipe Múltiplus">
-                        {usuarios.map((usuario) => <option key={usuario.id} value={`usuario:${usuario.id}`}>{usuario.nome}{usuario.perfil === "ADMIN" ? " · Administrador" : " · Equipe"}</option>)}
-                      </optgroup>
-                      <optgroup label="Pessoas envolvidas">
-                        {pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}
-                      </optgroup>
-                    </select>
-                    <button className="min-h-9 rounded-[3px] border border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] text-tinta hover:border-azul">Atualizar</button>
-                  </form>
+                  <ResponsavelSubtarefa
+                    key={`${s.id}-${s.atribuidoAUsuarioId ?? s.atribuidoAId}`}
+                    subtarefaId={s.id}
+                    titulo={s.titulo}
+                    etiquetas={s.etiquetas}
+                    responsavelAtual={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""}
+                    equipe={usuarios.map((usuario) => ({
+                      id: usuario.id,
+                      nome: usuario.nome,
+                      descricao: usuario.perfil === "ADMIN" ? "Administrador" : "Equipe",
+                    }))}
+                    pessoas={pessoas.map((pessoa) => ({ id: pessoa.id, nome: pessoa.nome }))}
+                  />
                   {!s.concluida && <form action={concluirSubtarefaAction.bind(null, s.id)}><button className="min-h-9 font-[family-name:var(--font-interface)] text-[13px] text-azul-esc hover:underline">Concluir</button></form>}
                 </div>
               )}

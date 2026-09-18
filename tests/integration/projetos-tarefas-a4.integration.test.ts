@@ -10,6 +10,8 @@ import {
   criarSubtarefa,
   criarTarefa,
   desativarOuReativar,
+  atualizarSubtarefa,
+  buscarTarefa,
 } from "@/lib/projetos-tarefas";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
 import { comoUsuario, ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
@@ -130,6 +132,24 @@ describe("CRUD protegido no servidor", () => {
 
     expect(subtarefa.atribuidoAUsuarioId).toBe(admin.id);
     expect(subtarefa.atribuidoAId).toBeNull();
+  });
+
+  it("ao trocar o responsável, a subtarefa passa a exibir o integrante salvo", async () => {
+    const subtarefa = await criarSubtarefa(ctxAdmin(), {
+      tarefaId: tarefa.id,
+      titulo: "Conferir licença",
+      atribuidoAUsuarioId: admin.id,
+    });
+
+    await atualizarSubtarefa(ctxAdmin(), subtarefa.id, {
+      titulo: subtarefa.titulo,
+      etiquetas: subtarefa.etiquetas,
+      atribuidoAUsuarioId: interno.id,
+    });
+
+    const detalhe = await buscarTarefa(ctxAdmin(), tarefa.id);
+    const atualizada = detalhe?.subtarefas.find((item) => item.id === subtarefa.id);
+    expect(atualizada).toMatchObject({ atribuidoAUsuarioId: interno.id, atribuidoAId: null });
   });
 
   it("recusa responsável de subtarefa ausente ou que não pertence ao cliente", async () => {
