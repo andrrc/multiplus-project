@@ -115,10 +115,11 @@ model Usuario {
   pessoaEnvolvidaId String?          @unique
   pessoaEnvolvida   PessoaEnvolvida? @relation(fields: [pessoaEnvolvidaId], references: [id])
 
-  atribuicoes  Atribuicao[]
-  comentarios  Comentario[]
-  notificacoes Notificacao[]
-  tokensAcesso TokenAcesso[]
+  atribuicoes             Atribuicao[]
+  comentarios             Comentario[]
+  notificacoes            Notificacao[]
+  preferenciasNotificacao PreferenciaNotificacao[]
+  tokensAcesso            TokenAcesso[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -441,6 +442,8 @@ model PreferenciaNotificacao {
   email        Boolean           @default(true)
   inApp        Boolean           @default(true)
   atualizadoEm DateTime          @updatedAt
+  usuario      Usuario?          @relation(fields: [usuarioId], references: [id])
+  usuarioId    String?
 
   @@unique([perfil, evento])
   @@map("preferencias_notificacao")
@@ -465,6 +468,7 @@ model Notificacao {
   mensagem   String
   url        String?
   entidadeId String?
+  dedupeKey  String?           @unique
   lida       Boolean           @default(false)
   criadaEm   DateTime          @default(now())
 

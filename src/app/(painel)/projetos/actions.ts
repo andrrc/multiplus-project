@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { EventoNotificacao } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/lib/projetos-tarefas";
 import { StatusProjeto, StatusTarefa, Periodicidade } from "@prisma/client";
 import { criarComentario } from "@/lib/comentarios";
+import { dispararEventoNotificacao } from "@/lib/notificacoes";
 
 function texto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
@@ -65,6 +67,13 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
     dataInicio: dataOpcional(texto(formData, "dataInicio")),
     dataPrevistaConclusao: dataOpcional(texto(formData, "dataPrevistaConclusao")),
     status: statusProjeto(texto(formData, "status")),
+  });
+  if (projeto.status === "CONCLUIDO") void dispararEventoNotificacao(EventoNotificacao.PROJETO_CONCLUIDO, {
+    titulo: `Projeto concluído: ${projeto.nome}`,
+    mensagem: `O projeto ${projeto.nome} foi marcado como concluído.`,
+    url: `/projetos/${projeto.id}`,
+    entidadeId: projeto.id,
+    dedupeKey: `projeto-concluido:${projeto.id}:${projeto.atualizadoEm.toISOString()}`,
   });
   revalidatePath(`/projetos/${projetoId}`);
   revalidatePath("/projetos");
@@ -143,7 +152,14 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
   const id = texto(formData, "entidadeId");
   const alvo = nivel === "projeto" ? { projetoId: id } : nivel === "tarefa" ? { tarefaId: id } : { subtarefaId: id };
   const imagem = formData.get("imagem");
-  await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null);
+  const comentario = await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null);
+  void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+    titulo: "Novo comentário",
+    mensagem: "Um novo comentário foi publicado em um registro que você acompanha.",
+    url: nivel === "projeto" ? `/projetos/${id}` : `/tarefas/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`,
+    entidadeId: comentario.id,
+    dedupeKey: `comentario:${comentario.id}`,
+  });
   if (nivel === "projeto") revalidatePath(`/projetos/${id}`);
   if (nivel === "tarefa") revalidatePath(`/tarefas/${id}`);
   if (nivel === "subtarefa") revalidatePath(`/tarefas/${texto(formData, "tarefaId")}`);
@@ -181,6 +197,13 @@ export async function criarDocumentoProjetoFormAction(formData: FormData): Promi
 export async function concluirTarefaAction(tarefaId: string) {
   const ctx = await obterContexto();
   const resultado = await concluirTarefa(ctx, tarefaId);
+  void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
+    titulo: `Tarefa concluída: ${resultado.tarefa.nome}`,
+    mensagem: `A tarefa ${resultado.tarefa.nome} foi marcada como concluída.`,
+    url: `/tarefas/${tarefaId}`,
+    entidadeId: tarefaId,
+    dedupeKey: `tarefa-concluida:${tarefaId}:${resultado.tarefa.atualizadoEm.toISOString()}`,
+  });
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${resultado.tarefa.projetoId}`);
   revalidatePath("/prazos");
