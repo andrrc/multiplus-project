@@ -21,19 +21,27 @@ type Destinatario = {
 };
 
 async function listarDestinatarios(evento: EventoNotificacao, usuarioIds?: string[]) {
-  return prisma.usuario.findMany({
+  const preferencias = await prisma.preferenciaNotificacao.findMany({
+    where: { evento, OR: [{ email: true }, { inApp: true }] },
+  });
+  const perfis = preferencias.map((preferencia) => preferencia.perfil);
+  const usuarios = await prisma.usuario.findMany({
     where: {
       ativo: true,
       ...(usuarioIds ? { id: { in: usuarioIds } } : {}),
-      preferenciasNotificacao: { some: { evento, OR: [{ email: true }, { inApp: true }] } },
+      perfil: { in: perfis },
     },
     select: {
       id: true,
       nome: true,
       email: true,
-      preferenciasNotificacao: { where: { evento }, select: { email: true, inApp: true } },
+      perfil: true,
     },
   });
+  return usuarios.map((usuario) => ({
+    ...usuario,
+    preferenciasNotificacao: preferencias.filter((preferencia) => preferencia.perfil === usuario.perfil),
+  }));
 }
 
 /** B6 — dispara in-app e e-mail sem deixar a integração externa bloquear a ação. */
