@@ -1,8 +1,7 @@
 import type { Perfil } from "@prisma/client";
 import { auth, signOut } from "@/server/auth";
-import { menuDoPerfil } from "@/lib/navegacao";
-import { NavLink } from "./nav-link";
 import { MenuMobile } from "./menu-mobile";
+import { NavegacaoPainel } from "./navegacao-painel";
 
 /**
  * Rótulos exibidos ao usuário (reunião de aprovação da Sprint 2) — os valores do enum
@@ -18,15 +17,7 @@ const NOME_PERFIL: Record<string, string> = {
 
 /** RF-043 — o menu mostra só o que o perfil acessa; item inacessível não aparece. */
 function Navegacao({ perfil }: { perfil: Perfil }) {
-  return (
-    <>
-      {menuDoPerfil(perfil).map((item) => (
-        <NavLink key={item.href} href={item.href}>
-          {item.rotulo}
-        </NavLink>
-      ))}
-    </>
-  );
+  return <NavegacaoPainel perfil={perfil} />;
 }
 
 function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }) {
