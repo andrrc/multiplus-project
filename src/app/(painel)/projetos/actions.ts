@@ -142,7 +142,8 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
   const nivel = texto(formData, "nivel");
   const id = texto(formData, "entidadeId");
   const alvo = nivel === "projeto" ? { projetoId: id } : nivel === "tarefa" ? { tarefaId: id } : { subtarefaId: id };
-  await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"));
+  const imagem = formData.get("imagem");
+  await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null);
   if (nivel === "projeto") revalidatePath(`/projetos/${id}`);
   if (nivel === "tarefa") revalidatePath(`/tarefas/${id}`);
   if (nivel === "subtarefa") revalidatePath(`/tarefas/${texto(formData, "tarefaId")}`);
