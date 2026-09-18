@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import {
   definirUsuarioAtivoAction,
   gerarLinkConviteAction,
@@ -111,6 +111,29 @@ export function BotaoGerarLinkConvite({ usuarioId }: { usuarioId: string }) {
   const [pendente, startTransition] = useTransition();
   const [estado, setEstado] = useState<EstadoLinkConvite | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [aberto, setAberto] = useState(false);
+  const fecharRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!aberto) return;
+    const aoPressionarTecla = (evento: KeyboardEvent) => {
+      if (evento.key === "Escape") setAberto(false);
+    };
+    window.addEventListener("keydown", aoPressionarTecla);
+    fecharRef.current?.focus();
+    return () => window.removeEventListener("keydown", aoPressionarTecla);
+  }, [aberto]);
+
+  function gerarLink() {
+    setCopiado(false);
+    setEstado(null);
+    startTransition(async () => setEstado(await gerarLinkConviteAction(usuarioId)));
+  }
+
+  function abrir() {
+    setAberto(true);
+    if (!estado?.link) gerarLink();
+  }
 
   async function copiar() {
     if (!estado?.link) return;
@@ -123,40 +146,88 @@ export function BotaoGerarLinkConvite({ usuarioId }: { usuarioId: string }) {
   }
 
   return (
-    <span className="flex w-full flex-col gap-1.5 sm:items-end">
+    <div>
       <button
         type="button"
         disabled={pendente}
-        onClick={() =>
-          startTransition(async () => {
-            setCopiado(false);
-            setEstado(await gerarLinkConviteAction(usuarioId));
-          })
-        }
+        onClick={abrir}
         className={linkAcao}
       >
-        {pendente ? "Gerando link…" : "Gerar link de acesso"}
+        {estado?.link ? "Abrir link de acesso" : "Gerar link de acesso"}
       </button>
-      {estado?.erro && <p className="text-[13px] text-critico">{estado.erro}</p>}
-      {estado?.link && (
-        <span className="w-full rounded-[3px] border border-ambar bg-papel p-2.5 text-left sm:w-[320px]">
-          <span className="block text-[12.5px] leading-5 text-tinta">
-            Envie este link por um canal seguro. Ele vale por 7 dias, é usado uma única vez e
-            gerar outro cancela este.
-          </span>
-          <input
-            readOnly
-            value={estado.link}
-            aria-label="Link de acesso para compartilhar"
-            className="mt-2 block w-full rounded-[2px] border border-linha bg-branco px-2 py-1.5 text-[12px] text-tinta"
-            onFocus={(evento) => evento.currentTarget.select()}
+      {aberto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`link-convite-${usuarioId}`}
+        >
+          <button
+            type="button"
+            aria-label="Fechar geração de link"
+            onClick={() => setAberto(false)}
+            className="fixed inset-0 cursor-default bg-tinta/60"
           />
-          <button type="button" onClick={copiar} className={`${linkAcao} mt-2`}>
-            {copiado ? "Link copiado" : "Copiar link"}
-          </button>
-        </span>
+          <div className="relative z-10 w-full max-w-[620px] border border-linha bg-branco shadow-2xl">
+            <div className="flex items-start justify-between gap-5 border-b border-linha bg-papel px-5 py-4">
+              <div>
+                <h2
+                  id={`link-convite-${usuarioId}`}
+                  className="font-[family-name:var(--font-interface)] text-[18px] font-semibold text-tinta"
+                >
+                  Link de acesso
+                </h2>
+                <p className="mt-1 text-[13.5px] text-cinza">
+                  Compartilhe somente com a pessoa convidada.
+                </p>
+              </div>
+              <button
+                ref={fecharRef}
+                type="button"
+                onClick={() => setAberto(false)}
+                className="min-h-9 shrink-0 border border-linha px-3 text-[13px] font-semibold text-tinta hover:border-azul"
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="px-5 py-5">
+              {pendente && <p className="text-[14px] text-cinza">Gerando link seguro…</p>}
+              {estado?.erro && <p className="text-[14px] text-critico">{estado.erro}</p>}
+              {estado?.link && (
+                <>
+                  <p className="max-w-[62ch] text-[14px] leading-6 text-tinta">
+                    O link vale por 7 dias e pode ser usado uma única vez para definir a senha.
+                  </p>
+                  <input
+                    readOnly
+                    value={estado.link}
+                    aria-label="Link de acesso para compartilhar"
+                    className="mt-4 block w-full rounded-[2px] border border-linha bg-papel px-3 py-2.5 text-[13px] text-tinta"
+                    onFocus={(evento) => evento.currentTarget.select()}
+                  />
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={copiar}
+                      className="min-h-10 bg-verde px-4 font-[family-name:var(--font-interface)] text-[13.5px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco"
+                    >
+                      {copiado ? "Link copiado" : "Copiar link"}
+                    </button>
+                    <button type="button" onClick={gerarLink} disabled={pendente} className={linkAcao}>
+                      Gerar outro link
+                    </button>
+                  </div>
+                  <p className="mt-4 border-l-2 border-ambar pl-3 text-[12.5px] leading-5 text-cinza">
+                    Ao gerar outro link, este é cancelado imediatamente.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
-    </span>
+    </div>
   );
 }
 
