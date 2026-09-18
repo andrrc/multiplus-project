@@ -171,7 +171,6 @@ model Cliente {
   pontoContato      PontoContato?
   pessoasEnvolvidas PessoaEnvolvida[]
   documentos        Documento[]
-  comentarios       Comentario[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -424,8 +423,6 @@ model Comentario {
   subtarefaId String?
   subtarefa   Subtarefa? @relation(fields: [subtarefaId], references: [id], onDelete: Cascade)
   criadoEm    DateTime   @default(now())
-  cliente     Cliente?   @relation(fields: [clienteId], references: [id])
-  clienteId   String?
 
   @@index([projetoId, criadoEm])
   @@index([tarefaId, criadoEm])
