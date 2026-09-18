@@ -1,5 +1,6 @@
 import { EventoNotificacao } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
+import { renderTemplateNotificacao } from "@/lib/email-templates";
 import { prisma } from "@/lib/prisma";
 
 type DadosEvento = {
@@ -17,10 +18,6 @@ type Destinatario = {
   email: string;
   preferenciasNotificacao: { email: boolean; inApp: boolean }[];
 };
-
-function escaparHtml(valor: string) {
-  return valor.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-}
 
 async function listarDestinatarios(evento: EventoNotificacao, usuarioIds?: string[]) {
   return prisma.usuario.findMany({
@@ -66,7 +63,12 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
         await enviarEmail({
           to: destinatario.email,
           subject: dados.titulo,
-          html: `<p>Olá, ${escaparHtml(destinatario.nome)}.</p><p>${escaparHtml(dados.mensagem)}</p>`,
+          html: renderTemplateNotificacao(evento, {
+            nome: destinatario.nome,
+            titulo: dados.titulo,
+            mensagem: dados.mensagem,
+            url: dados.url,
+          }),
         }).catch((erro: unknown) => {
           console.error(`[notificacao] falha ao enviar para ${destinatario.email}:`, erro);
         });
