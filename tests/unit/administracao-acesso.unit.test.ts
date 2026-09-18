@@ -127,6 +127,8 @@ describe("RF-043 — guarda de rota", () => {
   it("colaboradores podem abrir as listas contextuais de tarefas e projetos", () => {
     expect(perfilPodeAcessar("ADMIN_INTERNO", "/minhas-tarefas")).toBe(true);
     expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-projetos")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/meus-clientes")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-clientes")).toBe(true);
   });
 });
 

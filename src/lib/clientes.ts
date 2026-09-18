@@ -260,6 +260,33 @@ export async function buscarClienteDetalheSeguro(
   });
 }
 
+/**
+ * Visão contextual para colaboradores: expõe somente o nome do cliente e os projetos
+ * em que o usuário possui acesso. Não selecione CNPJ/CPF, endereço, e-mail, telefone,
+ * pessoas envolvidas, documentos ou valores nesta função.
+ */
+export async function listarClientesContextuais(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") {
+    throw new Error("Visão exclusiva de colaboradores.");
+  }
+
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.cliente.findMany({
+      where: { ativo: true },
+      select: {
+        id: true,
+        razaoSocial: true,
+        projetos: {
+          where: { ativo: true },
+          select: { id: true, nome: true, status: true },
+          orderBy: { nome: "asc" },
+        },
+      },
+      orderBy: { razaoSocial: "asc" },
+    }),
+  );
+}
+
 export type AtualizarClientePJInput = {
   tipo: "PESSOA_JURIDICA";
   razaoSocial: string;
