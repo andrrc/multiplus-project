@@ -2,6 +2,7 @@ import { EventoNotificacao } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
 import { renderTemplateNotificacao } from "@/lib/email-templates";
 import { prisma } from "@/lib/prisma";
+import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 
 type DadosEvento = {
   titulo: string;
@@ -117,4 +118,43 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
     processadas += 1;
   }
   return { encontradas: tarefas.length, processadas };
+}
+
+export async function listarNotificacoes(ctx: ContextoUsuario) {
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const [itens, naoLidas] = await Promise.all([
+      tx.notificacao.findMany({ where: { usuarioId: ctx.usuarioId }, orderBy: { criadaEm: "desc" }, take: 50 }),
+      tx.notificacao.count({ where: { usuarioId: ctx.usuarioId, lida: false } }),
+    ]);
+    return { itens, naoLidas };
+  });
+}
+
+export async function marcarNotificacaoLida(ctx: ContextoUsuario, id: string) {
+  return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { id, usuarioId: ctx.usuarioId }, data: { lida: true } }));
+}
+
+export async function marcarTodasNotificacoesLidas(ctx: ContextoUsuario) {
+  return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { usuarioId: ctx.usuarioId, lida: false }, data: { lida: true } }));
+}
+
+export async function listarPreferenciasNotificacao(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
+  return comContextoDeUsuario(ctx, (tx) => tx.preferenciaNotificacao.findMany({ orderBy: [{ perfil: "asc" }, { evento: "asc" }] }));
+}
+
+export async function atualizarPreferenciaNotificacao(ctx: ContextoUsuario, perfil: "ADMIN" | "ADMIN_INTERNO" | "ADMIN_EXTERNO" | "CLIENTE", evento: EventoNotificacao, canais: { email: boolean; inApp: boolean }) {
+  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
+  return comContextoDeUsuario(ctx, (tx) => tx.preferenciaNotificacao.update({ where: { perfil_evento: { perfil, evento } }, data: canais }));
+}
+
+export async function buscarConfiguracaoNotificacao(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
+  return comContextoDeUsuario(ctx, (tx) => tx.configuracaoNotificacao.findUniqueOrThrow({ where: { id: 1 } }));
+}
+
+export async function atualizarAntecedenciaNotificacao(ctx: ContextoUsuario, dias: number) {
+  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
+  if (!Number.isInteger(dias) || dias < 1 || dias > 365) throw new Error("Informe uma antecedência entre 1 e 365 dias.");
+  return comContextoDeUsuario(ctx, (tx) => tx.configuracaoNotificacao.update({ where: { id: 1 }, data: { diasAntecedenciaPadrao: dias } }));
 }

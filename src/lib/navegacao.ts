@@ -25,6 +25,7 @@ export const MENU: ItemMenu[] = [
   { href: "/projetos", rotulo: "Projetos", perfis: ["ADMIN"] },
   { href: "/prazos", rotulo: "Prazos", perfis: ["ADMIN"] },
   { href: "/agenda", rotulo: "Agenda", perfis: ["ADMIN"] },
+  { href: "/notificacoes", rotulo: "Notificações", perfis: ["ADMIN"] },
   { href: "/tarefas", rotulo: "Tarefas", perfis: ["ADMIN"] },
   { href: "/meus-projetos", rotulo: "Meus Projetos", perfis: ["ADMIN_INTERNO"] },
   { href: "/minhas-tarefas", rotulo: "Minhas Tarefas", perfis: ["ADMIN_EXTERNO"] },
