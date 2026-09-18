@@ -7,6 +7,7 @@ import {
 } from "@prisma/client";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { calcularProximaOcorrencia } from "@/lib/regras-projetos-tarefas";
+import { calcularPercentualEmDia } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 
 export type DadosProjeto = {
@@ -70,6 +71,24 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
       orderBy: [{ ativo: "desc" }, { atualizadoEm: "desc" }],
     }),
   );
+}
+
+export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; pendentes?: boolean } = {}) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
+    where: {
+      ativo: true,
+      projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
+      ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
+      ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
+    },
+    include: { projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } }, responsavel: { select: { nome: true } } },
+    orderBy: [{ prazo: "asc" }, { nome: "asc" }],
+  }));
+}
+
+export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusTarefa }>) {
+  return calcularPercentualEmDia(tarefas.map((tarefa) => ({ ativo: tarefa.ativo, prazo: tarefa.prazo, status: tarefa.status })));
 }
 
 export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, incluirDesativados = false) {

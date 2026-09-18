@@ -23,6 +23,7 @@ export const MENU: ItemMenu[] = [
   { href: "/clientes", rotulo: "Clientes", perfis: ["ADMIN"] },
   { href: "/usuarios", rotulo: "Usuários", perfis: ["ADMIN"] },
   { href: "/projetos", rotulo: "Projetos", perfis: ["ADMIN"] },
+  { href: "/prazos", rotulo: "Prazos", perfis: ["ADMIN"] },
   { href: "/tarefas", rotulo: "Tarefas", perfis: ["ADMIN"] },
   { href: "/meus-projetos", rotulo: "Meus Projetos", perfis: ["ADMIN_INTERNO"] },
   { href: "/minhas-tarefas", rotulo: "Minhas Tarefas", perfis: ["ADMIN_EXTERNO"] },
@@ -49,7 +50,7 @@ export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
  * logaria numa rota que ainda não existe.
  */
 export const TELA_INICIAL: Record<Perfil, string> = {
-  ADMIN: "/clientes",
+  ADMIN: "/prazos",
   ADMIN_INTERNO: "/meus-projetos",
   ADMIN_EXTERNO: "/minhas-tarefas",
   CLIENTE: "/meu-perfil",
