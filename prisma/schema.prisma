@@ -37,6 +37,14 @@ enum TipoPessoaEnvolvida {
   EMPRESA // razão social (reaproveita a coluna `nome`), CNPJ (opcional), telefone, e-mail
 }
 
+enum EventoNotificacao {
+  PRAZO_PROXIMO
+  TAREFA_CONCLUIDA
+  PROJETO_CONCLUIDO
+  NOVO_COMENTARIO
+  ATRIBUICAO_RECEBIDA
+}
+
 enum StatusProjeto {
   A_INICIAR    @map("A iniciar")
   EM_ANDAMENTO @map("Em andamento")
@@ -109,6 +117,7 @@ model Usuario {
 
   atribuicoes  Atribuicao[]
   comentarios  Comentario[]
+  notificacoes Notificacao[]
   tokensAcesso TokenAcesso[]
 
   criadoEm     DateTime @default(now())
@@ -422,6 +431,45 @@ model Comentario {
   @@index([tarefaId, criadoEm])
   @@index([subtarefaId, criadoEm])
   @@map("comentarios")
+}
+
+/// RF-022 — cada perfil configura os cinco eventos independentemente por e-mail e in-app.
+model PreferenciaNotificacao {
+  id           String            @id @default(cuid())
+  perfil       Perfil
+  evento       EventoNotificacao
+  email        Boolean           @default(true)
+  inApp        Boolean           @default(true)
+  atualizadoEm DateTime          @updatedAt
+
+  @@unique([perfil, evento])
+  @@map("preferencias_notificacao")
+}
+
+/// RF-007 — configuração global, com sobrescrita por tarefa em `diasAntecedencia`.
+model ConfiguracaoNotificacao {
+  id                     Int      @id @default(1)
+  diasAntecedenciaPadrao Int      @default(7)
+  atualizadoEm           DateTime @updatedAt
+
+  @@map("configuracoes_notificacao")
+}
+
+/// RF-023 — caixa in-app individual; não há exclusão permanente.
+model Notificacao {
+  id         String            @id @default(cuid())
+  usuarioId  String
+  usuario    Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  evento     EventoNotificacao
+  titulo     String
+  mensagem   String
+  url        String?
+  entidadeId String?
+  lida       Boolean           @default(false)
+  criadaEm   DateTime          @default(now())
+
+  @@index([usuarioId, lida, criadaEm])
+  @@map("notificacoes")
 }
 
 /// Tabela polimórfica (ADR-004): registra que `usuario` tem acesso a `entidadeId`,
