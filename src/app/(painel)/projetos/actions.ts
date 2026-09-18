@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { EventoNotificacao } from "@prisma/client";
+import { EventoNotificacao, Periodicidade, Prisma, StatusProjeto, StatusTarefa } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import {
@@ -16,7 +16,6 @@ import {
   criarTarefa,
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
-import { StatusProjeto, StatusTarefa, Periodicidade } from "@prisma/client";
 import { criarComentario } from "@/lib/comentarios";
 import { dispararEventoNotificacao } from "@/lib/notificacoes";
 
@@ -45,17 +44,27 @@ function responsavel(valor: string): { responsavelId: string | null; responsavel
   return { responsavelId: valor || null, responsavelUsuarioId: null };
 }
 
+/** Aceita a saída do campo monetário (`1234.56`) e também vírgula em chamadas diretas. */
+function valorContratado(valor: string): Prisma.Decimal {
+  if (!/^\d+(?:[.,]\d{1,2})?$/.test(valor)) {
+    throw new Error("Informe o valor contratado com até duas casas decimais.");
+  }
+  return new Prisma.Decimal(valor.replace(",", "."));
+}
+
 export async function criarProjetoAction(formData: FormData) {
   const ctx = await obterContexto();
   const projeto = await criarProjeto(ctx, {
     clienteId: texto(formData, "clienteId"),
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
+    valorContratado: valorContratado(texto(formData, "valorContratado")),
     dataInicio: dataOpcional(texto(formData, "dataInicio")),
     dataPrevistaConclusao: dataOpcional(texto(formData, "dataPrevistaConclusao")),
     status: statusProjeto(texto(formData, "status")),
   });
   revalidatePath("/projetos");
+  revalidatePath(`/clientes/${projeto.clienteId}`);
   return projeto;
 }
 
@@ -69,6 +78,7 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
   const projeto = await atualizarProjeto(ctx, projetoId, {
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
+    valorContratado: valorContratado(texto(formData, "valorContratado")),
     dataInicio: dataOpcional(texto(formData, "dataInicio")),
     dataPrevistaConclusao: dataOpcional(texto(formData, "dataPrevistaConclusao")),
     status: statusProjeto(texto(formData, "status")),
@@ -82,6 +92,7 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
   });
   revalidatePath(`/projetos/${projetoId}`);
   revalidatePath("/projetos");
+  revalidatePath(`/clientes/${projeto.clienteId}`);
   return projeto;
 }
 

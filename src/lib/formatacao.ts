@@ -27,6 +27,13 @@ export function formatarTelefone(telefone: string): string {
   return telefone;
 }
 
+/** Valor armazenado com duas casas decimais, exibido no padrão monetário brasileiro. */
+export function formatarMoeda(valor: { toString(): string } | string | number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+    Number(valor.toString()),
+  );
+}
+
 /** Máscara ao vivo pro campo de CPF (onChange) — formata progressivamente enquanto digita. */
 export function mascararCpf(valor: string): string {
   return valor

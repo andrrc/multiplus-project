@@ -1,6 +1,6 @@
 /** A4 — ações de servidor/domínio do núcleo Projeto/Tarefa/Subtarefa. */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Periodicidade, StatusProjeto, StatusTarefa } from "@prisma/client";
+import { Periodicidade, Prisma, StatusProjeto, StatusTarefa } from "@prisma/client";
 import {
   atualizarProjeto,
   concluirSubtarefa,
@@ -11,7 +11,8 @@ import {
   criarTarefa,
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
-import { ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
+import { buscarClienteDetalheSeguro } from "@/lib/clientes";
+import { comoUsuario, ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
 
 const data = (valor: string) => new Date(`${valor}T00:00:00.000Z`);
 
@@ -68,6 +69,7 @@ describe("CRUD protegido no servidor", () => {
       clienteId: cliente.id,
       nome: "Projeto A4",
       descricao: "Projeto criado no teste da A4",
+      valorContratado: new Prisma.Decimal("12500.50"),
       dataInicio: data("2026-01-01"),
       dataPrevistaConclusao: data("2026-12-31"),
       status: StatusProjeto.A_INICIAR,
@@ -85,10 +87,20 @@ describe("CRUD protegido no servidor", () => {
     expect(tarefa.periodicidade).toBe(Periodicidade.MENSAL);
     expect(tarefa.prazoOriginal).toEqual(data("2026-01-31"));
 
+    const valor = await ownerDb.valorProjeto.findUniqueOrThrow({ where: { projetoId: projeto.id } });
+    expect(valor.valorContratado.toString()).toBe("12500.5");
+    const detalheCliente = await buscarClienteDetalheSeguro(ctxAdmin(), cliente.id);
+    expect(detalheCliente?.valorTotalProjetos?.toString()).toBe("12500.5");
+
     const atribuicao = await ownerDb.atribuicao.findFirst({
       where: { usuarioId: externo.id, entidadeTipo: "TAREFA", entidadeId: tarefa.id },
     });
     expect(atribuicao).not.toBeNull();
+  });
+
+  it("mantém o valor contratado inacessível a colaboradores no banco", async () => {
+    const valores = await comoUsuario(ctxExterno(), (tx) => tx.valorProjeto.findMany());
+    expect(valores).toEqual([]);
   });
 
   it("Administrador cria subtarefa e documento vinculado ao projeto", async () => {

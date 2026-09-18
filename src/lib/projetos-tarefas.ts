@@ -13,6 +13,8 @@ export type DadosProjeto = {
   clienteId: string;
   nome: string;
   descricao?: string | null;
+  /** `undefined` preserva o valor na edição; `null` remove um valor ainda não informado. */
+  valorContratado?: Prisma.Decimal | null;
   dataInicio?: Date | null;
   dataPrevistaConclusao?: Date | null;
   status?: StatusProjeto;
@@ -66,7 +68,11 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
   return comContextoDeUsuario(ctx, (tx) =>
     tx.projeto.findMany({
       where: incluirDesativados ? {} : { ativo: true },
-      include: { cliente: { select: { razaoSocial: true } }, _count: { select: { tarefas: true } } },
+      include: {
+        cliente: { select: { razaoSocial: true } },
+        valorContratado: { select: { valorContratado: true } },
+        _count: { select: { tarefas: true } },
+      },
       orderBy: [{ ativo: "desc" }, { atualizadoEm: "desc" }],
     }),
   );
@@ -133,6 +139,7 @@ export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, inc
           orderBy: [{ prazo: "asc" }, { nome: "asc" }],
         },
         documentos: { where: incluirDesativados ? {} : { ativo: true }, orderBy: { criadoEm: "desc" } },
+        valorContratado: { select: { valorContratado: true } },
       },
     });
     return projeto ? { ...projeto, tarefas: projeto.tarefas.map((tarefa) => ({ ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario })) } : null;
@@ -277,8 +284,8 @@ async function validarResponsavel(
 export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
   exigirAdministrador(ctx);
   validarDatasProjeto(dados);
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.projeto.create({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const projeto = await tx.projeto.create({
       data: {
         clienteId: dados.clienteId,
         nome: validarNome(dados.nome, "do projeto"),
@@ -287,8 +294,14 @@ export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
         status: dados.status ?? StatusProjeto.A_INICIAR,
       },
-    }),
-  );
+    });
+    if (dados.valorContratado != null) {
+      await tx.valorProjeto.create({
+        data: { projetoId: projeto.id, valorContratado: dados.valorContratado },
+      });
+    }
+    return projeto;
+  });
 }
 
 export async function atualizarProjeto(
@@ -298,8 +311,8 @@ export async function atualizarProjeto(
 ) {
   exigirAdministrador(ctx);
   validarDatasProjeto({ ...dados, clienteId: "" });
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.projeto.update({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const projeto = await tx.projeto.update({
       where: { id: projetoId },
       data: {
         nome: validarNome(dados.nome, "do projeto"),
@@ -308,8 +321,18 @@ export async function atualizarProjeto(
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
         status: dados.status ?? undefined,
       },
-    }),
-  );
+    });
+    if (dados.valorContratado === null) {
+      await tx.valorProjeto.deleteMany({ where: { projetoId } });
+    } else if (dados.valorContratado !== undefined) {
+      await tx.valorProjeto.upsert({
+        where: { projetoId },
+        create: { projetoId, valorContratado: dados.valorContratado },
+        update: { valorContratado: dados.valorContratado },
+      });
+    }
+    return projeto;
+  });
 }
 
 export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {

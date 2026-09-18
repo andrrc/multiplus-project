@@ -342,12 +342,25 @@ model Projeto {
   tarefas     Tarefa[]
   documentos  Documento[]
   comentarios Comentario[]
+  valorContratado ValorProjeto?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
   @@index([ativo])
   @@map("projetos")
+}
+
+/// Valor comercial confidencial do projeto. Fica separado do registro público do
+/// projeto para que a RLS possa restringi-lo integralmente ao Administrador.
+model ValorProjeto {
+  projetoId       String   @id
+  projeto         Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  valorContratado Decimal  @db.Decimal(14, 2)
+  criadoEm        DateTime @default(now())
+  atualizadoEm    DateTime @updatedAt
+
+  @@map("valores_projeto")
 }
 
 model Tarefa {

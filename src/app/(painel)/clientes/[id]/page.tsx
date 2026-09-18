@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
-import { documentoCliente, formatarCpf, formatarTelefone } from "@/lib/formatacao";
+import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import {
   FormularioDocumento,
@@ -75,7 +75,7 @@ export default async function DetalheClientePage({
   const detalhe = await buscarClienteDetalheSeguro(ctx, id, mostrarDesativados);
   if (!detalhe) notFound();
 
-  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso } = detalhe;
+  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso, valorTotalProjetos } = detalhe;
 
   const statusChave = !usuarioAcesso
     ? null
@@ -132,6 +132,12 @@ export default async function DetalheClientePage({
 
       <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {ctx.perfil === "ADMIN" && (
+            <Campo
+              label="Total contratado em projetos ativos"
+              valor={valorTotalProjetos ? formatarMoeda(valorTotalProjetos) : "R$ 0,00"}
+            />
+          )}
           {cliente.origemContato && <Campo label="Origem do contato" valor={cliente.origemContato} />}
           {cliente.endereco && <Campo label="Endereço" valor={cliente.endereco} />}
           {cliente.municipio && (
