@@ -116,6 +116,7 @@ model Usuario {
   pessoaEnvolvida   PessoaEnvolvida? @relation(fields: [pessoaEnvolvidaId], references: [id])
 
   atribuicoes  Atribuicao[]
+  tarefasResponsavel Tarefa[] @relation("TarefaResponsavelUsuario")
   comentarios  Comentario[]
   notificacoes Notificacao[]
   tokensAcesso TokenAcesso[]
@@ -366,11 +367,13 @@ model Tarefa {
   desativadoEm     DateTime?
   desativadoPor    String?
 
-  /// RF-005/RN-006 — qualquer Pessoa Envolvida, com ou sem acesso ao sistema. Quando tem
-  /// acesso (`temAcesso = true`), definir o responsável cria automaticamente o registro
-  /// correspondente em Atribuicao (ver src/lib/tarefas.ts#definirResponsavelTarefa).
+  /// RF-005 — o responsável pode ser uma Pessoa Envolvida do cliente ou um usuário da equipe.
+  /// Quando a Pessoa Envolvida tem acesso (`temAcesso = true`), a atribuição é sincronizada
+  /// automaticamente (RN-006). Usuários da equipe já possuem acesso pelo próprio usuário.
   responsavelId String?
   responsavel   PessoaEnvolvida? @relation("TarefaResponsavel", fields: [responsavelId], references: [id])
+  responsavelUsuarioId String?
+  responsavelUsuario   Usuario? @relation("TarefaResponsavelUsuario", fields: [responsavelUsuarioId], references: [id])
 
   subtarefas  Subtarefa[]
   comentarios Comentario[]

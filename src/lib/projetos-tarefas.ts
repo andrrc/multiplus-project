@@ -24,6 +24,7 @@ export type DadosTarefa = {
   descricao?: string | null;
   prazo: Date;
   responsavelId?: string | null;
+  responsavelUsuarioId?: string | null;
   periodicidade?: Periodicidade | null;
   diasAntecedencia?: number | null;
   status?: StatusTarefa;
@@ -53,11 +54,10 @@ export async function listarClientesParaProjeto(ctx: ContextoUsuario) {
 export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: string) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) =>
-    tx.pessoaEnvolvida.findMany({
-      where: { clienteId, ativo: true },
-      select: { id: true, nome: true, temAcesso: true },
-      orderBy: { nome: "asc" },
-    }),
+    Promise.all([
+      tx.pessoaEnvolvida.findMany({ where: { clienteId, ativo: true }, select: { id: true, nome: true, temAcesso: true }, orderBy: { nome: "asc" } }),
+      tx.usuario.findMany({ where: { ativo: true, perfil: { in: ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO"] } }, select: { id: true, nome: true, perfil: true }, orderBy: { nome: "asc" } }),
+    ]).then(([pessoas, usuarios]) => ({ pessoas, usuarios })),
   );
 }
 
@@ -81,7 +81,7 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
       ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
       ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
     },
-    include: { projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } }, responsavel: { select: { nome: true } } },
+    include: { projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } }, responsavel: { select: { nome: true } }, responsavelUsuario: { select: { nome: true } } },
     orderBy: [{ prazo: "asc" }, { nome: "asc" }],
   }));
 }
@@ -103,12 +103,12 @@ export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim:
   const materializadas = tarefas.map((t) => ({ serieId: t.serieId, prazo: t.prazo ?? inicio }));
   for (const tarefa of tarefas) {
     if (noPeriodo(tarefa.prazo) && (!filtros.visitas || tarefa.status === StatusTarefa.VISITA_REUNIAO_AGENDADA)) {
-      itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel, projetada: false });
+      itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: false });
     }
     if (!tarefa.periodicidade || !tarefa.prazo) continue;
     for (const prazo of projetarOcorrenciasFuturas(tarefa, inicio, fim, materializadas)) {
       if (filtros.visitas && tarefa.status !== StatusTarefa.VISITA_REUNIAO_AGENDADA) continue;
-      itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel, projetada: true });
+      itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: true });
     }
   }
   const unicos = new Map<string, ItemAgenda>();
@@ -122,38 +122,41 @@ export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date |
 
 export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, incluirDesativados = false) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.projeto.findFirst({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const projeto = await tx.projeto.findFirst({
       where: { id: projetoId, ...(incluirDesativados ? {} : { ativo: true }) },
       include: {
         cliente: { select: { id: true, razaoSocial: true } },
         tarefas: {
           where: incluirDesativados ? {} : { ativo: true },
-          include: { responsavel: { select: { nome: true } }, subtarefas: { where: incluirDesativados ? {} : { ativo: true } } },
+          include: { responsavel: { select: { nome: true } }, responsavelUsuario: { select: { nome: true } }, subtarefas: { where: incluirDesativados ? {} : { ativo: true } } },
           orderBy: [{ prazo: "asc" }, { nome: "asc" }],
         },
         documentos: { where: incluirDesativados ? {} : { ativo: true }, orderBy: { criadoEm: "desc" } },
       },
-    }),
-  );
+    });
+    return projeto ? { ...projeto, tarefas: projeto.tarefas.map((tarefa) => ({ ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario })) } : null;
+  });
 }
 
 export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, incluirDesativados = false) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, (tx) =>
-    tx.tarefa.findFirst({
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const tarefa = await tx.tarefa.findFirst({
       where: { id: tarefaId, ...(incluirDesativados ? {} : { ativo: true }) },
       include: {
         projeto: { include: { cliente: { select: { razaoSocial: true } } } },
         responsavel: { select: { id: true, nome: true, temAcesso: true } },
+        responsavelUsuario: { select: { id: true, nome: true, perfil: true } },
         subtarefas: {
           where: incluirDesativados ? {} : { ativo: true },
           include: { atribuidoA: { select: { nome: true } } },
           orderBy: { criadoEm: "asc" },
         },
       },
-    }),
-  );
+    });
+    return tarefa ? { ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario } : null;
+  });
 }
 
 export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
@@ -248,6 +251,29 @@ async function sincronizarAtribuicaoAutomatica(
   }
 }
 
+async function validarResponsavel(
+  tx: Prisma.TransactionClient,
+  projetoId: string,
+  pessoaEnvolvidaId: string | null | undefined,
+  usuarioId: string | null | undefined,
+): Promise<void> {
+  if (pessoaEnvolvidaId && usuarioId) throw new Error("Informe apenas um tipo de responsável.");
+  if (pessoaEnvolvidaId) {
+    const pessoa = await tx.pessoaEnvolvida.findFirst({
+      where: { id: pessoaEnvolvidaId, ativo: true, cliente: { projetos: { some: { id: projetoId } } } },
+      select: { id: true },
+    });
+    if (!pessoa) throw new Error("A pessoa envolvida não pertence ao cliente deste projeto.");
+  }
+  if (usuarioId) {
+    const usuario = await tx.usuario.findFirst({
+      where: { id: usuarioId, ativo: true, perfil: { in: ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO"] } },
+      select: { id: true },
+    });
+    if (!usuario) throw new Error("O responsável da equipe não está ativo ou não possui perfil de colaborador.");
+  }
+}
+
 export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
   exigirAdministrador(ctx);
   validarDatasProjeto(dados);
@@ -295,6 +321,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
   }
 
   return comContextoDeUsuario(ctx, async (tx) => {
+    await validarResponsavel(tx, dados.projetoId, dados.responsavelId, dados.responsavelUsuarioId);
     const serieId = dados.periodicidade ? randomUUID() : null;
     const tarefa = await tx.tarefa.create({
       data: {
@@ -308,6 +335,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? StatusTarefa.A_INICIAR,
         responsavelId: dados.responsavelId ?? null,
+        responsavelUsuarioId: dados.responsavelUsuarioId ?? null,
       },
     });
     await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
@@ -327,7 +355,8 @@ export async function atualizarTarefa(
   }
 
   return comContextoDeUsuario(ctx, async (tx) => {
-    const anterior = await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { responsavelId: true } });
+    const anterior = await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { responsavelId: true, responsavelUsuarioId: true, projetoId: true } });
+    await validarResponsavel(tx, anterior.projetoId, dados.responsavelId, dados.responsavelUsuarioId);
     const tarefa = await tx.tarefa.update({
       where: { id: tarefaId },
       data: {
@@ -337,6 +366,7 @@ export async function atualizarTarefa(
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? undefined,
         responsavelId: dados.responsavelId ?? null,
+        responsavelUsuarioId: dados.responsavelUsuarioId ?? null,
       },
     });
 
@@ -350,6 +380,9 @@ export async function atualizarTarefa(
           where: { usuarioId: pessoaAnterior.usuario.id, entidadeTipo: "TAREFA", entidadeId: tarefaId },
         });
       }
+    }
+    if (anterior.responsavelUsuarioId && anterior.responsavelUsuarioId !== dados.responsavelUsuarioId) {
+      await tx.atribuicao.deleteMany({ where: { usuarioId: anterior.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
     }
     await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
     return tarefa;

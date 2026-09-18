@@ -106,13 +106,16 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
       nome: true,
       prazo: true,
       responsavel: { select: { usuario: { select: { id: true, ativo: true } } } },
+      responsavelUsuario: { select: { id: true, ativo: true } },
     },
   });
 
   let processadas = 0;
   const administradores = await prisma.usuario.findMany({ where: { ativo: true, perfil: "ADMIN" }, select: { id: true } });
   for (const tarefa of tarefas) {
-    const alvo = tarefa.responsavel?.usuario?.ativo
+    const alvo = tarefa.responsavelUsuario?.ativo
+      ? [tarefa.responsavelUsuario.id]
+      : tarefa.responsavel?.usuario?.ativo
       ? [tarefa.responsavel.usuario.id]
       : administradores.map((administrador) => administrador.id);
     await dispararEventoNotificacao(EventoNotificacao.PRAZO_PROXIMO, {

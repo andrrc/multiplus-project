@@ -40,6 +40,11 @@ function periodicidade(valor: string): Periodicidade | null {
   return Object.values(Periodicidade).includes(valor as Periodicidade) ? (valor as Periodicidade) : null;
 }
 
+function responsavel(valor: string): { responsavelId: string | null; responsavelUsuarioId: string | null } {
+  if (valor.startsWith("usuario:")) return { responsavelId: null, responsavelUsuarioId: valor.slice("usuario:".length) || null };
+  return { responsavelId: valor || null, responsavelUsuarioId: null };
+}
+
 export async function criarProjetoAction(formData: FormData) {
   const ctx = await obterContexto();
   const projeto = await criarProjeto(ctx, {
@@ -87,12 +92,13 @@ export async function atualizarProjetoERedirecionarAction(projetoId: string, for
 
 export async function criarTarefaAction(formData: FormData) {
   const ctx = await obterContexto();
+  const dadosResponsavel = responsavel(texto(formData, "responsavelId"));
   const tarefa = await criarTarefa(ctx, {
     projetoId: texto(formData, "projetoId"),
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")) ?? new Date(NaN),
-    responsavelId: texto(formData, "responsavelId") || null,
+    ...dadosResponsavel,
     periodicidade: periodicidade(texto(formData, "periodicidade")),
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
@@ -109,11 +115,12 @@ export async function criarTarefaERedirecionarAction(formData: FormData) {
 
 export async function atualizarTarefaAction(tarefaId: string, formData: FormData) {
   const ctx = await obterContexto();
+  const dadosResponsavel = responsavel(texto(formData, "responsavelId"));
   const tarefa = await atualizarTarefa(ctx, tarefaId, {
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")) ?? new Date(NaN),
-    responsavelId: texto(formData, "responsavelId") || null,
+    ...dadosResponsavel,
     periodicidade: periodicidade(texto(formData, "periodicidade")),
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
