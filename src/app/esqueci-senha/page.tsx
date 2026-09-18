@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { AuthShell } from "../auth-shell";
 import { EsqueciSenhaForm } from "./esqueci-senha-form";
+
+export const metadata: Metadata = { title: "Recuperar acesso" };
 
 export default function EsqueciSenhaPage() {
   return (

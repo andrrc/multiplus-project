@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { validarTokenAcesso } from "@/lib/tokens";
 import { AuthShell } from "../auth-shell";
 import { DefinirSenhaForm } from "./definir-senha-form";
+
+export const metadata: Metadata = { title: "Definir senha" };
 
 /**
  * Tela A4 (RF-030/RF-031/RF-032). O token é validado já na renderização para que o estado
