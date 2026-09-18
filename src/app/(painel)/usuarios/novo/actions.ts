@@ -75,6 +75,8 @@ export async function criarUsuarioAction(
   redirect(
     resultado.convite === "enviado"
       ? "/usuarios?convite=enviado"
-      : "/usuarios?convite=falhou",
+      : resultado.convite === "nao_configurado"
+        ? "/usuarios?convite=manual"
+        : "/usuarios?convite=falhou",
   );
 }

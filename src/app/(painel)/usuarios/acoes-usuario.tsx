@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import {
   definirUsuarioAtivoAction,
+  gerarLinkConviteAction,
   reenviarConviteAction,
   removerAtribuicaoAction,
   type EstadoAcaoUsuario,
+  type EstadoLinkConvite,
 } from "./actions";
 
 const linkAcao =
@@ -97,6 +99,63 @@ export function BotaoReenviarConvite({ usuarioId }: { usuarioId: string }) {
         {pendente ? "Reenviando…" : "Reenviar convite"}
       </button>
       <Retorno estado={estado} />
+    </span>
+  );
+}
+
+/**
+ * Alternativa segura enquanto o Resend não está configurado. O valor não volta do banco e
+ * só aparece depois de uma ação explícita da Administradora, para ela copiar e compartilhar.
+ */
+export function BotaoGerarLinkConvite({ usuarioId }: { usuarioId: string }) {
+  const [pendente, startTransition] = useTransition();
+  const [estado, setEstado] = useState<EstadoLinkConvite | null>(null);
+  const [copiado, setCopiado] = useState(false);
+
+  async function copiar() {
+    if (!estado?.link) return;
+    try {
+      await navigator.clipboard.writeText(estado.link);
+      setCopiado(true);
+    } catch {
+      setCopiado(false);
+    }
+  }
+
+  return (
+    <span className="flex w-full flex-col gap-1.5 sm:items-end">
+      <button
+        type="button"
+        disabled={pendente}
+        onClick={() =>
+          startTransition(async () => {
+            setCopiado(false);
+            setEstado(await gerarLinkConviteAction(usuarioId));
+          })
+        }
+        className={linkAcao}
+      >
+        {pendente ? "Gerando link…" : "Gerar link de acesso"}
+      </button>
+      {estado?.erro && <p className="text-[13px] text-critico">{estado.erro}</p>}
+      {estado?.link && (
+        <span className="w-full rounded-[3px] border border-ambar bg-papel p-2.5 text-left sm:w-[320px]">
+          <span className="block text-[12.5px] leading-5 text-tinta">
+            Envie este link por um canal seguro. Ele vale por 7 dias, é usado uma única vez e
+            gerar outro cancela este.
+          </span>
+          <input
+            readOnly
+            value={estado.link}
+            aria-label="Link de acesso para compartilhar"
+            className="mt-2 block w-full rounded-[2px] border border-linha bg-branco px-2 py-1.5 text-[12px] text-tinta"
+            onFocus={(evento) => evento.currentTarget.select()}
+          />
+          <button type="button" onClick={copiar} className={`${linkAcao} mt-2`}>
+            {copiado ? "Link copiado" : "Copiar link"}
+          </button>
+        </span>
+      )}
     </span>
   );
 }

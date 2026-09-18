@@ -87,6 +87,15 @@ describe("RF-030 — token de definição de senha", () => {
     expect(await validarTokenAcesso(token)).toEqual({ valido: false, motivo: "ja_usado" });
   });
 
+  it("um link novo invalida o anterior da mesma conta", async () => {
+    const usuario = await criarUsuarioAtivo("token.substituido@teste.local");
+    const anterior = await criarTokenAcesso(usuario.id, "DEFINIR_SENHA");
+    const novo = await criarTokenAcesso(usuario.id, "DEFINIR_SENHA");
+
+    expect(await validarTokenAcesso(anterior)).toEqual({ valido: false, motivo: "ja_usado" });
+    expect(await validarTokenAcesso(novo)).toMatchObject({ valido: true, usuarioId: usuario.id });
+  });
+
   it("token inventado é recusado", async () => {
     expect(await validarTokenAcesso("naoexiste")).toEqual({
       valido: false,

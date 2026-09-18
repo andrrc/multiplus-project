@@ -2,6 +2,8 @@ import type { EntidadeTipo, Perfil } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
+import { linkDefinirSenha } from "@/lib/email";
+import { criarTokenAcesso } from "@/lib/tokens";
 import { validarEmail } from "@/lib/validacao";
 import { normalizarCpf, validarCpf } from "@/lib/cpf";
 import { normalizarCnpj, validarCnpj } from "@/lib/cnpj";
@@ -352,7 +354,7 @@ export async function atualizarUsuario(
  */
 export type ResultadoReenvio =
   | { sucesso: true; convite: ResultadoConvite }
-  | { sucesso: false; motivo: "sem_permissao" | "nao_encontrado" | "ja_ativou" };
+  | { sucesso: false; motivo: "sem_permissao" | "nao_encontrado" | "ja_ativou" | "desativado" };
 
 export async function reenviarConvite(
   ctx: ContextoUsuario,
@@ -362,10 +364,34 @@ export async function reenviarConvite(
 
   const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
   if (!usuario) return { sucesso: false, motivo: "nao_encontrado" };
+  if (!usuario.ativo) return { sucesso: false, motivo: "desativado" };
   if (usuario.senhaHash) return { sucesso: false, motivo: "ja_ativou" };
 
   const convite = await enviarConviteDefinicaoSenha(usuario, "USUARIO_INTERNO");
   return { sucesso: true, convite };
+}
+
+/**
+ * Gera um convite para compartilhamento manual sem tentar disparar e-mail. O token em texto
+ * puro só cruza a resposta desta ação e não é persistido; o banco guarda unicamente o hash.
+ */
+export type ResultadoLinkConvite =
+  | { sucesso: true; link: string }
+  | { sucesso: false; motivo: "sem_permissao" | "nao_encontrado" | "ja_ativou" | "desativado" };
+
+export async function gerarLinkConvite(
+  ctx: ContextoUsuario,
+  usuarioId: string,
+): Promise<ResultadoLinkConvite> {
+  if (ctx.perfil !== "ADMIN") return { sucesso: false, motivo: "sem_permissao" };
+
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!usuario) return { sucesso: false, motivo: "nao_encontrado" };
+  if (!usuario.ativo) return { sucesso: false, motivo: "desativado" };
+  if (usuario.senhaHash) return { sucesso: false, motivo: "ja_ativou" };
+
+  const token = await criarTokenAcesso(usuario.id, "DEFINIR_SENHA");
+  return { sucesso: true, link: linkDefinirSenha(token) };
 }
 
 // ============================================================================

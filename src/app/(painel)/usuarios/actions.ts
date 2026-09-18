@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { exigirAdmin } from "@/server/auth/contexto";
 import { definirAtivo } from "@/lib/desativacao";
-import { reenviarConvite, removerAtribuicao } from "@/lib/usuarios";
+import { gerarLinkConvite, reenviarConvite, removerAtribuicao } from "@/lib/usuarios";
 
 export type EstadoAcaoUsuario = { erro?: string; mensagem?: string };
+export type EstadoLinkConvite = { erro?: string; link?: string };
 
 /**
  * RF-039 — desativar/reativar usuário. `exigirAdmin` barra aqui (RN-007), `definirAtivo`
@@ -41,14 +42,33 @@ export async function reenviarConviteAction(usuarioId: string): Promise<EstadoAc
       sem_permissao: "Ação restrita ao Administrador.",
       nao_encontrado: "Usuário não encontrado.",
       ja_ativou: "Esta pessoa já definiu a senha — não há convite pendente.",
+      desativado: "Reative a pessoa antes de enviar um convite.",
     };
     return { erro: mensagens[resultado.motivo] };
   }
 
   revalidatePath("/usuarios");
-  return resultado.convite === "enviado"
-    ? { mensagem: "Convite reenviado." }
-    : { erro: "Não foi possível enviar o e-mail agora. Tente reenviar em instantes." };
+  if (resultado.convite === "enviado") return { mensagem: "Convite reenviado." };
+  if (resultado.convite === "nao_configurado") {
+    return { erro: "O e-mail não está configurado. Gere um link de acesso para compartilhar." };
+  }
+  return { erro: "Não foi possível enviar o e-mail agora. Tente reenviar em instantes." };
+}
+
+/** Link manual só é devolvido uma vez, imediatamente após a Talita solicitá-lo. */
+export async function gerarLinkConviteAction(usuarioId: string): Promise<EstadoLinkConvite> {
+  const ctx = await exigirAdmin();
+  const resultado = await gerarLinkConvite(ctx, usuarioId);
+
+  if (resultado.sucesso) return { link: resultado.link };
+
+  const mensagens: Record<typeof resultado.motivo, string> = {
+    sem_permissao: "Ação restrita ao Administrador.",
+    nao_encontrado: "Usuário não encontrado.",
+    ja_ativou: "Esta pessoa já definiu a senha — não há convite pendente.",
+    desativado: "Reative a pessoa antes de gerar um convite.",
+  };
+  return { erro: mensagens[resultado.motivo] };
 }
 
 /** RF-041 / RN-006 — remoção de atribuição manual; a automática é recusada no serviço. */

@@ -1,5 +1,5 @@
 import { criarTokenAcesso } from "@/lib/tokens";
-import { enviarEmail, linkDefinirSenha } from "@/lib/email";
+import { EmailNaoConfiguradoError, enviarEmail, linkDefinirSenha } from "@/lib/email";
 
 /**
  * RF-030 / RF-031 / RF-032 — o convite de definição de senha, num lugar só.
@@ -18,7 +18,7 @@ export type OrigemConvite = "USUARIO_INTERNO" | "COLABORADOR_EXTERNO" | "CLIENTE
  * a Talita a recomeçar o cadastro — e deixaria o e-mail já ocupado por um usuário que ela
  * não consegue mais criar.
  */
-export type ResultadoConvite = "enviado" | "falha_no_envio";
+export type ResultadoConvite = "enviado" | "nao_configurado" | "falha_no_envio";
 
 const APRESENTACAO: Record<OrigemConvite, string> = {
   USUARIO_INTERNO: "Você recebeu acesso ao Múltiplus Software.",
@@ -41,6 +41,7 @@ export async function enviarConviteDefinicaoSenha(
     });
     return "enviado";
   } catch (erro) {
+    if (erro instanceof EmailNaoConfiguradoError) return "nao_configurado";
     console.error("[convite] falha ao enviar e-mail de definição de senha:", erro);
     return "falha_no_envio";
   }

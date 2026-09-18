@@ -18,7 +18,7 @@ vi.mock("@/lib/email", async (importOriginal) => {
 });
 
 import { ownerDb, limparFixtures, fecharConexoes } from "../integration/setup/helpers";
-import { criarUsuarioInterno, listarUsuarios, reenviarConvite } from "@/lib/usuarios";
+import { criarUsuarioInterno, gerarLinkConvite, listarUsuarios, reenviarConvite } from "@/lib/usuarios";
 import { definirAtivo } from "@/lib/desativacao";
 import {
   listarClientes,
@@ -208,6 +208,28 @@ describe("RF-040 — falha do Resend não impede a criação do usuário", () =>
       sucesso: false,
       motivo: "ja_ativou",
     });
+  });
+
+  it("Talita gera um link manual único quando precisa compartilhar o convite", async () => {
+    const ctxAdmin = await criarAdmin("talita.smoke-link-manual@teste.local");
+    const usuario = await ownerDb.usuario.create({
+      data: { nome: "Convite manual", email: "link.manual@teste.local", perfil: "ADMIN_INTERNO" },
+    });
+
+    const primeiro = await gerarLinkConvite(ctxAdmin, usuario.id);
+    expect(primeiro.sucesso).toBe(true);
+    if (!primeiro.sucesso) return;
+
+    const tokenAnterior = extrairTokenDoEmail(`<a href="${primeiro.link}">link</a>`);
+    expect(await validarTokenAcesso(tokenAnterior)).toMatchObject({ valido: true, usuarioId: usuario.id });
+
+    const segundo = await gerarLinkConvite(ctxAdmin, usuario.id);
+    expect(segundo.sucesso).toBe(true);
+    if (!segundo.sucesso) return;
+
+    expect(await validarTokenAcesso(tokenAnterior)).toEqual({ valido: false, motivo: "ja_usado" });
+    const tokenNovo = extrairTokenDoEmail(`<a href="${segundo.link}">link</a>`);
+    expect(await validarTokenAcesso(tokenNovo)).toMatchObject({ valido: true, usuarioId: usuario.id });
   });
 });
 

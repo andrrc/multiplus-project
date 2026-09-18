@@ -2,23 +2,24 @@ import { Resend } from "resend";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+/** O convite não pode parecer enviado quando não existe provedor de e-mail configurado. */
+export class EmailNaoConfiguradoError extends Error {
+  constructor() {
+    super("RESEND_API_KEY não configurada.");
+    this.name = "EmailNaoConfiguradoError";
+  }
+}
+
 type EnviarEmailParams = {
   to: string;
   subject: string;
   html: string;
 };
 
-/**
- * Sem RESEND_API_KEY configurada (dev local), só loga no console — evita
- * exigir uma conta Resend/domínio verificado para trabalhar na Sprint 1.
- */
 export async function enviarEmail({ to, subject, html }: EnviarEmailParams): Promise<void> {
   if (!resend) {
-    console.log(`\n[email] (RESEND_API_KEY não configurada — apenas log)`);
-    console.log(`[email] Para: ${to}`);
-    console.log(`[email] Assunto: ${subject}`);
-    console.log(`[email] Corpo:\n${html}\n`);
-    return;
+    // Não registrar o HTML aqui: ele contém um token que concede acesso à conta.
+    throw new EmailNaoConfiguradoError();
   }
 
   await resend.emails.send({

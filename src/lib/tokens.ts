@@ -23,7 +23,15 @@ export async function criarTokenAcesso(
 ): Promise<string> {
   const tokenPlano = randomBytes(32).toString("hex");
   const expiraEm = new Date(Date.now() + TTL_HORAS[tipo] * 60 * 60 * 1000);
+  const usadoEm = new Date();
 
+  // Um link novo substitui qualquer link de acesso ainda aberto para a mesma conta. Assim,
+  // quando a Talita gera e compartilha um novo convite, o anterior deixa de funcionar de
+  // imediato — inclusive se ele tiver sido enviado por e-mail antes.
+  await prisma.tokenAcesso.updateMany({
+    where: { usuarioId, usadoEm: null },
+    data: { usadoEm },
+  });
   await prisma.tokenAcesso.create({
     data: {
       usuarioId,

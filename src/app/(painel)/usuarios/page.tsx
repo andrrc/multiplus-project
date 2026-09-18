@@ -3,7 +3,11 @@ import type { Perfil } from "@prisma/client";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarUsuarios, ROTULO_STATUS, type UsuarioDaListagem } from "@/lib/usuarios";
 import { Etiqueta, inputClass } from "@/ui/campo";
-import { BotaoDesativarUsuario, BotaoReenviarConvite } from "./acoes-usuario";
+import {
+  BotaoDesativarUsuario,
+  BotaoGerarLinkConvite,
+  BotaoReenviarConvite,
+} from "./acoes-usuario";
 
 /** Mesmos rótulos da barra lateral (reunião de aprovação da Sprint 2). */
 const NOME_PERFIL: Record<Perfil, string> = {
@@ -94,6 +98,7 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
           Editar
         </Link>
         {usuario.status === "PENDENTE" && <BotaoReenviarConvite usuarioId={usuario.id} />}
+        {usuario.status === "PENDENTE" && <BotaoGerarLinkConvite usuarioId={usuario.id} />}
         <BotaoDesativarUsuario
           usuarioId={usuario.id}
           nome={usuario.nome}
@@ -126,6 +131,15 @@ function RetornoConvite({ convite }: { convite?: string }) {
       <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
         O usuário foi criado, mas o e-mail de convite não saiu. Use &ldquo;Reenviar
         convite&rdquo; na linha dele para tentar de novo.
+      </p>
+    );
+  }
+
+  if (convite === "manual") {
+    return (
+      <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+        O usuário foi criado, mas o envio de e-mail não está configurado. Na linha dele, use
+        &ldquo;Gerar link de acesso&rdquo; para copiar e compartilhar um convite seguro.
       </p>
     );
   }
