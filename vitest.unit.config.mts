@@ -13,5 +13,8 @@ export default defineConfig({
   },
   test: {
     include: ["tests/unit/**/*.test.ts"],
+    // Alguns testes unitários importam módulos de domínio que inicializam Prisma.
+    // O setup só aponta as URLs para o banco efêmero; não abre conexão nem roda migrations.
+    setupFiles: ["tests/setup-env.ts"],
   },
 });

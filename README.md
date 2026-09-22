@@ -14,9 +14,9 @@ Pré-requisitos: Node 20+, Docker Desktop.
 ```bash
 cp .env.example .env
 # gere um AUTH_SECRET: npx auth secret
-# ajuste as senhas de POSTGRES_PASSWORD / MINIO_ROOT_PASSWORD se quiser
+# gere senhas reais e um AUTH_SECRET antes de qualquer ambiente compartilhado
 
-docker compose up -d postgres minio
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres minio
 npm install
 npm run db:migrate   # aplica as migrations (schema + políticas de RLS)
 ```
@@ -105,16 +105,19 @@ de dev — ver `tests/integration/setup/global-setup.ts`), usando a mesma senha 
 
 Convenção de arquivo: `[modulo].[categoria].test.ts` (`.integration.test.ts` ou
 `.smoke.test.ts`), com o RF/RN coberto no comentário do topo — igual ao Padrão de
-Testes por Sprint pede. Ainda pendentes do Definition of Done da Sprint 1 (Seção 3 do
-documento): gate de CI (GitHub Actions bloqueando deploy com teste quebrado) e
-healthcheck pós-deploy — ficam pra quando a sprint tocar deploy real na Contabo.
+Testes por Sprint pede. O CI roda typecheck, lint e a suíte completa antes de qualquer
+deploy. A workflow publica automaticamente a branch `staging` no ambiente de teste quando
+`DEPLOY_STAGING_ATIVO` está habilitada; a `main` fica reservada para produção.
 
 ## Infraestrutura
 
 `docker-compose.yml` sobe Postgres, MinIO, o app (via `Dockerfile`, build standalone) e
-Caddy (reverse proxy + SSL automático) — é o mesmo compose usado na VPS Contabo em
-produção. Em dev local, normalmente só `postgres` e `minio` rodam em Docker; o Next.js
-roda direto com `npm run dev`.
+Caddy (reverse proxy + SSL automático). Postgres e MinIO não têm portas publicadas no
+compose base; `docker-compose.local.yml` é um override explícito para desenvolvimento.
+Na VPS, `ops/deploy.sh` aplica migrations com a role dona, sincroniza a senha de
+`multiplus_app`, garante bucket MinIO privado e só então sobe app + Caddy.
+
+Para backup e operação da VPS, consulte [`ops/README.md`](ops/README.md).
 
 Portas: o Postgres deste projeto publica em `5434` no host (não `5432`) para não colidir
 com outros bancos locais.

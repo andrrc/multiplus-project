@@ -123,7 +123,7 @@ describe("criar usuário interno → convite → definir senha → login → tel
     expect(autenticada?.perfil).toBe("ADMIN_INTERNO");
 
     // 5. Cai na tela inicial do próprio perfil (RF-043) e enxerga o projeto atribuído.
-    expect(telaInicial(autenticada!.perfil)).toBe("/meus-projetos");
+    expect(telaInicial(autenticada!.perfil)).toBe("/minhas-tarefas");
 
     const ctxJoana = { usuarioId: autenticada!.id, perfil: autenticada!.perfil };
     const clientesQueEnxerga = await listarClientes(ctxJoana);
