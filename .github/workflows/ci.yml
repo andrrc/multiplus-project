@@ -80,28 +80,25 @@ jobs:
       - name: Suíte completa
         run: npm test
 
-  # DORMENTE ATÉ EXISTIR VPS (16/09/2026). Não há produção: o `.env` aponta para localhost,
-  # o domínio do `.env.example` não resolve, e as três ações do ADR-002 seguem desmarcadas.
-  #
-  # O job está escrito e pronto, mas não roda enquanto a variável `DEPLOY_ATIVO` não existir.
-  # Sem essa guarda ele rodaria em todo push na `main`, falharia por falta de secrets e
-  # deixaria o CI permanentemente vermelho — e um CI que está sempre vermelho não é gate: é
-  # ruído que ensina a ignorar o sinal.
-  #
-  # Para ligar, quando a VPS existir: criar a variável de repositório `DEPLOY_ATIVO = true`
-  # (Settings › Secrets and variables › Actions › Variables) e os cinco secrets que o
-  # primeiro passo confere. Ver também a decisão D9 — as migrations precisam de um serviço
-  # próprio no compose, com a role dona, antes de o app subir.
   deploy:
-    name: Deploy na Contabo, com verificação
+    name: Deploy de ambiente, com verificação
     needs: verificacao
     if: >-
-      github.ref == 'refs/heads/main'
-      && github.event_name == 'push'
-      && vars.DEPLOY_ATIVO == 'true'
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging') &&
+      ((github.ref == 'refs/heads/main' &&
+        (vars.DEPLOY_PRODUCTION_ATIVO == 'true' || vars.DEPLOY_ATIVO == 'true')) ||
+       (github.ref == 'refs/heads/staging' && vars.DEPLOY_STAGING_ATIVO == 'true'))
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    concurrency:
+      group: deploy-${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Conferir os secrets de deploy
         # Sem isto, a ausência de um secret aparece como erro de SSH três passos adiante.
         run: |
@@ -128,15 +125,25 @@ jobs:
           chmod 600 ~/.ssh/id_deploy
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Subir a versão nova
-        # ATENÇÃO — migrations não entram aqui. Em produção `DATABASE_URL` do container `app`
-        # é a role restrita por RLS (ver docker-compose.yml: `APP_DATABASE_URL`), que não tem
-        # permissão para alterar schema, então um `prisma migrate deploy` de dentro do
-        # container falharia. Como isso é feito hoje precisa ser confirmado antes da Sprint
-        # 4A, que é a primeira a mexer em schema com dado real no ar.
+      - name: Enviar o commit exato para a VPS
+        run: |
+          arquivo="${RUNNER_TEMP}/multiplus-${GITHUB_SHA}.tgz"
+          tar \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=.next \
+            --exclude='*.tgz' \
+            -czf "$arquivo" .
+          scp -i ~/.ssh/id_deploy "$arquivo" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/multiplus-${GITHUB_SHA}.tgz"
+
+      - name: Executar deploy seguro
         run: |
           ssh -i ~/.ssh/id_deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd '${{ secrets.DEPLOY_PATH }}' && git pull --ff-only && docker compose up -d --build app"
+            "mkdir -p '${{ secrets.DEPLOY_PATH }}' && \
+             tar -xzf '/tmp/multiplus-${GITHUB_SHA}.tgz' -C '${{ secrets.DEPLOY_PATH }}' && \
+             rm -f '/tmp/multiplus-${GITHUB_SHA}.tgz' && \
+             cd '${{ secrets.DEPLOY_PATH }}' && GIT_SHA='${GITHUB_SHA}' bash ops/deploy.sh"
 
       - name: Verificar /api/health
         # É o passo que dá sentido ao job: sem ele, "deploy verde" significa apenas que o

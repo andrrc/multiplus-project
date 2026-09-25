@@ -10,13 +10,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      # Publicada apenas para facilitar o dev local (migrations, psql).
-      # Porta 5434 no host para não colidir com outros Postgres locais (ex. Supabase CLI usa 5432/5433).
-      # Em produção, considere remover esta linha e acessar só via rede interna do compose.
-      - "127.0.0.1:5434:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -24,7 +19,7 @@ services:
       - internal
 
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -32,9 +27,6 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
-    ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 5s
@@ -55,7 +47,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
-      APP_DATABASE_URL: postgresql://multiplus_app:${APP_DATABASE_PASSWORD:-dev-local-only-app}@postgres:5432/${POSTGRES_DB}?schema=public
+      APP_DATABASE_URL: postgresql://multiplus_app:${APP_DATABASE_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: https://${APP_DOMAIN}
       MINIO_ENDPOINT: minio
@@ -68,6 +60,12 @@ services:
       EMAIL_FROM: ${EMAIL_FROM}
       CNPJ_API_BASE_URL: ${CNPJ_API_BASE_URL}
       NODE_ENV: production
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/api/health | grep -q '\"status\":\"ok\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     networks:
       - internal
 
@@ -75,7 +73,8 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
@@ -85,6 +84,75 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - internal
+
+  # Operações de release são explicitamente executadas por ops/deploy.sh com
+  # `docker compose run --rm`. Não entram no `up` normal.
+  migrate:
+    profiles: ["ops"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+    networks:
+      - internal
+
+  db-role:
+    profiles: ["ops"]
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      APP_DATABASE_PASSWORD: ${APP_DATABASE_PASSWORD:?APP_DATABASE_PASSWORD is required}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - >-
+        psql -v ON_ERROR_STOP=1
+        -c "ALTER ROLE multiplus_app WITH LOGIN PASSWORD '$${APP_DATABASE_PASSWORD}';"
+    networks:
+      - internal
+
+  minio-init:
+    profiles: ["ops"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: storage-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+    command: ["node", "/app/ops/minio-init.mjs"]
+    networks:
+      - internal
+
+  seed:
+    profiles: ["ops"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: seeder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      AUTH_URL: https://${APP_DOMAIN}
     networks:
       - internal
 

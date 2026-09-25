@@ -1,0 +1,11 @@
+services:
+  # Override exclusivo para desenvolvimento local. O compose base não publica
+  # banco nem MinIO, portanto continua seguro quando usado na VPS.
+  postgres:
+    ports:
+      - "127.0.0.1:5434:5432"
+
+  minio:
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
