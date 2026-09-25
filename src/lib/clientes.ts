@@ -275,6 +275,7 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
       where: { ativo: true },
       select: {
         id: true,
+        tipo: true,
         cnpj: true,
         cpf: true,
         razaoSocial: true,
