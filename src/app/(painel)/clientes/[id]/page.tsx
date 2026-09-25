@@ -57,6 +57,15 @@ const STATUS_ACESSO: Record<string, { texto: string; cor: string }> = {
   pendente: { texto: "Pendente de ativação", cor: "bg-ambar" },
   ativo: { texto: "Ativo", cor: "bg-verde-esc" },
 };
+const STATUS_PROJETO: Record<string, string> = {
+  A_INICIAR: "A iniciar",
+  EM_ANDAMENTO: "Em andamento",
+  CONCLUIDO: "Concluído",
+  CANCELADO: "Cancelado",
+};
+const data = (valor: Date | null) => valor
+  ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
+  : "Sem previsão";
 
 export default async function DetalheClientePage({
   params,
@@ -75,7 +84,7 @@ export default async function DetalheClientePage({
   const detalhe = await buscarClienteDetalheSeguro(ctx, id, mostrarDesativados);
   if (!detalhe) notFound();
 
-  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso, valorTotalProjetos } = detalhe;
+  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, projetos, usuarioAcesso, valorTotalProjetos } = detalhe;
 
   const statusChave = !usuarioAcesso
     ? null
@@ -153,6 +162,33 @@ export default async function DetalheClientePage({
             </>
           )}
         </div>
+      </Bloco>
+
+      <Bloco titulo={`Projetos (${projetos.length})`}>
+        {projetos.length === 0 ? (
+          <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+            Nenhum projeto cadastrado para este cliente.
+          </p>
+        ) : (
+          <ul className="flex flex-col">
+            {projetos.map((projeto) => (
+              <li key={projeto.id} className="border-b border-linha last:border-b-0">
+                <Link href={`/projetos/${projeto.id}`} className="flex flex-wrap items-center justify-between gap-3 py-4 hover:text-azul-esc">
+                  <div>
+                    <p className="font-[family-name:var(--font-interface)] text-[14.5px] font-medium">{projeto.nome}</p>
+                    <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] text-cinza">Conclusão prevista: {data(projeto.dataPrevistaConclusao)}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Etiqueta tom={projeto.ativo ? projeto.status === "CONCLUIDO" ? "positivo" : "padrao" : "apagado"}>
+                      {projeto.ativo ? STATUS_PROJETO[projeto.status] ?? projeto.status : "Desativado"}
+                    </Etiqueta>
+                    <span className="font-[family-name:var(--font-interface)] text-[12px] text-azul-esc">Abrir projeto</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </Bloco>
 
       {responsavelLegal && (responsavelLegal.nome || responsavelLegal.email || responsavelLegal.cpf) && (

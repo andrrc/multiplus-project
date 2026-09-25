@@ -224,7 +224,7 @@ export async function buscarClienteDetalheSeguro(
     const cliente = await tx.cliente.findUnique({ where: { id: clienteId } });
     if (!cliente) return null;
 
-    const [responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso, valorTotalProjetos] =
+    const [responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, projetos, usuarioAcesso, valorTotalProjetos] =
       await Promise.all([
         tx.responsavelLegalSeguro.findUnique({ where: { clienteId } }),
         tx.pontoContatoSeguro.findUnique({ where: { clienteId } }),
@@ -235,6 +235,11 @@ export async function buscarClienteDetalheSeguro(
         tx.documento.findMany({
           where: { clienteId, ...soAtivos },
           orderBy: { criadoEm: "desc" },
+        }),
+        tx.projeto.findMany({
+          where: { clienteId, ...soAtivos },
+          select: { id: true, nome: true, status: true, ativo: true, dataPrevistaConclusao: true },
+          orderBy: [{ ativo: "desc" }, { nome: "asc" }],
         }),
         tx.usuario.findFirst({
           where: { clienteId, perfil: "CLIENTE" },
@@ -254,6 +259,7 @@ export async function buscarClienteDetalheSeguro(
       pontoContato,
       pessoasEnvolvidas,
       documentos,
+      projetos,
       usuarioAcesso,
       valorTotalProjetos: valorTotalProjetos?._sum.valorContratado ?? null,
     };
