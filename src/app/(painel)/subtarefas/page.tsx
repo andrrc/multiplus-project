@@ -1,21 +1,22 @@
 import Link from "next/link";
 import { StatusSubtarefa } from "@prisma/client";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { indicadorDePrazosSubtarefas, listarClientesParaProjeto, listarProjetos, listarSubtarefasPrazos } from "@/lib/projetos-tarefas";
+import { indicadorDePrazosSubtarefas, listarClientesParaProjeto, listarProjetos, listarSubtarefasPrazos, listarTarefasParaFiltro } from "@/lib/projetos-tarefas";
 import { estaAtrasada } from "@/lib/regras-projetos-tarefas";
 import { Etiqueta, inputClass } from "@/ui/campo";
 
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "Sem prazo";
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
-export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ projeto?: string; cliente?: string; todos?: string }> }) {
+export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ projeto?: string; cliente?: string; tarefa?: string; todos?: string }> }) {
   const ctx = await exigirAcessoARota("/subtarefas");
   const filtros = await searchParams;
   const pendentes = filtros.todos !== "1";
-  const [subtarefas, projetos, clientes] = await Promise.all([
-    listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, pendentes }),
+  const [subtarefas, projetos, clientes, tarefasFiltro] = await Promise.all([
+    listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, tarefaId: filtros.tarefa, pendentes }),
     listarProjetos(ctx),
     listarClientesParaProjeto(ctx),
+    listarTarefasParaFiltro(ctx, { clienteId: filtros.cliente, projetoId: filtros.projeto }),
   ]);
   const indicador = indicadorDePrazosSubtarefas(subtarefas);
   const hoje = new Date();
@@ -29,6 +30,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     <form className="mt-7 flex flex-wrap items-end gap-3">
       <label className="flex min-w-[230px] flex-col gap-1.5"><span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Cliente</span><select name="cliente" defaultValue={filtros.cliente ?? ""} className={inputClass}><option value="">Todos os clientes</option>{clientes.map(c => <option key={c.id} value={c.id}>{c.razaoSocial}</option>)}</select></label>
       <label className="flex min-w-[230px] flex-col gap-1.5"><span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Projeto</span><select name="projeto" defaultValue={filtros.projeto ?? ""} className={inputClass}><option value="">Todos os projetos</option>{projetos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</select></label>
+      <label className="flex min-w-[240px] flex-col gap-1.5"><span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Tarefa</span><select name="tarefa" defaultValue={filtros.tarefa ?? ""} className={inputClass}><option value="">Todas as tarefas</option>{tarefasFiltro.map(tarefa => <option key={tarefa.id} value={tarefa.id}>{tarefa.projeto.nome} · {tarefa.nome}</option>)}</select></label>
       <label className="flex min-h-11 items-center gap-2 pb-2 text-[14px]"><input type="checkbox" name="todos" value="1" defaultChecked={!pendentes} className="h-4 w-4 accent-verde" />Mostrar concluídas e canceladas</label>
       <button className="min-h-11 rounded-[3px] border border-linha px-4 font-[family-name:var(--font-interface)] text-[14px] hover:border-azul">Filtrar subtarefas</button>
     </form>

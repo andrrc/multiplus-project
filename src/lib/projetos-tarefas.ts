@@ -83,13 +83,30 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
   );
 }
 
-export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; pendentes?: boolean } = {}) {
+export async function listarTarefasParaFiltro(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string } = {}) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
+    where: {
+      ativo: true,
+      projeto: {
+        ativo: true,
+        ...(filtros.projetoId ? { id: filtros.projetoId } : {}),
+        ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}),
+      },
+    },
+    select: { id: true, nome: true, projeto: { select: { nome: true } } },
+    orderBy: [{ projeto: { nome: "asc" } }, { nome: "asc" }],
+  }));
+}
+
+export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean } = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
     where: {
       ativo: true,
       projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
       ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
+      ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
       ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
     },
     include: { projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } }, responsavel: { select: { nome: true } }, responsavelUsuario: { select: { nome: true } } },
@@ -97,13 +114,14 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
   }));
 }
 
-export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; pendentes?: boolean } = {}) {
+export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean } = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.findMany({
     where: {
       ativo: true,
       tarefa: {
         ativo: true,
+        ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
         ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
         projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
       },
