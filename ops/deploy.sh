@@ -52,7 +52,7 @@ echo "Subindo dependências internas..."
 compose up -d postgres minio
 
 echo "Aplicando migrations com a role dona..."
-compose --profile ops run --rm migrate
+compose --profile ops run --build --rm migrate
 
 echo "Garantindo senha da role multiplus_app..."
 compose --profile ops run --rm db-role
