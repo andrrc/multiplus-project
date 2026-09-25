@@ -53,7 +53,7 @@ function GrupoProjetosETarefas({
         <div id="menu-projetos-e-tarefas" className="mt-0.5 border-l border-[color:var(--tinta2)]">
           {itens.map((item) => (
             <NavLink key={item.href} href={item.href} nivel="filho">
-              {item.rotulo === "Tarefas" ? "Todas as tarefas" : item.rotulo}
+              {item.rotulo}
             </NavLink>
           ))}
         </div>
