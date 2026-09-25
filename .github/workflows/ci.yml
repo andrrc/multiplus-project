@@ -97,6 +97,8 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Conferir os secrets de deploy
         # Sem isto, a ausência de um secret aparece como erro de SSH três passos adiante.
         run: |
