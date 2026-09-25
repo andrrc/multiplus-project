@@ -275,7 +275,11 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
       where: { ativo: true },
       select: {
         id: true,
+        cnpj: true,
+        cpf: true,
         razaoSocial: true,
+        segmento: true,
+        municipio: true,
         projetos: {
           where: { ativo: true },
           select: { id: true, nome: true, status: true },
@@ -283,6 +287,40 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
         },
       },
       orderBy: { razaoSocial: "asc" },
+    }),
+  );
+}
+
+/** Dados cadastrais não financeiros para o detalhe contextual do colaborador. */
+export async function buscarClienteContextual(ctx: ContextoUsuario, clienteId: string) {
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") {
+    throw new Error("Visão exclusiva de colaboradores.");
+  }
+
+  return comContextoDeUsuario(ctx, (tx) =>
+    tx.cliente.findFirst({
+      where: { id: clienteId, ativo: true },
+      select: {
+        id: true,
+        tipo: true,
+        razaoSocial: true,
+        cnpj: true,
+        cpf: true,
+        rg: true,
+        endereco: true,
+        cep: true,
+        municipio: true,
+        estado: true,
+        atividadePrincipal: true,
+        porte: true,
+        segmento: true,
+        origemContato: true,
+        projetos: {
+          where: { ativo: true },
+          select: { id: true, nome: true, status: true, dataPrevistaConclusao: true },
+          orderBy: { nome: "asc" },
+        },
+      },
     }),
   );
 }

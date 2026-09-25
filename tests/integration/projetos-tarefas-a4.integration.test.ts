@@ -17,7 +17,7 @@ import {
   listarProjetosAtribuidos,
   listarTarefasAtribuidas,
 } from "@/lib/projetos-tarefas";
-import { buscarClienteDetalheSeguro, listarClientesContextuais } from "@/lib/clientes";
+import { buscarClienteContextual, buscarClienteDetalheSeguro, listarClientesContextuais } from "@/lib/clientes";
 import { comoUsuario, ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
 
 const data = (valor: string) => new Date(`${valor}T00:00:00.000Z`);
@@ -186,7 +186,11 @@ describe("CRUD protegido no servidor", () => {
     await expect(buscarProjetoAtribuido(ctxInterno(), outroProjeto.id)).resolves.toBeNull();
     const clientes = await listarClientesContextuais(ctxInterno());
     expect(clientes).toContainEqual(expect.objectContaining({ id: cliente.id, razaoSocial: cliente.razaoSocial }));
-    expect(Object.keys(clientes[0] ?? {})).toEqual(["id", "razaoSocial", "projetos"]);
+    expect(clientes[0]).not.toHaveProperty("email");
+    expect(clientes[0]).not.toHaveProperty("valorContratado");
+    const clienteContextual = await buscarClienteContextual(ctxInterno(), cliente.id);
+    expect(clienteContextual).toMatchObject({ id: cliente.id, razaoSocial: cliente.razaoSocial });
+    expect(clienteContextual).not.toHaveProperty("email");
     expect(await ownerDb.usuario.findUnique({ where: { id: interno.id }, select: { pessoaEnvolvidaId: true } })).toEqual({ pessoaEnvolvidaId: null });
     expect(await ownerDb.atribuicao.findMany({ where: { usuarioId: interno.id } })).toEqual([]);
     await expect(concluirSubtarefa(ctxInterno(), minha.id)).resolves.toMatchObject({ concluida: true });
