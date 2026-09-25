@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   StatusProjeto,
+  StatusSubtarefa,
   StatusTarefa,
   type Prisma,
   type Periodicidade,
@@ -35,6 +36,9 @@ export type DadosTarefa = {
 export type DadosSubtarefa = {
   tarefaId: string;
   titulo: string;
+  descricao?: string | null;
+  prazo?: Date | null;
+  status?: StatusSubtarefa;
   etiquetas?: string[];
   atribuidoAId?: string | null;
   atribuidoAUsuarioId?: string | null;
@@ -93,6 +97,27 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
   }));
 }
 
+export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; pendentes?: boolean } = {}) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.findMany({
+    where: {
+      ativo: true,
+      tarefa: {
+        ativo: true,
+        ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
+        projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
+      },
+      ...(filtros.pendentes ? { status: { notIn: [StatusSubtarefa.CONCLUIDO, StatusSubtarefa.CANCELADO] } } : {}),
+    },
+    include: {
+      tarefa: { select: { id: true, nome: true, projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } } } },
+      atribuidoA: { select: { nome: true } },
+      atribuidoAUsuario: { select: { nome: true } },
+    },
+    orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { titulo: "asc" }],
+  }));
+}
+
 export type ItemAgenda = {
   id: string;
   nome: string;
@@ -125,6 +150,10 @@ export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim:
 
 export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusTarefa }>) {
   return calcularPercentualEmDia(tarefas.map((tarefa) => ({ ativo: tarefa.ativo, prazo: tarefa.prazo, status: tarefa.status })));
+}
+
+export function indicadorDePrazosSubtarefas(subtarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusSubtarefa }>) {
+  return calcularPercentualEmDia(subtarefas.filter((subtarefa) => subtarefa.prazo !== null).map((subtarefa) => ({ ativo: subtarefa.ativo, prazo: subtarefa.prazo, status: subtarefa.status })));
 }
 
 export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, incluirDesativados = false) {
@@ -193,7 +222,7 @@ export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: st
       tx.tarefa.findMany({ where: { projetoId, ativo: true }, select: { id: true } }),
     ]);
     if (!acessoAoProjeto && tarefas.length === 0) return null;
-    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { concluida: true } } }, orderBy: { prazo: "asc" } } } });
+    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { status: true } } }, orderBy: { prazo: "asc" } } } });
   });
 }
 
@@ -227,7 +256,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
           { subtarefas: { some: { ativo: true, ...responsavelDaSubtarefa } } },
         ],
       },
-      include: { projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } }, subtarefas: { where: { ativo: true }, select: { concluida: true } } },
+      include: { projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } }, subtarefas: { where: { ativo: true }, select: { status: true } } },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
   });
@@ -246,7 +275,7 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
         subtarefas: {
           where: { ativo: true },
           select: {
-            id: true, titulo: true, etiquetas: true, concluida: true,
+            id: true, titulo: true, descricao: true, prazo: true, status: true, etiquetas: true,
             atribuidoAId: true, atribuidoAUsuarioId: true,
             atribuidoA: { select: { nome: true } },
             atribuidoAUsuario: { select: { nome: true } },
@@ -416,7 +445,7 @@ export async function atualizarProjeto(
         descricao: dados.descricao ?? null,
         dataInicio: dados.dataInicio ?? null,
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
-        status: dados.status ?? undefined,
+        status: dados.status ?? StatusSubtarefa.EM_ANDAMENTO,
       },
     });
     if (dados.valorContratado === null) {
@@ -430,6 +459,11 @@ export async function atualizarProjeto(
     }
     return projeto;
   });
+}
+
+export async function atualizarStatusProjeto(ctx: ContextoUsuario, projetoId: string, status: StatusProjeto) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.projeto.update({ where: { id: projetoId }, data: { status } }));
 }
 
 export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
@@ -509,14 +543,23 @@ export async function atualizarTarefa(
   });
 }
 
+export async function atualizarStatusTarefa(ctx: ContextoUsuario, tarefaId: string, status: StatusTarefa) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.tarefa.update({ where: { id: tarefaId }, data: { status } }));
+}
+
 export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa) {
   exigirAdministrador(ctx);
+  if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
   return comContextoDeUsuario(ctx, async (tx) => {
     await validarResponsavelSubtarefa(tx, dados.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
     return tx.subtarefa.create({
       data: {
         tarefaId: dados.tarefaId,
         titulo: validarNome(dados.titulo, "da subtarefa"),
+        descricao: dados.descricao?.trim() || null,
+        prazo: dados.prazo ?? null,
+        status: dados.status ?? undefined,
         etiquetas: dados.etiquetas ?? [],
         atribuidoAId: dados.atribuidoAId ?? null,
         atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
@@ -531,6 +574,7 @@ export async function atualizarSubtarefa(
   dados: Omit<DadosSubtarefa, "tarefaId">,
 ) {
   exigirAdministrador(ctx);
+  if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
   return comContextoDeUsuario(ctx, async (tx) => {
     const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
     await validarResponsavelSubtarefa(tx, atual.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
@@ -538,11 +582,23 @@ export async function atualizarSubtarefa(
       where: { id: subtarefaId },
       data: {
         titulo: validarNome(dados.titulo, "da subtarefa"),
+        descricao: dados.descricao?.trim() || null,
+        prazo: dados.prazo ?? null,
+        status: dados.status ?? undefined,
         etiquetas: dados.etiquetas ?? [],
         atribuidoAId: dados.atribuidoAId ?? null,
         atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
       },
     });
+  });
+}
+
+export async function atualizarResponsavelSubtarefa(ctx: ContextoUsuario, subtarefaId: string, atribuidoAId: string | null, atribuidoAUsuarioId: string | null) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
+    await validarResponsavelSubtarefa(tx, atual.tarefaId, atribuidoAId, atribuidoAUsuarioId);
+    return tx.subtarefa.update({ where: { id: subtarefaId }, data: { atribuidoAId, atribuidoAUsuarioId } });
   });
 }
 
@@ -594,6 +650,12 @@ export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
 export async function concluirSubtarefa(ctx: ContextoUsuario, subtarefaId: string) {
   exigirColaboradorOuAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) =>
-    tx.subtarefa.update({ where: { id: subtarefaId }, data: { concluida: true } }),
+    tx.subtarefa.update({ where: { id: subtarefaId }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );
+}
+
+export async function atualizarStatusSubtarefa(ctx: ContextoUsuario, subtarefaId: string, status: StatusSubtarefa) {
+  if (status === StatusSubtarefa.CONCLUIDO) exigirColaboradorOuAdministrador(ctx);
+  else exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefaId }, data: { status } }));
 }

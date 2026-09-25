@@ -14,7 +14,7 @@
  * "concluida"). Ver prisma/migrations/20260910191124_pessoas_envolvidas_adr007.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { StatusTarefa } from "@prisma/client";
+import { StatusSubtarefa, StatusTarefa } from "@prisma/client";
 import { ownerDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
 
 let tarefaX: { id: string };
@@ -116,10 +116,10 @@ it("a pessoa atribuída à subtarefa (via PessoaEnvolvida) consegue marcar concl
 
   const atualizada = await comoUsuario(
     { usuarioId: usuarioResponsavel.id, perfil: "ADMIN_EXTERNO" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
+    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );
 
-  expect(atualizada.concluida).toBe(true);
+  expect(atualizada.status).toBe(StatusSubtarefa.CONCLUIDO);
 });
 
 it("integrante da equipe atribuído diretamente também consegue concluir a própria subtarefa", async () => {
@@ -127,10 +127,10 @@ it("integrante da equipe atribuído diretamente também consegue concluir a pró
 
   const atualizada = await comoUsuario(
     { usuarioId: usuarioEquipeResponsavel.id, perfil: "ADMIN_INTERNO" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
+    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );
 
-  expect(atualizada.concluida).toBe(true);
+  expect(atualizada.status).toBe(StatusSubtarefa.CONCLUIDO);
 });
 
 it("integrante da equipe responsável não consegue editar a subtarefa nem reabri-la", async () => {
@@ -141,9 +141,9 @@ it("integrante da equipe responsável não consegue editar a subtarefa nem reabr
     comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Alteração indevida" } })),
   ).rejects.toThrow(/RN-004/);
 
-  await comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }));
+  await comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }));
   await expect(
-    comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: false } })),
+    comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.EM_ANDAMENTO } })),
   ).rejects.toThrow(/RN-004/);
 });
 
@@ -187,10 +187,10 @@ it("o Administrador (Talita) consegue marcar qualquer subtarefa como concluída"
 
   const atualizada = await comoUsuario(
     { usuarioId: usuarioAdmin.id, perfil: "ADMIN" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
+    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );
 
-  expect(atualizada.concluida).toBe(true);
+  expect(atualizada.status).toBe(StatusSubtarefa.CONCLUIDO);
 });
 
 describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atribuído", () => {
@@ -200,12 +200,12 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
     await expect(
       comoUsuario(
         { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
-        (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
+        (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
       ),
     ).rejects.toThrow();
 
     const inalterada = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
-    expect(inalterada.concluida).toBe(false);
+    expect(inalterada.status).toBe(StatusSubtarefa.EM_ANDAMENTO);
   });
 
   it("ADMIN_EXTERNO com acesso à mesma tarefa (RF-019), mas não à subtarefa, nem enxerga a linha pra alterar", async () => {
@@ -214,12 +214,12 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
     await expect(
       comoUsuario(
         { usuarioId: usuarioAdminExternoMesmaTarefa.id, perfil: "ADMIN_EXTERNO" },
-        (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { concluida: true } }),
+        (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
       ),
     ).rejects.toThrow();
 
     const inalterada = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
-    expect(inalterada.concluida).toBe(false);
+    expect(inalterada.status).toBe(StatusSubtarefa.EM_ANDAMENTO);
   });
 
   it("ADMIN (sem Pessoa Envolvida vinculada, caso do próprio Administrador — ADR-007) não é confundido com o atribuído", async () => {
@@ -233,7 +233,7 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
     await expect(
       comoUsuario(
         { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
-        (tx) => tx.subtarefa.update({ where: { id: subtarefaSemAtribuido.id }, data: { concluida: true } }),
+        (tx) => tx.subtarefa.update({ where: { id: subtarefaSemAtribuido.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
       ),
     ).rejects.toThrow();
   });

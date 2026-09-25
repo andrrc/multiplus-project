@@ -396,27 +396,26 @@ regulatório anual sairia do lugar ao longo dos anos.
 
 ---
 
-### Fluxo D: Gerenciar Checklist e Marcar Subtarefa Concluída
+### Fluxo D: Gerenciar Subtarefas e Atualizar Status
 
 **Vinculado a:** RF-008, RF-021, RF-025, RN-004, RN-007
 
 ```mermaid
 flowchart TD
-    A[Detalhe da Tarefa - bloco Checklist] --> B{Perfil do usuário}
-    B -->|Administrador| C[Cria, edita, reordena, remove itens<br/>e marca qualquer um como concluído]
+    A[Detalhe da Tarefa - lista de subtarefas] --> B{Perfil do usuário}
+    B -->|Administrador| C[Abre formulário dedicado<br/>e escolhe qualquer status]
     B -->|Colaborador| D[Sem ações de criação ou edição - RN-007]
-    D --> E{Marcar como concluída}
+    D --> E{É responsável atribuído?}
     E --> F{É o atribuído da subtarefa?}
-    F -->|Sim| G[Subtarefa marcada como concluída]
-    F -->|Não| H[Checkbox desabilitado + tooltip - RN-004]
-    C --> I[Progresso atualizado: ex. 3/5]
+    F -->|Sim| G[Pode concluir a própria subtarefa]
+    F -->|Não| H[Status somente para leitura - RN-004]
+    C --> I[Detalhes e status atualizados]
     G --> I
 ```
 
-**Mudança em relação ao SRS atual:** a RN-004 dizia que "gerir o checklist segue o escopo
-normal de acesso". Com a decisão de restringir criação/edição ao Administrador (RN-007), o
-colaborador perde essa capacidade — resta a ele apenas concluir subtarefa atribuída a si.
-**A RN-004 precisa ser reescrita** (ver documento de RFs novos).
+**Definição atual:** subtarefas são registros completos, não itens de checklist. A RN-004
+restringe a conclusão ao responsável atribuído e ao Administrador; RN-007 mantém edição e
+seleção livre de status exclusivas do Administrador.
 
 ---
 
@@ -623,20 +622,28 @@ removido e um novo é criado para quem tem acesso (RN-006, decisão já fechada 
   recorrência: "Mensal" ou "Não recorrente"
   descricao
 
-[BLOCO: Checklist de Subtarefas] — RF-008
+[BLOCO: Subtarefas] — RF-008
   PROGRESSO: "3 de 5 concluídas"
-  [ITEM: checkbox | titulo | atribuido_a | etiquetas | AÇÃO: editar | AÇÃO: remover]
-    → editar/remover: só Administrador (RN-007)
-    → checkbox desabilitado se não for o atribuído nem Administrador (RN-004)
-      tooltip: "Só [nome] ou a administradora podem concluir esta subtarefa"
-  [AÇÃO: + Adicionar subtarefa] (só Administrador)
+  [ITEM: titulo | prazo | responsável | status]
+    → clicar no item abre card expansível com descrição, prazo, responsável,
+      etiquetas, status e comentários
+    → clicar no status abre as opções; escolha livre só para Administrador
+    → responsável atribuído pode concluir a própria subtarefa (RN-004)
+  [AÇÃO: + Nova subtarefa] abre formulário dedicado (só Administrador)
   [VAZIO — "Nenhuma subtarefa ainda"]
 
 [BLOCO: Comentários da Tarefa] — ver Seção 8
 ```
 
-**Subtarefa — campos:** `titulo` (obrigatório), `atribuido_a` (opcional, Pessoa Envolvida),
-`etiquetas` (opcional, texto livre múltiplo — RF-025), `concluida` (boolean).
+**Subtarefa — campos:** `titulo` (obrigatório), `descricao`, `prazo` (opcional), `atribuido_a`
+(obrigatório, Pessoa Envolvida ou equipe), `etiquetas` (opcional — RF-025) e `status`
+(`EM_ANDAMENTO`, `CONCLUIDO` ou `CANCELADO`). Comentários ficam no card da subtarefa.
+
+### Tela 5.1: Nova Subtarefa
+
+Formulário dedicado, acessado pela tarefa pai. Campos: título, descrição, prazo opcional,
+status inicial (Em andamento por padrão), responsável e etiquetas. Após salvar, a subtarefa
+aparece na lista da tarefa e abre seu card para acompanhamento e comentários.
 
 ---
 
@@ -701,7 +708,7 @@ apenas que **existe** um marcador de tipo por item e que a legenda é obrigatór
 
 ---
 
-### Tela 12: Painel de Tarefas por Prazo (Administrador)
+### Tela 12: Painel de Subtarefas por Prazo (Administrador)
 
 **Vinculado a:** RF-037, RF-024, RF-043, RN-001
 **É a tela inicial do Administrador (RF-043)**
@@ -710,19 +717,19 @@ apenas que **existe** um marcador de tipo por item e que a legenda é obrigatór
 [HEADER: "Prazos"]
 [FILTROS: toggle "Só pendentes" (PADRÃO LIGADO) | dropdown_cliente | dropdown_projeto | campo_busca]
 
-[LISTA — ordenada por prazo mais próximo primeiro]
-  [AGRUPAMENTO: Atrasadas | Vence hoje | Próximos 7 dias | Depois]
-  [LINHA: prazo | dias_restantes (ou "vencida há X dias") | titulo | cliente | projeto
-          | responsavel | status | AÇÃO: abrir]
+[LISTA — ordenada por prazo mais próximo primeiro; sem prazo no final]
+  [LINHA: subtarefa | tarefa pai | cliente | projeto | responsável | prazo | status
+          | AÇÃO: abrir card da subtarefa]
 
-[VAZIO com filtro pendentes — "Nenhuma tarefa pendente com prazo. Tudo em dia."]
-[VAZIO sem tarefa alguma — "Nenhuma tarefa cadastrada ainda"]
+[VAZIO com filtro pendentes — "Nenhuma subtarefa pendente nesta seleção."]
+[VAZIO sem subtarefa alguma — "Nenhuma subtarefa cadastrada ainda"]
 ```
 
 - "Só pendentes" ligado esconde Concluído e Cancelado; desligado mostra tudo mantendo a
   ordenação por prazo
 - Atrasada = prazo passado e não concluída, sem margem (RN-001)
-- Tarefas desativadas nunca aparecem aqui (RF-039)
+- Subtarefas sem prazo aparecem depois das que têm data e não entram no indicador "% em dia"
+- Subtarefas, tarefas e projetos desativados nunca aparecem aqui (RF-039)
 
 ---
 
@@ -908,8 +915,8 @@ notificações, conforme a nota técnica já registrada no RF-023.
 | Estado | O que acontece | Vinculado a |
 |---|---|---|
 | Tarefa atrasada | Badge "Atrasada" + contagem de dias vencidos | RN-001 |
-| Sem checklist | "Nenhuma subtarefa ainda" (+ ação de adicionar, só Admin) | RF-008 |
-| Não atribuído à subtarefa | Checkbox desabilitado + tooltip | RN-004, RF-021 |
+| Sem subtarefas | "Nenhuma subtarefa ainda" (+ formulário dedicado, só Admin) | RF-008 |
+| Não atribuído à subtarefa | Status somente para leitura | RN-004, RF-021 |
 | Visualização como colaborador | Sem [Editar], sem seletor de status; só "Marcar como concluída" | RN-007 |
 | Colaborador Externo | Vê só esta tarefa e o nome do cliente; sem navegação ao projeto | RF-019, RF-046 |
 | Ocorrência recorrente nova | Aparece "A iniciar", com indicação de origem por recorrência | RF-006 |
@@ -980,7 +987,7 @@ notificações, conforme a nota técnica já registrada no RF-023.
 | Fluxo A: Criar Projeto | RF-004, RF-024, RF-038 |
 | Fluxo B: Criar Tarefa | RF-005, RF-006, RF-007, RF-024, RN-002, RN-006, RN-008 |
 | Fluxo C: Concluir / recorrência | RF-006, RF-024, RN-002, RN-008 |
-| Fluxo D: Checklist e conclusão de subtarefa | RF-008, RF-021, RF-025, RN-004, RN-007 |
+| Fluxo D: Subtarefas e atualização de status | RF-008, RF-021, RF-025, RN-004, RN-007 |
 | Fluxo E: Colaborador executa | RF-018, RF-019, RF-021, RF-024, RN-004, RN-005, RN-007 |
 | Fluxo F: Agenda | RF-036, RF-006, RF-024 |
 | Fluxo G: Comentar com anexo | RF-016, RF-017, RF-047 |

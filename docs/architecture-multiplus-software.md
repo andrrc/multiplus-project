@@ -76,6 +76,13 @@ precisam consultar essa tabela em cascata.
 
 ### 3.1 Esboço de Modelo de Dados (simplificado)
 
+**Atualização de escopo (25/09/2026):** RF-008 foi corrigido. `SUBTAREFA` é uma entidade
+de trabalho completa subordinada a `TAREFA`, não um checkbox de checklist. Tem descrição,
+prazo opcional, responsável, etiquetas, comentários e status `EM_ANDAMENTO`, `CONCLUIDO` ou
+`CANCELADO`. A definição executável está em `prisma/schema.prisma`; a migration
+`20260925120000_subtarefas_completas` converte `concluida = true` para `CONCLUIDO` e os
+demais registros para `EM_ANDAMENTO`, preservando os dados existentes.
+
 ```mermaid
 erDiagram
     USUARIO {
@@ -140,7 +147,7 @@ As políticas de RLS do Postgres precisam checar, em cascata:
 4. **Colaborador Externo:** existe registro em `ATRIBUICAO` com `entidade_tipo = 'tarefa'`
    e `entidade_id = tarefa.id` para aquele usuário (e, por herança, a subtarefa dessa tarefa)
 5. **Check de subtarefa (RN-004):** política adicional, mais restritiva, só na operação de
-   marcar `concluida = true` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
+   mudar `status` para `CONCLUIDO` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
 
 Isso é mais complexo que RLS de um único nível (cliente vs equipe), mas ainda é resolvível
 com Postgres puro — não precisa de biblioteca de autorização externa (ex. Casbin, OPA) nessa
@@ -890,7 +897,7 @@ As políticas de RLS do Postgres precisam checar, em cascata:
 4. **Colaborador Externo:** existe registro em `ATRIBUICAO` com `entidade_tipo = 'tarefa'`
    e `entidade_id = tarefa.id` para aquele usuário (e, por herança, a subtarefa dessa tarefa)
 5. **Check de subtarefa (RN-004):** política adicional, mais restritiva, só na operação de
-   marcar `concluida = true` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
+   mudar `status` para `CONCLUIDO` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
 
 Isso é mais complexo que RLS de um único nível (cliente vs equipe), mas ainda é resolvível
 com Postgres puro — não precisa de biblioteca de autorização externa (ex. Casbin, OPA) nessa
@@ -1511,7 +1518,7 @@ As políticas de RLS do Postgres precisam checar, em cascata:
 4. **Colaborador Externo:** existe registro em `ATRIBUICAO` com `entidade_tipo = 'tarefa'`
    e `entidade_id = tarefa.id` para aquele usuário (e, por herança, a subtarefa dessa tarefa)
 5. **Check de subtarefa (RN-004):** política adicional, mais restritiva, só na operação de
-   marcar `concluida = true` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
+   mudar `status` para `CONCLUIDO` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
 
 Isso é mais complexo que RLS de um único nível (cliente vs equipe), mas ainda é resolvível
 com Postgres puro — não precisa de biblioteca de autorização externa (ex. Casbin, OPA) nessa
@@ -2119,7 +2126,7 @@ As políticas de RLS do Postgres precisam checar, em cascata:
 4. **Administrador Externo:** existe registro em `ATRIBUICAO` com `entidade_tipo = 'tarefa'`
    e `entidade_id = tarefa.id` para aquele usuário (e, por herança, a subtarefa dessa tarefa)
 5. **Check de subtarefa (RN-004):** política adicional, mais restritiva, só na operação de
-   marcar `concluida = true` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
+   mudar `status` para `CONCLUIDO` — verifica `subtarefa.atribuido_a = usuario.id` OU perfil admin
 
 Isso é mais complexo que RLS de um único nível (cliente vs equipe), mas ainda é resolvível
 com Postgres puro — não precisa de biblioteca de autorização externa (ex. Casbin, OPA) nessa
@@ -2535,3 +2542,4 @@ confortável mesmo com crescimento moderado de uso.
 | 1.2     | 02/09/2026 | André                   | Removida pendência de aditivo contratual — escopo absorvido por decisão do André. Sprint 1 liberada para início.                                                                                                                                                                                                                                                                                                                                                      |
 | 1.3     | 09/09/2026 | André (via Claude Code) | Novo ADR-005 (em aberto): sobreposição entre Administrador Externo e Pessoa do Operacional, identificada durante a Sprint 2 — precisa ser resolvida antes da Sprint de Controle de Projetos e Tarefas.                                                                                                                                                                                                                                                                  |
 | 1.4     | 09/09/2026 | André                   | ADR-005 resolvido (Aceita) — FK opcional`pessoa_operacional_id` em `Usuario`, sem fundir as duas entidades; novo RF-033 no SRS. Novo ADR-006: Cliente passa a suportar Pessoa Física além de Pessoa Jurídica (tabela única com discriminador `tipo`), correção estrutural identificada durante a Sprint 2, antes da aprovação com a Talita. Corrigida duplicação mecânica do conteúdo do SRS que tinha sido colada por engano no final deste documento. |
+| 1.5     | 25/09/2026 | André                   | RF-008 redefine subtarefas como registros completos com prazo opcional e status próprio; adicionada migration de conversão compatível com dados existentes e mantidas as regras de RLS/RN-004 e RN-007. |
