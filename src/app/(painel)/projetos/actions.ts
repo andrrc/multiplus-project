@@ -1,12 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { EventoNotificacao, Periodicidade, Prisma, StatusProjeto, StatusTarefa } from "@prisma/client";
+import { EventoNotificacao, Periodicidade, Prisma, StatusProjeto, StatusSubtarefa, StatusTarefa } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import {
   atualizarProjeto,
+  atualizarStatusProjeto,
+  atualizarStatusTarefa,
   atualizarSubtarefa,
+  atualizarResponsavelSubtarefa,
+  atualizarStatusSubtarefa,
   atualizarTarefa,
   concluirSubtarefa,
   concluirTarefa,
@@ -33,6 +37,10 @@ function statusProjeto(valor: string): StatusProjeto | undefined {
 
 function statusTarefa(valor: string): StatusTarefa | undefined {
   return Object.values(StatusTarefa).includes(valor as StatusTarefa) ? (valor as StatusTarefa) : undefined;
+}
+
+function statusSubtarefa(valor: string): StatusSubtarefa | undefined {
+  return Object.values(StatusSubtarefa).includes(valor as StatusSubtarefa) ? (valor as StatusSubtarefa) : undefined;
 }
 
 function periodicidade(valor: string): Periodicidade | null {
@@ -101,6 +109,23 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
   return projeto;
 }
 
+export async function alterarStatusProjetoAction(projetoId: string, formData: FormData) {
+  const ctx = await obterContexto();
+  const status = statusProjeto(texto(formData, "status"));
+  if (!status) throw new Error("Status de projeto inválido.");
+  const projeto = await atualizarStatusProjeto(ctx, projetoId, status);
+  if (projeto.status === "CONCLUIDO") void dispararEventoNotificacao(EventoNotificacao.PROJETO_CONCLUIDO, {
+    titulo: `Projeto concluído: ${projeto.nome}`,
+    mensagem: `O projeto ${projeto.nome} foi marcado como concluído.`,
+    url: `/projetos/${projeto.id}`,
+    entidadeId: projeto.id,
+    dedupeKey: `projeto-concluido:${projeto.id}:${projeto.atualizadoEm.toISOString()}`,
+  });
+  revalidatePath(`/projetos/${projetoId}`);
+  revalidatePath("/projetos");
+  revalidatePath(`/clientes/${projeto.clienteId}`);
+}
+
 export async function atualizarProjetoERedirecionarAction(projetoId: string, formData: FormData) {
   await atualizarProjetoAction(projetoId, formData);
   redirect(`/projetos/${projetoId}`);
@@ -146,6 +171,24 @@ export async function atualizarTarefaAction(tarefaId: string, formData: FormData
   return tarefa;
 }
 
+export async function alterarStatusTarefaAction(tarefaId: string, formData: FormData) {
+  const ctx = await obterContexto();
+  const status = statusTarefa(texto(formData, "status"));
+  if (!status) throw new Error("Status de tarefa inválido.");
+  const tarefa = await atualizarStatusTarefa(ctx, tarefaId, status);
+  if (tarefa.status === "CONCLUIDO") void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
+    titulo: `Tarefa concluída: ${tarefa.nome}`,
+    mensagem: `A tarefa ${tarefa.nome} foi marcada como concluída.`,
+    url: `/tarefas/${tarefa.id}`,
+    entidadeId: tarefa.id,
+    dedupeKey: `tarefa-concluida:${tarefa.id}:${tarefa.atualizadoEm.toISOString()}`,
+  });
+  revalidatePath(`/tarefas/${tarefaId}`);
+  revalidatePath(`/projetos/${tarefa.projetoId}`);
+  revalidatePath("/tarefas");
+  revalidatePath("/prazos");
+}
+
 export async function atualizarTarefaERedirecionarAction(tarefaId: string, formData: FormData) {
   await atualizarTarefaAction(tarefaId, formData);
   redirect(`/tarefas/${tarefaId}`);
@@ -157,17 +200,25 @@ export async function criarSubtarefaAction(formData: FormData) {
   const subtarefa = await criarSubtarefa(ctx, {
     tarefaId: texto(formData, "tarefaId"),
     titulo: texto(formData, "titulo"),
+    descricao: texto(formData, "descricao") || null,
+    prazo: dataOpcional(texto(formData, "prazo")),
+    status: statusSubtarefa(texto(formData, "status")),
     etiquetas: texto(formData, "etiquetas")
       ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
       : [],
     ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
-  void subtarefa;
+  return subtarefa;
 }
 
 export async function criarSubtarefaFormAction(formData: FormData): Promise<void> {
   await criarSubtarefaAction(formData);
+}
+
+export async function criarSubtarefaERedirecionarAction(formData: FormData): Promise<void> {
+  const subtarefa = await criarSubtarefaAction(formData);
+  if (subtarefa) redirect(`/tarefas/${subtarefa.tarefaId}?subtarefa=${subtarefa.id}`);
 }
 
 export async function criarComentarioAction(formData: FormData): Promise<void> {
@@ -194,6 +245,9 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
   const dadosResponsavel = responsavelSubtarefa(texto(formData, "responsavelId"));
   const subtarefa = await atualizarSubtarefa(ctx, subtarefaId, {
     titulo: texto(formData, "titulo"),
+    descricao: texto(formData, "descricao") || null,
+    prazo: dataOpcional(texto(formData, "prazo")),
+    status: statusSubtarefa(texto(formData, "status")),
     etiquetas: texto(formData, "etiquetas")
       ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
       : [],
@@ -205,6 +259,13 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
 
 export async function atualizarSubtarefaFormAction(subtarefaId: string, formData: FormData): Promise<void> {
   await atualizarSubtarefaAction(subtarefaId, formData);
+}
+
+export async function atualizarResponsavelSubtarefaFormAction(subtarefaId: string, formData: FormData): Promise<void> {
+  const ctx = await obterContexto();
+  const dados = responsavelSubtarefa(texto(formData, "responsavelId"));
+  const subtarefa = await atualizarResponsavelSubtarefa(ctx, subtarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
+  revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
 }
 
 export async function criarDocumentoProjetoAction(formData: FormData) {
@@ -247,7 +308,18 @@ export async function concluirSubtarefaAction(subtarefaId: string) {
   const ctx = await obterContexto();
   const subtarefa = await concluirSubtarefa(ctx, subtarefaId);
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
+  revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
+  revalidatePath("/prazos");
   void subtarefa;
+}
+
+export async function atualizarStatusSubtarefaAction(subtarefaId: string, formData: FormData) {
+  const ctx = await obterContexto();
+  const status = statusSubtarefa(texto(formData, "status"));
+  if (!status) throw new Error("Status de subtarefa inválido.");
+  const subtarefa = await atualizarStatusSubtarefa(ctx, subtarefaId, status);
+  revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
+  revalidatePath("/prazos");
 }
 
 export async function concluirSubtarefaFormAction(subtarefaId: string): Promise<void> {
@@ -280,7 +352,7 @@ export async function definirAtivoTarefaFormAction(id: string, ativo: boolean): 
   await definirAtivoTarefaAction(id, ativo);
 }
 
-/** RF-039 — exclusão lógica: preserva histórico, comentários e checklist. */
+/** RF-039 — exclusão lógica: preserva histórico, comentários e subtarefas. */
 export async function excluirTarefaAction(id: string): Promise<void> {
   await definirAtivoTarefaAction(id, false);
   redirect("/tarefas");

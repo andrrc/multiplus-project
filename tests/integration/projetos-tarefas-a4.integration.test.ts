@@ -1,6 +1,6 @@
 /** A4 — ações de servidor/domínio do núcleo Projeto/Tarefa/Subtarefa. */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Periodicidade, Prisma, StatusProjeto, StatusTarefa } from "@prisma/client";
+import { Periodicidade, Prisma, StatusProjeto, StatusSubtarefa, StatusTarefa } from "@prisma/client";
 import {
   atualizarProjeto,
   concluirSubtarefa,
@@ -193,7 +193,7 @@ describe("CRUD protegido no servidor", () => {
     expect(clienteContextual).not.toHaveProperty("email");
     expect(await ownerDb.usuario.findUnique({ where: { id: interno.id }, select: { pessoaEnvolvidaId: true } })).toEqual({ pessoaEnvolvidaId: null });
     expect(await ownerDb.atribuicao.findMany({ where: { usuarioId: interno.id } })).toEqual([]);
-    await expect(concluirSubtarefa(ctxInterno(), minha.id)).resolves.toMatchObject({ concluida: true });
+    await expect(concluirSubtarefa(ctxInterno(), minha.id)).resolves.toMatchObject({ status: StatusSubtarefa.CONCLUIDO });
     await expect(concluirTarefa(ctxInterno(), tarefa.id)).rejects.toThrow();
   });
 
@@ -274,7 +274,7 @@ describe("conclusão transacional", () => {
 
   it("responsável conclui subtarefa, mas colaborador sem atribuição específica não consegue", async () => {
     const atribuida = await ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: tarefa.id, atribuidoAId: pessoa.id } });
-    await expect(concluirSubtarefa(ctxExterno(), atribuida.id)).resolves.toMatchObject({ concluida: true });
+    await expect(concluirSubtarefa(ctxExterno(), atribuida.id)).resolves.toMatchObject({ status: StatusSubtarefa.CONCLUIDO });
 
     const outra = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Outra subtarefa", atribuidoAId: pessoa.id });
     const colega = await ownerDb.usuario.create({

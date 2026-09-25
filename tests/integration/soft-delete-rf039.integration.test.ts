@@ -264,7 +264,7 @@ describe("ADR-008 — cascata por herança, sem marcar os filhos", () => {
       tx.tarefa.updateMany({ where: { id: f.tarefaId }, data: { nome: "Renomeada" } }),
     );
     const subtarefa = await comoUsuario(f.ctxAdmin, (tx) =>
-      tx.subtarefa.updateMany({ where: { id: f.subtarefaId }, data: { concluida: true } }),
+      tx.subtarefa.updateMany({ where: { id: f.subtarefaId }, data: { status: "CONCLUIDO" } }),
     );
 
     expect(projeto.count).toBe(0);
