@@ -83,18 +83,14 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
   );
 }
 
-export async function listarTarefasParaFiltro(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string } = {}) {
+export async function listarTarefasParaFiltro(ctx: ContextoUsuario) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
     where: {
       ativo: true,
-      projeto: {
-        ativo: true,
-        ...(filtros.projetoId ? { id: filtros.projetoId } : {}),
-        ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}),
-      },
+      projeto: { ativo: true },
     },
-    select: { id: true, nome: true, projeto: { select: { nome: true } } },
+    select: { id: true, nome: true, projetoId: true, projeto: { select: { nome: true, clienteId: true } } },
     orderBy: [{ projeto: { nome: "asc" } }, { nome: "asc" }],
   }));
 }
