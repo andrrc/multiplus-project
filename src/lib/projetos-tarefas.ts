@@ -74,7 +74,7 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
     tx.projeto.findMany({
       where: incluirDesativados ? {} : { ativo: true },
       include: {
-        cliente: { select: { razaoSocial: true } },
+        cliente: { select: { id: true, razaoSocial: true } },
         valorContratado: { select: { valorContratado: true } },
         _count: { select: { tarefas: true } },
       },
