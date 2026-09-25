@@ -316,6 +316,11 @@ export async function buscarClienteContextual(ctx: ContextoUsuario, clienteId: s
         porte: true,
         segmento: true,
         origemContato: true,
+        documentos: {
+          where: { ativo: true },
+          select: { id: true, nome: true, link: true },
+          orderBy: { criadoEm: "desc" },
+        },
         projetos: {
           where: { ativo: true },
           select: { id: true, nome: true, status: true, dataPrevistaConclusao: true },

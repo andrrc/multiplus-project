@@ -6,7 +6,7 @@ import { useState } from "react";
 import { menuDoPerfil, type ItemMenu } from "@/lib/navegacao";
 import { NavLink } from "./nav-link";
 
-const ROTAS_DE_PROJETOS_E_TAREFAS = ["/projetos", "/tarefas", "/prazos", "/agenda"];
+const ROTAS_DE_PROJETOS_E_TAREFAS = ["/projetos", "/tarefas", "/subtarefas", "/agenda"];
 
 function pertenceAoGrupo(pathname: string) {
   return ROTAS_DE_PROJETOS_E_TAREFAS.some(

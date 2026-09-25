@@ -140,7 +140,7 @@ export function FormularioDocumento({ clienteId }: { clienteId: string }) {
         onClick={() => setAberto(true)}
         className="text-[14px] font-medium text-azul-esc hover:underline"
       >
-        + Adicionar link de documento
+        + Adicionar link do Drive
       </button>
     );
   }

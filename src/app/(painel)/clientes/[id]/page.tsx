@@ -233,14 +233,14 @@ export default async function DetalheClientePage({
       </Bloco>
 
       <Bloco
-        titulo="Documentos"
+        titulo="Drive"
         acao={
           ctx.perfil === "ADMIN" && cliente.ativo ? <FormularioDocumento clienteId={id} /> : undefined
         }
       >
         {documentos.length === 0 ? (
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
-            Nenhum documento vinculado ainda.
+            Nenhum link do Drive vinculado ainda.
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -259,7 +259,7 @@ export default async function DetalheClientePage({
                     entidade="documento"
                     id={doc.id}
                     ativo={doc.ativo}
-                    efeito={`O link "${doc.nome}" sai da lista de documentos.`}
+                    efeito={`O link "${doc.nome}" sai da lista do Drive.`}
                     tamanho="pequeno"
                   />
                 )}
@@ -277,8 +277,8 @@ export default async function DetalheClientePage({
           className="self-start text-[14px] font-medium text-azul-esc hover:underline"
         >
           {mostrarDesativados
-            ? "Ocultar pessoas e documentos desativados"
-            : "Mostrar pessoas e documentos desativados"}
+            ? "Ocultar pessoas e links do Drive desativados"
+            : "Mostrar pessoas e links do Drive desativados"}
         </Link>
       )}
 
@@ -291,7 +291,7 @@ export default async function DetalheClientePage({
               entidade="cliente"
               id={id}
               ativo
-              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os documentos dele."
+              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os links do Drive dele."
             />
           }
         >

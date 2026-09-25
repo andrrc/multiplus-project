@@ -150,7 +150,7 @@ de convite que a Sprint 2 já corrigiu.
 - Guarda de rota no servidor, não só no menu
 
 **E2. Tela inicial por perfil (RF-043)**
-- Administrador → Painel de Prazos (**não existe até a Sprint 4**)
+- Administrador → Painel de Subtarefas (**não existe até a Sprint 4**)
 - **Decisão necessária** — ver Seção 5
 
 **E3. UI de desativação nas telas da Sprint 2 (RF-039)**
@@ -210,7 +210,7 @@ revisões
 >    descartada pelo desenho: o PDD não prevê atribuição a cliente em lugar nenhum, e o
 >    enum `EntidadeTipo` só tem PROJETO e TAREFA.
 > 2. **Opção (a)** — o Administrador cai em `/clientes` provisoriamente, e o menu dele traz
->    só Clientes, Usuários e Perfil. O destino definitivo (Painel de Prazos) troca numa
+>    só Clientes, Usuários e Perfil. O destino definitivo (Painel de Subtarefas) troca numa
 >    linha só, em `src/lib/navegacao.ts`, quando a tela existir na Sprint 4.
 
 Duas dependências circulares entre Sprint 3 e Sprint 4 precisam de escolha:
@@ -222,9 +222,9 @@ As telas de atribuição só têm o que atribuir depois da Sprint 4. Opções:
 - **(c)** Adiar D2/D3 para o começo da Sprint 4
 
 **2. Tela inicial do Administrador (tarefa E2)**
-O Painel de Prazos só nasce na Sprint 4. Até lá, o Administrador cai onde?
+O Painel de Subtarefas só nasce na Sprint 4. Até lá, o Administrador cai onde?
 - **(a)** Painel de Clientes provisoriamente, trocando na Sprint 4
-- **(b)** Construir a rota de Prazos já na Sprint 3, com estado vazio
+- **(b)** Construir a rota de Subtarefas já na Sprint 3, com estado vazio
 
 ---
 

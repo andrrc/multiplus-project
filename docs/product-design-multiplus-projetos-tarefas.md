@@ -55,12 +55,12 @@ já aplicada ao telefone no RF-020.
 
 | Perfil | Itens de menu | Tela inicial pós-login |
 |---|---|---|
-| Administrador | Prazos · Agenda · Clientes · Projetos · Usuários · Notificações · Perfil | **Prazos** (Tela 12) |
+| Administrador | Subtarefas · Agenda · Clientes · Projetos · Usuários · Notificações · Perfil | **Subtarefas** (Tela 12) |
 | Colaborador Interno | Meus Projetos · Perfil | Meus Projetos (Tela 9) |
 | Colaborador Externo | Minhas Tarefas · Perfil | Minhas Tarefas (Tela 10) |
 | Cliente | (Área Exclusiva — Sprint 6) | — |
 
-**Justificativa da tela inicial do Administrador:** o Painel de Prazos já vem ordenado por
+**Justificativa da tela inicial do Administrador:** o Painel de Subtarefas já vem ordenado por
 urgência e filtrado só com pendentes. Abrir num dashboard genérico adiaria em um clique a
 informação que define o trabalho do dia.
 
@@ -75,7 +75,7 @@ Aplica-se a Projeto, Tarefa, Subtarefa, Cliente, Pessoa Envolvida, Documento e U
   marcação visual clara
 - Registro desativado é **somente leitura** — não edita, não comenta, não marca subtarefa
 - Desativado sai de toda visão gerencial e cálculo: não entra no "% em dia" (RF-009), não
-  aparece na Agenda (RF-036) nem no Painel de Prazos (RF-037), não dispara notificação de
+  aparece na Agenda (RF-036) nem no Painel de Subtarefas (RF-037), não dispara notificação de
   prazo (RF-007)
 - "Desativar" pede confirmação explicando o efeito; "Reativar" volta ao estado anterior
 - **Só o Administrador** desativa e reativa (RN-007)
@@ -708,13 +708,13 @@ apenas que **existe** um marcador de tipo por item e que a legenda é obrigatór
 
 ---
 
-### Tela 12: Painel de Subtarefas por Prazo (Administrador)
+### Tela 12: Subtarefas (`/subtarefas`) por Prazo (Administrador)
 
 **Vinculado a:** RF-037, RF-024, RF-043, RN-001
 **É a tela inicial do Administrador (RF-043)**
 
 ```
-[HEADER: "Prazos"]
+[HEADER: "Subtarefas"]
 [FILTROS: toggle "Só pendentes" (PADRÃO LIGADO) | dropdown_cliente | dropdown_projeto | campo_busca]
 
 [LISTA — ordenada por prazo mais próximo primeiro; sem prazo no final]
@@ -868,7 +868,7 @@ recebem prazo, comentário e atribuição. A Talita ajusta depois nesta tela —
 do RF-022.
 
 **Eventos deliberadamente fora:** "tarefa atrasada" (dispara depois do vencimento, quando já
-não há o que prevenir, e a Talita já vê no Painel de Prazos) e "mudança de status" (ruído
+não há o que prevenir, e a Talita já vê no Painel de Subtarefas) e "mudança de status" (ruído
 excessivo, dado que a tarefa percorre vários dos 9 valores).
 
 ---
@@ -932,7 +932,7 @@ notificações, conforme a nota técnica já registrada no RF-023.
 | Ocorrência projetada | Item indicativo, não clicável para edição | RF-006, RF-036 |
 | Perfil não-Administrador | Rota bloqueada, item ausente do menu | RF-036, RF-043 |
 
-### Painel de Tarefas por Prazo (Tela 12)
+### Subtarefas — `/subtarefas` (Tela 12)
 
 | Estado | O que acontece | Vinculado a |
 |---|---|---|
@@ -1000,7 +1000,7 @@ notificações, conforme a nota técnica já registrada no RF-023.
 | Tela 9: Meus Projetos | RF-018, RN-005, RN-007 |
 | Tela 10: Minhas Tarefas | RF-019, RF-046, RN-005, RN-007 |
 | Tela 11: Agenda Mensal | RF-036, RF-006, RF-024 |
-| Tela 12: Painel de Prazos | RF-037, RF-024, RF-043, RN-001 |
+| Tela 12: Subtarefas (`/subtarefas`) | RF-037, RF-024, RF-043, RN-001 |
 | Tela 13: Config de Notificações | RF-007, RF-022, RF-023 |
 | Componente: Comentários | RF-016, RF-017, RF-047 |
 | Componente: Notificações in-app | RF-023 |
@@ -1104,4 +1104,4 @@ notificações, conforme a nota técnica já registrada no RF-023.
 | Versão | Data | Autor | Alterações |
 |--------|------|-------|------------|
 | 1.0 | 14/09/2026 | André | Versão inicial — módulos Administração e Acesso (Sprint 3) e Projetos e Tarefas (Sprint 4). Inclui decisões transversais de navegação (RF-043) e desativação (RF-039), mapa de cobertura RF → sprint e testes sugeridos por sprint. |
-| 1.1 | 16/09/2026 | André | Parte I implementada na Sprint 3 (Telas A1 a A6, navegação e desativação). Próximos Passos 1 a 3 concluídos. Dois desvios registrados, ambos por dependência da Sprint 4: o menu do Administrador traz só Clientes, Usuários e Perfil, e a tela inicial dele é Clientes até o Painel de Prazos existir; as seções de atribuição das Telas A2 e A3 estão completas, mas sem projeto ou tarefa para listar enquanto o CRUD desses módulos não for construído. |
+| 1.1 | 16/09/2026 | André | Parte I implementada na Sprint 3 (Telas A1 a A6, navegação e desativação). Próximos Passos 1 a 3 concluídos. Dois desvios registrados, ambos por dependência da Sprint 4: o menu do Administrador traz só Clientes, Usuários e Perfil, e a tela inicial dele é Clientes até o Painel de Subtarefas existir; as seções de atribuição das Telas A2 e A3 estão completas, mas sem projeto ou tarefa para listar enquanto o CRUD desses módulos não for construído. |

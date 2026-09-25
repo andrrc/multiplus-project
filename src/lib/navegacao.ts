@@ -14,7 +14,7 @@ export type ItemMenu = {
 };
 
 /**
- * Sprint 3: só existem Clientes, Usuários e Meu Perfil. Prazos, Agenda, Projetos e
+ * Sprint 3: só existem Clientes, Usuários e Meu Perfil. Subtarefas, Agenda, Projetos e
  * Notificações (previstos no RF-043 para o Administrador) entram nesta lista conforme a
  * Sprint 4 construir cada tela — um item de menu que leva a uma rota inexistente é pior
  * que a ausência dele.
@@ -23,7 +23,7 @@ export const MENU: ItemMenu[] = [
   { href: "/clientes", rotulo: "Clientes", perfis: ["ADMIN"] },
   { href: "/usuarios", rotulo: "Usuários", perfis: ["ADMIN"] },
   { href: "/projetos", rotulo: "Projetos", perfis: ["ADMIN"] },
-  { href: "/prazos", rotulo: "Prazos", perfis: ["ADMIN"] },
+  { href: "/subtarefas", rotulo: "Subtarefas", perfis: ["ADMIN"] },
   { href: "/agenda", rotulo: "Agenda", perfis: ["ADMIN"] },
   { href: "/notificacoes", rotulo: "Notificações", perfis: ["ADMIN"] },
   { href: "/tarefas", rotulo: "Tarefas", perfis: ["ADMIN"] },
@@ -45,7 +45,7 @@ export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
 /**
  * RF-043 — para onde cada perfil vai depois do login.
  *
- * O Administrador deveria cair no Painel de Prazos (Tela 12), que só nasce na Sprint 4.
+ * O Administrador deveria cair no painel de Subtarefas (Tela 12), que só nasce na Sprint 4.
  * Até lá vai para Clientes, o único módulo com dado real — o destino definitivo troca
  * nesta função, num lugar só, quando a tela existir.
  *
@@ -53,7 +53,7 @@ export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
  * logaria numa rota que ainda não existe.
  */
 export const TELA_INICIAL: Record<Perfil, string> = {
-  ADMIN: "/prazos",
+  ADMIN: "/subtarefas",
   ADMIN_INTERNO: "/minhas-tarefas",
   ADMIN_EXTERNO: "/minhas-tarefas",
   CLIENTE: "/meu-perfil",
@@ -92,6 +92,8 @@ export function proxyAvaliaCaminho(pathname: string): boolean {
 
 export function perfilPodeAcessar(perfil: Perfil, pathname: string): boolean {
   if (pathname === "/") return true;
+  // Compatibilidade para links antigos depois da mudança de /prazos para /subtarefas.
+  if (pathname === "/prazos" || pathname.startsWith("/prazos/")) return perfil === "ADMIN";
 
   const item = MENU.find(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),
