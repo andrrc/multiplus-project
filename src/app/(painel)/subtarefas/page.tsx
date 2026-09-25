@@ -32,8 +32,8 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
       <label className="flex min-h-11 items-center gap-2 pb-2 text-[14px]"><input type="checkbox" name="todos" value="1" defaultChecked={!pendentes} className="h-4 w-4 accent-verde" />Mostrar concluídas e canceladas</label>
       <button className="min-h-11 rounded-[3px] border border-linha px-4 font-[family-name:var(--font-interface)] text-[14px] hover:border-azul">Filtrar subtarefas</button>
     </form>
-    {subtarefas.length === 0 ? <div className="mt-8 border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
-      <div className="mt-7 hidden overflow-hidden border border-linha bg-branco md:block">
+    {subtarefas.length === 0 ? <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
+      <div className="mt-7 hidden overflow-x-auto md:block">
         <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
           <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Subtarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Tarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Responsável</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo</th><th className="rounded-r-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th></tr></thead>
           <tbody>{subtarefas.map(s => {
@@ -51,13 +51,13 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
           })}</tbody>
         </table>
       </div>
-      <ul className="mt-7 space-y-2 md:hidden">{subtarefas.map(s => {
+      <ul className="mt-7 flex flex-col gap-3 md:hidden">{subtarefas.map(s => {
         const atrasada = estaAtrasada(s.prazo, s.status === StatusSubtarefa.CONCLUIDO || s.status === StatusSubtarefa.CANCELADO, hoje);
         return <li key={s.id}>
-          <article className={`relative border-l-[3px] bg-branco px-4 py-4 ${atrasada ? "border-l-vermelho" : "border border-linha border-l-azul"}`}>
+          <article className={`relative rounded-[3px] border border-linha border-l-[3px] bg-branco px-4 py-4 hover:border-azul ${atrasada ? "border-l-vermelho" : "border-l-azul"}`}>
             <Link href={hrefSubtarefa(s.tarefa.id, s.id)} aria-label={`Abrir subtarefa ${s.titulo}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir subtarefa {s.titulo}</span></Link>
             <div className="pointer-events-none relative z-10">
-              <div className="flex justify-between gap-3"><p className="font-[family-name:var(--font-interface)] font-medium">{s.titulo}</p><Etiqueta tom={atrasada ? "atencao" : undefined}>{atrasada ? "Atrasada" : data(s.prazo)}</Etiqueta></div>
+              <div className="flex justify-between gap-3"><p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><Etiqueta tom={atrasada ? "atencao" : undefined}>{atrasada ? "Atrasada" : data(s.prazo)}</Etiqueta></div>
               <p className="mt-1 text-[12px] text-cinza">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</p>
               <p className="mt-3 text-[13px]"><span className="text-cinza">Tarefa: </span><Link href={`/tarefas/${s.tarefa.id}`} className="pointer-events-auto relative z-20 text-azul-esc hover:underline">{s.tarefa.nome}</Link></p>
               <p className="mt-1 text-[13px]"><span className="text-cinza">Projeto: </span><Link href={`/projetos/${s.tarefa.projeto.id}`} className="pointer-events-auto relative z-20 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></p>
