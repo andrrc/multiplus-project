@@ -63,7 +63,19 @@ compose --profile ops run --rm seed
 echo "Garantindo bucket MinIO privado..."
 compose --profile ops run --rm minio-init
 
-echo "Construindo e subindo app..."
+IMAGEM_APP="multiplus-app"
+GIT_SHA="${GIT_SHA:-manual-$(date +%Y%m%d%H%M%S)}"
+
+# Guarda a imagem que está rodando agora como ponto de retorno, antes de
+# sobrescrever `latest` com o build novo — é o que permite reverter sozinho
+# se o healthcheck abaixo falhar.
+tinha_versao_anterior=0
+if docker image inspect "${IMAGEM_APP}:latest" >/dev/null 2>&1; then
+  docker tag "${IMAGEM_APP}:latest" "${IMAGEM_APP}:rollback"
+  tinha_versao_anterior=1
+fi
+
+echo "Construindo e subindo app (commit ${GIT_SHA})..."
 if [[ "${PROXY_MODE:-standalone}" == "external" ]]; then
   compose up -d --build app
 else
@@ -71,16 +83,46 @@ else
 fi
 
 echo "Aguardando healthcheck da aplicação..."
+sucesso=0
 for tentativa in $(seq 1 30); do
   if compose ps --status running app >/dev/null 2>&1 \
     && curl --fail --silent --show-error --max-time 10 "https://${APP_DOMAIN}/api/health" >/dev/null; then
-    echo "Deploy concluído: https://${APP_DOMAIN}"
-    compose ps
-    exit 0
+    sucesso=1
+    break
   fi
   sleep 5
 done
 
+if [[ "$sucesso" == "1" ]]; then
+  # Marca a imagem com o commit exato, pra dar pra responder "o que está no
+  # ar" sem precisar vasculhar o log do deploy. Mantém só as 5 mais recentes.
+  docker tag "${IMAGEM_APP}:latest" "${IMAGEM_APP}:git-${GIT_SHA}"
+  echo "${GIT_SHA} $(date -u +%Y-%m-%dT%H:%M:%SZ)" > .deployed-version
+  docker images "${IMAGEM_APP}" --format '{{.Tag}}' | grep '^git-' | tail -n +6 \
+    | while read -r tag; do docker rmi "${IMAGEM_APP}:${tag}" >/dev/null 2>&1 || true; done
+  echo "Deploy concluído: https://${APP_DOMAIN} (commit ${GIT_SHA})"
+  compose ps
+  exit 0
+fi
+
 compose ps
 compose logs --tail=100 app caddy >&2 || true
-die "healthcheck HTTPS não respondeu 200 após 150 segundos"
+
+if [[ "$tinha_versao_anterior" == "1" ]]; then
+  echo "Healthcheck falhou — revertendo automaticamente para a versão anterior..." >&2
+  docker tag "${IMAGEM_APP}:rollback" "${IMAGEM_APP}:latest"
+  if [[ "${PROXY_MODE:-standalone}" == "external" ]]; then
+    compose up -d --no-build app
+  else
+    compose up -d --no-build app caddy
+  fi
+  for tentativa in $(seq 1 15); do
+    if curl --fail --silent --show-error --max-time 10 "https://${APP_DOMAIN}/api/health" >/dev/null; then
+      die "deploy do commit ${GIT_SHA} falhou no healthcheck — revertido automaticamente para a versão anterior, aplicação está no ar com o código antigo"
+    fi
+    sleep 5
+  done
+  die "deploy falhou E o rollback automático também não respondeu no healthcheck — intervenção manual necessária agora"
+fi
+
+die "healthcheck HTTPS não respondeu 200 após 150 segundos (sem versão anterior no host para reverter)"

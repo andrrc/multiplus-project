@@ -143,7 +143,7 @@ jobs:
             "mkdir -p '${{ secrets.DEPLOY_PATH }}' && \
              tar -xzf '/tmp/multiplus-${GITHUB_SHA}.tgz' -C '${{ secrets.DEPLOY_PATH }}' && \
              rm -f '/tmp/multiplus-${GITHUB_SHA}.tgz' && \
-             cd '${{ secrets.DEPLOY_PATH }}' && bash ops/deploy.sh"
+             cd '${{ secrets.DEPLOY_PATH }}' && GIT_SHA='${GITHUB_SHA}' bash ops/deploy.sh"
 
       - name: Verificar /api/health
         # É o passo que dá sentido ao job: sem ele, "deploy verde" significa apenas que o
