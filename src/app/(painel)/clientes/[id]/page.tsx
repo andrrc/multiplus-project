@@ -167,9 +167,19 @@ export default async function DetalheClientePage({
       <Bloco
         titulo="Projetos"
         acao={
-          <span className="rounded-full border border-linha bg-fundo px-2.5 py-1 font-[family-name:var(--font-interface)] text-[12px] font-medium tabular-nums text-cinza">
-            {projetos.length}
-          </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-linha bg-fundo px-2.5 py-1 font-[family-name:var(--font-interface)] text-[12px] font-medium tabular-nums text-cinza">
+              {projetos.length}
+            </span>
+            {ctx.perfil === "ADMIN" && cliente.ativo && (
+              <Link
+                href={`/projetos/novo?clienteId=${encodeURIComponent(id)}`}
+                className="flex min-h-10 items-center rounded-[3px] bg-verde px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc"
+              >
+                + Novo projeto
+              </Link>
+            )}
+          </div>
         }
       >
         {projetos.length === 0 ? (

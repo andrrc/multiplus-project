@@ -5,9 +5,15 @@ import { criarProjetoERedirecionarAction } from "../actions";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import { CampoValorMonetario } from "@/ui/campo-valor-monetario";
 
-export default async function NovoProjetoPage() {
+export default async function NovoProjetoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ clienteId?: string | string[] }>;
+}) {
   const ctx = await exigirAcessoARota("/projetos/novo");
   const clientes = await listarClientesParaProjeto(ctx);
+  const parametros = await searchParams;
+  const clienteId = Array.isArray(parametros.clienteId) ? parametros.clienteId[0] : parametros.clienteId;
 
   return (
     <div className="w-full max-w-[820px]">
@@ -17,7 +23,7 @@ export default async function NovoProjetoPage() {
       <form action={criarProjetoERedirecionarAction} className="mt-8 space-y-8">
         <SecaoNumerada numero="01" titulo="Identificação e contrato">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo label="Cliente" obrigatorio><select name="clienteId" required className={inputClass}><option value="">Selecione o cliente</option>{clientes.map(c => <option key={c.id} value={c.id}>{c.razaoSocial}</option>)}</select></Campo>
+            <Campo label="Cliente" obrigatorio><select name="clienteId" required defaultValue={clienteId ?? ""} className={inputClass}><option value="">Selecione o cliente</option>{clientes.map(c => <option key={c.id} value={c.id}>{c.razaoSocial}</option>)}</select></Campo>
             <Campo label="Nome do projeto" obrigatorio><input name="nome" required className={inputClass} placeholder="Ex.: Renovação da licença ambiental" /></Campo>
           </div>
           <div className="mt-4 max-w-xs"><Campo label="Valor contratado" obrigatorio><CampoValorMonetario required /></Campo></div>
