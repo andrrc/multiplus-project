@@ -164,30 +164,61 @@ export default async function DetalheClientePage({
         </div>
       </Bloco>
 
-      <Bloco titulo={`Projetos (${projetos.length})`}>
+      <Bloco
+        titulo="Projetos"
+        acao={
+          <span className="rounded-full border border-linha bg-fundo px-2.5 py-1 font-[family-name:var(--font-interface)] text-[12px] font-medium tabular-nums text-cinza">
+            {projetos.length}
+          </span>
+        }
+      >
         {projetos.length === 0 ? (
-          <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+          <p className="rounded-[3px] border border-dashed border-linha bg-fundo px-4 py-5 font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
             Nenhum projeto cadastrado para este cliente.
           </p>
         ) : (
-          <ul className="flex flex-col">
-            {projetos.map((projeto) => (
-              <li key={projeto.id} className="border-b border-linha last:border-b-0">
-                <Link href={`/projetos/${projeto.id}`} className="flex flex-wrap items-center justify-between gap-3 py-4 hover:text-azul-esc">
-                  <div>
-                    <p className="font-[family-name:var(--font-interface)] text-[14.5px] font-medium">{projeto.nome}</p>
-                    <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] text-cinza">Conclusão prevista: {data(projeto.dataPrevistaConclusao)}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Etiqueta tom={projeto.ativo ? projeto.status === "CONCLUIDO" ? "positivo" : "padrao" : "apagado"}>
-                      {projeto.ativo ? STATUS_PROJETO[projeto.status] ?? projeto.status : "Desativado"}
-                    </Etiqueta>
-                    <span className="font-[family-name:var(--font-interface)] text-[12px] text-azul-esc">Abrir projeto</span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="mb-4 font-[family-name:var(--font-interface)] text-[13px] text-cinza">
+              Acesse um projeto para acompanhar tarefas e subtarefas.
+            </p>
+            <ul className="flex flex-col gap-2">
+              {projetos.map((projeto) => (
+                <li key={projeto.id}>
+                  <Link
+                    href={`/projetos/${projeto.id}`}
+                    className="group flex min-h-[76px] flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-[3px] border border-linha border-l-[3px] border-l-azul-esc bg-branco px-4 py-3 transition-colors hover:bg-fundo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:px-5"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta group-hover:text-azul-esc">
+                        {projeto.nome}
+                      </p>
+                      <p className="mt-1 font-[family-name:var(--font-interface)] text-[12.5px] text-cinza">
+                        Conclusão prevista: <span className="tabular-nums">{data(projeto.dataPrevistaConclusao)}</span>
+                      </p>
+                    </div>
+                    <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                      <Etiqueta
+                        tom={
+                          !projeto.ativo
+                            ? "apagado"
+                            : projeto.status === "CONCLUIDO"
+                              ? "positivo"
+                              : projeto.status === "CANCELADO"
+                                ? "apagado"
+                                : "padrao"
+                        }
+                      >
+                        {projeto.ativo ? STATUS_PROJETO[projeto.status] ?? projeto.status : "Desativado"}
+                      </Etiqueta>
+                      <span className="inline-flex min-h-9 items-center rounded-[3px] bg-fundo px-3 font-[family-name:var(--font-interface)] text-[12px] font-medium text-azul-esc group-hover:bg-branco">
+                        Abrir projeto
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </Bloco>
 
