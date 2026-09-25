@@ -8,15 +8,46 @@ import { definirAtivoProjetoAction, criarDocumentoProjetoAction } from "../actio
 import { Comentarios } from "../comentarios";
 
 const projetoStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
+const projetoStatusVisual: Record<string, { container: string; indicador: string; texto: string }> = {
+  A_INICIAR: { container: "border-l-cinza bg-papel", indicador: "bg-cinza", texto: "text-tinta" },
+  EM_ANDAMENTO: { container: "border-l-azul bg-azul/8", indicador: "bg-azul-esc", texto: "text-azul-esc" },
+  CONCLUIDO: { container: "border-l-verde bg-verde-cl", indicador: "bg-verde-esc", texto: "text-verde-esc" },
+  CANCELADO: { container: "border-l-critico bg-critico/8", indicador: "bg-critico", texto: "text-critico" },
+  DESATIVADO: { container: "border-l-cinza bg-papel", indicador: "bg-cinza", texto: "text-cinza" },
+};
 const tarefaStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
 
 export default async function ProjetoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await exigirAcessoARota("/projetos"); const { id } = await params; const projeto = await buscarProjeto(ctx, id, true); if (!projeto) notFound();
   const concluidas = projeto.tarefas.filter(t => t.status === "CONCLUIDO").length; const percentual = projeto.tarefas.length ? Math.round((concluidas / projeto.tarefas.length) * 100) : 0;
-  return <div className="w-full max-w-[1120px]"><Link href="/projetos" className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Projetos</Link><div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><p className="text-[14px] text-cinza">{projeto.cliente.razaoSocial}</p><h1 className="mt-1 text-[28px]">{projeto.nome}</h1>{projeto.descricao && <p className="mt-2 max-w-[70ch] text-[15px] text-cinza">{projeto.descricao}</p>}</div><div className="flex flex-wrap gap-2"><Etiqueta tom={projeto.ativo ? undefined : "apagado"}>{projeto.ativo ? projetoStatus[projeto.status] : "Desativado"}</Etiqueta><Link href={`/projetos/${id}/editar`} className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link><form action={definirAtivoProjetoAction.bind(null, id, !projeto.ativo)}><button className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-vermelho">{projeto.ativo ? "Desativar" : "Reativar"}</button></form></div></div>
+  const statusAtual = projeto.ativo ? projeto.status : "DESATIVADO";
+  const estiloStatus = projetoStatusVisual[statusAtual] ?? projetoStatusVisual.A_INICIAR;
+  const rotuloStatus = projeto.ativo ? projetoStatus[projeto.status] ?? projeto.status : "Desativado";
+  return <div className="w-full max-w-[1120px]"><Link href="/projetos" className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Projetos</Link>
+<div className="mt-4 grid gap-x-8 gap-y-4 border-b border-linha pb-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+  <div className="min-w-0">
+    <p className="text-[14px] text-cinza">{projeto.cliente.razaoSocial}</p>
+    <h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1>
+    {projeto.descricao && <p className="mt-2 max-w-[70ch] text-[15px] text-cinza">{projeto.descricao}</p>}
+  </div>
+  <div className="flex min-w-0 flex-col items-start gap-3 sm:items-end">
+    <div className={`inline-flex min-h-[68px] max-w-full items-center gap-3 rounded-[3px] border border-linha border-l-4 px-4 py-3 ${estiloStatus.container}`}>
+      <span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${estiloStatus.indicador}`} />
+      <dl className="min-w-0">
+        <dt className="font-[family-name:var(--font-interface)] text-[11px] font-medium leading-4 text-cinza">Status do projeto</dt>
+        <dd className={`whitespace-nowrap font-[family-name:var(--font-interface)] text-[16px] font-semibold leading-5 ${estiloStatus.texto}`}>{rotuloStatus}</dd>
+      </dl>
+    </div>
+    <div className="flex flex-wrap gap-2">
+      <Link href={`/projetos/${id}/editar`} className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
+      <form action={definirAtivoProjetoAction.bind(null, id, !projeto.ativo)}>
+        <button className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-vermelho">{projeto.ativo ? "Desativar" : "Reativar"}</button>
+      </form>
+    </div>
+  </div>
+</div>
   <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><div className="border-l-[3px] border-verde bg-branco px-5 py-4"><p className="text-[12px] uppercase tracking-[0.08em] text-cinza">Valor contratado</p><p className="mt-1 text-[22px] font-semibold">{projeto.valorContratado ? formatarMoeda(projeto.valorContratado.valorContratado) : "Não informado"}</p></div><div className="border-l-[3px] border-verde bg-branco px-5 py-4"><p className="text-[12px] uppercase tracking-[0.08em] text-cinza">Tarefas concluídas</p><p className="mt-1 text-[26px] font-semibold">{concluidas}/{projeto.tarefas.length}</p></div><div className="border-l-[3px] border-azul bg-branco px-5 py-4"><p className="text-[12px] uppercase tracking-[0.08em] text-cinza">% em dia</p><p className="mt-1 text-[26px] font-semibold">{percentual}%</p></div><div className="border-l-[3px] border-ambar bg-branco px-5 py-4"><p className="text-[12px] uppercase tracking-[0.08em] text-cinza">Conclusão prevista</p><p className="mt-2 font-[family-name:var(--font-interface)] text-[17px]">{data(projeto.dataPrevistaConclusao)}</p></div></section>
   <section className="mt-8"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-[21px]">Tarefas <span className="font-[family-name:var(--font-interface)] text-[14px] text-cinza">({projeto.tarefas.length})</span></h2><Link href={`/projetos/${id}/tarefas/nova`} className="rounded-[3px] bg-verde px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">+ Nova tarefa</Link></div>{projeto.tarefas.length === 0 ? <div className="mt-4 rounded-[3px] border border-dashed border-linha bg-branco px-6 py-10 text-center text-cinza">Nenhuma tarefa cadastrada neste projeto.</div> : <div className="mt-4 overflow-hidden rounded-[3px] border border-linha bg-branco">{projeto.tarefas.map(t => <div key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 last:border-b-0"><div><Link href={`/tarefas/${t.id}`} className="font-[family-name:var(--font-interface)] font-medium text-tinta hover:text-azul-esc">{t.nome}</Link><p className="mt-1 text-[13px] text-cinza">Prazo: {data(t.prazo)}{t.responsavel ? ` · ${t.responsavel.nome}` : ""} · {t.subtarefas.filter(s => s.concluida).length}/{t.subtarefas.length} checklist</p></div><Etiqueta tom={t.ativo ? undefined : "apagado"}>{t.ativo ? tarefaStatus[t.status] : "Desativada"}</Etiqueta></div>)}</div>}</section>
   <section className="mt-8 grid gap-6 lg:grid-cols-2"><div><h2 className="text-[21px]">Documentos do projeto</h2>{projeto.documentos.length > 0 && <ul className="mt-4 space-y-2">{projeto.documentos.map(d => <li key={d.id} className="rounded-[3px] border border-linha bg-branco px-4 py-3"><a href={d.link} target="_blank" rel="noreferrer" className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">{d.nome} ↗</a></li>)}</ul>}<form action={criarDocumentoProjetoAction} className="mt-4 space-y-2 rounded-[3px] border border-linha bg-branco p-4"><input type="hidden" name="clienteId" value={projeto.clienteId} /><input type="hidden" name="projetoId" value={projeto.id} /><input name="nome" required placeholder="Nome do documento" className="min-h-10 w-full rounded-[3px] border border-linha px-3 text-[14px]" /><input name="link" type="url" required placeholder="Link do Google Drive" className="min-h-10 w-full rounded-[3px] border border-linha px-3 text-[14px]" /><button className="rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Vincular documento</button></form></div><div><h2 className="text-[21px]">Janela do projeto</h2><dl className="mt-4 rounded-[3px] border border-linha bg-branco p-5 text-[14px]"><div className="flex justify-between border-b border-linha py-2"><dt className="text-cinza">Início</dt><dd>{data(projeto.dataInicio)}</dd></div><div className="flex justify-between py-2"><dt className="text-cinza">Conclusão prevista</dt><dd>{data(projeto.dataPrevistaConclusao)}</dd></div></dl></div></section><Comentarios alvo={{ projetoId: projeto.id }} nivel="projeto" entidadeId={projeto.id} /></div>;
 }
-
