@@ -1,4 +1,4 @@
-import { listarComentarios, type AlvoComentario } from "@/lib/comentarios";
+import { listarComentarios, listarUsuariosMencionaveis, type AlvoComentario } from "@/lib/comentarios";
 import { FormularioComentario } from "./formulario-comentario";
 import { ImagemComentario } from "./imagem-comentario";
 import { obterContexto } from "@/server/auth/contexto";
@@ -12,7 +12,11 @@ function destinoDoLink(link: string): string {
 }
 
 export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo: AlvoComentario; nivel: "projeto" | "tarefa" | "subtarefa"; entidadeId: string; tarefaId?: string }) {
-  const comentarios = await listarComentarios(await obterContexto(), alvo);
+  const ctx = await obterContexto();
+  const [comentarios, usuariosMencionaveis] = await Promise.all([
+    listarComentarios(ctx, alvo),
+    listarUsuariosMencionaveis(ctx, alvo),
+  ]);
   return (
     <section className="mt-9 max-w-[760px] border-t border-linha pt-6">
       <h2 className="text-[21px]">Comentários <span className="font-[family-name:var(--font-interface)] text-[14px] text-cinza">({comentarios.length})</span></h2>
@@ -40,7 +44,7 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
           </li>
         ))}
       </ol>}
-      <FormularioComentario nivel={nivel} entidadeId={entidadeId} tarefaId={tarefaId} />
+      <FormularioComentario nivel={nivel} entidadeId={entidadeId} tarefaId={tarefaId} usuariosMencionaveis={usuariosMencionaveis} />
     </section>
   );
 }

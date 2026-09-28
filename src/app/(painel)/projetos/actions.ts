@@ -20,8 +20,8 @@ import {
   criarTarefa,
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
-import { criarComentario } from "@/lib/comentarios";
-import { dispararEventoNotificacao } from "@/lib/notificacoes";
+import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
+import { dispararEmailsMencaoComentario, dispararEventoNotificacao } from "@/lib/notificacoes";
 import { montarNumeroProposta } from "@/lib/numero-proposta";
 
 function texto(formData: FormData, campo: string): string {
@@ -236,11 +236,26 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
   const id = texto(formData, "entidadeId");
   const alvo = nivel === "projeto" ? { projetoId: id } : nivel === "tarefa" ? { tarefaId: id } : { subtarefaId: id };
   const imagem = formData.get("imagem");
-  const comentario = await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null);
-  void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+  const mencoesUsuarioIds = formData.getAll("mencaoUsuarioId").map(String);
+  const comentario = await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null, mencoesUsuarioIds);
+  const rotaRegistro = nivel === "projeto"
+    ? `${ctx.perfil === "ADMIN" ? "/projetos" : "/meus-projetos"}/${id}`
+    : `${ctx.perfil === "ADMIN" ? "/tarefas" : "/minhas-tarefas"}/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`;
+  if (mencoesUsuarioIds.length) {
+    const destinatariosComAcesso = await listarUsuariosMencionaveis(ctx, alvo);
+    void dispararEmailsMencaoComentario({ destinatarioIds: [ctx.usuarioId, ...mencoesUsuarioIds], autorId: ctx.usuarioId, comentario: comentario.texto, url: rotaRegistro });
+    void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+      titulo: "Novo comentário",
+      mensagem: "Um novo comentário foi publicado em um registro que você acompanha.",
+      url: rotaRegistro,
+      entidadeId: comentario.id,
+      dedupeKey: `comentario:${comentario.id}`,
+      usuarioIds: destinatariosComAcesso.map(({ id: usuarioId }) => usuarioId).filter((usuarioId) => usuarioId !== ctx.usuarioId && !mencoesUsuarioIds.includes(usuarioId)),
+    });
+  } else void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
     titulo: "Novo comentário",
     mensagem: "Um novo comentário foi publicado em um registro que você acompanha.",
-    url: nivel === "projeto" ? `/projetos/${id}` : `/tarefas/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`,
+    url: rotaRegistro,
     entidadeId: comentario.id,
     dedupeKey: `comentario:${comentario.id}`,
   });

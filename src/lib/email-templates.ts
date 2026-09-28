@@ -26,3 +26,9 @@ export function renderTemplateNotificacao(evento: EventoNotificacao, dados: Dado
     : "";
   return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f4f1ea;color:#202525;font-family:Arial,sans-serif"><main style="max-width:560px;margin:32px auto;padding:32px;background:#fff"><p style="color:#1d5c63;font-size:12px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase">Múltiplus Software</p><h1 style="font-size:24px;font-weight:500">${escapar(dados.titulo)}</h1><p>Olá, ${escapar(dados.nome)}.</p><p>${escapar(chamadaPorEvento[evento])}</p><p>${escapar(dados.mensagem)}</p>${link}<p style="color:#6b7471;font-size:12px">Você recebeu este aviso conforme as preferências de notificações do seu perfil.</p></main></body></html>`;
 }
+
+export function renderTemplateMencaoComentario(dados: DadosTemplateNotificacao & { autor: string; comentario: string }) {
+  const base = process.env.AUTH_URL ?? "http://localhost:3000";
+  const url = dados.url ? new URL(dados.url, base).toString() : base;
+  return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f4f1ea;color:#202525;font-family:Arial,sans-serif"><main style="max-width:560px;margin:32px auto;padding:32px;background:#fff"><p style="color:#1d5c63;font-size:12px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase">Múltiplus Software</p><h1 style="font-size:24px;font-weight:500">${escapar(dados.titulo)}</h1><p>Olá, ${escapar(dados.nome)}.</p><p>${escapar(dados.mensagem)}</p><p><strong>${escapar(dados.autor)}</strong> escreveu:</p><blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #1d5c63;background:#f4f1ea;white-space:pre-wrap">${escapar(dados.comentario)}</blockquote><p style="margin:24px 0"><a href="${escapar(url)}" style="background:#1d5c63;color:#fff;padding:12px 18px;text-decoration:none;border-radius:3px">Abrir comentário</a></p></main></body></html>`;
+}

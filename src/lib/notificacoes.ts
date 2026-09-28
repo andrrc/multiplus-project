@@ -1,6 +1,6 @@
 import { EventoNotificacao } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
-import { renderTemplateNotificacao } from "@/lib/email-templates";
+import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 
@@ -85,6 +85,28 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
     }));
   } catch (erro) {
     console.error(`[notificacao] falha no evento ${evento}:`, erro);
+  }
+}
+
+/** Menções são avisos direcionados e sempre usam e-mail, independentemente das preferências gerais. */
+export async function dispararEmailsMencaoComentario(dados: { destinatarioIds: string[]; autorId: string; comentario: string; url: string }) {
+  try {
+    const ids = [...new Set(dados.destinatarioIds)];
+    if (!ids.length) return;
+    const usuarios = await prisma.usuario.findMany({ where: { id: { in: ids }, ativo: true }, select: { id: true, nome: true, email: true } });
+    const autor = await prisma.usuario.findUnique({ where: { id: dados.autorId }, select: { nome: true } });
+    await Promise.all(usuarios.map(async (usuario) => {
+      const eAutor = usuario.id === dados.autorId;
+      const titulo = eAutor ? "Menção enviada em comentário" : "Você foi mencionado em um comentário";
+      const mensagem = eAutor ? "Este e-mail confirma a menção publicada no comentário." : `${autor?.nome ?? "Alguém"} mencionou você em um comentário.`;
+      await enviarEmail({
+        to: usuario.email,
+        subject: titulo,
+        html: renderTemplateMencaoComentario({ nome: usuario.nome, titulo, mensagem, autor: autor?.nome ?? "Usuário", comentario: dados.comentario, url: dados.url }),
+      }).catch((erro: unknown) => console.error(`[mencao] falha ao enviar para ${usuario.email}:`, erro));
+    }));
+  } catch (erro) {
+    console.error("[mencao] falha ao preparar e-mails de comentário:", erro);
   }
 }
 

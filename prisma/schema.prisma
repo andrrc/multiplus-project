@@ -455,6 +455,7 @@ model Comentario {
   texto       String
   link        String?
   imagemChave String?
+  mencoesUsuarioIds String[] @default([])
   autorId     String
   autor       Usuario    @relation(fields: [autorId], references: [id], onDelete: Cascade)
   projetoId   String?
