@@ -31,6 +31,7 @@ export type DadosTarefa = {
   periodicidade?: Periodicidade | null;
   diasAntecedencia?: number | null;
   status?: StatusTarefa;
+  colaboradorPodeCriarSubtarefas?: boolean;
 };
 
 export type DadosSubtarefa = {
@@ -270,7 +271,7 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       tx.tarefa.findFirst({
       where: { id: tarefaId, ativo: true },
       select: {
-        id: true, projetoId: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true, responsavelUsuarioId: true,
+        id: true, projetoId: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true, responsavelUsuarioId: true, colaboradorPodeCriarSubtarefas: true, criadoEm: true, criadoPorNome: true,
         projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
         subtarefas: {
           where: { ativo: true },
@@ -279,6 +280,8 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
             atribuidoAId: true, atribuidoAUsuarioId: true,
             atribuidoA: { select: { nome: true } },
             atribuidoAUsuario: { select: { nome: true } },
+            criadoEm: true,
+            criadoPorNome: true,
           },
         },
       },
@@ -299,6 +302,7 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
     return {
       ...tarefa,
       podeConcluirTarefa,
+      podeCriarSubtarefas: tarefa.colaboradorPodeCriarSubtarefas && responsavelDiretoDaTarefa,
       subtarefas: tarefa.subtarefas.map((subtarefa) => ({
         ...subtarefa,
         responsavelDaSessao: subtarefa.atribuidoAUsuarioId === ctx.usuarioId
@@ -490,9 +494,18 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         status: dados.status ?? StatusTarefa.A_INICIAR,
         responsavelId: dados.responsavelId ?? null,
         responsavelUsuarioId: dados.responsavelUsuarioId ?? null,
+        colaboradorPodeCriarSubtarefas: dados.colaboradorPodeCriarSubtarefas ?? false,
+        criadoPorId: ctx.usuarioId,
       },
     });
     await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    if (dados.responsavelUsuarioId) {
+      await tx.atribuicao.upsert({
+        where: { usuarioId_entidadeTipo_entidadeId: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id } },
+        create: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id },
+        update: {},
+      });
+    }
     return tarefa;
   });
 }
@@ -539,6 +552,13 @@ export async function atualizarTarefa(
       await tx.atribuicao.deleteMany({ where: { usuarioId: anterior.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
     }
     await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    if (dados.responsavelUsuarioId) {
+      await tx.atribuicao.upsert({
+        where: { usuarioId_entidadeTipo_entidadeId: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id } },
+        create: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id },
+        update: {},
+      });
+    }
     return tarefa;
   });
 }
@@ -549,10 +569,24 @@ export async function atualizarStatusTarefa(ctx: ContextoUsuario, tarefaId: stri
 }
 
 export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa) {
-  exigirAdministrador(ctx);
+  const ehAdministrador = ctx.perfil === "ADMIN";
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
   return comContextoDeUsuario(ctx, async (tx) => {
-    await validarResponsavelSubtarefa(tx, dados.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
+    let responsavelId = dados.atribuidoAId;
+    let responsavelUsuarioId = dados.atribuidoAUsuarioId;
+    if (!ehAdministrador) {
+      if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Ação não disponível para este perfil.");
+      const [usuario, tarefa] = await Promise.all([
+        tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } }),
+        tx.tarefa.findFirst({ where: { id: dados.tarefaId, ativo: true }, select: { colaboradorPodeCriarSubtarefas: true, responsavelId: true, responsavelUsuarioId: true } }),
+      ]);
+      const ehResponsavel = tarefa?.responsavelUsuarioId === ctx.usuarioId
+        || (!!usuario?.pessoaEnvolvidaId && tarefa?.responsavelId === usuario.pessoaEnvolvidaId);
+      if (!tarefa?.colaboradorPodeCriarSubtarefas || !ehResponsavel) throw new Error("Você não tem permissão para criar subtarefas nesta tarefa.");
+      responsavelId = null;
+      responsavelUsuarioId = ctx.usuarioId;
+    }
+    await validarResponsavelSubtarefa(tx, dados.tarefaId, responsavelId, responsavelUsuarioId);
     return tx.subtarefa.create({
       data: {
         tarefaId: dados.tarefaId,
@@ -561,8 +595,9 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         prazo: dados.prazo ?? null,
         status: dados.status ?? undefined,
         etiquetas: dados.etiquetas ?? [],
-        atribuidoAId: dados.atribuidoAId ?? null,
-        atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
+        atribuidoAId: responsavelId ?? null,
+        atribuidoAUsuarioId: responsavelUsuarioId ?? null,
+        criadoPorId: ctx.usuarioId,
       },
     });
   });
