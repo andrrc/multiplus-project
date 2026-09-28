@@ -40,6 +40,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const t = await buscarTarefa(ctx, id, true);
   if (!t) notFound();
   const { pessoas, usuarios } = await listarPessoasParaProjeto(ctx, t.projeto.clienteId);
+  const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
 
   return (
     <div className="w-full max-w-[980px]">
@@ -64,6 +65,11 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
         </div>
       </div>
       {t.descricao && <p className="mt-6 max-w-[70ch] text-[15px] text-cinza">{t.descricao}</p>}
+
+      {subtarefasSemResponsavel.length > 0 && <div role="status" className="mt-5 rounded-[3px] border border-ambar/30 bg-ambar/8 px-4 py-3 text-[14px] text-tinta">
+        <strong className="font-semibold">Atribuição pendente:</strong> {subtarefasSemResponsavel.length} {subtarefasSemResponsavel.length === 1 ? "subtarefa está" : "subtarefas estão"} sem responsável.
+        <Link href={`/tarefas/${id}?subtarefa=${subtarefasSemResponsavel[0].id}#subtarefa-${subtarefasSemResponsavel[0].id}`} className="ml-1 font-semibold text-azul-esc underline underline-offset-2">Atribuir agora</Link>
+      </div>}
 
       <section className="mt-9 max-w-[860px]">
         <div>
