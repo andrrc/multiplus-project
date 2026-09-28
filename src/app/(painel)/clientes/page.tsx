@@ -2,7 +2,8 @@ import Link from "next/link";
 import { obterContexto } from "@/server/auth/contexto";
 import { listarClientes, listarCidadesComCliente } from "@/lib/clientes";
 import { documentoCliente, numeroCliente } from "@/lib/formatacao";
-import { Etiqueta, inputClass } from "@/ui/campo";
+import { Etiqueta } from "@/ui/campo";
+import { FiltrosClientes } from "./filtros-clientes";
 
 export default async function ClientesPage({
   searchParams,
@@ -42,41 +43,14 @@ export default async function ClientesPage({
         )}
       </div>
 
-      <form className="mt-7 flex flex-wrap gap-3">
-        <input
-          type="search"
-          name="busca"
-          defaultValue={busca}
-          placeholder="Buscar por razão social, CNPJ, CPF ou cidade"
-          className={`${inputClass} placeholder:text-cinza sm:max-w-md`}
-        />
-        <select name="cidade" defaultValue={cidade ?? ""} className={`${inputClass} sm:w-auto`}>
-          <option value="">Todas as cidades</option>
-          {cidades.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-        {ctx.perfil === "ADMIN" && (
-          <label className="flex min-h-11 items-center gap-2 text-[14px] text-tinta">
-            <input
-              type="checkbox"
-              name="desativados"
-              value="1"
-              defaultChecked={mostrarDesativados}
-              className="h-4 w-4 accent-verde"
-            />
-            Mostrar desativados
-          </label>
-        )}
-        <button
-          type="submit"
-          className="min-h-11 w-full rounded-[3px] border border-linha px-4 py-2.5 text-[14px] font-medium text-tinta hover:border-azul sm:w-auto"
-        >
-          Filtrar
-        </button>
-      </form>
+      <FiltrosClientes
+        key={`${busca ?? ""}|${cidade ?? ""}|${mostrarDesativados ? "1" : ""}`}
+        buscaInicial={busca}
+        cidadeInicial={cidade}
+        mostrarDesativadosInicial={mostrarDesativados}
+        cidades={cidades}
+        podeMostrarDesativados={ctx.perfil === "ADMIN"}
+      />
 
       {clientes.length === 0 ? (
         <div className="mt-8 rounded-[3px] border border-linha bg-branco px-8 py-14 text-center">
