@@ -7,6 +7,7 @@ import {
   type Periodicidade,
 } from "@prisma/client";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
+import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 
@@ -43,6 +44,7 @@ export type DadosSubtarefa = {
   prazo?: Date | null;
   status?: StatusSubtarefa;
   etiquetas?: string[];
+  novasEtiquetas?: EtiquetaSelecionada[];
   atribuidoAId?: string | null;
   atribuidoAUsuarioId?: string | null;
 };
@@ -626,6 +628,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
       responsavelId = null;
       responsavelUsuarioId = ctx.usuarioId;
     }
+    const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, dados.tarefaId, responsavelId, responsavelUsuarioId);
     return tx.subtarefa.create({
       data: {
@@ -634,7 +637,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         descricao: dados.descricao?.trim() || null,
         prazo: dados.prazo ?? null,
         status: dados.status ?? undefined,
-        etiquetas: dados.etiquetas ?? [],
+        etiquetas,
         atribuidoAId: responsavelId ?? null,
         atribuidoAUsuarioId: responsavelUsuarioId ?? null,
         criadoPorId: ctx.usuarioId,
@@ -652,6 +655,7 @@ export async function atualizarSubtarefa(
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
   return comContextoDeUsuario(ctx, async (tx) => {
     const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
+    const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, atual.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
     return tx.subtarefa.update({
       where: { id: subtarefaId },
@@ -660,7 +664,7 @@ export async function atualizarSubtarefa(
         descricao: dados.descricao?.trim() || null,
         prazo: dados.prazo ?? null,
         status: dados.status ?? undefined,
-        etiquetas: dados.etiquetas ?? [],
+        etiquetas,
         atribuidoAId: dados.atribuidoAId ?? null,
         atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
       },

@@ -23,6 +23,7 @@ import {
 import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
 import { dispararEmailsMencaoComentario, dispararEventoNotificacao } from "@/lib/notificacoes";
 import { montarNumeroProposta } from "@/lib/numero-proposta";
+import type { EtiquetaSelecionada } from "@/lib/etiqueta-colors";
 
 function texto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
@@ -56,6 +57,20 @@ function responsavel(valor: string): { responsavelId: string | null; responsavel
 function responsavelSubtarefa(valor: string): { atribuidoAId: string | null; atribuidoAUsuarioId: string | null } {
   if (valor.startsWith("usuario:")) return { atribuidoAId: null, atribuidoAUsuarioId: valor.slice("usuario:".length) || null };
   return { atribuidoAId: valor || null, atribuidoAUsuarioId: null };
+}
+
+function lerNovasEtiquetas(formData: FormData): EtiquetaSelecionada[] {
+  const valor = texto(formData, "novasEtiquetas");
+  if (!valor) return [];
+  try {
+    const dados: unknown = JSON.parse(valor);
+    if (!Array.isArray(dados) || dados.some((item) => !item || typeof item.nome !== "string" || typeof item.cor !== "string")) {
+      throw new Error();
+    }
+    return dados as EtiquetaSelecionada[];
+  } catch {
+    throw new Error("Não foi possível ler as novas etiquetas. Tente novamente.");
+  }
 }
 
 /** Aceita a saída do campo monetário (`1234.56`) e também vírgula em chamadas diretas. */
@@ -209,9 +224,8 @@ export async function criarSubtarefaAction(formData: FormData) {
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")),
     status: statusSubtarefa(texto(formData, "status")),
-    etiquetas: texto(formData, "etiquetas")
-      ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
-      : [],
+    etiquetas: formData.getAll("etiquetaNome").map(String),
+    novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
@@ -272,9 +286,8 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")),
     status: statusSubtarefa(texto(formData, "status")),
-    etiquetas: texto(formData, "etiquetas")
-      ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
-      : [],
+    etiquetas: formData.getAll("etiquetaNome").map(String),
+    novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);

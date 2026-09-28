@@ -5,6 +5,8 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarTarefa, buscarTarefaParaColaborador, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
 import { criarSubtarefaERedirecionarAction } from "@/app/(painel)/projetos/actions";
 import { inputClass } from "@/ui/campo";
+import { SeletorEtiquetas } from "@/ui/seletor-etiquetas";
+import { listarEtiquetas } from "@/lib/etiquetas";
 
 const rotulos: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 
@@ -17,6 +19,7 @@ export default async function NovaSubtarefaPage({ params }: { params: Promise<{ 
   const clienteId = "clienteId" in tarefa.projeto ? tarefa.projeto.clienteId : null;
   const opcoesResponsavel = ehAdmin && clienteId ? await listarPessoasParaProjeto(ctx, clienteId) : null;
   const responsaveis = opcoesResponsavel ? opcoesResponsavel.pessoas.length + opcoesResponsavel.usuarios.length > 0 : true;
+  const etiquetas = await listarEtiquetas(ctx);
 
   return <div className="w-full max-w-[760px]">
     <Link href={ehAdmin ? `/tarefas/${id}` : `/minhas-tarefas/${id}`} className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← {tarefa.nome}</Link>
@@ -35,7 +38,7 @@ export default async function NovaSubtarefaPage({ params }: { params: Promise<{ 
         <optgroup label="Equipe Múltiplus">{opcoesResponsavel.usuarios.map(usuario => <option key={usuario.id} value={`usuario:${usuario.id}`}>{usuario.nome}</option>)}</optgroup>
         <optgroup label="Pessoas envolvidas">{opcoesResponsavel.pessoas.map(pessoa => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}</optgroup>
       </select></label> : <p className="text-[13px] text-cinza">Você será definido como responsável por esta subtarefa.</p>}
-      {opcoesResponsavel && <label className="grid gap-1.5 text-[13px] font-medium">Etiquetas <span className="font-normal text-cinza">(separadas por vírgula)</span><input name="etiquetas" className={inputClass} /></label>}
+      <SeletorEtiquetas disponiveis={etiquetas} />
       {opcoesResponsavel && !responsaveis && <p className="text-[13px] text-vermelho">Cadastre uma pessoa envolvida ou um integrante ativo da equipe para poder criar a subtarefa.</p>}
       <p className="text-[13px] text-cinza">Depois de salvar, você poderá abrir a subtarefa para consultar os detalhes e registrar comentários.</p>
       <div className="flex flex-wrap justify-end gap-2"><Link href={ehAdmin ? `/tarefas/${id}` : `/minhas-tarefas/${id}`} className="rounded-[3px] border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button disabled={!responsaveis} className="rounded-[3px] bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:cursor-not-allowed disabled:opacity-50">Criar subtarefa</button></div>

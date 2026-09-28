@@ -449,6 +449,16 @@ model Subtarefa {
   @@map("subtarefas")
 }
 
+/// Etiquetas visuais reutilizáveis entre subtarefas de qualquer projeto.
+model Etiqueta {
+  id       String   @id @default(cuid())
+  nome     String   @unique
+  cor      String
+  criadoEm DateTime @default(now())
+
+  @@map("etiquetas")
+}
+
 /// RF-016/RF-047 — comentário imutável, ligado a exatamente um nível da hierarquia.
 model Comentario {
   id          String     @id @default(cuid())
