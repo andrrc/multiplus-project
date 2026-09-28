@@ -33,7 +33,7 @@ BEGIN
       ))
     )
   );
-  IF NOT autorizado THEN RAISE EXCEPTION 'RN-007: sem permissão para concluir esta tarefa'; END IF;
+  IF autorizado IS NOT TRUE THEN RAISE EXCEPTION 'RN-007: sem permissão para concluir esta tarefa'; END IF;
 
   IF atual."status" = 'Concluído' THEN tarefa_id := atual."id"; proxima_id := NULL; RETURN NEXT; RETURN; END IF;
 
