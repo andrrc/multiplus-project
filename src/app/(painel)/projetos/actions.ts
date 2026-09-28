@@ -298,6 +298,11 @@ export async function atualizarSubtarefaFormAction(subtarefaId: string, formData
   await atualizarSubtarefaAction(subtarefaId, formData);
 }
 
+export async function atualizarSubtarefaERedirecionarAction(subtarefaId: string, formData: FormData): Promise<void> {
+  const subtarefa = await atualizarSubtarefaAction(subtarefaId, formData);
+  redirect(`/tarefas/${subtarefa.tarefaId}?subtarefa=${subtarefa.id}#subtarefa-${subtarefa.id}`);
+}
+
 export async function atualizarResponsavelSubtarefaFormAction(subtarefaId: string, formData: FormData): Promise<void> {
   const ctx = await obterContexto();
   const dados = responsavelSubtarefa(texto(formData, "responsavelId"));

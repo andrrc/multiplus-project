@@ -7,10 +7,10 @@ import { inputClass } from "@/ui/campo";
 type EtiquetaDisponivel = { id: string; nome: string; cor: string };
 type EtiquetaEscolhida = EtiquetaSelecionada & { nova: boolean };
 
-export function SeletorEtiquetas({ disponiveis }: { disponiveis: EtiquetaDisponivel[] }) {
+export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { disponiveis: EtiquetaDisponivel[]; selecionadasIniciais?: EtiquetaSelecionada[] }) {
   const [aberto, setAberto] = useState(false);
   const [busca, setBusca] = useState("");
-  const [selecionadas, setSelecionadas] = useState<EtiquetaEscolhida[]>([]);
+  const [selecionadas, setSelecionadas] = useState<EtiquetaEscolhida[]>(() => selecionadasIniciais.map((etiqueta) => ({ ...etiqueta, nova: false })));
   const catalogo = useMemo(() => new Map(disponiveis.map((etiqueta) => [etiqueta.nome.toLocaleLowerCase("pt-BR"), etiqueta])), [disponiveis]);
   const resultados = disponiveis.filter((etiqueta) => etiqueta.nome.toLocaleLowerCase("pt-BR").includes(busca.trim().toLocaleLowerCase("pt-BR")));
   const buscaNormalizada = busca.trim().replace(/\s+/g, " ");
