@@ -30,6 +30,7 @@ const statuses: Record<string, string> = {
 const data = (v: Date | null) => v
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v)
   : "—";
+const dataHora = (v: Date) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(v);
 const statusSubtarefa: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
 export default async function TarefaDetalhePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ subtarefa?: string }> }) {
@@ -51,6 +52,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           <p className="text-[14px] text-cinza">{t.projeto.cliente.razaoSocial}</p>
           <h1 className="mt-1 text-[28px]">{t.nome}</h1>
           <p className="mt-2 text-[15px] text-cinza">Prazo: <strong className="font-medium text-tinta">{data(t.prazo)}</strong>{t.responsavel ? ` · Responsável: ${t.responsavel.nome}` : ""}</p>
+          <p className="mt-1 text-[12px] text-cinza">Criado por: {t.criadoPorNome ?? "Registro anterior"} · {dataHora(t.criadoEm)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {t.ativo ? <StatusInline status={t.status} label={statuses[t.status]} opcoes={Object.entries(statuses).map(([valor, label]) => ({ valor, label }))} action={alterarStatusTarefaAction.bind(null, id)} /> : <Etiqueta tom="apagado">Desativada</Etiqueta>}
@@ -78,6 +80,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
               </summary>
               <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
                 <p className="text-[14px] leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
+                <p className="mt-2 text-[12px] text-cinza">Criado por: {s.criadoPorNome ?? "Registro anterior"} · {dataHora(s.criadoEm)}</p>
                 {s.etiquetas.length > 0 && <p className="mt-3 text-[13px] text-cinza">Etiquetas: <strong className="font-medium text-tinta">{s.etiquetas.join(" · ")}</strong></p>}
                 {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-[12px] font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className="min-h-11 rounded-[3px] border border-linha bg-branco px-3 text-[13px] hover:border-azul">Salvar responsável</button></form>}
                 {t.ativo && s.ativo && <details className="mt-3"><summary className="inline-flex cursor-pointer list-none"><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]} ▾</Etiqueta></summary><div className="mt-2 flex flex-wrap gap-2">{Object.values(StatusSubtarefa).map(status => <form key={status} action={atualizarStatusSubtarefaAction.bind(null, s.id)}><button name="status" value={status} className="rounded-[3px] border border-linha bg-branco px-3 py-2 text-[12px] hover:border-azul">{statusSubtarefa[status]}</button></form>)}</div></details>}

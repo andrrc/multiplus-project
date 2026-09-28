@@ -143,6 +143,7 @@ export async function criarTarefaAction(formData: FormData) {
     periodicidade: periodicidade(texto(formData, "periodicidade")),
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
+    colaboradorPodeCriarSubtarefas: formData.get("colaboradorPodeCriarSubtarefas") === "on",
   });
   revalidatePath(`/projetos/${tarefa.projetoId}`);
   revalidatePath("/subtarefas");
@@ -209,6 +210,8 @@ export async function criarSubtarefaAction(formData: FormData) {
     ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
+  revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
+  revalidatePath("/subtarefas");
   return subtarefa;
 }
 
@@ -217,8 +220,9 @@ export async function criarSubtarefaFormAction(formData: FormData): Promise<void
 }
 
 export async function criarSubtarefaERedirecionarAction(formData: FormData): Promise<void> {
+  const ctx = await obterContexto();
   const subtarefa = await criarSubtarefaAction(formData);
-  if (subtarefa) redirect(`/tarefas/${subtarefa.tarefaId}?subtarefa=${subtarefa.id}`);
+  if (subtarefa) redirect(ctx.perfil === "ADMIN" ? `/tarefas/${subtarefa.tarefaId}?subtarefa=${subtarefa.id}` : `/minhas-tarefas/${subtarefa.tarefaId}`);
 }
 
 export async function criarComentarioAction(formData: FormData): Promise<void> {

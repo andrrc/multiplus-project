@@ -124,6 +124,8 @@ model Usuario {
   atribuicoes           Atribuicao[]
   tarefasResponsavel    Tarefa[]      @relation("TarefaResponsavelUsuario")
   subtarefasResponsavel Subtarefa[]   @relation("SubtarefaResponsavelUsuario")
+  tarefasCriadas        Tarefa[]      @relation("TarefaCriadaPor")
+  subtarefasCriadas     Subtarefa[]   @relation("SubtarefaCriadaPor")
   comentarios           Comentario[]
   notificacoes          Notificacao[]
   tokensAcesso          TokenAcesso[]
@@ -371,21 +373,22 @@ model ValorProjeto {
 }
 
 model Tarefa {
-  id               String         @id @default(cuid())
-  projetoId        String
-  projeto          Projeto        @relation(fields: [projetoId], references: [id], onDelete: Cascade)
-  nome             String
-  descricao        String?
-  prazo            DateTime?
-  status           StatusTarefa   @default(A_INICIAR)
-  periodicidade    Periodicidade?
-  serieId          String?
-  prazoOriginal    DateTime?
-  serieEncerradaEm DateTime?
-  diasAntecedencia Int?
-  ativo            Boolean        @default(true)
-  desativadoEm     DateTime?
-  desativadoPor    String?
+  id                             String         @id @default(cuid())
+  projetoId                      String
+  projeto                        Projeto        @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  nome                           String
+  descricao                      String?
+  prazo                          DateTime?
+  status                         StatusTarefa   @default(A_INICIAR)
+  periodicidade                  Periodicidade?
+  serieId                        String?
+  prazoOriginal                  DateTime?
+  serieEncerradaEm               DateTime?
+  diasAntecedencia               Int?
+  colaboradorPodeCriarSubtarefas Boolean        @default(false)
+  ativo                          Boolean        @default(true)
+  desativadoEm                   DateTime?
+  desativadoPor                  String?
 
   /// RF-005 — o responsável pode ser uma Pessoa Envolvida do cliente ou um usuário da equipe.
   /// Quando a Pessoa Envolvida tem acesso (`temAcesso = true`), a atribuição é sincronizada
@@ -394,6 +397,9 @@ model Tarefa {
   responsavel          PessoaEnvolvida? @relation("TarefaResponsavel", fields: [responsavelId], references: [id])
   responsavelUsuarioId String?
   responsavelUsuario   Usuario?         @relation("TarefaResponsavelUsuario", fields: [responsavelUsuarioId], references: [id])
+  criadoPorId          String?
+  criadoPor            Usuario?         @relation("TarefaCriadaPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  criadoPorNome        String?
 
   subtarefas  Subtarefa[]
   comentarios Comentario[]
@@ -426,6 +432,9 @@ model Subtarefa {
   atribuidoA          PessoaEnvolvida? @relation("SubtarefaAtribuidoA", fields: [atribuidoAId], references: [id])
   atribuidoAUsuarioId String?
   atribuidoAUsuario   Usuario?         @relation("SubtarefaResponsavelUsuario", fields: [atribuidoAUsuarioId], references: [id], onDelete: SetNull)
+  criadoPorId         String?
+  criadoPor           Usuario?         @relation("SubtarefaCriadaPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  criadoPorNome       String?
   comentarios         Comentario[]
 
   criadoEm     DateTime @default(now())
