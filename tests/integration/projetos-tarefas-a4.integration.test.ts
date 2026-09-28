@@ -252,7 +252,7 @@ describe("CRUD protegido no servidor", () => {
     ).rejects.toThrow(/Administrador/);
     await expect(
       criarSubtarefa(ctxExterno(), { tarefaId: tarefa.id, titulo: "Subtarefa proibida", atribuidoAId: pessoa.id }),
-    ).rejects.toThrow(/Administrador/);
+    ).rejects.toThrow(/não tem permissão para criar subtarefas/);
   });
 });
 

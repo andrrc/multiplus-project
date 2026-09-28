@@ -78,14 +78,6 @@ CREATE POLICY subtarefas_insert ON "subtarefas" FOR INSERT WITH CHECK (
   AND (
     app_current_perfil() = 'ADMIN'
     OR (
-      app_current_perfil() = 'ADMIN_INTERNO'
-      AND EXISTS (
-        SELECT 1 FROM "tarefas" t
-        JOIN "atribuicoes" a ON a."entidadeTipo" = 'PROJETO' AND a."entidadeId" = t."projetoId"
-        WHERE t."id" = "subtarefas"."tarefaId" AND a."usuarioId" = app_current_usuario_id()
-      )
-    )
-    OR (
       app_current_perfil() IN ('ADMIN_INTERNO', 'ADMIN_EXTERNO')
       AND EXISTS (
         SELECT 1
