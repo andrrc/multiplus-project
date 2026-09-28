@@ -64,12 +64,12 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
     setTexto(valor);
     setMencoes((atuais) => atuais.filter((usuario) => valor.includes(`@${usuario.nome}`)));
     const antesDoCursor = valor.slice(0, cursor);
-    const correspondencia = antesDoCursor.match(/(^|\s)@([^\s@]*)$/u);
+    const correspondencia = antesDoCursor.match(/@([^\s@]*)$/u);
     if (!correspondencia) {
       setConsultaMencao(null);
       return;
     }
-    setConsultaMencao({ inicio: cursor - correspondencia[2].length - 1, texto: correspondencia[2] });
+    setConsultaMencao({ inicio: cursor - correspondencia[1].length - 1, texto: correspondencia[1] });
     setOpcaoMencaoAtiva(0);
   }
 
@@ -124,11 +124,12 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
       <input type="hidden" name="entidadeId" value={entidadeId} />
       {tarefaId && <input type="hidden" name="tarefaId" value={tarefaId} />}
 
-      <div className="relative">
+      <div>
         <textarea ref={textoRef} name="texto" required rows={3} value={texto} onChange={(event) => alterarTexto(event.target.value, event.target.selectionStart)} onKeyDown={navegarSugestoes} placeholder="Escreva uma atualização para este item" className={inputClass} aria-autocomplete="list" aria-controls="sugestoes-mencao-comentario" />
-        {consultaMencao && sugestoes.length > 0 && <ul id="sugestoes-mencao-comentario" role="listbox" aria-label="Pessoas para mencionar" className="absolute inset-x-0 bottom-full z-10 mb-1 max-h-56 overflow-y-auto rounded-[3px] border border-linha bg-branco py-1 shadow-lg">
+        {consultaMencao && sugestoes.length > 0 && <ul id="sugestoes-mencao-comentario" role="listbox" aria-label="Pessoas para mencionar" className="mt-1 max-h-56 overflow-y-auto rounded-[3px] border border-linha bg-branco py-1 shadow-lg">
           {sugestoes.map((usuario, indice) => <li key={usuario.id} role="option" aria-selected={indice === opcaoMencaoAtiva}><button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => selecionarMencao(usuario)} className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left ${indice === opcaoMencaoAtiva ? "bg-verde-cl" : "hover:bg-papel"}`}><span className="truncate text-[14px] font-medium text-tinta">{usuario.nome}</span><span className="shrink-0 text-[12px] text-cinza">{perfilLabel[usuario.perfil] ?? "Usuário"}</span></button></li>)}
         </ul>}
+        {consultaMencao && sugestoes.length === 0 && <p role="status" className="mt-1 rounded-[3px] border border-linha bg-branco px-3 py-2 text-[13px] text-cinza">Nenhuma pessoa com acesso a este registro corresponde à busca.</p>}
       </div>
       <p className="mt-1 text-[12px] text-cinza">Digite @ para mencionar alguém que também tenha acesso a este registro. Você e as pessoas mencionadas receberão um e-mail.</p>
       {mencoes.map((usuario) => <input key={usuario.id} type="hidden" name="mencaoUsuarioId" value={usuario.id} />)}
