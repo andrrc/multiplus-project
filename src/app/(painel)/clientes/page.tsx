@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { obterContexto } from "@/server/auth/contexto";
 import { listarClientes, listarCidadesComCliente } from "@/lib/clientes";
-import { documentoCliente } from "@/lib/formatacao";
+import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta, inputClass } from "@/ui/campo";
 
 export default async function ClientesPage({
@@ -98,6 +98,7 @@ export default async function ClientesPage({
                 <p className={`text-[15px] font-medium ${cliente.ativo ? "text-tinta" : "text-cinza"}`}>
                   {cliente.razaoSocial}
                 </p>
+                <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold tracking-[0.04em] text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p>
                 <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente)}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <span className="flex flex-wrap items-center gap-2">
@@ -114,7 +115,8 @@ export default async function ClientesPage({
         <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
           <thead>
             <tr className="bg-tinta text-left text-branco">
-              <th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">
+              <th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">ID</th>
+              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">
                 Razão social
               </th>
               <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th>
@@ -131,6 +133,7 @@ export default async function ClientesPage({
                   cliente.ativo ? "bg-branco" : "bg-papel"
                 }`}
               >
+                <td className="px-5 py-4 font-[family-name:var(--font-interface)] font-semibold tabular-nums text-azul-esc">{numeroCliente(cliente.numeroIdentificacao)}</td>
                 <td className="px-5 py-4 font-medium text-tinta">
                   <Link href={`/clientes/${cliente.id}`} className="hover:text-azul-esc">
                     {cliente.razaoSocial}

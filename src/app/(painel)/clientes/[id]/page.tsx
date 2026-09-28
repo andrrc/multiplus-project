@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
-import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone } from "@/lib/formatacao";
+import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import {
   FormularioDocumento,
@@ -103,6 +103,7 @@ export default async function DetalheClientePage({
         <div>
           <h1 className="text-[24px] text-branco sm:text-[30px]">{cliente.razaoSocial}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
+            <span className="rounded-[2px] border border-[#2C5567] px-2.5 py-1 font-semibold tabular-nums text-branco">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
             <span className="tabular-nums text-[#C4DCE4]">{documentoCliente(cliente)}</span>
             <span className="rounded-[2px] bg-verde px-2.5 py-1 text-[13px] font-medium text-tinta">
               {cliente.segmento}

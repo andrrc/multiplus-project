@@ -142,6 +142,7 @@ model Usuario {
 /// aplicação (src/lib/clientes.ts), não do banco.
 model Cliente {
   id   String      @id @default(cuid())
+  numeroIdentificacao Int @unique @default(dbgenerated("nextval('clientes_numero_identificacao_seq'::regclass)"))
   tipo TipoCliente @default(PESSOA_JURIDICA)
 
   /// PJ: razão social. PF: nome da pessoa (RF-035) — mesmo campo, reaproveitado para não
