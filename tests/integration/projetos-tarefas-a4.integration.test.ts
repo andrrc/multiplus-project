@@ -15,6 +15,7 @@ import {
   buscarTarefaParaColaborador,
   buscarProjetoAtribuido,
   listarProjetosAtribuidos,
+  listarProjetos,
   listarTarefasAtribuidas,
 } from "@/lib/projetos-tarefas";
 import { buscarClienteContextual, buscarClienteDetalheSeguro, listarClientesContextuais } from "@/lib/clientes";
@@ -74,6 +75,7 @@ describe("CRUD protegido no servidor", () => {
     projeto = await criarProjeto(ctxAdmin(), {
       clienteId: cliente.id,
       nome: "Projeto A4",
+      numeroProposta: "109/2026",
       descricao: "Projeto criado no teste da A4",
       valorContratado: new Prisma.Decimal("12500.50"),
       dataInicio: data("2026-01-01"),
@@ -90,6 +92,8 @@ describe("CRUD protegido no servidor", () => {
     });
 
     expect(projeto.status).toBe(StatusProjeto.A_INICIAR);
+    const projetosPesquisados = await listarProjetos(ctxAdmin(), false, "109/2026");
+    expect(projetosPesquisados.some((item) => item.id === projeto.id && item.numeroProposta === "109/2026")).toBe(true);
     expect(tarefa.periodicidade).toBe(Periodicidade.MENSAL);
     expect(tarefa.prazoOriginal).toEqual(data("2026-01-31"));
 

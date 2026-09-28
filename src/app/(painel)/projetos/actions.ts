@@ -22,6 +22,7 @@ import {
 } from "@/lib/projetos-tarefas";
 import { criarComentario } from "@/lib/comentarios";
 import { dispararEventoNotificacao } from "@/lib/notificacoes";
+import { montarNumeroProposta } from "@/lib/numero-proposta";
 
 function texto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
@@ -70,6 +71,7 @@ export async function criarProjetoAction(formData: FormData) {
   const projeto = await criarProjeto(ctx, {
     clienteId: texto(formData, "clienteId"),
     nome: texto(formData, "nome"),
+    numeroProposta: montarNumeroProposta(texto(formData, "propostaNumero"), texto(formData, "propostaAno")),
     descricao: texto(formData, "descricao") || null,
     valorContratado: valorContratado(texto(formData, "valorContratado")),
     dataInicio: dataOpcional(texto(formData, "dataInicio")),
@@ -90,6 +92,7 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
   const ctx = await obterContexto();
   const projeto = await atualizarProjeto(ctx, projetoId, {
     nome: texto(formData, "nome"),
+    numeroProposta: montarNumeroProposta(texto(formData, "propostaNumero"), texto(formData, "propostaAno")),
     descricao: texto(formData, "descricao") || null,
     valorContratado: valorContratado(texto(formData, "valorContratado")),
     dataInicio: dataOpcional(texto(formData, "dataInicio")),

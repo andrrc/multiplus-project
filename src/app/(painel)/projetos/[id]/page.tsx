@@ -22,6 +22,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
   <div className="min-w-0">
     <p className="text-[14px] text-cinza">{projeto.cliente.razaoSocial}</p>
     <h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1>
+    <p className="mt-1 text-[14px] text-cinza">Proposta comercial: <strong className="font-medium text-tinta">{projeto.numeroProposta ?? "Não informada"}</strong></p>
     {projeto.descricao && <p className="mt-2 max-w-[70ch] text-[15px] text-cinza">{projeto.descricao}</p>}
   </div>
   <div className="flex min-w-0 flex-col items-start gap-3 sm:items-end">

@@ -341,6 +341,7 @@ model Projeto {
   clienteId             String
   cliente               Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   nome                  String
+  numeroProposta        String?
   descricao             String?
   dataInicio            DateTime?
   dataPrevistaConclusao DateTime?

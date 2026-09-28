@@ -13,6 +13,7 @@ import { definirAtivo } from "@/lib/desativacao";
 export type DadosProjeto = {
   clienteId: string;
   nome: string;
+  numeroProposta?: string | null;
   descricao?: string | null;
   /** `undefined` preserva o valor na edição; `null` remove um valor ainda não informado. */
   valorContratado?: Prisma.Decimal | null;
@@ -69,11 +70,19 @@ export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: 
   );
 }
 
-export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false) {
+export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false, busca?: string) {
   exigirAdministrador(ctx);
+  const termo = busca?.trim();
   return comContextoDeUsuario(ctx, (tx) =>
     tx.projeto.findMany({
-      where: incluirDesativados ? {} : { ativo: true },
+      where: {
+        ...(incluirDesativados ? {} : { ativo: true }),
+        ...(termo ? { OR: [
+          { nome: { contains: termo, mode: "insensitive" } },
+          { numeroProposta: { contains: termo, mode: "insensitive" } },
+          { cliente: { razaoSocial: { contains: termo, mode: "insensitive" } } },
+        ] } : {}),
+      },
       include: {
         cliente: { select: { id: true, razaoSocial: true } },
         valorContratado: { select: { valorContratado: true } },
@@ -433,6 +442,7 @@ export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
       data: {
         clienteId: dados.clienteId,
         nome: validarNome(dados.nome, "do projeto"),
+        numeroProposta: dados.numeroProposta ?? null,
         descricao: dados.descricao ?? null,
         dataInicio: dados.dataInicio ?? null,
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
@@ -460,6 +470,7 @@ export async function atualizarProjeto(
       where: { id: projetoId },
       data: {
         nome: validarNome(dados.nome, "do projeto"),
+        numeroProposta: dados.numeroProposta ?? null,
         descricao: dados.descricao ?? null,
         dataInicio: dados.dataInicio ?? null,
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
