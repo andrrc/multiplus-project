@@ -272,7 +272,7 @@ export function BotaoDesativarCliente({
         onClick={(event) => {
           if (event.target === dialogRef.current && !pendente) dialogRef.current?.close();
         }}
-        className="w-[calc(100%-2rem)] max-w-[480px] border-0 bg-transparent p-0 text-tinta backdrop:bg-tinta/60"
+        className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[480px] overflow-y-auto border-0 bg-transparent p-0 text-tinta backdrop:bg-tinta/60"
       >
         <div className="overflow-hidden rounded-[4px] border border-linha bg-branco shadow-2xl">
           <div className="border-b border-linha bg-papel px-5 py-5 sm:px-6">
