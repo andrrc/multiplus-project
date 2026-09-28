@@ -68,7 +68,7 @@ export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { d
           : <>
             <p className="mt-1 text-[12px] text-cinza">Escolha uma cor. A etiqueta ficará disponível para outros projetos.</p>
             <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={`Escolha a cor da etiqueta ${buscaNormalizada}`}>
-              {CORES_ETIQUETA.map((cor) => <button key={cor.fundo} type="button" onClick={() => criarEtiqueta(cor.fundo)} aria-label={`Criar etiqueta ${buscaNormalizada} na cor ${cor.nome}`} title={cor.nome} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-linha bg-branco px-2.5 text-[12px] font-medium text-tinta hover:border-azul focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul focus-visible:ring-offset-2"><span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-black/10" style={{ backgroundColor: cor.texto }} />{cor.nome}</button>)}
+              {CORES_ETIQUETA.map((cor) => <button key={cor.fundo} type="button" onClick={() => criarEtiqueta(cor.fundo)} aria-label={`Criar etiqueta ${buscaNormalizada} na cor ${cor.nome}`} title={cor.nome} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-linha bg-branco px-2.5 text-[12px] font-medium text-tinta hover:border-azul focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul focus-visible:ring-offset-2"><span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-black/10" style={{ backgroundColor: cor.amostra }} />{cor.nome}</button>)}
             </div>
           </>}
       </div>}

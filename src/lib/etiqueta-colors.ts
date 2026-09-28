@@ -1,16 +1,16 @@
 export const CORES_ETIQUETA = [
-  { nome: "Azul", fundo: "#DBEAFE", texto: "#1E40AF" },
-  { nome: "Ciano", fundo: "#CFFAFE", texto: "#155E75" },
-  { nome: "Verde", fundo: "#DCFCE7", texto: "#166534" },
-  { nome: "Lima", fundo: "#ECFCCB", texto: "#3F6212" },
-  { nome: "Amarelo", fundo: "#FEF9C3", texto: "#854D0E" },
-  { nome: "Âmbar", fundo: "#FEF3C7", texto: "#92400E" },
-  { nome: "Laranja", fundo: "#FFEDD5", texto: "#9A3412" },
-  { nome: "Vermelho", fundo: "#FEE2E2", texto: "#991B1B" },
-  { nome: "Rosa", fundo: "#FCE7F3", texto: "#9D174D" },
-  { nome: "Roxo", fundo: "#F3E8FF", texto: "#6B21A8" },
-  { nome: "Índigo", fundo: "#E0E7FF", texto: "#3730A3" },
-  { nome: "Cinza", fundo: "#E2E8F0", texto: "#334155" },
+  { nome: "Azul", fundo: "#BFDBFE", texto: "#1E3A8A", amostra: "#2563EB" },
+  { nome: "Ciano", fundo: "#A5F3FC", texto: "#164E63", amostra: "#0891B2" },
+  { nome: "Verde", fundo: "#BBF7D0", texto: "#14532D", amostra: "#16A34A" },
+  { nome: "Lima", fundo: "#D9F99D", texto: "#365314", amostra: "#65A30D" },
+  { nome: "Amarelo", fundo: "#FEF08A", texto: "#713F12", amostra: "#EAB308" },
+  { nome: "Âmbar", fundo: "#FCD34D", texto: "#78350F", amostra: "#D97706" },
+  { nome: "Laranja", fundo: "#FDBA74", texto: "#7C2D12", amostra: "#EA580C" },
+  { nome: "Vermelho", fundo: "#FCA5A5", texto: "#7F1D1D", amostra: "#DC2626" },
+  { nome: "Rosa", fundo: "#FBCFE8", texto: "#831843", amostra: "#DB2777" },
+  { nome: "Roxo", fundo: "#E9D5FF", texto: "#581C87", amostra: "#9333EA" },
+  { nome: "Índigo", fundo: "#C7D2FE", texto: "#312E81", amostra: "#4F46E5" },
+  { nome: "Cinza", fundo: "#CBD5E1", texto: "#1E293B", amostra: "#475569" },
 ] as const;
 
 export type CorEtiqueta = (typeof CORES_ETIQUETA)[number]["fundo"];
