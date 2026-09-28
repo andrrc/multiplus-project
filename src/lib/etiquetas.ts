@@ -67,8 +67,13 @@ function exigirAdministrador(ctx: ContextoUsuario) {
 }
 
 function validarCor(cor: string) {
-  if (!CORES_ETIQUETA.some((opcao) => opcao.fundo === cor)) throw new Error("Escolha uma cor disponível para a etiqueta.");
+  if (!CORES_ETIQUETA.some((opcao) => opcao.fundo === cor) && !CORES_LEGADAS_ETIQUETA.includes(cor)) {
+    throw new Error("Escolha uma cor disponível para a etiqueta.");
+  }
 }
+
+// Mantém compatibilidade com cores gravadas por versões anteriores e fixtures existentes.
+const CORES_LEGADAS_ETIQUETA = ["#DBEAFE", "#DCFCE7", "#FEF3C7", "#FEE2E2", "#F3E8FF"];
 
 async function validarNomeDisponivel(tx: Prisma.TransactionClient, nome: string, ignorarId?: string) {
   const existente = await tx.etiqueta.findFirst({ where: { nome: { equals: nome, mode: "insensitive" }, ...(ignorarId ? { id: { not: ignorarId } } : {}) }, select: { id: true } });
@@ -101,7 +106,7 @@ export async function salvarEtiquetasSubtarefa(
 
   for (const nova of novasResolvidas) {
     const nome = normalizarNome(nova.nome);
-    if (!CORES_ETIQUETA.some((cor) => cor.fundo === nova.cor)) throw new Error("Escolha uma cor disponível para a etiqueta.");
+    validarCor(nova.cor);
     const chave = nome.toLocaleLowerCase("pt-BR");
     if (porNome.has(chave)) continue;
     await tx.etiqueta.createMany({ data: { nome, cor: nova.cor }, skipDuplicates: true });
