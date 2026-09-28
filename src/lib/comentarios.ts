@@ -55,13 +55,22 @@ export async function listarUsuariosMencionaveis(ctx: ContextoUsuario, alvo: Alv
 }
 
 export async function listarComentarios(ctx: ContextoUsuario, alvo: AlvoComentario) {
-  return comContextoDeUsuario(ctx, (tx) =>
+  const comentarios = await comContextoDeUsuario(ctx, (tx) =>
     tx.comentario.findMany({
       where: alvo,
       include: { autor: { select: { nome: true, perfil: true } } },
       orderBy: { criadoEm: "asc" },
     }),
   );
+  const usuarioIds = [...new Set(comentarios.flatMap((comentario) => comentario.mencoesUsuarioIds))];
+  const usuarios = usuarioIds.length
+    ? await prisma.usuario.findMany({ where: { id: { in: usuarioIds } }, select: { id: true, nome: true } })
+    : [];
+  const nomesPorId = new Map(usuarios.map((usuario) => [usuario.id, usuario.nome]));
+  return comentarios.map((comentario) => ({
+    ...comentario,
+    nomesMencionados: comentario.mencoesUsuarioIds.map((id) => nomesPorId.get(id)).filter((nome): nome is string => Boolean(nome)),
+  }));
 }
 
 export async function criarComentario(ctx: ContextoUsuario, alvo: AlvoComentario, texto: string, link?: string | null, imagem?: File | null, mencoesUsuarioIds: string[] = []) {
