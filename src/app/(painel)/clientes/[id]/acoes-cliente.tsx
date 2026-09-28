@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { inputClass } from "@/ui/campo";
 import type { EntidadeDesativavel } from "@/lib/desativacao";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
@@ -212,8 +212,106 @@ export function BotaoAlternarAcesso({
       onClick={() => startTransition(() => definirAcessoAtivoAction(clienteId, usuarioId, !ativo))}
       className="text-[14px] font-medium text-azul-esc hover:underline disabled:opacity-60"
     >
-      {ativo ? "Bloquear acesso" : "Desbloquear acesso"}
+      {ativo ? "Bloquear acesso ao portal" : "Desbloquear acesso ao portal"}
     </button>
+  );
+}
+
+/** Desativação do cadastro do cliente, claramente separada do acesso ao portal. */
+export function BotaoDesativarCliente({
+  clienteId,
+  nome,
+  ativo,
+  instancia,
+}: {
+  clienteId: string;
+  nome: string;
+  ativo: boolean;
+  instancia: string;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [pendente, startTransition] = useTransition();
+  const [erro, setErro] = useState<string | null>(null);
+  const dialogId = `desativar-cliente-${instancia}-${clienteId}`;
+
+  function alterarAtivo(novoEstado: boolean) {
+    setErro(null);
+    startTransition(async () => {
+      const resultado = await definirAtivoAction(clienteId, "cliente", clienteId, novoEstado);
+      if (resultado.erro) {
+        setErro(resultado.erro);
+        return;
+      }
+      dialogRef.current?.close();
+    });
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pendente}
+        onClick={() => {
+          setErro(null);
+          if (ativo) dialogRef.current?.showModal();
+          else alterarAtivo(true);
+        }}
+        className={`inline-flex min-h-9 items-center justify-center rounded-[3px] border px-3 py-1.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc disabled:opacity-60 ${
+          ativo
+            ? "border-[#E4A9A9] bg-[#FFF7F7] text-critico hover:bg-[#FDE9E9]"
+            : "border-linha bg-branco text-azul-esc hover:border-azul"
+        }`}
+      >
+        {pendente ? (ativo ? "Desativando…" : "Reativando…") : ativo ? "Desativar cliente" : "Reativar cliente"}
+      </button>
+
+      <dialog
+        ref={dialogRef}
+        aria-labelledby={`${dialogId}-titulo`}
+        aria-describedby={`${dialogId}-efeito ${dialogId}-acesso`}
+        onClick={(event) => {
+          if (event.target === dialogRef.current && !pendente) dialogRef.current?.close();
+        }}
+        className="w-[calc(100%-2rem)] max-w-[480px] border-0 bg-transparent p-0 text-tinta backdrop:bg-tinta/60"
+      >
+        <div className="overflow-hidden rounded-[4px] border border-linha bg-branco shadow-2xl">
+          <div className="border-b border-linha bg-papel px-5 py-5 sm:px-6">
+            <p className="text-[12px] font-semibold text-critico">Cadastro do cliente</p>
+            <h2 id={`${dialogId}-titulo`} className="mt-1 text-[20px] font-semibold text-tinta">
+              Desativar {nome}?
+            </h2>
+          </div>
+          <div className="px-5 py-5 sm:px-6">
+            <p id={`${dialogId}-efeito`} className="text-[14px] leading-6 text-tinta">
+              O cadastro sairá das listas de clientes ativos e ficará somente para consulta. Os projetos e registros vinculados deixarão de ficar disponíveis enquanto ele estiver desativado. O histórico será preservado e você poderá reativá-lo depois.
+            </p>
+            <p id={`${dialogId}-acesso`} className="mt-3 border-l-2 border-azul-esc pl-3 text-[13px] leading-5 text-cinza">
+              Esta ação não bloqueia o login do portal. Para bloquear o acesso, use “Acesso ao portal do cliente” separadamente.
+            </p>
+            {erro && <p role="alert" className="mt-4 text-[13px] text-critico">{erro}</p>}
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                autoFocus
+                disabled={pendente}
+                onClick={() => dialogRef.current?.close()}
+                className="min-h-10 rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:bg-papel disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={pendente}
+                onClick={() => alterarAtivo(false)}
+                className="min-h-10 rounded-[3px] bg-critico px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-critico disabled:opacity-60"
+              >
+                {pendente ? "Desativando…" : "Desativar cadastro"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </dialog>
+    </>
   );
 }
 
