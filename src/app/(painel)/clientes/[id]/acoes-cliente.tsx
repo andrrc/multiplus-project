@@ -233,6 +233,7 @@ export function BotaoDesativarCliente({
   const [pendente, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
   const dialogId = `desativar-cliente-${instancia}-${clienteId}`;
+  const compacto = instancia.startsWith("lista-");
 
   function alterarAtivo(novoEstado: boolean) {
     setErro(null);
@@ -251,18 +252,25 @@ export function BotaoDesativarCliente({
       <button
         type="button"
         disabled={pendente}
+        aria-label={`${ativo ? "Desativar" : "Reativar"} cliente ${nome}`}
         onClick={() => {
           setErro(null);
           if (ativo) dialogRef.current?.showModal();
           else alterarAtivo(true);
         }}
-        className={`inline-flex min-h-9 items-center justify-center rounded-[3px] border px-3 py-1.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc disabled:opacity-60 ${
+        className={`inline-flex items-center justify-center whitespace-nowrap rounded-[3px] border font-[family-name:var(--font-interface)] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc disabled:opacity-60 ${compacto ? "min-h-8 w-fit px-2.5 py-1 text-[12px]" : "min-h-9 px-3 py-1.5 text-[13px]"} ${
           ativo
             ? "border-[#E4A9A9] bg-[#FFF7F7] text-critico hover:bg-[#FDE9E9]"
             : "border-linha bg-branco text-azul-esc hover:border-azul"
         }`}
       >
-        {pendente ? (ativo ? "Desativando…" : "Reativando…") : ativo ? "Desativar cliente" : "Reativar cliente"}
+        {pendente
+          ? compacto
+            ? ativo ? "Desativando…" : "Reativando…"
+            : ativo ? "Desativando cliente…" : "Reativando cliente…"
+          : compacto
+            ? ativo ? "Desativar" : "Reativar"
+            : ativo ? "Desativar cliente" : "Reativar cliente"}
       </button>
 
       <dialog
