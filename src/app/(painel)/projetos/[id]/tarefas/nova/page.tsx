@@ -3,6 +3,7 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjeto, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
 import { criarTarefaERedirecionarAction } from "../../../actions";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
+import { CamposRecorrencia } from "@/app/(painel)/projetos/campos-recorrencia";
 
 export default async function NovaTarefaPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await exigirAcessoARota("/projetos");
@@ -20,21 +21,18 @@ export default async function NovaTarefaPage({ params }: { params: Promise<{ id:
       <SecaoNumerada numero="01" titulo="Tarefa">
         <Campo label="Nome da tarefa" obrigatorio><input name="nome" required className={inputClass} placeholder="Ex.: Protocolar renovação" /></Campo>
         <Campo label="Descrição"><textarea name="descricao" rows={4} className={inputClass} /></Campo>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Campo label="Responsável"><select name="responsavelId" className={inputClass}><option value="">Sem responsável</option>{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}{p.temAcesso ? " · acesso ativo" : ""}</option>)}</select></Campo>
-          <Campo label="Prazo" obrigatorio><input type="date" name="prazo" required className={inputClass} /></Campo>
-        </div>
+        <Campo label="Responsável"><select name="responsavelId" className={inputClass}><option value="">Sem responsável</option>{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}{p.temAcesso ? " · acesso ativo" : ""}</option>)}</select></Campo>
         <label className="flex items-start gap-3 rounded-[3px] border border-linha bg-branco p-4 text-[14px]">
           <input type="checkbox" name="colaboradorPodeCriarSubtarefas" className="mt-1 accent-verde" />
           <span><strong className="font-semibold">Permitir que o colaborador responsável crie subtarefas</strong><span className="mt-1 block text-[13px] text-cinza">A permissão vale somente para o colaborador atribuído diretamente a esta tarefa.</span></span>
         </label>
       </SecaoNumerada>
       <SecaoNumerada numero="02" titulo="Acompanhamento">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Campo label="Status"><select name="status" defaultValue="A_INICIAR" className={inputClass}><option value="A_INICIAR">A iniciar</option><option value="EM_ANDAMENTO">Em andamento</option><option value="AGUARDANDO_DOCUMENTO_CLIENTE">Aguardando documento do cliente</option><option value="VISITA_REUNIAO_AGENDADA">Visita/reunião agendada</option><option value="PROTOCOLADO">Protocolado</option><option value="SOB_ANALISE_ORGAO_AMBIENTAL">Sob análise do órgão</option><option value="COM_EXIGENCIA_A_CUMPRIR">Com exigência a cumprir</option><option value="CONCLUIDO">Concluído</option><option value="CANCELADO">Cancelado</option></select></Campo>
-          <Campo label="Periodicidade"><select name="periodicidade" defaultValue="" className={inputClass}><option value="">Sem recorrência</option><option value="SEMANAL">Semanal</option><option value="MENSAL">Mensal</option><option value="TRIMESTRAL">Trimestral</option><option value="SEMESTRAL">Semestral</option><option value="ANUAL">Anual</option></select></Campo>
           <Campo label="Antecedência (dias)"><input type="number" min="1" name="diasAntecedencia" className={inputClass} placeholder="Padrão: 7" /></Campo>
         </div>
+        <div className="grid gap-4 sm:grid-cols-2"><CamposRecorrencia /></div>
       </SecaoNumerada>
       <div className="flex gap-3"><button className="min-h-11 rounded-[3px] bg-verde px-5 text-[14px] font-semibold text-tinta">Criar tarefa</button><a href={`/projetos/${id}`} className="flex min-h-11 items-center rounded-[3px] border border-linha px-5 text-[14px]">Cancelar</a></div>
     </form>

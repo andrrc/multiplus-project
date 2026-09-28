@@ -383,6 +383,7 @@ model Tarefa {
   prazo                          DateTime?
   status                         StatusTarefa   @default(A_INICIAR)
   periodicidade                  Periodicidade?
+  diaSemana                      Int?
   serieId                        String?
   prazoOriginal                  DateTime?
   serieEncerradaEm               DateTime?

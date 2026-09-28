@@ -276,6 +276,22 @@ describe("conclusão transacional", () => {
     expect(quantidadeDepois).toBe(quantidadeAntes);
   });
 
+  it("persiste e aplica o dia semanal escolhido na próxima ocorrência", async () => {
+    const semanal = await criarTarefa(ctxAdmin(), {
+      projetoId: projeto.id,
+      nome: "Rotina toda terça",
+      prazo: data("2026-09-10"),
+      periodicidade: Periodicidade.SEMANAL,
+      diaSemana: 2,
+      responsavelId: pessoa.id,
+    });
+
+    expect(semanal.diaSemana).toBe(2);
+    const resultado = await concluirTarefa(ctxExterno(), semanal.id);
+    expect(resultado.proxima?.prazo).toEqual(data("2026-09-15"));
+    expect(resultado.proxima?.diaSemana).toBe(2);
+  });
+
   it("responsável conclui subtarefa, mas colaborador sem atribuição específica não consegue", async () => {
     const atribuida = await ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: tarefa.id, atribuidoAId: pessoa.id } });
     await expect(concluirSubtarefa(ctxExterno(), atribuida.id)).resolves.toMatchObject({ status: StatusSubtarefa.CONCLUIDO });

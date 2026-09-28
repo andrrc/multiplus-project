@@ -30,6 +30,7 @@ export type DadosTarefa = {
   responsavelId?: string | null;
   responsavelUsuarioId?: string | null;
   periodicidade?: Periodicidade | null;
+  diaSemana?: number | null;
   diasAntecedencia?: number | null;
   status?: StatusTarefa;
   colaboradorPodeCriarSubtarefas?: boolean;
@@ -508,6 +509,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
   exigirAdministrador(ctx);
   if (!dados.prazo || Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido.");
   if (dados.periodicidade && !dados.prazo) throw new Error("Tarefa recorrente precisa de prazo.");
+  if (dados.periodicidade === "SEMANAL" && dados.diaSemana != null && (!Number.isInteger(dados.diaSemana) || dados.diaSemana < 0 || dados.diaSemana > 6)) throw new Error("Escolha um dia da semana válido.");
   if (dados.diasAntecedencia !== null && dados.diasAntecedencia !== undefined && dados.diasAntecedencia <= 0) {
     throw new Error("A antecedência deve ser maior que zero.");
   }
@@ -523,6 +525,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         prazo: dados.prazo,
         prazoOriginal: dados.prazo,
         periodicidade: dados.periodicidade ?? null,
+        diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
         serieId,
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? StatusTarefa.A_INICIAR,
@@ -551,6 +554,7 @@ export async function atualizarTarefa(
 ) {
   exigirAdministrador(ctx);
   if (!dados.prazo || Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido.");
+  if (dados.periodicidade === "SEMANAL" && dados.diaSemana != null && (!Number.isInteger(dados.diaSemana) || dados.diaSemana < 0 || dados.diaSemana > 6)) throw new Error("Escolha um dia da semana válido.");
   if (dados.diasAntecedencia !== null && dados.diasAntecedencia !== undefined && dados.diasAntecedencia <= 0) {
     throw new Error("A antecedência deve ser maior que zero.");
   }
@@ -562,8 +566,10 @@ export async function atualizarTarefa(
       where: { id: tarefaId },
       data: {
         nome: validarNome(dados.nome, "da tarefa"),
-        descricao: dados.descricao ?? null,
-        prazo: dados.prazo,
+          descricao: dados.descricao ?? null,
+          prazo: dados.prazo,
+          periodicidade: dados.periodicidade ?? null,
+          diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? undefined,
         responsavelId: dados.responsavelId ?? null,
@@ -703,7 +709,7 @@ export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
     if (atual.status === StatusTarefa.CONCLUIDO) return { tarefa: atual, proxima: null };
 
     const prazo = atual.periodicidade && atual.prazo
-      ? calcularProximaOcorrencia(atual.prazo, atual.periodicidade, atual.prazoOriginal ?? atual.prazo)
+      ? calcularProximaOcorrencia(atual.prazo, atual.periodicidade, atual.prazoOriginal ?? atual.prazo, atual.diaSemana)
       : null;
     const resultado = await tx.$queryRaw<{ tarefa_id: string; proxima_id: string | null }[]>`
       SELECT * FROM concluir_tarefa(${tarefaId}, CAST(${prazo} AS timestamp))
