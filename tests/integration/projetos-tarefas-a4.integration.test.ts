@@ -19,6 +19,7 @@ import {
   listarTarefasAtribuidas,
 } from "@/lib/projetos-tarefas";
 import { buscarClienteContextual, buscarClienteDetalheSeguro, listarClientesContextuais } from "@/lib/clientes";
+import { atualizarEtiquetaGerenciada, criarEtiquetaGerenciada, excluirEtiquetaGerenciada, listarEtiquetasGerenciadas } from "@/lib/etiquetas";
 import { comoUsuario, ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
 
 const data = (valor: string) => new Date(`${valor}T00:00:00.000Z`);
@@ -30,6 +31,7 @@ let cliente: { id: string; razaoSocial: string };
 let pessoa: { id: string };
 let projeto: { id: string; clienteId: string; status: StatusProjeto };
 let tarefa: { id: string; projetoId: string; serieId: string | null; periodicidade: Periodicidade | null; prazoOriginal: Date | null };
+const etiquetasGerenciadasNoTeste: string[] = [];
 
 const ctxAdmin = () => ({ usuarioId: admin.id, perfil: "ADMIN" as const });
 const ctxInterno = () => ({ usuarioId: interno.id, perfil: "ADMIN_INTERNO" as const });
@@ -67,6 +69,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await limparFixtures();
+  await ownerDb.etiqueta.deleteMany({ where: { id: { in: etiquetasGerenciadasNoTeste } } });
   await fecharConexoes();
 });
 
@@ -129,6 +132,31 @@ describe("CRUD protegido no servidor", () => {
 
     expect(subtarefa.etiquetas).toEqual(["urgente", "cliente"]);
     expect(documento.projetoId).toBe(projeto.id);
+  });
+
+  it("Talita renomeia e exclui etiqueta com propagação para todas as subtarefas", async () => {
+    const nomeOriginal = `Etiqueta A4 ${Date.now()}`;
+    const criada = await criarEtiquetaGerenciada(ctxAdmin(), { nome: nomeOriginal, cor: "#DBEAFE" });
+    etiquetasGerenciadasNoTeste.push(criada.id);
+    const subtarefa1 = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Primeira etiqueta compartilhada", etiquetas: [criada.nome], atribuidoAId: pessoa.id });
+    const subtarefa2 = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Segunda etiqueta compartilhada", etiquetas: [criada.nome], atribuidoAId: pessoa.id });
+
+    await expect(criarEtiquetaGerenciada(ctxInterno(), { nome: "Edição bloqueada", cor: "#DCFCE7" })).rejects.toThrow("exclusiva do Administrador");
+    await expect(atualizarEtiquetaGerenciada(ctxInterno(), criada.id, { nome: "Edição bloqueada", cor: "#DCFCE7" })).rejects.toThrow("exclusiva do Administrador");
+    await expect(excluirEtiquetaGerenciada(ctxInterno(), criada.id)).rejects.toThrow("exclusiva do Administrador");
+
+    const nomeAtualizado = `${nomeOriginal} revisada`;
+    await atualizarEtiquetaGerenciada(ctxAdmin(), criada.id, { nome: nomeAtualizado, cor: "#DCFCE7" });
+    const subtarefasAtualizadas = await ownerDb.subtarefa.findMany({ where: { id: { in: [subtarefa1.id, subtarefa2.id] } }, select: { etiquetas: true } });
+    expect(subtarefasAtualizadas.every((item) => item.etiquetas.includes(nomeAtualizado))).toBe(true);
+    expect((await listarEtiquetasGerenciadas(ctxAdmin())).find((item) => item.id === criada.id)).toMatchObject({ nome: nomeAtualizado, cor: "#DCFCE7", quantidadeSubtarefas: 2 });
+
+    await expect(comoUsuario(ctxInterno(), (tx) => tx.etiqueta.update({ where: { id: criada.id }, data: { cor: "#F3E8FF" } }))).rejects.toThrow();
+    const excluida = await excluirEtiquetaGerenciada(ctxAdmin(), criada.id);
+    expect(excluida).toMatchObject({ nome: nomeAtualizado, quantidadeSubtarefas: 2 });
+    const subtarefasSemEtiqueta = await ownerDb.subtarefa.findMany({ where: { id: { in: [subtarefa1.id, subtarefa2.id] } }, select: { etiquetas: true } });
+    expect(subtarefasSemEtiqueta.every((item) => !item.etiquetas.includes(nomeAtualizado))).toBe(true);
+    expect(await ownerDb.etiqueta.findUnique({ where: { id: criada.id } })).toBeNull();
   });
 
   it("Administrador pode atribuir uma subtarefa à Talita ou a integrante ativa da equipe", async () => {

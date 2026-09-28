@@ -8,6 +8,73 @@ export async function listarEtiquetas(ctx: ContextoUsuario) {
   return comContextoDeUsuario(ctx, (tx) => tx.etiqueta.findMany({ orderBy: { nome: "asc" }, select: { id: true, nome: true, cor: true } }));
 }
 
+export async function listarEtiquetasGerenciadas(ctx: ContextoUsuario) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const [etiquetas, subtarefas] = await Promise.all([
+      tx.etiqueta.findMany({ orderBy: { nome: "asc" }, select: { id: true, nome: true, cor: true, criadoEm: true } }),
+      tx.subtarefa.findMany({ select: { etiquetas: true } }),
+    ]);
+    const usos = new Map<string, number>();
+    for (const subtarefa of subtarefas) {
+      for (const nome of new Set(subtarefa.etiquetas.map((etiqueta) => etiqueta.toLocaleLowerCase("pt-BR")))) {
+        usos.set(nome, (usos.get(nome) ?? 0) + 1);
+      }
+    }
+    return etiquetas.map((etiqueta) => ({ ...etiqueta, quantidadeSubtarefas: usos.get(etiqueta.nome.toLocaleLowerCase("pt-BR")) ?? 0 }));
+  });
+}
+
+export async function criarEtiquetaGerenciada(ctx: ContextoUsuario, dados: EtiquetaSelecionada) {
+  exigirAdministrador(ctx);
+  const nome = normalizarNome(dados.nome);
+  validarCor(dados.cor);
+  return comContextoDeUsuario(ctx, async (tx) => {
+    await validarNomeDisponivel(tx, nome);
+    return tx.etiqueta.create({ data: { nome, cor: dados.cor } });
+  });
+}
+
+export async function atualizarEtiquetaGerenciada(ctx: ContextoUsuario, id: string, dados: EtiquetaSelecionada) {
+  exigirAdministrador(ctx);
+  const nome = normalizarNome(dados.nome);
+  validarCor(dados.cor);
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const atual = await tx.etiqueta.findUnique({ where: { id } });
+    if (!atual) throw new Error("Esta etiqueta não está mais no catálogo.");
+    await validarNomeDisponivel(tx, nome, id);
+    if (atual.nome !== nome) {
+      await tx.$executeRaw`UPDATE "subtarefas" SET "etiquetas" = array_replace("etiquetas", ${atual.nome}, ${nome}), "atualizadoEm" = CURRENT_TIMESTAMP WHERE ${atual.nome} = ANY("etiquetas")`;
+    }
+    return tx.etiqueta.update({ where: { id }, data: { nome, cor: dados.cor } });
+  });
+}
+
+export async function excluirEtiquetaGerenciada(ctx: ContextoUsuario, id: string) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const etiqueta = await tx.etiqueta.findUnique({ where: { id } });
+    if (!etiqueta) throw new Error("Esta etiqueta já foi removida.");
+    const subtarefas = await tx.subtarefa.findMany({ where: { etiquetas: { has: etiqueta.nome } }, select: { id: true } });
+    await tx.$executeRaw`UPDATE "subtarefas" SET "etiquetas" = array_remove("etiquetas", ${etiqueta.nome}), "atualizadoEm" = CURRENT_TIMESTAMP WHERE ${etiqueta.nome} = ANY("etiquetas")`;
+    await tx.etiqueta.delete({ where: { id } });
+    return { nome: etiqueta.nome, quantidadeSubtarefas: subtarefas.length };
+  });
+}
+
+function exigirAdministrador(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN") throw new Error("A gestão do catálogo de etiquetas é exclusiva do Administrador.");
+}
+
+function validarCor(cor: string) {
+  if (!CORES_ETIQUETA.some((opcao) => opcao.fundo === cor)) throw new Error("Escolha uma cor disponível para a etiqueta.");
+}
+
+async function validarNomeDisponivel(tx: Prisma.TransactionClient, nome: string, ignorarId?: string) {
+  const existente = await tx.etiqueta.findFirst({ where: { nome: { equals: nome, mode: "insensitive" }, ...(ignorarId ? { id: { not: ignorarId } } : {}) }, select: { id: true } });
+  if (existente) throw new Error("Já existe uma etiqueta com esse nome.");
+}
+
 function normalizarNome(nome: string) {
   const valor = nome.trim().replace(/\s+/g, " ");
   if (!valor || valor.length > 40) throw new Error("O nome da etiqueta deve ter entre 1 e 40 caracteres.");

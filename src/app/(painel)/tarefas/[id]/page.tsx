@@ -86,7 +86,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma subtarefa ainda. Cadastre a primeira etapa para esta tarefa.</p> : t.subtarefas.map(s => (
             <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="border-b border-linha px-5 py-4 last:border-b-0">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                <span className="font-medium text-tinta">{s.titulo}</span>
+                <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><span>{s.titulo}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
                 <span className="flex items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta></span>
               </summary>
               <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
