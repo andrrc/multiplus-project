@@ -93,7 +93,12 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
       ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
       ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
     },
-    include: { projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } }, responsavel: { select: { nome: true } }, responsavelUsuario: { select: { nome: true } } },
+    include: {
+      projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
+      responsavel: { select: { nome: true } },
+      responsavelUsuario: { select: { nome: true } },
+      _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
+    },
     orderBy: [{ prazo: "asc" }, { nome: "asc" }],
   }));
 }
@@ -257,7 +262,11 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
           { subtarefas: { some: { ativo: true, ...responsavelDaSubtarefa } } },
         ],
       },
-      include: { projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } }, subtarefas: { where: { ativo: true }, select: { status: true } } },
+      include: {
+        projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
+        subtarefas: { where: { ativo: true }, select: { status: true } },
+        _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
+      },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
   });
