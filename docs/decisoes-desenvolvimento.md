@@ -1,26 +1,37 @@
-# Registro das decisões de desenvolvimento
+# Índice cronológico de alterações
 
-## Listagem de projetos: exibir dias restantes
+Uma linha por alteração, da mais recente para a mais antiga. O **detalhe** (o que foi
+decidido, as regras e o efeito na interface) fica no arquivo do módulo em
+[`docs/funcionalidades/`](funcionalidades/README.md), na seção da funcionalidade e no
+"Histórico de alterações".
 
-- **Data:** 2026-09-29
-- **Objetivo:** tornar o prazo restante mais explícito na listagem de projetos, mantendo a leitura visual do semáforo.
-- **Decisão:** alterar somente o rótulo da coluna e do campo para “Dias restantes”; manter o indicador colorido. Ele mostra a quantidade de dias úteis até o prazo final na visualização de celular e na tabela para desktop. A contagem exclui sábados e domingos, conforme definido anteriormente.
-- **Comportamentos:** prazos vencidos mostram o atraso em dias úteis; prazo para hoje e prazos que caem no fim de semana têm rótulos próprios. Projetos sem prazo, concluídos, cancelados ou desativados continuam identificados por texto.
-- **Efeito na interface:** o rótulo da listagem passa de “Semáforo” para “Dias restantes”; os valores preservam as cores existentes (vermelho até 5 dias úteis, amarelo de 6 a 10, verde acima de 10), além das cores para concluído e cancelado. O semáforo permanece nas demais telas.
+Como registrar: ver a seção 7 do `AGENTS.md`.
 
-## Identidade visual: cores inexistentes e tokens de fundo claro
-
-- **Data:** 2026-09-29
-- **Objetivo:** corrigir cores que não apareciam na tela. Classes com tokens inexistentes (`vermelho`, `vermelho-cl`, `azul-cl`, `fundo`) não geram estilo no Tailwind, por isso itens atrasados na agenda e no painel de subtarefas, botões de exclusão de etiqueta e blocos da ficha do cliente estavam sem cor.
-- **Decisão:**
-  - criar os tokens `critico-cl` (`#F8ECEA`, vermelho terra claro) e `azul-cl` (`#E8F4FC`), registrados também no documento de identidade visual;
-  - trocar `vermelho` por `critico`, a cor de prazo vencido da marca;
-  - trocar `fundo` por `papel` e `black` por `tinta`, nas mesmas opacidades;
-  - manter sombra apenas em camadas flutuantes (modais e menus suspensos), exceção registrada no documento de identidade visual e no `AGENTS.md`.
-- **Comportamentos:** o teste `tests/unit/identidade-visual-tokens.unit.test.ts` falha quando uma classe de cor em `src/` usa um token que não existe em `src/app/globals.css`. Cores da paleta padrão do Tailwind (`black`, `red-500`…) também são rejeitadas.
-- **Efeito na interface:**
-  - subtarefas atrasadas (painel e agenda) voltam a ter fundo claro e tarja em vermelho terra;
-  - ocorrências projetadas na agenda ganham fundo azul claro;
-  - o diálogo de exclusão de etiqueta e os avisos de erro ficam em vermelho terra;
-  - blocos e o hover dos projetos na ficha do cliente passam a usar o fundo `papel`;
-  - as bordas das etiquetas mudam de preto para tinta, com diferença quase imperceptível.
+| Data | Módulo | Alteração | Commit |
+|---|---|---|---|
+| 2026-09-29 | Todos | Documentação por módulo em `docs/funcionalidades/` | `fe1b5b4` |
+| 2026-09-29 | [Identidade visual](Identidade_Visual_Multiplus.md) | Tokens `critico-cl` e `azul-cl`, e troca das cores inexistentes (`vermelho`, `fundo`, `black`). Sombra só em camadas flutuantes. Teste que barra token inexistente | `d731f79` |
+| 2026-09-29 | [Projetos](funcionalidades/projetos.md) | Listagem mostra "Dias restantes" em dias úteis, mantendo as cores do semáforo | `82cfccf`, `c229dfc` |
+| 2026-09-29 | [Projetos](funcionalidades/projetos.md) | Semáforo de prazo em dias úteis | `8b66162` |
+| 2026-09-29 | [Clientes](funcionalidades/clientes.md) | Controles de acesso exibidos na ficha | `95589d2` |
+| 2026-09-28 | [Comentários](funcionalidades/comentarios-mencoes.md) | Menções com `@`, com e-mail e destaque em azul | `5c69415`, `bf5f696`, `38c36e5` |
+| 2026-09-28 | [Subtarefas](funcionalidades/subtarefas.md) | Etiquetas coloridas, catálogo global e paleta de 12 cores | `321a4e8` a `d65f10e` |
+| 2026-09-28 | [Tarefas](funcionalidades/tarefas.md) | Dia da semana na recorrência semanal | `9969bff` |
+| 2026-09-28 | [Tarefas](funcionalidades/tarefas.md) | Recorrência copia as subtarefas | `e894321` |
+| 2026-09-28 | [Tarefas](funcionalidades/tarefas.md) | Conclusão recusa corretamente com comparação `NULL` | `57942e8` |
+| 2026-09-28 | [Tarefas](funcionalidades/tarefas.md) | Responsável pode criar subtarefas, com permissão | `9066c72`, `5f6a3b4` |
+| 2026-09-28 | [Projetos](funcionalidades/projetos.md) | Número da proposta comercial | `a976715` |
+| 2026-09-28 | [Clientes](funcionalidades/clientes.md) | Número de identificação sequencial, filtros automáticos e desativação separada do acesso ao portal | `f005c46`, `2af30bc`, `edac240` |
+| 2026-09-25 | [Subtarefas](funcionalidades/subtarefas.md) | Subtarefas completas. O Painel de Prazos vira painel de Subtarefas | `c907c9d`, `0956cdf` |
+| 2026-09-25 | [Tarefas](funcionalidades/tarefas.md) | Filtros dependentes por cliente e projeto | `3b4a259`, `06bdbfc` |
+| 2026-09-25 | [Clientes](funcionalidades/clientes.md) | Ficha do cliente para colaboradores, projetos na ficha e atalho para criar projeto | `65bf329`, `d26ab9d`, `28537e0` |
+| 2026-09-18 | [Tarefas](funcionalidades/tarefas.md) | Equipe como responsável, desativação de tarefas e acesso contextual | `13bb3ba`, `347065c`, `a6fe875` |
+| 2026-09-18 | [Projetos](funcionalidades/projetos.md) | Valor contratado | `305c823`, `f6c2bc4` |
+| 2026-09-18 | [Comentários](funcionalidades/comentarios-mencoes.md) | Prévia, ampliação e download de imagem, e links destacados | `d57f65d`, `76587cf` |
+| 2026-09-18 | [Usuários](funcionalidades/usuarios.md) | Link manual de convite | `36bc769` |
+| 2026-09-17 | [Tarefas](funcionalidades/tarefas.md), [Projetos](funcionalidades/projetos.md) | Sprint 4A: núcleo de projetos e tarefas, RLS e recorrência | `6342b73` a `5522d07` |
+| 2026-09-17 | [Comentários](funcionalidades/comentarios-mencoes.md), [Agenda](funcionalidades/agenda.md), [Notificações](funcionalidades/notificacoes.md) | Sprint 4B | `e974425`, `ddec7eb`, `dc16183` |
+| 2026-09-16 | [Usuários](funcionalidades/usuarios.md), [Autenticação](funcionalidades/autenticacao-acesso.md) | Sprint 3: administração, atribuições, menu por perfil e desativação | `1169d46` |
+| 2026-09-10 | [Clientes](funcionalidades/clientes.md) | Pessoa Física (ADR-006) e Pessoas Envolvidas (ADR-007) | `334d49e`, `4818298` |
+| 2026-09-09 | [Clientes](funcionalidades/clientes.md) | Sprint 2: cadastro de clientes | `d84bd34` |
+| 2026-09-09 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Sprint 1: infraestrutura, login e RLS base | `c016fe4` |

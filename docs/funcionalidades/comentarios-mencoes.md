@@ -1,0 +1,78 @@
+# Comentários e menções
+
+- **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
+- **Requisitos:** RF-016, RF-017, RF-047.
+- **Módulos relacionados:** Projetos, Tarefas, Subtarefas, Notificações.
+
+## Visão geral
+
+Projetos, tarefas e subtarefas têm uma área de **comentários**. Cada comentário pode ter
+um link e uma imagem. Comentários **não podem ser editados nem apagados** (RF-047). Ao
+escrever `@` é possível **mencionar** alguém que tenha acesso ao registro, e a pessoa
+mencionada recebe um e-mail.
+
+## Quem pode fazer o quê
+
+| Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
+|---|---|---|---|---|
+| Ler e publicar comentários | Em qualquer registro | Nos registros a que tem acesso | Nos registros a que tem acesso | Não |
+| Editar ou apagar comentário | Não (ninguém) | Não | Não | Não |
+| Mencionar | Pessoas com acesso ao registro | Idem | Idem | Não |
+
+---
+
+## Funcionalidades
+
+### M1. Publicar comentário com link e imagem (RF-016, RF-017)
+
+**Como funciona.**
+- **Conteúdo:** texto obrigatório, com link e imagem opcionais.
+- **Imagem:** WebP, JPEG ou PNG, até 10 MB. Aparece como prévia, pode ser ampliada e
+  pode ser salva.
+- **Links:** aparecem destacados.
+
+**Detalhes técnicos.**
+- **Componentes:** `src/app/(painel)/projetos/comentarios.tsx` e
+  `formulario-comentario.tsx`.
+- **Função:** `criarComentario` (`src/lib/comentarios.ts`).
+- **Imagem:**
+  - o tipo é conferido pelos bytes do arquivo, não pela extensão (`detectarTipoImagem`);
+  - o arquivo fica em bucket MinIO **privado** (`src/lib/storage.ts`);
+  - a imagem é servida por `GET /api/comentarios/imagem/[id]`, com checagem de acesso.
+- **Imutabilidade:** garantida pelo RLS, que não tem policy de `UPDATE` nem de `DELETE`.
+
+### M2. Menções (@)
+
+**Como funciona.**
+- **Sugestões:** ao digitar `@`, o sistema sugere as pessoas que podem ver aquele
+  registro, e a menção aparece em azul.
+- **E-mails:** a pessoa mencionada recebe um e-mail, e quem mencionou recebe uma cópia de
+  confirmação.
+- **Demais pessoas com acesso:** recebem o aviso de novo comentário.
+
+**Detalhes técnicos.**
+- **Funções:** `listarUsuariosMencionaveis` e `dispararEmailsMencaoComentario`.
+- **Validações:** o servidor recusa mencionar quem não tem acesso ao registro, e exige
+  que o nome `@Fulano` continue no texto.
+- **E-mail de menção:** é sempre enviado, independentemente das preferências de
+  notificação.
+
+---
+
+## Limitações e pendências conhecidas
+
+| # | Situação | Efeito |
+|---|---|---|
+| L1 | **Comentário sem menção avisa colaboradores sem acesso ao registro.** O evento `NOVO_COMENTARIO` é disparado sem lista de destinatários, então vai para todos os usuários ativos dos perfis habilitados (por padrão: `ADMIN`, `ADMIN_INTERNO` e `ADMIN_EXTERNO`). | **Privacidade e ruído:** o colaborador recebe aviso e e-mail com o link de registros que não pode ver. Com menção, os destinatários são filtrados corretamente. |
+| L2 | O link do comentário é validado só como "URL válida". | Aceita esquemas diferentes de `http(s)`, como `javascript:`. O checklist do `AGENTS.md` pede aceitar só `http(s)`. |
+| L3 | Não há teste automatizado de comentários nem de menções. | A imutabilidade, o filtro de menções e o acesso à imagem não têm cobertura. |
+
+## Histórico de alterações
+
+| Data | Commit | Alteração |
+|---|---|---|
+| 2026-09-17 | `df1f2dc`, `c4d87e6` | Bucket privado e upload autenticado de imagens |
+| 2026-09-17 | `e974425` | Comentários imutáveis em projeto, tarefa e subtarefa (Sprint 4B) |
+| 2026-09-18 | `d57f65d`, `ac9eb34`, `92eaf1f` | Prévia, ampliação e download da imagem |
+| 2026-09-18 | `76587cf` | Links destacados |
+| 2026-09-28 | `5c69415`, `bf5f696`, `38c36e5` | Menções com `@`, sugestões e e-mail, com destaque em azul |

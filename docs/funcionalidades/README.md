@@ -17,15 +17,29 @@ mesmo commit da alteração.
 
 | Módulo | Arquivo | Situação |
 |---|---|---|
-| Tarefas | [`tarefas.md`](tarefas.md) | Documentado (piloto) |
-| Subtarefas e etiquetas | `subtarefas.md` | Pendente |
-| Projetos | `projetos.md` | Pendente |
-| Clientes e pessoas envolvidas | `clientes.md` | Pendente |
-| Usuários e atribuições | `usuarios.md` | Pendente |
-| Autenticação e acesso | `autenticacao-acesso.md` | Pendente |
-| Comentários e menções | `comentarios-mencoes.md` | Pendente |
-| Agenda | `agenda.md` | Pendente |
-| Notificações | `notificacoes.md` | Pendente |
+| Clientes e pessoas envolvidas | [`clientes.md`](clientes.md) | Documentado |
+| Projetos | [`projetos.md`](projetos.md) | Documentado |
+| Tarefas | [`tarefas.md`](tarefas.md) | Documentado (modelo de referência) |
+| Subtarefas e etiquetas | [`subtarefas.md`](subtarefas.md) | Documentado |
+| Comentários e menções | [`comentarios-mencoes.md`](comentarios-mencoes.md) | Documentado |
+| Agenda | [`agenda.md`](agenda.md) | Documentado |
+| Notificações | [`notificacoes.md`](notificacoes.md) | Documentado |
+| Usuários e atribuições | [`usuarios.md`](usuarios.md) | Documentado |
+| Autenticação e acesso | [`autenticacao-acesso.md`](autenticacao-acesso.md) | Documentado |
+
+## Limitações de maior prioridade
+
+A lista completa está em cada módulo. Estas são as que afetam segurança ou funcionamento
+básico:
+
+| Módulo | Limitação |
+|---|---|
+| Autenticação | L1: usuário desativado ou com perfil alterado mantém o acesso até a sessão expirar (até 30 dias) |
+| Autenticação | L2: login sem limite de tentativas |
+| Comentários e Notificações | L1 e L2: comentário sem menção avisa colaboradores sem acesso ao registro |
+| Tarefas e Notificações | L1: nenhum agendador dispara os avisos de prazo |
+| Clientes, Projetos e Comentários | Links (Drive e comentário) aceitam qualquer esquema, inclusive `javascript:` |
+| Tarefas | L5: tarefa desativada não pode ser reativada pela interface |
 
 ## Perfis
 
