@@ -1,10 +1,11 @@
 services:
   # O Caddy existente em /opt/pegada/app é o único serviço que publica 80/443.
-  # O app do Múltiplus entra na rede externa apenas para ser alcançável por ele.
+  # O app do Múltiplus entra só na rede exclusiva do proxy (caddy_proxy) para ser
+  # alcançável por ele — sem acesso às redes internas de outros projetos.
   app:
     networks:
       internal: {}
-      somma_default:
+      caddy_proxy:
         aliases:
           - multiplus-app
 
@@ -13,5 +14,5 @@ services:
     profiles: ["standalone"]
 
 networks:
-  somma_default:
+  caddy_proxy:
     external: true
