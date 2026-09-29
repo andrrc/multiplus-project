@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjetoAtribuido } from "@/lib/projetos-tarefas";
 import { Etiqueta } from "@/ui/campo";
+import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const taskStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -24,6 +25,7 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
         <h1 className="text-[28px]">{p.nome}</h1>
         <Etiqueta>{status[p.status]}</Etiqueta>
       </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Semáforo do prazo:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} /></div>
     </div>
     <section className="mt-8">
       <h2 className="text-[21px]">Tarefas do projeto</h2>
