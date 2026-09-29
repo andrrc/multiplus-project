@@ -391,16 +391,17 @@ criar ou alterar uma tela. Também leia o PDD do módulo
 
 - **Cores só pelos tokens de `src/app/globals.css`.** Os disponíveis são `azul`,
   `azul-esc`, `verde`, `verde-esc`, `tinta`, `tinta2`, `papel`, `branco`, `cinza`, `linha`,
-  `ambar`, `critico`, `verde-cl`, `verde-borda` e os `menu-*`.
+  `ambar`, `critico`, `critico-cl`, `azul-cl`, `verde-cl`, `verde-borda` e os `menu-*`.
   - Não use hex fixo (`bg-[#...]`, `style={{ color: "#..." }}`) nem a paleta padrão do
     Tailwind (`red-500`, `gray-100`…).
 - **Confira se o token existe antes de usá-lo:**
   `grep -- "--color-<nome>:" src/app/globals.css`. Classe com cor inexistente **não dá
   erro**: o Tailwind simplesmente não gera o estilo e a cor some da tela.
-  - Hoje há telas usando `vermelho`, `vermelho-cl` e `azul-cl`, que não existem. Não
-    copie esse padrão.
-  - Se precisar de uma cor nova, pergunte ao usuário e registre a decisão antes de
-    adicioná-la ao `globals.css`.
+  - O teste `tests/unit/identidade-visual-tokens.unit.test.ts` falha se alguma classe de
+    cor usar um token inexistente. Em 29/09, 33 usos de `vermelho`, `vermelho-cl` e
+    `azul-cl` estavam invisíveis por esse motivo.
+  - Se precisar de uma cor nova, pergunte ao usuário. Depois adicione-a ao `globals.css`
+    **e** ao documento de identidade visual, e registre a decisão.
 - **A cor codifica informação:**
   - `critico` (vermelho terra) = prazo vencido ou erro;
   - `ambar` = pendência ou atenção;
@@ -414,11 +415,11 @@ criar ou alterar uma tela. Também leia o PDD do módulo
   - caixa alta só em rótulos curtos.
 - **Forma:**
   - raio pequeno: 3 px em cartões e botões, 2 px em etiquetas;
-  - **sem sombras**: a separação vem de borda de 1 px em `linha`;
+  - **sem sombras**: a separação vem de borda de 1 px em `linha`. A única exceção são
+    as camadas flutuantes sobre o conteúdo (modais e menus suspensos);
   - gradiente institucional só em destaque pontual.
-- **Não copie o estilo de uma tela existente sem conferir com o documento.** Algumas telas
-  têm desvios, como sombras em modais e as cores inexistentes acima. O documento prevalece
-  sobre o código.
+- **Não copie o estilo de uma tela existente sem conferir com o documento.** O documento
+  prevalece sobre o código.
 
 ### 6.2 Responsividade (celular)
 
