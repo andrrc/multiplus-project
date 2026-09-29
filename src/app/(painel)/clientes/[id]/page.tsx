@@ -385,6 +385,45 @@ export default async function DetalheClientePage({
         </Link>
       )}
 
+      {ctx.perfil === "ADMIN" && cliente.ativo && (
+        <Bloco
+          titulo="Cadastro"
+          acao={
+            <BotaoDesativar
+              clienteId={id}
+              entidade="cliente"
+              id={id}
+              ativo
+              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os links do Drive dele."
+            />
+          }
+        >
+          <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+            Desativar mantém tudo registrado — o cadastro apenas deixa de aparecer nas
+            listagens e não pode mais ser editado.
+          </p>
+        </Bloco>
+      )}
+
+      {/* RF-039 — o bloco sai de cena junto com o cadastro, como os vizinhos: criar acesso
+          faz nascer um Usuario e dispara e-mail de definição de senha, que é justamente o
+          que "somente leitura" veda. Reativar o cliente devolve o bloco. */}
+      {ctx.perfil === "ADMIN" && cliente.ativo && (
+        <Bloco titulo="Acesso do cliente">
+          {!usuarioAcesso || !statusChave ? (
+            <BotaoCriarAcesso clienteId={id} />
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`h-[7px] w-[7px] shrink-0 rounded-full ${STATUS_ACESSO[statusChave].cor}`} />
+              <p className="font-[family-name:var(--font-interface)] text-[14.5px] text-tinta">
+                {STATUS_ACESSO[statusChave].texto}
+              </p>
+              <span className="text-linha">·</span>
+              <BotaoAlternarAcesso clienteId={id} usuarioId={usuarioAcesso.id} ativo={usuarioAcesso.ativo} />
+            </div>
+          )}
+        </Bloco>
+      )}
     </div>
   );
 }
