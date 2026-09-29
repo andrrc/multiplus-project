@@ -15,3 +15,7 @@ Para cada funcionalidade, correção ou outra alteração de código desenvolvid
 ## Testes de desenvolvimento
 
 Para cada funcionalidade, correção ou outra alteração de código, crie ou atualize testes automatizados que cubram o comportamento alterado e execute os testes pertinentes antes de concluir o trabalho. Na resposta final, informe quais testes foram executados e seus resultados. Se não for possível criar ou executar algum teste, explique o motivo e identifique o que ficou sem verificação.
+
+## Branch e publicação
+
+Durante a fase de desenvolvimento e testes, use sempre a branch `staging` e publique as alterações diretamente em `origin/staging`, para que sejam disponibilizadas no ambiente de teste da VPS. Não crie branches `codex/*`, de funcionalidade ou outras branches para este fluxo. Não envie alterações para `main` sem solicitação explícita. Preserve alterações locais existentes; se não houver um checkout seguro da branch `staging`, não descarte mudanças nem crie outra branch: informe o impedimento e peça orientação.
