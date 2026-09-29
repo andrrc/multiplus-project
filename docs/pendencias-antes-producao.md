@@ -126,7 +126,7 @@ Este checklist reúne o que precisa ser resolvido antes de disponibilizar o sist
 
 - [ ] Administrador cria cliente, projeto, tarefa recorrente e checklist.
 - [ ] Colaborador conclui uma tarefa e a próxima ocorrência aparece corretamente.
-- [ ] Painel de Prazos calcula o percentual em dia.
+- [ ] Painel de Subtarefas calcula o percentual em dia.
 - [ ] Agenda mostra ocorrências materializadas e projetadas sem duplicação.
 - [ ] Comentário com imagem respeita as permissões.
 - [ ] Notificação in-app aparece e pode ser marcada como lida.

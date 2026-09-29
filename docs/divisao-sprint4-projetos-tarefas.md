@@ -63,7 +63,7 @@ que a auditoria encontrou na Sprint 3.
 **Requisitos:**
 
 - RF-004, RF-005, RF-006, RF-008, RF-024, RF-025 e RF-038: núcleo Projeto/Tarefa/Subtarefa
-- RF-009 (% em dia) e RF-037 (Painel de Prazos)
+- RF-009 (% em dia) e RF-037 (Painel de Subtarefas)
 - RF-018 a RF-021 e RF-046: permissões aplicadas nas telas e no endpoint
 - RF-013: parte de projeto
 - RF-039: soft delete de Projeto, Tarefa e Subtarefa
@@ -75,8 +75,8 @@ que a auditoria encontrou na Sprint 3.
 (§ 5.9); e-mail bloqueado para o Administrador no Meu Perfil (§ 5.10); edição de cliente
 desativado que abre e só barra no salvar (§ 5.12).
 
-Mais o § 5.5: trocar a tela inicial do Administrador para o Painel de Prazos e acrescentar os
-itens de menu **Prazos** e **Projetos**. Agenda e Notificações entram na 4B.
+Mais o § 5.5: trocar a tela inicial do Administrador para o Painel de Subtarefas e acrescentar os
+itens de menu **Subtarefas** e **Projetos**. Agenda e Notificações entram na 4B.
 
 **Fica para a 4B:** RF-007, RF-016, RF-017, RF-022, RF-023, RF-036 e RF-047.
 
@@ -90,7 +90,7 @@ itens de menu **Prazos** e **Projetos**. Agenda e Notificações entram na 4B.
 | **A4 — Ações de servidor** | CRUD de projeto, tarefa, subtarefa e documento de projeto; desativar e reativar; concluir tarefa (materializando a ocorrência projetada, quando for o caso, na mesma transação); concluir subtarefa; filtro de `ativo` nos dois seletores de atribuição (auditoria § 4.6). Toda ação checa perfil no servidor, sem confiar na UI | A2, A3 |
 | **A5 — Telas do Administrador** | Lista de projetos, formulário e detalhe de projeto, formulário e detalhe de tarefa, checklist, documentos do projeto, toggle "Mostrar desativados" | A4 |
 | **A6 — Telas do colaborador** | Meus Projetos (Interno), Minhas Tarefas (Externo), detalhe de tarefa somente leitura com botão "Marcar como concluída"; RF-020 e RF-046 aplicados. As duas telas hoje listam `Atribuicao`, não projeto/tarefa — e mostram "(projeto removido)" para o que a RLS esconde, o que depois da A1 passaria a acontecer com todo projeto desativado | A4 |
-| **A7 — Visão gerencial** | Painel de Prazos com filtro padrão "pendentes" e filtro por cliente/projeto; ocorrência vencida e não concluída convive com a projetada seguinte; % em dia no painel e no detalhe do projeto, visível só para o Administrador; troca do redirecionamento em `src/lib/navegacao.ts` e dos itens de menu | A3, A5 |
+| **A7 — Visão gerencial** | Painel de Subtarefas com filtro padrão "pendentes" e filtro por cliente/projeto; ocorrência vencida e não concluída convive com a projetada seguinte; % em dia no painel e no detalhe do projeto, visível só para o Administrador; troca do redirecionamento em `src/lib/navegacao.ts` e dos itens de menu | A3, A5 |
 | **A8 — Herdados** | § 5.3 (com a D1: remover os ramos de não-Administrador e trocar `obterContexto()` por `exigirAcessoARota`), 5.7, 5.8, 5.9, 5.10 e 5.12 | § 5.9 depende de A4 |
 
 Os nomes das telas em A5 a A7 são provisórios e serão alinhados ao PDD.
@@ -162,7 +162,7 @@ RN-001, 004, 005, 006, 007, 008, 009; ADR-009
 - [ ] **Integração — § 5.9:** `listarOpcoesDeAtribuicao` com projetos e tarefas reais, incluindo
   um projeto desativado que não pode aparecer
 - [ ] **Smoke:** Administrador cria projeto, tarefa recorrente e checklist; Externo conclui a
-  tarefa; próxima ocorrência aparece no Painel de Prazos
+  tarefa; próxima ocorrência aparece no Painel de Subtarefas
 - [ ] **Regressão:** suíte completa das Sprints 1 a 3 passando
 - [ ] **Healthcheck pós-deploy:** N/A — não há produção (ver Seção 2)
 - [ ] **Falha de integração externa:** N/A
@@ -177,7 +177,7 @@ errados**. Recomendação: A2 logo após A1, com os testes de permissão escrito
 
 1. Criar um projeto para um cliente, com uma tarefa mensal e um checklist
 2. Entrar como colaborador e marcar a tarefa como concluída
-3. Mostrar a próxima ocorrência no Painel de Prazos, com a data ancorada no prazo original
+3. Mostrar a próxima ocorrência no Painel de Subtarefas, com a data ancorada no prazo original
 4. Mostrar uma tarefa vencida sem conclusão: ela continua listada como atrasada, e a ocorrência
    seguinte já aparece ao lado (D2)
 5. Mostrar o % em dia mudando

@@ -54,17 +54,17 @@ SRS e do ADD.
 |-------|-------|
 | **ID** | RF-043 |
 | **Módulo** | Transversal / Navegação |
-| **Descrição** | O menu do sistema deve exibir apenas os itens acessíveis ao perfil autenticado — itens não acessíveis **não aparecem**, não ficam desabilitados (mesma lógica do RF-020). Cada perfil tem uma tela inicial definida após o login: <br>• **Administrador**: Painel de Tarefas por Prazo (RF-037) · menu: Prazos, Agenda, Clientes, Projetos, Usuários, Notificações, Perfil<br>• **Colaborador Interno**: Meus Projetos · menu: Meus Projetos, Perfil<br>• **Colaborador Externo**: Minhas Tarefas · menu: Minhas Tarefas, Perfil<br>• **Cliente**: Área Exclusiva (Sprint 6) |
+| **Descrição** | O menu do sistema deve exibir apenas os itens acessíveis ao perfil autenticado — itens não acessíveis **não aparecem**, não ficam desabilitados (mesma lógica do RF-020). Cada perfil tem uma tela inicial definida após o login: <br>• **Administrador**: Painel de Subtarefas em `/subtarefas` (RF-037) · menu: Subtarefas, Agenda, Clientes, Projetos, Usuários, Notificações, Perfil<br>• **Colaborador Interno**: Meus Projetos · menu: Meus Projetos, Perfil<br>• **Colaborador Externo**: Minhas Tarefas · menu: Minhas Tarefas, Perfil<br>• **Cliente**: Área Exclusiva (Sprint 6) |
 | **Prioridade** | Must |
-| **Critério de aceite** | Dado um usuário autenticado, quando o login for concluído, então ele deve ser direcionado à tela inicial do seu perfil. Dado um Colaborador Interno ou Externo, quando visualizar o menu, então os itens Agenda, Prazos, Clientes e Usuários não devem estar presentes. Dado uma tentativa de acesso direto por URL a uma rota fora do perfil, então o sistema deve negar o acesso |
-| **Nota** | A escolha do Painel de Prazos como tela inicial do Administrador se deve a ser a tela de trabalho diário, já ordenada por urgência e filtrada com pendentes |
+| **Critério de aceite** | Dado um usuário autenticado, quando o login for concluído, então ele deve ser direcionado à tela inicial do seu perfil. Dado um Colaborador Interno ou Externo, quando visualizar o menu, então os itens Agenda, Subtarefas, Clientes e Usuários não devem estar presentes. Dado uma tentativa de acesso direto por URL a uma rota fora do perfil, então o sistema deve negar o acesso |
+| **Nota** | A escolha do Painel de Subtarefas como tela inicial do Administrador se deve a ser a tela de trabalho diário, já ordenada por urgência e filtrada com pendentes |
 
 #### RF-039 — Desativação de registros (soft delete)
 | Campo | Valor |
 |-------|-------|
 | **ID** | RF-039 |
 | **Módulo** | Transversal |
-| **Descrição** | O sistema não deve oferecer exclusão permanente de registros. Em vez disso, Projeto, Tarefa, Subtarefa, Cliente, Pessoa Envolvida, Documento e Usuário devem poder ser **desativados**, mantendo o registro e seu histórico no banco. Registro desativado fica oculto das listagens por padrão (revelável por um toggle "Mostrar desativados"), é somente leitura, e sai de todo cálculo e visão gerencial: não entra no "% em dia" (RF-009), não aparece na Agenda (RF-036) nem no Painel de Prazos (RF-037), e não dispara notificação de prazo (RF-007). Apenas o Administrador desativa e reativa (RN-007) |
+| **Descrição** | O sistema não deve oferecer exclusão permanente de registros. Em vez disso, Projeto, Tarefa, Subtarefa, Cliente, Pessoa Envolvida, Documento e Usuário devem poder ser **desativados**, mantendo o registro e seu histórico no banco. Registro desativado fica oculto das listagens por padrão (revelável por um toggle "Mostrar desativados"), é somente leitura, e sai de todo cálculo e visão gerencial: não entra no "% em dia" (RF-009), não aparece na Agenda (RF-036) nem no Painel de Subtarefas (RF-037), e não dispara notificação de prazo (RF-007). Apenas o Administrador desativa e reativa (RN-007) |
 | **Prioridade** | Must |
 | **Critério de aceite** | Dado um registro ativo, quando o Administrador o desativar, então ele deve sumir das listagens padrão e sair de todos os indicadores, sem ser apagado. Dado um registro desativado, quando o Administrador o reativar, então ele deve voltar ao estado anterior à desativação. Dado um projeto desativado, quando um usuário tentar acessar suas tarefas, então elas também devem estar inacessíveis, sem terem sido marcadas individualmente como desativadas |
 | **Nota técnica** | Colunas `ativo` (boolean, padrão true), `desativado_em`, `desativado_por`. A cascata é por herança de acesso, não por marcação dos filhos — marcar cada filho tornaria a reativação uma operação destrutiva de informação. Ver **ADR-008** no ADD |
@@ -135,7 +135,7 @@ SRS e do ADD.
 |----|-------|-------------------|
 | **RN-007** | Apenas o Administrador cria, edita, desativa e reativa registros (projeto, tarefa, subtarefa, item de checklist, documento, usuário). Colaborador Interno e Externo têm exatamente duas ações de escrita: marcar como concluída uma tarefa atribuída, e marcar como concluída uma subtarefa atribuída a si (RN-004). Colaborador **não tem seletor de status** — tem uma única ação "Marcar como concluída", que move a tarefa para "Concluído"; os outros oito valores do RF-024 são exclusivos do Administrador | Um Colaborador Interno atribuído ao Projeto X vê todas as tarefas, pode concluir as suas, mas não consegue criar uma tarefa nova nem mover uma tarefa para "Protocolado" |
 | **RN-008** | A próxima ocorrência de uma tarefa recorrente é sempre contada a partir da **data de prazo original**, nunca da data de conclusão. Cancelar uma tarefa recorrente **encerra a série inteira** — nenhuma ocorrência futura é gerada | Tarefa mensal com prazo 10/09 concluída em 20/09 gera a próxima em **10/10**, não 20/10. Se a série derivasse pela data de conclusão, um prazo regulatório anual sairia do lugar ao longo dos anos |
-| **RN-009** | Registro desativado (RF-039) é excluído de todo cálculo, visão gerencial e disparo automático: "% em dia" (RF-009), Agenda (RF-036), Painel de Prazos (RF-037) e notificação de prazo (RF-007). A desativação de um pai torna os filhos inacessíveis por herança, sem marcá-los individualmente | Desativar um projeto com 12 tarefas tira as 12 de todos os painéis; reativá-lo devolve todas ao estado exato anterior |
+| **RN-009** | Registro desativado (RF-039) é excluído de todo cálculo, visão gerencial e disparo automático: "% em dia" (RF-009), Agenda (RF-036), Painel de Subtarefas (RF-037) e notificação de prazo (RF-007). A desativação de um pai torna os filhos inacessíveis por herança, sem marcá-los individualmente | Desativar um projeto com 12 tarefas tira as 12 de todos os painéis; reativá-lo devolve todas ao estado exato anterior |
 
 ---
 
@@ -196,7 +196,7 @@ do aviso de prazo (RF-007).
 **Padrão inicial:** Administrador recebe todos os eventos nos dois canais; colaboradores
 recebem prazo, comentário e atribuição.
 **Eventos deliberadamente não incluídos:** "tarefa atrasada" (dispara depois do vencimento,
-quando não há mais o que prevenir, e o Administrador já vê no Painel de Prazos) e "mudança de
+quando não há mais o que prevenir, e o Administrador já vê no Painel de Subtarefas) e "mudança de
 status" (ruído excessivo, dado que a tarefa percorre vários dos 9 valores do RF-024).
 
 ### RF-024 — Status de projeto e tarefa

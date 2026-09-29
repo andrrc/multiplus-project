@@ -704,7 +704,7 @@ persistir. São itens indicativos, não editáveis.
 
 **Opção descartada:** gerar ocorrências antecipadamente no banco (por exemplo, manter as
 próximas 12). Exigiria decidir a janela, tratar o cancelamento de série (RN-008) e evitar
-poluir o Painel de Prazos com tarefas que ninguém criou.
+poluir o Painel de Subtarefas com tarefas que ninguém criou.
 
 **Consequência que exige teste:** a função de projeção precisa de teste unitário para cada
 periodicidade, incluindo o caso-limite de meses com menos dias (prazo 31/01 mensal → 28/02).
