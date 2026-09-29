@@ -38,7 +38,6 @@ export function IndicadorDiasRestantes({ prazo }: { prazo: Date | null }) {
     </span>
   );
 }
-
 /** Conta dias de segunda a sexta entre hoje e o prazo; feriados contam como dias normais. */
 export function calcularDiasUteisRestantes(prazo: Date, hoje = new Date()) {
   const prazoUTC = Date.UTC(prazo.getUTCFullYear(), prazo.getUTCMonth(), prazo.getUTCDate());
@@ -101,37 +100,4 @@ export function IndicadorSemaforoProjeto({
       {texto}
     </span>
   );
-}
-
-export function IndicadorDiasRestantesProjeto({
-  prazo,
-  status,
-  ativo = true,
-}: {
-  prazo: Date | null;
-  status: string;
-  ativo?: boolean;
-}) {
-  let texto: string;
-
-  if (!ativo) {
-    texto = "Desativado";
-  } else if (status === "CONCLUIDO") {
-    texto = "Concluído";
-  } else if (status === "CANCELADO") {
-    texto = "Cancelado";
-  } else if (!prazo) {
-    texto = "Sem prazo";
-  } else {
-    const dias = calcularDiasUteisRestantes(prazo);
-    texto = dias < 0
-      ? `Atrasado ${Math.abs(dias)} ${Math.abs(dias) === 1 ? "dia útil" : "dias úteis"}`
-      : calcularDiasRestantes(prazo) === 0
-        ? "Vence hoje"
-        : dias === 0
-          ? "Prazo no fim de semana"
-          : `${dias} ${dias === 1 ? "dia útil" : "dias úteis"}`;
-  }
-
-  return <span className="font-[family-name:var(--font-interface)] text-[13px] font-semibold tabular-nums text-tinta">{texto}</span>;
 }
