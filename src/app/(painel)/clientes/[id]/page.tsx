@@ -57,6 +57,15 @@ const STATUS_ACESSO: Record<string, { texto: string; cor: string }> = {
   pendente: { texto: "Pendente de ativação", cor: "bg-ambar" },
   ativo: { texto: "Ativo", cor: "bg-verde-esc" },
 };
+const STATUS_PROJETO: Record<string, string> = {
+  A_INICIAR: "A iniciar",
+  EM_ANDAMENTO: "Em andamento",
+  CONCLUIDO: "Concluído",
+  CANCELADO: "Cancelado",
+};
+const data = (valor: Date | null) => valor
+  ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
+  : "Sem previsão";
 
 export default async function DetalheClientePage({
   params,
@@ -75,7 +84,7 @@ export default async function DetalheClientePage({
   const detalhe = await buscarClienteDetalheSeguro(ctx, id, mostrarDesativados);
   if (!detalhe) notFound();
 
-  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, usuarioAcesso, valorTotalProjetos } = detalhe;
+  const { cliente, responsavelLegal, pontoContato, pessoasEnvolvidas, documentos, projetos, usuarioAcesso, valorTotalProjetos } = detalhe;
 
   const statusChave = !usuarioAcesso
     ? null
@@ -153,6 +162,74 @@ export default async function DetalheClientePage({
             </>
           )}
         </div>
+      </Bloco>
+
+      <Bloco
+        titulo="Projetos"
+        acao={
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-linha bg-fundo px-2.5 py-1 font-[family-name:var(--font-interface)] text-[12px] font-medium tabular-nums text-cinza">
+              {projetos.length}
+            </span>
+            {ctx.perfil === "ADMIN" && cliente.ativo && (
+              <Link
+                href={`/projetos/novo?clienteId=${encodeURIComponent(id)}`}
+                className="flex min-h-10 items-center rounded-[3px] bg-verde px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc"
+              >
+                + Novo projeto
+              </Link>
+            )}
+          </div>
+        }
+      >
+        {projetos.length === 0 ? (
+          <p className="rounded-[3px] border border-dashed border-linha bg-fundo px-4 py-5 font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+            Nenhum projeto cadastrado para este cliente.
+          </p>
+        ) : (
+          <>
+            <p className="mb-4 font-[family-name:var(--font-interface)] text-[13px] text-cinza">
+              Acesse um projeto para acompanhar tarefas e subtarefas.
+            </p>
+            <ul className="flex flex-col gap-2">
+              {projetos.map((projeto) => (
+                <li key={projeto.id}>
+                  <Link
+                    href={`/projetos/${projeto.id}`}
+                    className="group flex min-h-[76px] flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-[3px] border border-linha border-l-[3px] border-l-azul-esc bg-branco px-4 py-3 transition-colors hover:bg-fundo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:px-5"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta group-hover:text-azul-esc">
+                        {projeto.nome}
+                      </p>
+                      <p className="mt-1 font-[family-name:var(--font-interface)] text-[12.5px] text-cinza">
+                        Conclusão prevista: <span className="tabular-nums">{data(projeto.dataPrevistaConclusao)}</span>
+                      </p>
+                    </div>
+                    <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                      <Etiqueta
+                        tom={
+                          !projeto.ativo
+                            ? "apagado"
+                            : projeto.status === "CONCLUIDO"
+                              ? "positivo"
+                              : projeto.status === "CANCELADO"
+                                ? "apagado"
+                                : "padrao"
+                        }
+                      >
+                        {projeto.ativo ? STATUS_PROJETO[projeto.status] ?? projeto.status : "Desativado"}
+                      </Etiqueta>
+                      <span className="inline-flex min-h-9 items-center rounded-[3px] bg-fundo px-3 font-[family-name:var(--font-interface)] text-[12px] font-medium text-azul-esc group-hover:bg-branco">
+                        Abrir projeto
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </Bloco>
 
       {responsavelLegal && (responsavelLegal.nome || responsavelLegal.email || responsavelLegal.cpf) && (
@@ -233,14 +310,14 @@ export default async function DetalheClientePage({
       </Bloco>
 
       <Bloco
-        titulo="Documentos"
+        titulo="Drive"
         acao={
           ctx.perfil === "ADMIN" && cliente.ativo ? <FormularioDocumento clienteId={id} /> : undefined
         }
       >
         {documentos.length === 0 ? (
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
-            Nenhum documento vinculado ainda.
+            Nenhum link do Drive vinculado ainda.
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -259,7 +336,7 @@ export default async function DetalheClientePage({
                     entidade="documento"
                     id={doc.id}
                     ativo={doc.ativo}
-                    efeito={`O link "${doc.nome}" sai da lista de documentos.`}
+                    efeito={`O link "${doc.nome}" sai da lista do Drive.`}
                     tamanho="pequeno"
                   />
                 )}
@@ -277,8 +354,8 @@ export default async function DetalheClientePage({
           className="self-start text-[14px] font-medium text-azul-esc hover:underline"
         >
           {mostrarDesativados
-            ? "Ocultar pessoas e documentos desativados"
-            : "Mostrar pessoas e documentos desativados"}
+            ? "Ocultar pessoas e links do Drive desativados"
+            : "Mostrar pessoas e links do Drive desativados"}
         </Link>
       )}
 
@@ -291,7 +368,7 @@ export default async function DetalheClientePage({
               entidade="cliente"
               id={id}
               ativo
-              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os documentos dele."
+              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os links do Drive dele."
             />
           }
         >
