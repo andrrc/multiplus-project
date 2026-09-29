@@ -32,7 +32,7 @@ O fluxo de uma alteração é sempre o mesmo, na ordem abaixo:
 3. Implementar na [ordem dos 8 passos](#3-ordem-de-implementação-os-8-passos), junto com
    os [testes](#5-testes) e seguindo as [regras de interface](#6-interface).
 4. Rodar a [verificação completa](#54-verificação-antes-do-commit-e-do-push) localmente.
-5. Atualizar o [registro de decisões](#7-registro-das-decisões-de-desenvolvimento).
+5. Atualizar a [documentação do módulo](#7-documentação-das-funcionalidades-e-decisões).
 6. [Commitar e publicar](#4-versionamento) no `origin/staging`.
 7. [Acompanhar o CI e o deploy](#45-depois-do-push) até ficarem verdes.
 8. [Reportar](#8-resposta-final) o que foi feito e testado.
@@ -83,8 +83,8 @@ front-end. Ela envolve permissão e mascaramento, e exige análise.
 1. **Ler o que já está decidido:**
    - o SRS (`docs/SRS_Multiplus_Software_v1.0.md`) e o PDD do módulo
      (`docs/product-design-multiplus-<modulo>.md`);
-   - `docs/decisoes-desenvolvimento.md`, as análises anteriores em `docs/analises/` e a
-     identidade visual.
+   - o arquivo do módulo em `docs/funcionalidades/` (o que já existe e as limitações
+     conhecidas), as análises anteriores em `docs/analises/` e a identidade visual.
 2. **Ler o código que será afetado:** procure os usos de cada função, componente, rota e
    tabela que você pretende mudar, com `grep -rn "nome" src tests prisma`.
 3. **Escrever a análise** em `docs/analises/<funcionalidade>.md` (nome em minúsculas, com
@@ -96,7 +96,7 @@ front-end. Ela envolve permissão e mascaramento, e exige análise.
 5. **Depois da aprovação:**
    - registre no arquivo as respostas e ajustes, marque `Status: aprovada em AAAA-MM-DD`
      e só então comece a implementar;
-   - as decisões vão para `docs/decisoes-desenvolvimento.md`;
+   - as decisões vão para o arquivo do módulo em `docs/funcionalidades/` (seção 7);
    - cada risco vira um teste (seção 5).
 
 O arquivo de análise entra no repositório no mesmo push da implementação. Se o
@@ -355,8 +355,8 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres
   uma falha intermitente.
 
 Se o comportamento mudou **de propósito**, atualize o teste para o novo comportamento
-esperado, com a mesma precisão de antes. Registre também a mudança em
-`docs/decisoes-desenvolvimento.md`.
+esperado, com a mesma precisão de antes. Registre também a mudança no arquivo do módulo
+em `docs/funcionalidades/` (seção 7).
 
 ### 5.4 Verificação antes do commit e do push
 
@@ -445,35 +445,43 @@ Toda tela nova ou alterada funciona em **375 px de largura** e no desktop.
 - **Mudar formato de dado exibido** (datas, status, rótulos): procure todas as telas que
   mostram aquele dado, para manter a consistência.
 
-## 7. Registro das decisões de desenvolvimento
+## 7. Documentação das funcionalidades e decisões
 
-Para cada funcionalidade, correção ou outra alteração de código, crie ou atualize
-[`docs/decisoes-desenvolvimento.md`](docs/decisoes-desenvolvimento.md), no mesmo commit do
-código ou logo após. Use o formato já existente no arquivo:
+O que o sistema faz fica documentado **por módulo** em
+[`docs/funcionalidades/`](docs/funcionalidades/README.md). O formato está no `README.md`
+da pasta, e `tarefas.md` é o exemplo de referência. Toda funcionalidade, correção ou
+alteração de código atualiza o arquivo do módulo **no mesmo commit do código**:
 
-```markdown
-## <Módulo>: <resumo da alteração>
+1. **Seção da funcionalidade:** crie ou ajuste a seção nos dois blocos.
+   - **Como funciona:** linguagem de negócio, para quem usa o sistema.
+   - **Detalhes técnicos:** RF/RN, rotas, funções principais e testes que cobrem.
+2. **Tabela "Quem pode fazer o quê":** atualize-a se a permissão mudou.
+3. **Limitações e pendências conhecidas:** registre o que ficou de fora, e remova o que
+   foi resolvido.
+4. **Histórico de alterações:** acrescente uma linha com a data, o commit e o resumo. Se
+   houve análise, inclua o link para `docs/analises/<funcionalidade>.md`.
+5. **Módulo sem arquivo ainda:** crie o arquivo no formato padrão e registre-o no índice
+   do `README.md`.
 
-- **Data:** AAAA-MM-DD
-- **Objetivo:** por que a alteração foi feita.
-- **Decisão:** o que foi combinado com o usuário.
-- **Comportamentos:** regras, casos-limite e permissões.
-- **Efeito na interface:** o que muda para quem usa o sistema.
-```
+Além disso, acrescente uma linha ao índice cronológico
+[`docs/decisoes-desenvolvimento.md`](docs/decisoes-desenvolvimento.md), apontando para o
+módulo. O detalhe da decisão fica no arquivo do módulo, não no índice.
 
 - **Diferença entre os documentos:** a análise (`docs/analises/`) registra o que foi
-  previsto **antes** de implementar. O registro de decisões descreve o comportamento que
+  previsto **antes** de implementar. O arquivo do módulo descreve o comportamento que
   ficou valendo.
-- **Decisão alterada depois:** atualize a entrada original e registre a mudança. O documento
-  descreve o comportamento **atual**.
+- **Decisão alterada depois:** atualize a seção da funcionalidade para o comportamento
+  **atual** e registre a mudança no histórico.
 - **Sem invenção:** não registre decisões que não foram discutidas. Se faltar uma
   decisão necessária para implementar, pergunte ao usuário **antes** de implementar.
+  Comportamento de intenção incerta vai para "Limitações e pendências" como pergunta.
 
 ## 8. Resposta final
 
 Ao concluir, informe:
 
-1. **Análise:** o caminho do arquivo em `docs/analises/`, se houve.
+1. **Documentação:** o caminho da análise em `docs/analises/`, se houve, e o arquivo de
+   módulo atualizado em `docs/funcionalidades/`.
 2. **Commits:** o hash e a mensagem de cada commit publicado no `staging`.
 3. **Testes:** os comandos executados e o resultado de cada um (ex.: `npm test` →
    `312 passed`).
