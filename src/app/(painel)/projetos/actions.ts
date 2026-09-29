@@ -141,12 +141,13 @@ export async function criarTarefaAction(formData: FormData) {
     prazo: dataOpcional(texto(formData, "prazo")) ?? new Date(NaN),
     ...dadosResponsavel,
     periodicidade: periodicidade(texto(formData, "periodicidade")),
+    diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
     colaboradorPodeCriarSubtarefas: formData.get("colaboradorPodeCriarSubtarefas") === "on",
   });
   revalidatePath(`/projetos/${tarefa.projetoId}`);
-  revalidatePath("/prazos");
+  revalidatePath("/subtarefas");
   return tarefa;
 }
 
@@ -164,6 +165,7 @@ export async function atualizarTarefaAction(tarefaId: string, formData: FormData
     prazo: dataOpcional(texto(formData, "prazo")) ?? new Date(NaN),
     ...dadosResponsavel,
     periodicidade: periodicidade(texto(formData, "periodicidade")),
+    diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
   });
@@ -187,7 +189,7 @@ export async function alterarStatusTarefaAction(tarefaId: string, formData: Form
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${tarefa.projetoId}`);
   revalidatePath("/tarefas");
-  revalidatePath("/prazos");
+  revalidatePath("/subtarefas");
 }
 
 export async function atualizarTarefaERedirecionarAction(tarefaId: string, formData: FormData) {
@@ -300,7 +302,7 @@ export async function concluirTarefaAction(tarefaId: string) {
   });
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${resultado.tarefa.projetoId}`);
-  revalidatePath("/prazos");
+  revalidatePath("/subtarefas");
   void resultado;
 }
 
@@ -313,7 +315,7 @@ export async function concluirSubtarefaAction(subtarefaId: string) {
   const subtarefa = await concluirSubtarefa(ctx, subtarefaId);
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
   revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
-  revalidatePath("/prazos");
+  revalidatePath("/subtarefas");
   void subtarefa;
 }
 
@@ -323,7 +325,7 @@ export async function atualizarStatusSubtarefaAction(subtarefaId: string, formDa
   if (!status) throw new Error("Status de subtarefa inválido.");
   const subtarefa = await atualizarStatusSubtarefa(ctx, subtarefaId, status);
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
-  revalidatePath("/prazos");
+  revalidatePath("/subtarefas");
 }
 
 export async function concluirSubtarefaFormAction(subtarefaId: string): Promise<void> {
@@ -347,7 +349,7 @@ export async function definirAtivoTarefaAction(id: string, ativo: boolean) {
   const resultado = await desativarOuReativar(ctx, "tarefa", id, ativo);
   revalidatePath("/tarefas");
   revalidatePath(`/tarefas/${id}`);
-  revalidatePath("/prazos");
+  revalidatePath("/subtarefas");
   revalidatePath("/agenda");
   return resultado;
 }

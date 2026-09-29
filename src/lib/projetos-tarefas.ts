@@ -29,6 +29,7 @@ export type DadosTarefa = {
   responsavelId?: string | null;
   responsavelUsuarioId?: string | null;
   periodicidade?: Periodicidade | null;
+  diaSemana?: number | null;
   diasAntecedencia?: number | null;
   status?: StatusTarefa;
   colaboradorPodeCriarSubtarefas?: boolean;
@@ -75,7 +76,7 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
     tx.projeto.findMany({
       where: incluirDesativados ? {} : { ativo: true },
       include: {
-        cliente: { select: { razaoSocial: true } },
+        cliente: { select: { id: true, razaoSocial: true } },
         valorContratado: { select: { valorContratado: true } },
         _count: { select: { tarefas: true } },
       },
@@ -84,32 +85,52 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
   );
 }
 
-export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; pendentes?: boolean } = {}) {
+export async function listarTarefasParaFiltro(ctx: ContextoUsuario) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
+    where: {
+      ativo: true,
+      projeto: { ativo: true },
+    },
+    select: { id: true, nome: true, projetoId: true, projeto: { select: { nome: true, clienteId: true } } },
+    orderBy: [{ projeto: { nome: "asc" } }, { nome: "asc" }],
+  }));
+}
+
+export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean } = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
     where: {
       ativo: true,
       projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
       ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
+      ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
       ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
     },
     include: {
       projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
       responsavel: { select: { nome: true } },
       responsavelUsuario: { select: { nome: true } },
-      _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
+      _count: {
+        select: {
+          subtarefas: {
+            where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null },
+          },
+        },
+      },
     },
     orderBy: [{ prazo: "asc" }, { nome: "asc" }],
   }));
 }
 
-export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; pendentes?: boolean } = {}) {
+export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean } = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.findMany({
     where: {
       ativo: true,
       tarefa: {
         ativo: true,
+        ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
         ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
         projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
       },
@@ -228,7 +249,7 @@ export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: st
       tx.tarefa.findMany({ where: { projetoId, ativo: true }, select: { id: true } }),
     ]);
     if (!acessoAoProjeto && tarefas.length === 0) return null;
-    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { status: true } } }, orderBy: { prazo: "asc" } } } });
+    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } }, documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { status: true } } }, orderBy: { prazo: "asc" } } } });
   });
 }
 
@@ -265,7 +286,13 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       include: {
         projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
         subtarefas: { where: { ativo: true }, select: { status: true } },
-        _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
+        _count: {
+          select: {
+            subtarefas: {
+              where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null },
+            },
+          },
+        },
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
@@ -483,6 +510,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
   exigirAdministrador(ctx);
   if (!dados.prazo || Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido.");
   if (dados.periodicidade && !dados.prazo) throw new Error("Tarefa recorrente precisa de prazo.");
+  if (dados.periodicidade === "SEMANAL" && dados.diaSemana != null && (!Number.isInteger(dados.diaSemana) || dados.diaSemana < 0 || dados.diaSemana > 6)) throw new Error("Escolha um dia da semana válido.");
   if (dados.diasAntecedencia !== null && dados.diasAntecedencia !== undefined && dados.diasAntecedencia <= 0) {
     throw new Error("A antecedência deve ser maior que zero.");
   }
@@ -498,6 +526,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         prazo: dados.prazo,
         prazoOriginal: dados.prazo,
         periodicidade: dados.periodicidade ?? null,
+        diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
         serieId,
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? StatusTarefa.A_INICIAR,
@@ -526,6 +555,7 @@ export async function atualizarTarefa(
 ) {
   exigirAdministrador(ctx);
   if (!dados.prazo || Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido.");
+  if (dados.periodicidade === "SEMANAL" && dados.diaSemana != null && (!Number.isInteger(dados.diaSemana) || dados.diaSemana < 0 || dados.diaSemana > 6)) throw new Error("Escolha um dia da semana válido.");
   if (dados.diasAntecedencia !== null && dados.diasAntecedencia !== undefined && dados.diasAntecedencia <= 0) {
     throw new Error("A antecedência deve ser maior que zero.");
   }
@@ -539,6 +569,8 @@ export async function atualizarTarefa(
         nome: validarNome(dados.nome, "da tarefa"),
         descricao: dados.descricao ?? null,
         prazo: dados.prazo,
+        periodicidade: dados.periodicidade ?? null,
+        diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? undefined,
         responsavelId: dados.responsavelId ?? null,
@@ -678,7 +710,7 @@ export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
     if (atual.status === StatusTarefa.CONCLUIDO) return { tarefa: atual, proxima: null };
 
     const prazo = atual.periodicidade && atual.prazo
-      ? calcularProximaOcorrencia(atual.prazo, atual.periodicidade, atual.prazoOriginal ?? atual.prazo)
+      ? calcularProximaOcorrencia(atual.prazo, atual.periodicidade, atual.prazoOriginal ?? atual.prazo, atual.diaSemana)
       : null;
     const resultado = await tx.$queryRaw<{ tarefa_id: string; proxima_id: string | null }[]>`
       SELECT * FROM concluir_tarefa(${tarefaId}, CAST(${prazo} AS timestamp))

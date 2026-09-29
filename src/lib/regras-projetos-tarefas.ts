@@ -38,6 +38,7 @@ export function calcularProximaOcorrencia(
   prazoAtual: DataLike,
   periodicidade: PeriodicidadeLike | null | undefined,
   prazoOriginal: DataLike = prazoAtual,
+  diaSemana?: number | null,
 ): Date | null {
   if (!periodicidade) return null;
 
@@ -45,7 +46,13 @@ export function calcularProximaOcorrencia(
   const original = dataUTC(prazoOriginal);
 
   if (periodicidade === "SEMANAL") {
-    return new Date(atual.getTime() + 7 * 24 * 60 * 60 * 1000);
+    if (diaSemana == null || !Number.isInteger(diaSemana) || diaSemana < 0 || diaSemana > 6) {
+      return new Date(atual.getTime() + 7 * 24 * 60 * 60 * 1000);
+    }
+    const diasAteProxima = ((diaSemana - atual.getUTCDay() + 7) % 7) || 7;
+    const proxima = new Date(atual);
+    proxima.setUTCDate(proxima.getUTCDate() + diasAteProxima);
+    return proxima;
   }
 
   const passoEmMeses = mesesDaPeriodicidade(periodicidade);
@@ -115,6 +122,7 @@ export type TarefaParaProjecao = {
   prazo: DataLike | null | undefined;
   prazoOriginal?: DataLike | null;
   periodicidade?: PeriodicidadeLike | null;
+  diaSemana?: number | null;
   status?: string | null;
   serieId?: string | null;
   serieEncerradaEm?: DataLike | null;
@@ -150,7 +158,7 @@ export function projetarOcorrenciasFuturas(
   // Uma janela de Agenda não deve exigir uma série infinita. O limite também protege contra
   // dados inconsistentes, como uma periodicidade desconhecida retornada por uma migration antiga.
   for (let i = 0; i < 10_000; i += 1) {
-    const proxima = calcularProximaOcorrencia(cursor, tarefa.periodicidade, ancora);
+    const proxima = calcularProximaOcorrencia(cursor, tarefa.periodicidade, ancora, tarefa.diaSemana);
     if (!proxima || proxima > fimUTC) break;
     cursor = proxima;
 
