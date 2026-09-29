@@ -1,4 +1,5 @@
-import { listarComentarios, type AlvoComentario } from "@/lib/comentarios";
+import type { ReactNode } from "react";
+import { listarComentarios, listarUsuariosMencionaveis, type AlvoComentario } from "@/lib/comentarios";
 import { FormularioComentario } from "./formulario-comentario";
 import { ImagemComentario } from "./imagem-comentario";
 import { obterContexto } from "@/server/auth/contexto";
@@ -11,8 +12,37 @@ function destinoDoLink(link: string): string {
   }
 }
 
+function textoComMencoes(texto: string, nomesMencionados: string[]) {
+  const nomes = [...new Set(nomesMencionados)].sort((a, b) => b.length - a.length);
+  const partes: ReactNode[] = [];
+  let cursor = 0;
+  while (cursor < texto.length) {
+    let indiceMaisProximo = -1;
+    let nomeMaisProximo = "";
+    for (const nome of nomes) {
+      const indice = texto.indexOf(`@${nome}`, cursor);
+      if (indice >= 0 && (indiceMaisProximo < 0 || indice < indiceMaisProximo)) {
+        indiceMaisProximo = indice;
+        nomeMaisProximo = nome;
+      }
+    }
+    if (indiceMaisProximo < 0) {
+      partes.push(texto.slice(cursor));
+      break;
+    }
+    if (indiceMaisProximo > cursor) partes.push(texto.slice(cursor, indiceMaisProximo));
+    partes.push(<strong key={`${indiceMaisProximo}-${nomeMaisProximo}`} className="font-semibold text-azul-esc">@{nomeMaisProximo}</strong>);
+    cursor = indiceMaisProximo + nomeMaisProximo.length + 1;
+  }
+  return partes;
+}
+
 export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo: AlvoComentario; nivel: "projeto" | "tarefa" | "subtarefa"; entidadeId: string; tarefaId?: string }) {
-  const comentarios = await listarComentarios(await obterContexto(), alvo);
+  const ctx = await obterContexto();
+  const [comentarios, usuariosMencionaveis] = await Promise.all([
+    listarComentarios(ctx, alvo),
+    listarUsuariosMencionaveis(ctx, alvo),
+  ]);
   return (
     <section className="mt-9 max-w-[760px] border-t border-linha pt-6">
       <h2 className="text-[21px]">Comentários <span className="font-[family-name:var(--font-interface)] text-[14px] text-cinza">({comentarios.length})</span></h2>
@@ -23,7 +53,7 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
               <strong className="font-semibold text-tinta">{comentario.autor.nome}</strong>
               <time>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(comentario.criadoEm)}</time>
             </div>
-            <p className="mt-2 whitespace-pre-wrap text-[14px] leading-6 text-tinta">{comentario.texto}</p>
+            <p className="mt-2 whitespace-pre-wrap text-[14px] leading-6 text-tinta">{textoComMencoes(comentario.texto, comentario.nomesMencionados)}</p>
             {comentario.imagemChave && <ImagemComentario comentarioId={comentario.id} />}
             {comentario.link && (
               <a href={comentario.link} target="_blank" rel="noreferrer" title={comentario.link} className="mt-3 flex items-center gap-3 border-l-[3px] border-verde bg-verde-cl px-3 py-2.5 font-[family-name:var(--font-interface)] hover:bg-branco focus-visible:outline-none">
@@ -40,7 +70,7 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
           </li>
         ))}
       </ol>}
-      <FormularioComentario nivel={nivel} entidadeId={entidadeId} tarefaId={tarefaId} />
+      <FormularioComentario nivel={nivel} entidadeId={entidadeId} tarefaId={tarefaId} usuariosMencionaveis={usuariosMencionaveis} />
     </section>
   );
 }

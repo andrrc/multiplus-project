@@ -281,6 +281,7 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
       where: { ativo: true },
       select: {
         id: true,
+        numeroIdentificacao: true,
         tipo: true,
         cnpj: true,
         cpf: true,
@@ -309,6 +310,7 @@ export async function buscarClienteContextual(ctx: ContextoUsuario, clienteId: s
       where: { id: clienteId, ativo: true },
       select: {
         id: true,
+        numeroIdentificacao: true,
         tipo: true,
         razaoSocial: true,
         cnpj: true,

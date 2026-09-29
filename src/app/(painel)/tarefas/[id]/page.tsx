@@ -14,6 +14,8 @@ import { Etiqueta, inputClass } from "@/ui/campo";
 import { Comentarios } from "@/app/(painel)/projetos/comentarios";
 import { StatusSubtarefa } from "@prisma/client";
 import { StatusInline } from "@/ui/status-inline";
+import { listarEtiquetas } from "@/lib/etiquetas";
+import { EtiquetasSubtarefa } from "@/ui/etiquetas-subtarefa";
 
 const statuses: Record<string, string> = {
   A_INICIAR: "A iniciar",
@@ -39,7 +41,10 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const { subtarefa: subtarefaSelecionada } = await searchParams;
   const t = await buscarTarefa(ctx, id, true);
   if (!t) notFound();
-  const { pessoas, usuarios } = await listarPessoasParaProjeto(ctx, t.projeto.clienteId);
+  const [{ pessoas, usuarios }, catalogoEtiquetas] = await Promise.all([
+    listarPessoasParaProjeto(ctx, t.projeto.clienteId),
+    listarEtiquetas(ctx),
+  ]);
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
 
   return (
@@ -81,13 +86,14 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma subtarefa ainda. Cadastre a primeira etapa para esta tarefa.</p> : t.subtarefas.map(s => (
             <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="border-b border-linha px-5 py-4 last:border-b-0">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                <span className="font-medium text-tinta">{s.titulo}</span>
+                <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><span>{s.titulo}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
                 <span className="flex items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta></span>
               </summary>
               <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
                 <p className="text-[14px] leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
                 <p className="mt-2 text-[12px] text-cinza">Criado por: {s.criadoPorNome ?? "Registro anterior"} · {dataHora(s.criadoEm)}</p>
-                {s.etiquetas.length > 0 && <p className="mt-3 text-[13px] text-cinza">Etiquetas: <strong className="font-medium text-tinta">{s.etiquetas.join(" · ")}</strong></p>}
+                <EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} />
+                {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="mt-3 inline-flex min-h-9 items-center rounded-[3px] border border-linha bg-branco px-3 text-[13px] font-medium hover:border-azul hover:text-azul-esc">Editar subtarefa</Link>}
                 {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-[12px] font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className="min-h-11 rounded-[3px] border border-linha bg-branco px-3 text-[13px] hover:border-azul">Salvar responsável</button></form>}
                 {t.ativo && s.ativo && <details className="mt-3"><summary className="inline-flex cursor-pointer list-none"><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]} ▾</Etiqueta></summary><div className="mt-2 flex flex-wrap gap-2">{Object.values(StatusSubtarefa).map(status => <form key={status} action={atualizarStatusSubtarefaAction.bind(null, s.id)}><button name="status" value={status} className="rounded-[3px] border border-linha bg-branco px-3 py-2 text-[12px] hover:border-azul">{statusSubtarefa[status]}</button></form>)}</div></details>}
                 {t.ativo && s.ativo && <Comentarios alvo={{ subtarefaId: s.id }} nivel="subtarefa" entidadeId={s.id} tarefaId={t.id} />}

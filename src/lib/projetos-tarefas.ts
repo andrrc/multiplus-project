@@ -7,12 +7,14 @@ import {
   type Periodicidade,
 } from "@prisma/client";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
+import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 
 export type DadosProjeto = {
   clienteId: string;
   nome: string;
+  numeroProposta?: string | null;
   descricao?: string | null;
   /** `undefined` preserva o valor na edição; `null` remove um valor ainda não informado. */
   valorContratado?: Prisma.Decimal | null;
@@ -42,6 +44,7 @@ export type DadosSubtarefa = {
   prazo?: Date | null;
   status?: StatusSubtarefa;
   etiquetas?: string[];
+  novasEtiquetas?: EtiquetaSelecionada[];
   atribuidoAId?: string | null;
   atribuidoAUsuarioId?: string | null;
 };
@@ -70,11 +73,19 @@ export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: 
   );
 }
 
-export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false) {
+export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false, busca?: string) {
   exigirAdministrador(ctx);
+  const termo = busca?.trim();
   return comContextoDeUsuario(ctx, (tx) =>
     tx.projeto.findMany({
-      where: incluirDesativados ? {} : { ativo: true },
+      where: {
+        ...(incluirDesativados ? {} : { ativo: true }),
+        ...(termo ? { OR: [
+          { nome: { contains: termo, mode: "insensitive" } },
+          { numeroProposta: { contains: termo, mode: "insensitive" } },
+          { cliente: { razaoSocial: { contains: termo, mode: "insensitive" } } },
+        ] } : {}),
+      },
       include: {
         cliente: { select: { id: true, razaoSocial: true } },
         valorContratado: { select: { valorContratado: true } },
@@ -111,13 +122,7 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
       projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
       responsavel: { select: { nome: true } },
       responsavelUsuario: { select: { nome: true } },
-      _count: {
-        select: {
-          subtarefas: {
-            where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null },
-          },
-        },
-      },
+      _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
     },
     orderBy: [{ prazo: "asc" }, { nome: "asc" }],
   }));
@@ -286,13 +291,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       include: {
         projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
         subtarefas: { where: { ativo: true }, select: { status: true } },
-        _count: {
-          select: {
-            subtarefas: {
-              where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null },
-            },
-          },
-        },
+        _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
@@ -455,6 +454,7 @@ export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
       data: {
         clienteId: dados.clienteId,
         nome: validarNome(dados.nome, "do projeto"),
+        numeroProposta: dados.numeroProposta ?? null,
         descricao: dados.descricao ?? null,
         dataInicio: dados.dataInicio ?? null,
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
@@ -482,6 +482,7 @@ export async function atualizarProjeto(
       where: { id: projetoId },
       data: {
         nome: validarNome(dados.nome, "do projeto"),
+        numeroProposta: dados.numeroProposta ?? null,
         descricao: dados.descricao ?? null,
         dataInicio: dados.dataInicio ?? null,
         dataPrevistaConclusao: dados.dataPrevistaConclusao ?? null,
@@ -567,10 +568,10 @@ export async function atualizarTarefa(
       where: { id: tarefaId },
       data: {
         nome: validarNome(dados.nome, "da tarefa"),
-        descricao: dados.descricao ?? null,
-        prazo: dados.prazo,
-        periodicidade: dados.periodicidade ?? null,
-        diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
+          descricao: dados.descricao ?? null,
+          prazo: dados.prazo,
+          periodicidade: dados.periodicidade ?? null,
+          diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
         diasAntecedencia: dados.diasAntecedencia ?? null,
         status: dados.status ?? undefined,
         responsavelId: dados.responsavelId ?? null,
@@ -627,6 +628,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
       responsavelId = null;
       responsavelUsuarioId = ctx.usuarioId;
     }
+    const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, dados.tarefaId, responsavelId, responsavelUsuarioId);
     return tx.subtarefa.create({
       data: {
@@ -635,7 +637,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         descricao: dados.descricao?.trim() || null,
         prazo: dados.prazo ?? null,
         status: dados.status ?? undefined,
-        etiquetas: dados.etiquetas ?? [],
+        etiquetas,
         atribuidoAId: responsavelId ?? null,
         atribuidoAUsuarioId: responsavelUsuarioId ?? null,
         criadoPorId: ctx.usuarioId,
@@ -653,6 +655,7 @@ export async function atualizarSubtarefa(
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
   return comContextoDeUsuario(ctx, async (tx) => {
     const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
+    const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, atual.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
     return tx.subtarefa.update({
       where: { id: subtarefaId },
@@ -661,7 +664,7 @@ export async function atualizarSubtarefa(
         descricao: dados.descricao?.trim() || null,
         prazo: dados.prazo ?? null,
         status: dados.status ?? undefined,
-        etiquetas: dados.etiquetas ?? [],
+        etiquetas,
         atribuidoAId: dados.atribuidoAId ?? null,
         atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
       },

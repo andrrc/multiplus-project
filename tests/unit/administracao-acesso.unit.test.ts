@@ -55,6 +55,16 @@ describe("RF-043 — menu e tela inicial por perfil", () => {
     expect(hrefsInterno).not.toContain("/usuarios");
     expect(hrefsExterno).not.toContain("/clientes");
     expect(hrefsExterno).not.toContain("/usuarios");
+    expect(hrefsInterno).not.toContain("/etiquetas");
+    expect(hrefsExterno).not.toContain("/etiquetas");
+  });
+
+  it("o catálogo de etiquetas é exclusivo do Administrador", () => {
+    expect(menuDoPerfil("ADMIN").map((item) => item.href)).toContain("/etiquetas");
+    expect(perfilPodeAcessar("ADMIN", "/etiquetas")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/etiquetas")).toBe(false);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/etiquetas")).toBe(false);
+    expect(perfilPodeAcessar("CLIENTE", "/etiquetas")).toBe(false);
   });
 
   it("todo perfil tem acesso a Meu Perfil", () => {

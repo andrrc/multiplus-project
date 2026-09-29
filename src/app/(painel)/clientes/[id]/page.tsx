@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
-import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone } from "@/lib/formatacao";
+import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import {
   FormularioDocumento,
@@ -11,6 +11,7 @@ import {
   BotaoCriarAcessoPessoaEnvolvida,
   BotaoAlternarAcesso,
   BotaoDesativar,
+  BotaoDesativarCliente,
 } from "./acoes-cliente";
 
 function Bloco({ titulo, acao, children }: { titulo: string; acao?: React.ReactNode; children: React.ReactNode }) {
@@ -103,19 +104,27 @@ export default async function DetalheClientePage({
         <div>
           <h1 className="text-[24px] text-branco sm:text-[30px]">{cliente.razaoSocial}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
+            <span className="rounded-[2px] border border-[#2C5567] px-2.5 py-1 font-semibold tabular-nums text-branco">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
             <span className="tabular-nums text-[#C4DCE4]">{documentoCliente(cliente)}</span>
             <span className="rounded-[2px] bg-verde px-2.5 py-1 text-[13px] font-medium text-tinta">
               {cliente.segmento}
             </span>
           </div>
         </div>
-        {ctx.perfil === "ADMIN" && cliente.ativo && (
-          <Link
-            href={`/clientes/${id}/editar`}
-            className="flex min-h-11 shrink-0 items-center self-start rounded-[3px] border border-[#2C5567] px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-[#C4DCE4] hover:border-[#C4DCE4] hover:text-branco"
-          >
-            Editar
-          </Link>
+        {ctx.perfil === "ADMIN" && (
+          <div className="flex flex-wrap items-center gap-2">
+            {cliente.ativo && (
+              <Link
+                href={`/clientes/${id}/editar`}
+                className="flex min-h-10 shrink-0 items-center self-start rounded-[3px] border border-[#2C5567] px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-[#C4DCE4] hover:border-[#C4DCE4] hover:text-branco"
+              >
+                Editar
+              </Link>
+            )}
+            {cliente.ativo && (
+              <BotaoDesativarCliente clienteId={id} nome={cliente.razaoSocial} ativo instancia="detalhe" />
+            )}
+          </div>
         )}
       </div>
 
@@ -124,19 +133,36 @@ export default async function DetalheClientePage({
       {!cliente.ativo && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border-l-[3px] border-ambar bg-branco px-5 py-4">
           <p className="text-[14.5px] text-ambar">
-            Cliente desativado. O cadastro e tudo que depende dele estão em modo somente
-            leitura.
+            Cadastro desativado. Os registros e projetos vinculados ficam indisponíveis até a reativação.
           </p>
           {ctx.perfil === "ADMIN" && (
-            <BotaoDesativar
-              clienteId={id}
-              entidade="cliente"
-              id={id}
-              ativo={false}
-              efeito=""
-            />
+            <BotaoDesativarCliente clienteId={id} nome={cliente.razaoSocial} ativo={false} instancia="detalhe" />
           )}
         </div>
+      )}
+
+      {ctx.perfil === "ADMIN" && (
+        <Bloco titulo="Acesso ao portal do cliente">
+          <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+            Esta configuração controla apenas o login do portal. Ela é independente da situação do cadastro e pode ser alterada separadamente.
+          </p>
+          {!usuarioAcesso || !statusChave ? (
+            cliente.ativo ? (
+              <div className="mt-4"><BotaoCriarAcesso clienteId={id} /></div>
+            ) : (
+              <p className="mt-4 text-[13.5px] text-cinza">Reative o cadastro do cliente para criar um novo acesso ao portal.</p>
+            )
+          ) : (
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className={`h-[7px] w-[7px] shrink-0 rounded-full ${STATUS_ACESSO[statusChave].cor}`} />
+              <p className="font-[family-name:var(--font-interface)] text-[14.5px] text-tinta">
+                {STATUS_ACESSO[statusChave].texto}
+              </p>
+              <span className="text-linha">·</span>
+              <BotaoAlternarAcesso clienteId={id} usuarioId={usuarioAcesso.id} ativo={usuarioAcesso.ativo} />
+            </div>
+          )}
+        </Bloco>
       )}
 
       <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>

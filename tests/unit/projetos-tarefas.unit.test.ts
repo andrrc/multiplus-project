@@ -32,6 +32,12 @@ describe("RN-008 — próxima ocorrência ancorada no prazo original", () => {
     expect(calcularProximaOcorrencia(data("2028-01-31"), "MENSAL", data("2028-01-31"))).toEqual(data("2028-02-29"));
   });
 
+  it("repete semanalmente no dia escolhido", () => {
+    // 10/09/2026 é quinta-feira; 2 representa terça-feira.
+    expect(calcularProximaOcorrencia(data("2026-09-10"), "SEMANAL", undefined, 2)).toEqual(data("2026-09-15"));
+    expect(calcularProximaOcorrencia(data("2026-09-15"), "SEMANAL", undefined, 2)).toEqual(data("2026-09-22"));
+  });
+
   it("não calcula próxima ocorrência sem periodicidade", () => {
     expect(calcularProximaOcorrencia(data("2026-09-10"), null)).toBeNull();
   });
@@ -83,6 +89,18 @@ describe("ADR-009 — projeção da Agenda", () => {
       data("2026-02-28"),
       data("2026-03-31"),
       data("2026-04-30"),
+    ]);
+  });
+
+  it("projeta ocorrências semanais no dia selecionado", () => {
+    expect(projetarOcorrenciasFuturas({
+      ...tarefa,
+      prazo: data("2026-09-10"),
+      prazoOriginal: data("2026-09-10"),
+      periodicidade: "SEMANAL",
+      diaSemana: 2,
+    }, data("2026-09-11"), data("2026-09-30"))).toEqual([
+      data("2026-09-15"), data("2026-09-22"), data("2026-09-29"),
     ]);
   });
 

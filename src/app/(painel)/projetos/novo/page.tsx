@@ -26,6 +26,15 @@ export default async function NovoProjetoPage({
             <Campo label="Cliente" obrigatorio><select name="clienteId" required defaultValue={clienteId ?? ""} className={inputClass}><option value="">Selecione o cliente</option>{clientes.map(c => <option key={c.id} value={c.id}>{c.razaoSocial}</option>)}</select></Campo>
             <Campo label="Nome do projeto" obrigatorio><input name="nome" required className={inputClass} placeholder="Ex.: Renovação da licença ambiental" /></Campo>
           </div>
+          <div className="mt-4 max-w-md">
+            <p className="mb-1.5 font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">Proposta comercial</p>
+            <div className="flex items-center gap-2">
+              <input name="propostaNumero" inputMode="numeric" pattern="[0-9]+" aria-label="Número da proposta" className={inputClass} placeholder="109" />
+              <span aria-hidden="true" className="text-cinza">/</span>
+              <input name="propostaAno" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} aria-label="Ano da proposta" className={inputClass} placeholder="2026" />
+            </div>
+            <p className="mt-1 text-[12px] text-cinza">Informe o número e o ano, por exemplo 109/2026.</p>
+          </div>
           <div className="mt-4 max-w-xs"><Campo label="Valor contratado" obrigatorio><CampoValorMonetario required /></Campo></div>
           <Campo label="Descrição"><textarea name="descricao" rows={4} className={inputClass} /></Campo>
         </SecaoNumerada>

@@ -19,6 +19,26 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
+# Imagem usada somente por `docker compose run --rm migrate`.
+FROM deps AS migrator
+WORKDIR /app
+CMD ["npx", "prisma", "migrate", "deploy"]
+
+# Operação idempotente de criação do bucket privado, usando o SDK já fixado no
+# package-lock em vez de depender de uma imagem `mc` externa.
+FROM deps AS storage-init
+WORKDIR /app
+COPY ops/minio-init.mjs ./ops/minio-init.mjs
+CMD ["node", "/app/ops/minio-init.mjs"]
+
+# Seed idempotente do ADMIN inicial. Usa a role dona porque roda antes de
+# qualquer sessão autenticada e só cria Talita quando o e-mail ainda não existe.
+FROM deps AS seeder
+WORKDIR /app
+RUN npx prisma generate
+COPY prisma/seed.ts ./prisma/seed.ts
+CMD ["npx", "tsx", "prisma/seed.ts"]
+
 # --- runner: imagem final, mínima ---
 FROM base AS runner
 WORKDIR /app

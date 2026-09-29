@@ -142,6 +142,7 @@ model Usuario {
 /// aplicação (src/lib/clientes.ts), não do banco.
 model Cliente {
   id   String      @id @default(cuid())
+  numeroIdentificacao Int @unique @default(dbgenerated("nextval('clientes_numero_identificacao_seq'::regclass)"))
   tipo TipoCliente @default(PESSOA_JURIDICA)
 
   /// PJ: razão social. PF: nome da pessoa (RF-035) — mesmo campo, reaproveitado para não
@@ -340,6 +341,7 @@ model Projeto {
   clienteId             String
   cliente               Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   nome                  String
+  numeroProposta        String?
   descricao             String?
   dataInicio            DateTime?
   dataPrevistaConclusao DateTime?
@@ -447,12 +449,23 @@ model Subtarefa {
   @@map("subtarefas")
 }
 
+/// Etiquetas visuais reutilizáveis entre subtarefas de qualquer projeto.
+model Etiqueta {
+  id       String   @id @default(cuid())
+  nome     String   @unique
+  cor      String
+  criadoEm DateTime @default(now())
+
+  @@map("etiquetas")
+}
+
 /// RF-016/RF-047 — comentário imutável, ligado a exatamente um nível da hierarquia.
 model Comentario {
   id          String     @id @default(cuid())
   texto       String
   link        String?
   imagemChave String?
+  mencoesUsuarioIds String[] @default([])
   autorId     String
   autor       Usuario    @relation(fields: [autorId], references: [id], onDelete: Cascade)
   projetoId   String?

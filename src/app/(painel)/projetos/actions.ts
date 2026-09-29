@@ -20,8 +20,10 @@ import {
   criarTarefa,
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
-import { criarComentario } from "@/lib/comentarios";
-import { dispararEventoNotificacao } from "@/lib/notificacoes";
+import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
+import { dispararEmailsMencaoComentario, dispararEventoNotificacao } from "@/lib/notificacoes";
+import { montarNumeroProposta } from "@/lib/numero-proposta";
+import type { EtiquetaSelecionada } from "@/lib/etiqueta-colors";
 
 function texto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
@@ -57,6 +59,20 @@ function responsavelSubtarefa(valor: string): { atribuidoAId: string | null; atr
   return { atribuidoAId: valor || null, atribuidoAUsuarioId: null };
 }
 
+function lerNovasEtiquetas(formData: FormData): EtiquetaSelecionada[] {
+  const valor = texto(formData, "novasEtiquetas");
+  if (!valor) return [];
+  try {
+    const dados: unknown = JSON.parse(valor);
+    if (!Array.isArray(dados) || dados.some((item) => !item || typeof item.nome !== "string" || typeof item.cor !== "string")) {
+      throw new Error();
+    }
+    return dados as EtiquetaSelecionada[];
+  } catch {
+    throw new Error("Não foi possível ler as novas etiquetas. Tente novamente.");
+  }
+}
+
 /** Aceita a saída do campo monetário (`1234.56`) e também vírgula em chamadas diretas. */
 function valorContratado(valor: string): Prisma.Decimal {
   if (!/^\d+(?:[.,]\d{1,2})?$/.test(valor)) {
@@ -70,6 +86,7 @@ export async function criarProjetoAction(formData: FormData) {
   const projeto = await criarProjeto(ctx, {
     clienteId: texto(formData, "clienteId"),
     nome: texto(formData, "nome"),
+    numeroProposta: montarNumeroProposta(texto(formData, "propostaNumero"), texto(formData, "propostaAno")),
     descricao: texto(formData, "descricao") || null,
     valorContratado: valorContratado(texto(formData, "valorContratado")),
     dataInicio: dataOpcional(texto(formData, "dataInicio")),
@@ -90,6 +107,7 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
   const ctx = await obterContexto();
   const projeto = await atualizarProjeto(ctx, projetoId, {
     nome: texto(formData, "nome"),
+    numeroProposta: montarNumeroProposta(texto(formData, "propostaNumero"), texto(formData, "propostaAno")),
     descricao: texto(formData, "descricao") || null,
     valorContratado: valorContratado(texto(formData, "valorContratado")),
     dataInicio: dataOpcional(texto(formData, "dataInicio")),
@@ -139,9 +157,9 @@ export async function criarTarefaAction(formData: FormData) {
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")) ?? new Date(NaN),
-    ...dadosResponsavel,
-    periodicidade: periodicidade(texto(formData, "periodicidade")),
-    diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
+      ...dadosResponsavel,
+      periodicidade: periodicidade(texto(formData, "periodicidade")),
+      diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
     colaboradorPodeCriarSubtarefas: formData.get("colaboradorPodeCriarSubtarefas") === "on",
@@ -163,9 +181,9 @@ export async function atualizarTarefaAction(tarefaId: string, formData: FormData
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")) ?? new Date(NaN),
-    ...dadosResponsavel,
-    periodicidade: periodicidade(texto(formData, "periodicidade")),
-    diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
+      ...dadosResponsavel,
+      periodicidade: periodicidade(texto(formData, "periodicidade")),
+      diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
   });
@@ -206,9 +224,8 @@ export async function criarSubtarefaAction(formData: FormData) {
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")),
     status: statusSubtarefa(texto(formData, "status")),
-    etiquetas: texto(formData, "etiquetas")
-      ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
-      : [],
+    etiquetas: formData.getAll("etiquetaNome").map(String),
+    novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
@@ -233,11 +250,26 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
   const id = texto(formData, "entidadeId");
   const alvo = nivel === "projeto" ? { projetoId: id } : nivel === "tarefa" ? { tarefaId: id } : { subtarefaId: id };
   const imagem = formData.get("imagem");
-  const comentario = await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null);
-  void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+  const mencoesUsuarioIds = formData.getAll("mencaoUsuarioId").map(String);
+  const comentario = await criarComentario(ctx, alvo, texto(formData, "texto"), texto(formData, "link"), imagem instanceof File ? imagem : null, mencoesUsuarioIds);
+  const rotaRegistro = nivel === "projeto"
+    ? `${ctx.perfil === "ADMIN" ? "/projetos" : "/meus-projetos"}/${id}`
+    : `${ctx.perfil === "ADMIN" ? "/tarefas" : "/minhas-tarefas"}/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`;
+  if (mencoesUsuarioIds.length) {
+    const destinatariosComAcesso = await listarUsuariosMencionaveis(ctx, alvo);
+    void dispararEmailsMencaoComentario({ destinatarioIds: [ctx.usuarioId, ...mencoesUsuarioIds], autorId: ctx.usuarioId, comentario: comentario.texto, url: rotaRegistro });
+    void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+      titulo: "Novo comentário",
+      mensagem: "Um novo comentário foi publicado em um registro que você acompanha.",
+      url: rotaRegistro,
+      entidadeId: comentario.id,
+      dedupeKey: `comentario:${comentario.id}`,
+      usuarioIds: destinatariosComAcesso.map(({ id: usuarioId }) => usuarioId).filter((usuarioId) => usuarioId !== ctx.usuarioId && !mencoesUsuarioIds.includes(usuarioId)),
+    });
+  } else void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
     titulo: "Novo comentário",
     mensagem: "Um novo comentário foi publicado em um registro que você acompanha.",
-    url: nivel === "projeto" ? `/projetos/${id}` : `/tarefas/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`,
+    url: rotaRegistro,
     entidadeId: comentario.id,
     dedupeKey: `comentario:${comentario.id}`,
   });
@@ -254,9 +286,8 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")),
     status: statusSubtarefa(texto(formData, "status")),
-    etiquetas: texto(formData, "etiquetas")
-      ? texto(formData, "etiquetas").split(",").map((etiqueta) => etiqueta.trim()).filter(Boolean)
-      : [],
+    etiquetas: formData.getAll("etiquetaNome").map(String),
+    novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
@@ -265,6 +296,11 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
 
 export async function atualizarSubtarefaFormAction(subtarefaId: string, formData: FormData): Promise<void> {
   await atualizarSubtarefaAction(subtarefaId, formData);
+}
+
+export async function atualizarSubtarefaERedirecionarAction(subtarefaId: string, formData: FormData): Promise<void> {
+  const subtarefa = await atualizarSubtarefaAction(subtarefaId, formData);
+  redirect(`/tarefas/${subtarefa.tarefaId}?subtarefa=${subtarefa.id}#subtarefa-${subtarefa.id}`);
 }
 
 export async function atualizarResponsavelSubtarefaFormAction(subtarefaId: string, formData: FormData): Promise<void> {

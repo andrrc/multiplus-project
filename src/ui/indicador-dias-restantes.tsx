@@ -17,23 +17,6 @@ export function calcularDiasRestantes(prazo: Date, hoje = new Date()) {
   return Math.round((prazoUTC - dataLocalHoje(hoje)) / DIA_MS);
 }
 
-/** Conta dias de segunda a sexta entre hoje e o prazo; feriados contam como dias normais. */
-export function calcularDiasUteisRestantes(prazo: Date, hoje = new Date()) {
-  const prazoUTC = Date.UTC(prazo.getUTCFullYear(), prazo.getUTCMonth(), prazo.getUTCDate());
-  const hojeUTC = dataLocalHoje(hoje);
-  const direcao = prazoUTC < hojeUTC ? -1 : 1;
-  let cursor = direcao < 0 ? hojeUTC : hojeUTC + DIA_MS;
-  let dias = 0;
-
-  while (direcao > 0 ? cursor <= prazoUTC : cursor >= prazoUTC) {
-    const diaSemana = new Date(cursor).getUTCDay();
-    if (diaSemana !== 0 && diaSemana !== 6) dias += 1;
-    cursor += direcao * DIA_MS;
-  }
-
-  return direcao > 0 ? dias : -dias;
-}
-
 export function IndicadorDiasRestantes({ prazo }: { prazo: Date | null }) {
   if (!prazo) return <span className="text-[13px] text-cinza">Sem prazo</span>;
 
@@ -54,6 +37,23 @@ export function IndicadorDiasRestantes({ prazo }: { prazo: Date | null }) {
       {texto}
     </span>
   );
+}
+
+/** Conta dias de segunda a sexta entre hoje e o prazo; feriados contam como dias normais. */
+export function calcularDiasUteisRestantes(prazo: Date, hoje = new Date()) {
+  const prazoUTC = Date.UTC(prazo.getUTCFullYear(), prazo.getUTCMonth(), prazo.getUTCDate());
+  const hojeUTC = dataLocalHoje(hoje);
+  const direcao = prazoUTC < hojeUTC ? -1 : 1;
+  let cursor = direcao < 0 ? hojeUTC : hojeUTC + DIA_MS;
+  let dias = 0;
+
+  while (direcao > 0 ? cursor <= prazoUTC : cursor >= prazoUTC) {
+    const diaSemana = new Date(cursor).getUTCDay();
+    if (diaSemana !== 0 && diaSemana !== 6) dias += 1;
+    cursor += direcao * DIA_MS;
+  }
+
+  return direcao > 0 ? dias : -dias;
 }
 
 export function IndicadorSemaforoProjeto({

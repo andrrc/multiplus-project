@@ -1,15 +1,8 @@
 import Link from "next/link";
 import { listarClientesContextuais } from "@/lib/clientes";
-import { documentoCliente } from "@/lib/formatacao";
+import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { Etiqueta } from "@/ui/campo";
-
-const status: Record<string, string> = {
-  A_INICIAR: "A iniciar",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-  CANCELADO: "Cancelado",
-};
 
 export default async function MeusClientesPage() {
   const ctx = await exigirAcessoARota("/meus-clientes");
@@ -33,6 +26,7 @@ export default async function MeusClientesPage() {
             <li key={cliente.id}>
               <Link href={`/meus-clientes/${cliente.id}`} className="block rounded-[3px] border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
                 <p className="text-[15px] font-medium text-tinta">{cliente.razaoSocial}</p>
+                <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold tracking-[0.04em] text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p>
                 <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente)}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <Etiqueta>{cliente.segmento}</Etiqueta>
@@ -44,7 +38,7 @@ export default async function MeusClientesPage() {
         </ul>
         <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
           <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Razão social</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Segmento</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Cidade</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
-          <tbody>{clientes.map((cliente) => <tr key={cliente.id} className="border-t border-linha bg-branco transition-colors hover:bg-verde-cl"><td className="px-5 py-4 font-medium text-tinta"><Link href={`/meus-clientes/${cliente.id}`} className="hover:text-azul-esc">{cliente.razaoSocial}</Link></td><td className="px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td><td className="px-5 py-4"><Etiqueta>{cliente.segmento}</Etiqueta></td><td className="px-5 py-4 text-cinza">{cliente.municipio ?? "—"}</td><td className="px-5 py-4 text-right"><Link href={`/meus-clientes/${cliente.id}`} className="text-azul-esc hover:underline">Ver detalhe</Link></td></tr>)}</tbody>
+          <tbody>{clientes.map((cliente) => <tr key={cliente.id} className="border-t border-linha bg-branco transition-colors hover:bg-verde-cl"><td className="px-5 py-4 font-medium text-tinta"><Link href={`/meus-clientes/${cliente.id}`} className="hover:text-azul-esc">{cliente.razaoSocial}</Link><p className="mt-1 text-[12px] font-semibold tabular-nums text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p></td><td className="px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td><td className="px-5 py-4"><Etiqueta>{cliente.segmento}</Etiqueta></td><td className="px-5 py-4 text-cinza">{cliente.municipio ?? "—"}</td><td className="px-5 py-4 text-right"><Link href={`/meus-clientes/${cliente.id}`} className="text-azul-esc hover:underline">Ver detalhe</Link></td></tr>)}</tbody>
         </table>
         </>
       )}

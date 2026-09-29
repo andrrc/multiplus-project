@@ -80,7 +80,7 @@ export function NavegacaoPainel({ perfil }: { perfil: Perfil }) {
     const item = porHref.get(href);
     return item ? [item] : [];
   });
-  const diretos = ["/clientes", "/usuarios", "/notificacoes", "/meu-perfil"].flatMap((href) => {
+  const diretos = ["/clientes", "/usuarios", "/etiquetas", "/notificacoes", "/meu-perfil"].flatMap((href) => {
     const item = porHref.get(href);
     return item ? [item] : [];
   });

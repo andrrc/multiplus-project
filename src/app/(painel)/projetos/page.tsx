@@ -8,11 +8,11 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
 
-export default async function ProjetosPage({ searchParams }: { searchParams: Promise<{ desativados?: string }> }) {
+export default async function ProjetosPage({ searchParams }: { searchParams: Promise<{ desativados?: string; busca?: string }> }) {
   const ctx = await exigirAcessoARota("/projetos");
-  const { desativados } = await searchParams;
+  const { desativados, busca } = await searchParams;
   const incluir = desativados === "1";
-  const projetos = await listarProjetos(ctx, incluir);
+  const projetos = await listarProjetos(ctx, incluir, busca);
 
   return (
     <div className="w-full max-w-[1120px]">
@@ -26,7 +26,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
       </div>
 
       <form className="mt-7 flex flex-wrap items-center gap-3">
-        <input name="busca" placeholder="Buscar projeto ou cliente" className={`${inputClass} sm:max-w-sm`} />
+        <input type="search" name="busca" defaultValue={busca ?? ""} placeholder="Buscar projeto, cliente ou proposta" className={`${inputClass} sm:max-w-sm`} />
         <label className="flex min-h-11 items-center gap-2 text-[14px] text-tinta"><input type="checkbox" name="desativados" value="1" defaultChecked={incluir} className="h-4 w-4 accent-verde" />Mostrar desativados</label>
         <button className="min-h-11 rounded-[3px] border border-linha px-4 text-[14px] font-medium hover:border-azul">Filtrar</button>
       </form>
@@ -50,6 +50,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                     <Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta>
                   </div>
                   <p className="mt-4 text-[13px] text-cinza">Valor contratado: <strong className="font-medium text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "Não informado"}</strong></p>
+                  <p className="mt-1 text-[13px] text-cinza">Proposta comercial: <strong className="font-medium text-tinta">{p.numeroProposta ?? "—"}</strong></p>
                   <p className="mt-1 text-[13px] text-cinza">Conclusão prevista: <strong className="font-medium text-tinta">{data(p.dataPrevistaConclusao)}</strong> · {p._count.tarefas} {p._count.tarefas === 1 ? "tarefa" : "tarefas"}</p>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Semáforo:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} /></div>
                 </div>
@@ -59,12 +60,13 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
         </ul>
 
         <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
-          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Semáforo</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
+          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Semáforo</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
           <tbody>
             {projetos.map((p) => (
               <tr key={p.id} className={`border-t border-linha hover:bg-verde-cl ${p.ativo ? "bg-branco" : "bg-papel"}`}>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 font-medium hover:text-azul-esc">{p.nome}</Link></td>
                 <td className="p-0"><Link href={`/clientes/${p.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link></td>
+                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.numeroProposta ?? "—"}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "—"}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta></Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-cinza">{data(p.dataPrevistaConclusao)}</Link></td>
