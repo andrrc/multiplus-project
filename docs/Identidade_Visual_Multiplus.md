@@ -34,6 +34,8 @@ Extraídas do gradiente da logomarca.
 |---|---|---|---|
 | Âmbar | `#B45309` | 180, 83, 9 | Pendência ou ponto de atenção. Tarja lateral de achados de risco médio. |
 | Vermelho terra | `#9A2A1E` | 154, 42, 30 | Criticidade alta. Tarja lateral de prazos vencidos. |
+| Vermelho terra claro (fundo) | `#F8ECEA` | 248, 236, 234 | Fundo de linhas e cartões com prazo vencido e de ações destrutivas, sempre junto com tarja ou texto em vermelho terra. Token `critico-cl`. |
+| Azul claro (fundo) | `#E8F4FC` | 232, 244, 252 | Fundo de destaque informativo, como as ocorrências projetadas de tarefas recorrentes na agenda. Token `azul-cl`. |
 | Verde claro (fundo) | `#EEF7F0` | 238, 247, 240 | Fundo das caixas de solução e das linhas de destaque em tabelas. |
 | Verde borda | `#BFE3C6` | 191, 227, 198 | Borda de etiquetas de segmento em destaque. |
 
@@ -186,6 +188,8 @@ Fundo branco, borda em `#DCE6E9`, raio de 2 px, texto em Archivo 13,5 px. Varian
   /* sinalização */
   --ambar:   #B45309;
   --critico: #9A2A1E;
+  --critico-cl: #F8ECEA;
+  --azul-cl: #E8F4FC;
   --verde-cl:#EEF7F0;
 
   /* estrutura */
@@ -220,7 +224,7 @@ h1, h2, h3, h4{
 
 **Serifa para ler, grotesca para consultar.** Parágrafo é para ler em sequência, por isso serifa. Tabela, valor, prazo e etiqueta são para localizar rapidamente, por isso grotesca.
 
-**Sem sombras.** A separação vem de borda de 1 px, não de sombra difusa. Sombra suave sob cada cartão é o padrão que faz um documento técnico parecer interface de aplicativo.
+**Sem sombras.** A separação vem de borda de 1 px, não de sombra difusa. Sombra suave sob cada cartão é o padrão que faz um documento técnico parecer interface de aplicativo. Única exceção, no sistema: camadas flutuantes que ficam por cima do conteúdo (modais e menus suspensos) podem ter sombra, para não se confundirem com o fundo.
 
 **Texto ocupa a largura disponível.** Nada de coluna estreita no meio da página. Em apresentação projetada, linha curta obriga o olho a saltar demais.
 

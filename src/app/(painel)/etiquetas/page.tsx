@@ -35,7 +35,7 @@ export default async function EtiquetasPage({ searchParams }: { searchParams: Pr
       <p className="mt-1.5 max-w-[66ch] text-[15px] leading-6 text-cinza">Gerencie os nomes e as cores usados nas subtarefas. Cada alteração vale em todos os projetos.</p>
     </header>
 
-    {params.erro && <p role="alert" className="mt-5 border-l-[3px] border-vermelho bg-vermelho-cl px-4 py-3 text-[14px] text-tinta">{mensagensErro[params.erro] ?? mensagensErro.falha}</p>}
+    {params.erro && <p role="alert" className="mt-5 border-l-[3px] border-critico bg-critico-cl px-4 py-3 text-[14px] text-tinta">{mensagensErro[params.erro] ?? mensagensErro.falha}</p>}
     {params.resultado && <p role="status" className="mt-5 border-l-[3px] border-verde-esc bg-verde-cl px-4 py-3 text-[14px] text-tinta">{params.resultado === "excluida" ? `Etiqueta excluída. Removida de ${quantidadeUsosExcluidos} ${quantidadeUsosExcluidos === 1 ? "subtarefa" : "subtarefas"}.` : mensagensSucesso[params.resultado] ?? "Alterações salvas."}</p>}
 
     <section id="nova-etiqueta" aria-labelledby="titulo-nova-etiqueta" className="mt-8 border border-linha border-t-2 border-t-verde-esc bg-branco p-5 sm:p-6">
@@ -58,7 +58,7 @@ export default async function EtiquetasPage({ searchParams }: { searchParams: Pr
       {etiquetas.length === 0 ? <div className="mt-4 border border-dashed border-linha bg-branco px-6 py-12 text-center"><p className="text-[15px] font-medium text-tinta">Nenhuma etiqueta cadastrada</p><p className="mt-1 text-[13px] text-cinza">Crie a primeira acima para começar a organizar subtarefas.</p></div> : <ul className="mt-4 divide-y divide-linha border-y border-linha bg-branco">
         {etiquetas.map((etiqueta) => <li id={`etiqueta-${etiqueta.id}`} key={etiqueta.id} className="grid gap-4 px-4 py-5 sm:px-5 lg:grid-cols-[minmax(190px,0.8fr)_minmax(0,1.8fr)] lg:items-start">
           <div className="min-w-0">
-            <span className="inline-flex max-w-full items-center rounded-full border border-black/5 px-3 py-1.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold" style={{ backgroundColor: etiqueta.cor, color: CORES_ETIQUETA.find((cor) => cor.fundo === etiqueta.cor)?.texto ?? "#334155" }}>{etiqueta.nome}</span>
+            <span className="inline-flex max-w-full items-center rounded-full border border-tinta/5 px-3 py-1.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold" style={{ backgroundColor: etiqueta.cor, color: CORES_ETIQUETA.find((cor) => cor.fundo === etiqueta.cor)?.texto ?? "#334155" }}>{etiqueta.nome}</span>
             <p className="mt-2 text-[12px] text-cinza">Usada em {etiqueta.quantidadeSubtarefas} {etiqueta.quantidadeSubtarefas === 1 ? "subtarefa" : "subtarefas"} · Criada em {dataCurta(etiqueta.criadoEm)}</p>
           </div>
           <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">

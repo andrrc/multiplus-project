@@ -41,9 +41,9 @@ export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { d
     <div className="flex flex-wrap gap-1.5" aria-live="polite">
       {selecionadas.map((etiqueta) => {
         const texto = CORES_ETIQUETA.find((cor) => cor.fundo === etiqueta.cor)?.texto ?? "#334155";
-        return <span key={etiqueta.nome} className="inline-flex min-h-8 items-center gap-1 rounded-full border border-black/5 px-2.5 py-1 text-[12px] font-semibold" style={{ backgroundColor: etiqueta.cor, color: texto }}>
+        return <span key={etiqueta.nome} className="inline-flex min-h-8 items-center gap-1 rounded-full border border-tinta/5 px-2.5 py-1 text-[12px] font-semibold" style={{ backgroundColor: etiqueta.cor, color: texto }}>
           {etiqueta.nome}
-          <button type="button" onClick={() => removerEtiqueta(etiqueta.nome)} aria-label={`Remover etiqueta ${etiqueta.nome}`} className="ml-1 grid h-5 w-5 place-items-center rounded-full text-[15px] leading-none hover:bg-black/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current">×</button>
+          <button type="button" onClick={() => removerEtiqueta(etiqueta.nome)} aria-label={`Remover etiqueta ${etiqueta.nome}`} className="ml-1 grid h-5 w-5 place-items-center rounded-full text-[15px] leading-none hover:bg-tinta/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current">×</button>
         </span>;
       })}
     </div>
@@ -58,17 +58,17 @@ export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { d
         {resultados.map((etiqueta) => {
           const selecionada = selecionadas.some((atual) => atual.nome === etiqueta.nome);
           const texto = CORES_ETIQUETA.find((cor) => cor.fundo === etiqueta.cor)?.texto ?? "#334155";
-          return <li key={etiqueta.id}><button type="button" aria-pressed={selecionada} onClick={() => alternarEtiqueta(etiqueta)} className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul ${selecionada ? "border-tinta" : "border-black/5"}`} style={{ backgroundColor: etiqueta.cor, color: texto }}><span aria-hidden="true">{selecionada ? "✓" : "+"}</span>{etiqueta.nome}</button></li>;
+          return <li key={etiqueta.id}><button type="button" aria-pressed={selecionada} onClick={() => alternarEtiqueta(etiqueta)} className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul ${selecionada ? "border-tinta" : "border-tinta/5"}`} style={{ backgroundColor: etiqueta.cor, color: texto }}><span aria-hidden="true">{selecionada ? "✓" : "+"}</span>{etiqueta.nome}</button></li>;
         })}
       </ul>}
       {buscaNormalizada && !existeBuscaExata && <div className="border-t border-linha pt-3">
         <p className="text-[12px] font-medium text-tinta">Criar etiqueta “{buscaNormalizada}”</p>
         {buscaNormalizada.length > 40
-          ? <p className="mt-1 text-[12px] text-vermelho">Use até 40 caracteres.</p>
+          ? <p className="mt-1 text-[12px] text-critico">Use até 40 caracteres.</p>
           : <>
             <p className="mt-1 text-[12px] text-cinza">Escolha uma cor. A etiqueta ficará disponível para outros projetos.</p>
             <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={`Escolha a cor da etiqueta ${buscaNormalizada}`}>
-              {CORES_ETIQUETA.map((cor) => <button key={cor.fundo} type="button" onClick={() => criarEtiqueta(cor.fundo)} aria-label={`Criar etiqueta ${buscaNormalizada} na cor ${cor.nome}`} title={cor.nome} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-linha bg-branco px-2.5 text-[12px] font-medium text-tinta hover:border-azul focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul focus-visible:ring-offset-2"><span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-black/10" style={{ backgroundColor: cor.amostra }} />{cor.nome}</button>)}
+              {CORES_ETIQUETA.map((cor) => <button key={cor.fundo} type="button" onClick={() => criarEtiqueta(cor.fundo)} aria-label={`Criar etiqueta ${buscaNormalizada} na cor ${cor.nome}`} title={cor.nome} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-linha bg-branco px-2.5 text-[12px] font-medium text-tinta hover:border-azul focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul focus-visible:ring-offset-2"><span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-tinta/10" style={{ backgroundColor: cor.amostra }} />{cor.nome}</button>)}
             </div>
           </>}
       </div>}

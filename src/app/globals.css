@@ -16,6 +16,8 @@
 
   --ambar: #b45309;
   --critico: #9a2a1e;
+  --critico-cl: #f8ecea;
+  --azul-cl: #e8f4fc;
   --verde-cl: #eef7f0;
   --verde-borda: #bfe3c6;
 
@@ -40,6 +42,8 @@
   --color-linha: var(--linha);
   --color-ambar: var(--ambar);
   --color-critico: var(--critico);
+  --color-critico-cl: var(--critico-cl);
+  --color-azul-cl: var(--azul-cl);
   --color-verde-cl: var(--verde-cl);
   --color-verde-borda: var(--verde-borda);
   --color-menu-inativo: var(--menu-inativo);

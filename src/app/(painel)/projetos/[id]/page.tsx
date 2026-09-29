@@ -31,7 +31,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
     <div className="flex flex-wrap gap-2">
       <Link href={`/projetos/${id}/editar`} className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
       <form action={definirAtivoProjetoAction.bind(null, id, !projeto.ativo)}>
-        <button className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-vermelho">{projeto.ativo ? "Desativar" : "Reativar"}</button>
+        <button className="min-h-9 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-critico">{projeto.ativo ? "Desativar" : "Reativar"}</button>
       </form>
     </div>
   </div>

@@ -153,7 +153,7 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
         <button type="button" onClick={removerImagem} className="shrink-0 font-[family-name:var(--font-interface)] text-[13px] text-azul-esc hover:underline">Remover</button>
       </div>}
 
-      {erro && <p role="alert" className="mt-2 text-[13px] text-vermelho">{erro}</p>}
+      {erro && <p role="alert" className="mt-2 text-[13px] text-critico">{erro}</p>}
       {sucesso && <p role="status" className="mt-2 text-[13px] text-verde-esc">Comentário publicado.</p>}
       <button disabled={enviando} className="mt-3 min-h-10 rounded-[3px] bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:opacity-60">{enviando ? "Publicando…" : "Publicar comentário"}</button>
     </form>

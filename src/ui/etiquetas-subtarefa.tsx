@@ -11,7 +11,7 @@ export function EtiquetasSubtarefa({ nomes, catalogo, compacta = false }: { nome
     {nomes.map((nome) => {
       const fundo = porNome.get(nome.toLocaleLowerCase("pt-BR")) ?? corPadrao.fundo;
       const texto = CORES_ETIQUETA.find((cor) => cor.fundo === fundo)?.texto ?? corPadrao.texto;
-      return <span key={nome} className="inline-flex min-h-7 items-center rounded-full border border-black/5 px-2.5 py-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold" style={{ backgroundColor: fundo, color: texto }}>{nome}</span>;
+      return <span key={nome} className="inline-flex min-h-7 items-center rounded-full border border-tinta/5 px-2.5 py-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold" style={{ backgroundColor: fundo, color: texto }}>{nome}</span>;
     })}
   </span>;
 }

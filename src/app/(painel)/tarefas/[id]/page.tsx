@@ -65,7 +65,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           {t.ativo ? <>
             <Link href={`/tarefas/${id}/editar`} className="rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
             {t.status !== "CONCLUIDO" && <form action={concluirTarefaAction.bind(null, id)}><button className="rounded-[3px] bg-verde px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta">Marcar como concluída</button></form>}
-            <form action={excluirTarefaAction.bind(null, id)}><button className="rounded-[3px] border border-vermelho px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-vermelho hover:bg-vermelho-cl">Excluir tarefa</button></form>
+            <form action={excluirTarefaAction.bind(null, id)}><button className="rounded-[3px] border border-critico px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-critico hover:bg-critico-cl">Excluir tarefa</button></form>
           </> : <form action={definirAtivoTarefaFormAction.bind(null, id, true)}><button className="rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-verde">Reativar tarefa</button></form>}
         </div>
       </div>
