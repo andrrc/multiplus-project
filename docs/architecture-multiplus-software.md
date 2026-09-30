@@ -1,9 +1,9 @@
 # Architecture Design Document — Múltiplus Software
 
-**Versão:** 1.11
+**Versão:** 1.12
 **Data:** 30/09/2026
 **Autor:** André (Somma)
-**Baseado em:** SRS v2.4 (RF-001 a RF-047, incluindo RF-002a a RF-002d e RN-010)
+**Baseado em:** SRS v2.5 (RF-001 a RF-047, incluindo RF-002a a RF-002d e RN-010)
 
 ---
 
@@ -814,6 +814,7 @@ confortável mesmo com crescimento moderado de uso.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 1.12 | 30/09/2026 | André (Somma) | Atualiza a base para o SRS v2.5, que formaliza RF-036 (Agenda) e RF-037 (Painel de Subtarefas); mantém ADR-009 como decisão técnica para projeções recorrentes. |
 | 1.11 | 30/09/2026 | André (Somma) | Atualiza a base para o SRS v2.4; registra ADR-010 (preferências de notificação por perfil e canal) e ADR-011 (configuração independente do semáforo); atualiza ADR-009 para recorrência semanal e projeção já implementada; revisa diagrama e execução dos jobs. |
 | 1.10 | 16/09/2026 | André (Somma) | ADR-008 revisado após a auditoria da Sprint 3: a herança de acesso passa a valer para a cadeia inteira (Projeto, Tarefa e Subtarefa), separada da questão das colunas `ativo`, que seguem para a Sprint 4; registradas as três funções de herança (uma por nível, nunca subselect) e a correção da premissa do plano que gerou o vazamento. Migration `20260916190000_rls_heranca_projetos_tarefas` |
 | 1.9 | 16/09/2026 | André (Somma) | ADR-008 (soft delete com cascata por herança) registrado e implementado na Sprint 3, com as consequências que apareceram na implementação; ADR-009 (projeção de ocorrências recorrentes) registrado para a Sprint 4. Base atualizada para o SRS v2.1 |

@@ -9,6 +9,10 @@ Este documento traz os requisitos novos e as revisões de requisitos existentes,
 SRS, prontos para serem inseridos. Ao aplicar, atualizar também o Histórico de Revisões do
 SRS e do ADD.
 
+> Atualização em 30/09/2026: as definições completas de RF-036 (Agenda) e RF-037 (Painel de
+> Subtarefas) foram incorporadas ao SRS v2.5. Este arquivo permanece como registro das
+> propostas complementares e notas de origem; em caso de divergência, prevalece o SRS atual.
+
 ---
 
 ## Parte 1 — Requisitos Funcionais Novos
@@ -207,6 +211,10 @@ uma única ação, "Marcar como concluída", que move a tarefa para "Concluído"
 atribuição do Administrador.
 
 ### RF-036 — Agenda mensal do Administrador
+**Definição incorporada ao SRS v2.5:** Agenda mensal exclusiva do Administrador para prazos
+de tarefas ativas de projetos ativos, com navegação mensal, filtros por cliente/projeto e
+visitas/reuniões, destaque de atrasos, indicação de recorrências projetadas e estado vazio.
+Prazos de subtarefas permanecem fora do escopo atual.
 **Acrescentar Nota técnica:** como o RF-006 só gera a próxima ocorrência quando a anterior é
 concluída ou vence, as ocorrências de meses futuros ainda não existem no banco. A agenda
 **calcula e exibe** essas ocorrências futuras como itens indicativos (projeção visual), sem
@@ -216,6 +224,13 @@ registros órfãos ao cancelar uma série (RN-008). Ver **ADR-009** no ADD.
 **Acrescentar ao Critério de aceite:** "Dado uma tarefa recorrente mensal cuja próxima
 ocorrência ainda não foi gerada, quando o Administrador navegar para o mês seguinte, então a
 ocorrência projetada deve aparecer no dia correspondente, identificada como projeção."
+
+### RF-037 — Painel de Subtarefas do Administrador
+**Definição incorporada ao SRS v2.5:** painel `/subtarefas`, acessível somente pelo
+Administrador, com subtarefas pendentes por padrão, ordenadas por prazo, filtros por cliente,
+projeto e tarefa, opção de incluir concluídas/canceladas, destaque de vencidas e indicador
+“Em dia”. Registros desativados não aparecem nem compõem o indicador; `/prazos` redireciona
+para `/subtarefas`.
 
 ### RN-002 — Recorrência
 **Acrescentar:** complementada pela RN-008 quanto à ancoragem do cálculo (prazo original, não

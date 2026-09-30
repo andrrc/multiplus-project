@@ -180,4 +180,5 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 | 2026-09-28 | `321a4e8`, `d5b749b` | Etiquetas coloridas reutilizáveis e edição de etiquetas |
 | 2026-09-28 | `0cb869e`, `e5722af` | Catálogo global de etiquetas |
 | 2026-09-28 | `c297878`, `0062cb6`, `d65f10e` | Paleta de 12 cores. O ajuste de tons quebrou um teste, e as cores antigas voltaram a ser aceitas |
+| 2026-09-30 | `8aa5ba1` | RF-037 formalizado no SRS v2.5 para o Painel de Subtarefas |
 | 2026-09-29 | `d731f79` | Subtarefas atrasadas voltam a aparecer em vermelho terra |

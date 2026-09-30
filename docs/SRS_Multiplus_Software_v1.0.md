@@ -1,9 +1,9 @@
 # Especificação de Requisitos — Múltiplus Software
 
-**Versão:** 2.4
+**Versão:** 2.5
 **Data:** 30/09/2026
 **Autor:** André (Somma)
-**Status:** Rascunho — requisitos atualizados para refletir a configuração independente dos canais de notificação, o semáforo global de prazos e a validação padronizada de celulares. RF-039 a RF-047 e RN-007 a RN-009 incorporados a partir do documento complementar `docs/rfs-novos-srs-multiplus.md`.
+**Status:** Rascunho — requisitos atualizados para refletir a configuração independente dos canais de notificação, o semáforo global de prazos, a validação padronizada de celulares e os requisitos completos da Agenda (RF-036) e do Painel de Subtarefas (RF-037). RF-039 a RF-047 e RN-007 a RN-009 incorporados a partir do documento complementar `docs/rfs-novos-srs-multiplus.md`.
 **Tipo de sistema:** SaaS com múltiplos perfis (equipe interna + portal do cliente)
 
 ---
@@ -715,6 +715,28 @@ depois exige migration: a lista muda por decisão registrada, não por ajuste de
 
 ### 3.17 Complementos do módulo de Projetos e Tarefas (Sprint 4)
 
+#### RF-036 — Agenda mensal do Administrador
+
+| Campo | Valor |
+| ------ | ------ |
+| **ID** | RF-036 |
+| **Módulo** | Projetos e Tarefas |
+| **Descrição** | O sistema deve disponibilizar ao Administrador uma agenda mensal com os prazos das tarefas ativas vinculadas a projetos ativos, em todos os status. A agenda deve permitir navegar entre meses, destacar o dia atual e filtrar por cliente, projeto e visitas/reuniões. Deve identificar visualmente prazos vencidos, visitas/reuniões e ocorrências futuras projetadas de tarefas recorrentes. Registros desativados não devem aparecer. A agenda não inclui prazos de subtarefas |
+| **Prioridade** | Must |
+| **Critério de aceite** | Dado um Administrador, quando acessar a agenda e navegar entre meses, então deve visualizar os prazos das tarefas ativas no mês escolhido, com o dia atual destacado e os filtros disponíveis. Dado que uma tarefa esteja vencida ou marcada como visita/reunião, quando aparecer na agenda, então deve ser identificada visualmente. Dado uma tarefa recorrente cuja próxima ocorrência ainda não foi criada, quando o Administrador visualizar o mês correspondente, então a ocorrência projetada deve aparecer identificada como projeção, sem permitir edição. Dado que não existam itens no mês ou que o filtro não encontre resultados, então a agenda deve informar que não há itens. Tarefas ou projetos desativados não devem aparecer |
+| **Nota técnica** | Ocorrências futuras são calculadas em memória e não persistidas; a ocorrência real é criada conforme RF-006. Ver ADR-009 no ADD. A agenda contempla tarefas, não subtarefas |
+
+#### RF-037 — Painel de Subtarefas do Administrador
+
+| Campo | Valor |
+| ------ | ------ |
+| **ID** | RF-037 |
+| **Módulo** | Projetos e Tarefas |
+| **Descrição** | O sistema deve disponibilizar ao Administrador o painel `/subtarefas`, com as subtarefas dos projetos ativos, ordenadas por prazo. Por padrão, deve listar somente subtarefas pendentes; deve permitir incluir subtarefas concluídas e canceladas e filtrar por cliente, projeto e tarefa. O painel deve destacar subtarefas vencidas e apresentar o percentual de subtarefas em dia conforme RN-001 e RF-009. Subtarefas, tarefas, projetos ou clientes desativados não devem aparecer nem compor o indicador. A rota antiga `/prazos` deve redirecionar para `/subtarefas` |
+| **Prioridade** | Must |
+| **Critério de aceite** | Dado um Administrador que acesse `/subtarefas`, quando o painel carregar, então deve listar por prazo as subtarefas pendentes de registros ativos. Dado que o Administrador habilite a opção de incluir concluídas e canceladas, então essas subtarefas também devem ser listadas. Dado que aplique filtros de cliente, projeto ou tarefa, então a lista deve exibir somente os resultados correspondentes. Dado uma subtarefa cujo prazo já passou, então ela deve ser destacada como vencida, respeitando RN-001. Dado o indicador “Em dia”, então seu percentual deve excluir registros desativados conforme RF-009. Dado um acesso a `/prazos`, então o sistema deve redirecionar para `/subtarefas` |
+| **Permissão** | Somente Administrador pode acessar o painel; os demais perfis não devem obter acesso pela rota direta |
+
 #### RF-038 — Campos do cadastro de projeto
 
 | Campo | Valor |
@@ -903,6 +925,7 @@ natural após este SRS.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 2.5 | 30/09/2026 | André (Somma) | Formaliza RF-036 (Agenda mensal do Administrador) e RF-037 (Painel de Subtarefas), incluindo escopo, filtros, estados, acesso, projeção recorrente e regras para registros desativados. |
 | 2.4 | 30/09/2026 | André (Somma) | Atualiza RF-006 e RN-002 para periodicidades e recorrência semanal; RF-009 para semáforo global de dias úteis; RF-016 para menções autorizadas; RF-022 e RF-023 para canais independentes por perfil, menções e atribuições recebidas; acrescenta RN-010 para formato e validação de celulares. Alinhado às decisões e análises aprovadas em 28 a 30/09/2026. |
 | 2.3 | 16/09/2026 | André (Somma) | RF-024 deixa de ser genérico: as duas listas de status (4 de projeto, 9 de tarefa) validadas com a Talita em 16/09/2026, com o padrão "A iniciar" e a nota de que só o Administrador escolhe livremente (RN-007). Exemplo da RN-004 corrigido — afirmava que o Colaborador Interno "pode ver as subtarefas, sem poder editá-las", contradizendo o texto da própria regra depois da RN-007. Critério de Aceite Global correspondente marcado. Esta versão edita a 2.2 no lugar, sem duplicá-la abaixo: a mudança é pontual e o git guarda o texto anterior |
 | 2.2 | 16/09/2026 | André (Somma) | Nota nova no RF-040: trocar o perfil de um usuário descarta as atribuições da granularidade antiga (RN-005) e essa informação não é recuperável — comportamento que existia na implementação desde a Sprint 3 sem constar de requisito nenhum, identificado na auditoria (achado D) |
