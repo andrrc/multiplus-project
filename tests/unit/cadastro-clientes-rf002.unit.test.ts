@@ -2,7 +2,8 @@
  * RF-002 (segmento: lista fechada + campo customizado quando "Outro/Outros"), RF-002c
  * (Estado/Município via API do IBGE, com fallback de indisponibilidade — mesma categoria de
  * risco do RF-001) e RF-002d (obrigatoriedade mínima: só tipo, nome/razão social, CNPJ/CPF e
- * o campo customizado de segmento continuam obrigatórios). Módulo SRS: Cadastro de Clientes
+ * o campo customizado de segmento continuam obrigatórios; celulares opcionais precisam de
+ * 11 dígitos). Módulo SRS: Cadastro de Clientes
  * (Seção 3.1), reunião de aprovação da Sprint 2.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -85,6 +86,24 @@ describe("RF-002d — obrigatoriedade mínima no cadastro de cliente", () => {
         pontoContato: { ...PJ_VALIDO.pontoContato, email: "invalido" },
       }),
     ).toBe("E-mail do Ponto de Contato inválido.");
+  });
+
+  it("PJ com celular preenchido sem 11 dígitos bloqueia no servidor", () => {
+    expect(
+      validarNovoCliente({
+        ...PJ_VALIDO,
+        responsavelLegal: { ...PJ_VALIDO.responsavelLegal, telefone: "(11) 8765-4321" },
+      }),
+    ).toBe("O celular do Responsável Legal deve ter DDD e 9 dígitos.");
+  });
+
+  it("PJ com celular válido do Ponto de Contato continua aceito", () => {
+    expect(
+      validarNovoCliente({
+        ...PJ_VALIDO,
+        pontoContato: { ...PJ_VALIDO.pontoContato, telefone: "+55 11 98765-4321" },
+      }),
+    ).toBeNull();
   });
 
   it("PF sem segmento/origem/RG/endereço é aceito — só tipo, nome e CPF continuam obrigatórios", () => {

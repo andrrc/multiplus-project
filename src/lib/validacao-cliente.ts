@@ -7,6 +7,7 @@ import { validarCnpj } from "@/lib/cnpj";
 import { validarCpf } from "@/lib/cpf";
 import { ehOpcaoOutro, segmentosPorTipo } from "@/lib/opcoes-cliente";
 import { validarEmail } from "@/lib/validacao";
+import { validarTelefoneCelular } from "@/lib/formatacao";
 import { validarPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
 import type { NovoClienteInput, AtualizarClienteInput } from "@/lib/clientes";
 import type { DadosPessoa } from "@/lib/heranca-pessoa";
@@ -14,6 +15,9 @@ import type { TipoCliente } from "@prisma/client";
 
 /** RF-002d — RG/endereço/telefone são opcionais; CPF e e-mail só validam formato se preenchidos. */
 function validarDadosPessoa(pessoa: DadosPessoa, rotulo: string): string | null {
+  if (pessoa.telefone.trim() && !validarTelefoneCelular(pessoa.telefone)) {
+    return `O celular do ${rotulo} deve ter DDD e 9 dígitos.`;
+  }
   if (pessoa.cpf && !validarCpf(pessoa.cpf)) return `CPF do ${rotulo} inválido.`;
   if (pessoa.email && !validarEmail(pessoa.email)) return `E-mail do ${rotulo} inválido.`;
   return null;

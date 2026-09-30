@@ -9,6 +9,7 @@ import { normalizarCpf, validarCpf } from "@/lib/cpf";
 import { normalizarCnpj, validarCnpj } from "@/lib/cnpj";
 import { hashSenha, verificarSenha } from "@/lib/senha";
 import { validarPoliticaSenha } from "@/lib/politica-senha";
+import { validarTelefoneCelular } from "@/lib/formatacao";
 
 /**
  * RF-040 — status de acesso exibido na Tela A1. Derivado, não persistido: "pendente" é
@@ -175,7 +176,8 @@ export type MotivoRecusaUsuario =
   | "atribuicao_incompativel"
   | "cpf_invalido"
   | "cnpj_invalido"
-  | "cpf_e_cnpj";
+  | "cpf_e_cnpj"
+  | "telefone_invalido";
 
 /**
  * RF-030/RF-040 — normaliza os dados de cadastro para persistir: em branco vira
@@ -202,6 +204,7 @@ function validarDadosCadastrais(dados: DadosCadastraisUsuario): MotivoRecusaUsua
   // A pessoa é PF ou PJ, não as duas. Aceitar os dois deixaria a tela de detalhe sem saber
   // qual documento mostrar, e a edição sem saber qual campo pré-selecionar.
   if (cpf && cnpj) return "cpf_e_cnpj";
+  if (dados.telefone?.trim() && !validarTelefoneCelular(dados.telefone)) return "telefone_invalido";
   if (cpf && !validarCpf(cpf)) return "cpf_invalido";
   if (cnpj && !validarCnpj(cnpj)) return "cnpj_invalido";
   return null;

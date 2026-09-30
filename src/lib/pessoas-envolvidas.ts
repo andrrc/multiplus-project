@@ -2,6 +2,7 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { normalizarCnpj, validarCnpj } from "@/lib/cnpj";
 import { normalizarCpf, validarCpf } from "@/lib/cpf";
 import { validarEmail } from "@/lib/validacao";
+import { validarTelefoneCelular } from "@/lib/formatacao";
 import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
 import { prisma } from "@/lib/prisma";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
@@ -16,6 +17,7 @@ export function validarPessoaEnvolvida(pessoa: PessoaEnvolvidaInput): string | n
     return pessoa.tipo === "EMPRESA" ? "Informe a razão social da pessoa envolvida." : "Informe o nome da pessoa envolvida.";
   }
   if (!pessoa.telefone.trim()) return "Informe o telefone da pessoa envolvida.";
+  if (!validarTelefoneCelular(pessoa.telefone)) return "O celular deve ter DDD e 9 dígitos.";
   if (!pessoa.email.trim()) return "Informe o e-mail da pessoa envolvida.";
   if (!validarEmail(pessoa.email)) return "E-mail da pessoa envolvida inválido.";
   if (pessoa.tipo === "PESSOA" && pessoa.cpf && !validarCpf(pessoa.cpf)) {

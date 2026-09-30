@@ -6,6 +6,7 @@ import { heredarDadosPontoContato, type DadosPessoa } from "@/lib/heranca-pessoa
 import { ORIGENS_CONTATO, PORTES_EMPRESA, ehOpcaoOutro, ehSegmentoCustomizado, segmentosPorTipo } from "@/lib/opcoes-cliente";
 import { formatarCnpj, formatarCpf, mascararCpf } from "@/lib/formatacao";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
+import { CampoTelefone } from "@/ui/campo-telefone";
 import { SeletorLocalidade } from "../../seletor-localidade";
 import { atualizarClienteAction } from "./actions";
 
@@ -35,7 +36,7 @@ function CamposPessoa({
         <input disabled={disabled} value={valores.endereco} onChange={(e) => set("endereco", e.target.value)} className={inputClass} />
       </Campo>
       <Campo label="Telefone">
-        <input disabled={disabled} value={valores.telefone} onChange={(e) => set("telefone", e.target.value)} className={inputClass} />
+        <CampoTelefone disabled={disabled} value={valores.telefone} onValueChange={(valor) => set("telefone", valor)} className={inputClass} />
       </Campo>
       <Campo label="RG">
         <input disabled={disabled} value={valores.rg} onChange={(e) => set("rg", e.target.value)} className={inputClass} />

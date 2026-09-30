@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import type { Perfil } from "@prisma/client";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
+import { CampoTelefone } from "@/ui/campo-telefone";
 import type { OpcaoAtribuicao } from "@/lib/usuarios";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
 
 export type EstadoFormularioUsuario = {
   erro?: string;
   /** Campo a destacar no formulário, para o erro aparecer junto do que precisa mudar. */
-  campo?: "email" | "nome" | "cpf" | "cnpj";
+  campo?: "email" | "nome" | "cpf" | "cnpj" | "telefone";
 };
 
 export type AcaoFormularioUsuario = (
@@ -182,9 +183,8 @@ export function UsuarioForm({
             </Campo>
 
             <Campo label="Telefone">
-              <input
+              <CampoTelefone
                 name="telefone"
-                type="tel"
                 defaultValue={inicial?.telefone ?? ""}
                 autoComplete="off"
                 className={inputClass}

@@ -44,6 +44,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
     mesma pessoa do Responsável Legal, basta marcar e informar o cargo, e os dados são
     copiados (RF-027).
 - **Pessoa Física:** nome, CPF, RG, CEP, endereço, e-mail, segmento e origem.
+- Campos de celular usam máscara `(DD) XXXXX-XXXX`, aceitam colagem com `+55` e verificam no servidor os 11 dígitos quando preenchidos. Essa regra também vale para Responsável Legal, Ponto de Contato e Pessoa Envolvida (pessoa ou empresa); os dois primeiros seguem opcionais.
 - **Segmento:** vem de uma lista fechada por tipo. "Outros" (PJ) ou "Outro" (PF) abre um
   campo livre.
 - **Duplicidade:** CNPJ e CPF não podem se repetir.
@@ -52,6 +53,8 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 - **Rota:** `/clientes/novo`.
 - **Função:** `criarCliente` (`src/lib/clientes.ts`), com validação em
   `validarNovoCliente` (`src/lib/validacao-cliente.ts`).
+- **Telefone:** `CampoTelefone` (`src/ui/campo-telefone.tsx`), `mascararTelefone`,
+  `formatarTelefone` e `validarTelefoneCelular` (`src/lib/formatacao.ts`).
 - **Integrações externas:**
   - consulta de CNPJ pela BrasilAPI (`src/lib/cnpj.ts`, exige header `User-Agent`);
   - estados e municípios pelo IBGE (`src/lib/localidades.ts`).
@@ -188,3 +191,4 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 | 2026-09-28 | `edac240`, `e2292d8`, `566b48a` | Desativação do cliente separada do acesso ao portal |
 | 2026-09-29 | `95589d2` | Controles de acesso exibidos na ficha |
 | 2026-09-29 | `d731f79` | Blocos da ficha voltam a ter o fundo `papel` (cor `fundo` não existia) |
+| 2026-09-30 | — | Máscara e validação de celular para dados de cliente e Pessoas Envolvidas; ver [análise](../analises/formatacao-campos-telefone.md) |

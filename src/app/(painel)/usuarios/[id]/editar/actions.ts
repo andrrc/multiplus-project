@@ -46,6 +46,7 @@ export async function atualizarUsuarioAction(
         erro: "Informe CPF ou CNPJ, não os dois — a pessoa é física ou jurídica.",
         campo: "cpf",
       },
+      telefone_invalido: { erro: "O celular deve ter DDD e 9 dígitos.", campo: "telefone" },
     };
     return mensagens[resultado.motivo];
   }

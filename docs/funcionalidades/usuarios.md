@@ -47,6 +47,8 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 
 **Como funciona.**
 - **Cadastro:** a Administradora informa nome, e-mail, perfil e dados complementares.
+- O telefone opcional é tratado como celular brasileiro: máscara `(DD) XXXXX-XXXX`, com
+  suporte a colagem com `+55` e validação de 11 dígitos no servidor.
 - **Convite:** o usuário recebe um e-mail para definir a senha, com link válido por
   **7 dias**.
 - **Se o e-mail falhar:** o usuário é criado mesmo assim, e o convite pode ser reenviado.
@@ -55,6 +57,8 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 
 **Detalhes técnicos.**
 - **Rotas:** `/usuarios/novo` e `/usuarios/[id]/editar`.
+- **Telefone:** usa `CampoTelefone` (`src/ui/campo-telefone.tsx`) e a validação
+  `validarTelefoneCelular` (`src/lib/formatacao.ts`).
 - **Funções:** `criarUsuarioInterno`, `reenviarConvite`, `gerarLinkConvite` e
   `enviarConviteDefinicaoSenha`.
 - **Token:** o banco guarda só o hash. O link novo invalida o anterior.
@@ -125,3 +129,4 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 | 2026-09-16 | `41e4198` | Correção da edição do próprio nome, com testes do RF-042 |
 | 2026-09-18 | `36bc769`, `29c71ee` | Link manual de convite, aberto em modal |
 | 2026-09-18 | `6afd91d` | Organização das ações na lista de usuários |
+| 2026-09-30 | — | Máscara e validação do telefone celular; ver [análise](../analises/formatacao-campos-telefone.md) |

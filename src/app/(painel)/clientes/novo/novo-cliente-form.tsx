@@ -5,6 +5,7 @@ import type { TipoCliente } from "@prisma/client";
 import { heredarDadosPontoContato, PESSOA_VAZIA, type DadosPessoa } from "@/lib/heranca-pessoa";
 import { ORIGENS_CONTATO, PORTES_EMPRESA, ehOpcaoOutro, segmentosPorTipo } from "@/lib/opcoes-cliente";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
+import { CampoTelefone } from "@/ui/campo-telefone";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import { criarClienteAction, consultarCnpjAction } from "./actions";
@@ -73,10 +74,10 @@ function CamposPessoa({
         />
       </Campo>
       <Campo label="Telefone">
-        <input
+        <CampoTelefone
           disabled={disabled}
           value={valores.telefone}
-          onChange={(e) => set("telefone", e.target.value)}
+          onValueChange={(valor) => set("telefone", valor)}
           className={inputClass}
         />
       </Campo>
@@ -547,7 +548,7 @@ export function NovoClienteForm() {
                       </Campo>
                     )}
                     <Campo label="Telefone">
-                      <input value={pessoa.telefone} onChange={(e) => set("telefone", e.target.value)} className={inputClass} />
+                      <CampoTelefone value={pessoa.telefone} onValueChange={(valor) => set("telefone", valor)} className={inputClass} />
                     </Campo>
                     <Campo label="E-mail">
                       <input

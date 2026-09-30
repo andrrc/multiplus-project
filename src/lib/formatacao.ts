@@ -1,4 +1,4 @@
-/** Formatação de exibição — os dados ficam normalizados (só dígitos) no banco. */
+/** Formatação de exibição para dados armazenados com ou sem máscara. */
 import type { TipoCliente } from "@prisma/client";
 
 /** RF-034 — CNPJ (PJ) ou CPF (PF), formatado, conforme o tipo do cliente. */
@@ -27,9 +27,30 @@ export function formatarCpf(cpf: string): string {
 }
 
 export function formatarTelefone(telefone: string): string {
-  if (telefone.length === 11) return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-  if (telefone.length === 10) return telefone.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
-  return telefone;
+  const digitos = normalizarDigitosTelefone(telefone);
+  return digitos.length === 11 ? mascararTelefone(digitos) : telefone;
+}
+
+export function normalizarDigitosTelefone(valor: string): string {
+  const digitos = valor.replace(/\D/g, "");
+  return digitos.length === 13 && digitos.startsWith("55") ? digitos.slice(2) : digitos;
+}
+
+/** Campos de telefone do sistema recebem exclusivamente celular nacional com 11 dígitos. */
+export function validarTelefoneCelular(valor: string): boolean {
+  return normalizarDigitosTelefone(valor).length === 11;
+}
+
+/** Máscara progressiva para celular brasileiro; aceita colagem com o prefixo +55. */
+export function mascararTelefone(valor: string): string {
+  const digitos = normalizarDigitosTelefone(valor);
+  if (!digitos) return "";
+  if (digitos.length > 11) return digitos;
+  if (digitos.length <= 2) return `(${digitos}`;
+  const ddd = digitos.slice(0, 2);
+  const celular = digitos.slice(2);
+  if (digitos.length <= 7) return `(${ddd}) ${celular}`;
+  return `(${ddd}) ${celular.slice(0, 5)}-${celular.slice(5)}`;
 }
 
 /** Valor armazenado com duas casas decimais, exibido no padrão monetário brasileiro. */

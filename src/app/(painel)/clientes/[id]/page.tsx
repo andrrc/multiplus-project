@@ -311,7 +311,7 @@ export default async function DetalheClientePage({
                   {pessoa.nome}
                 </span>
                 <span className="text-cinza">{pessoa.tipo === "EMPRESA" ? "Empresa" : "Pessoa"}</span>
-                {pessoa.telefone && <span className="text-cinza">· {pessoa.telefone}</span>}
+                {pessoa.telefone && <span className="text-cinza">· {formatarTelefone(pessoa.telefone)}</span>}
                 {pessoa.email && <span className="text-cinza">· {pessoa.email}</span>}
                 {!pessoa.ativo && <Etiqueta tom="apagado">Desativada</Etiqueta>}
                 {pessoa.temAcesso ? (

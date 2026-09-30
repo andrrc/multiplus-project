@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useState, useTransition } from "react";
 import { inputClass } from "@/ui/campo";
+import { CampoTelefone } from "@/ui/campo-telefone";
 import type { EntidadeDesativavel } from "@/lib/desativacao";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
 import {
@@ -97,7 +98,7 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
           className={inputClass}
         />
       )}
-      <input name="telefone" required placeholder="Telefone" className={inputClass} />
+      <CampoTelefone name="telefone" required className={inputClass} />
       <input name="email" required type="email" placeholder="E-mail" className={inputClass} />
       <label className="flex items-center gap-2 text-[14px] text-tinta">
         <input type="checkbox" name="temAcesso" className="h-4 w-4 accent-verde" />
