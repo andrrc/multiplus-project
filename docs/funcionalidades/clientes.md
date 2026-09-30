@@ -191,4 +191,4 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 | 2026-09-28 | `edac240`, `e2292d8`, `566b48a` | Desativação do cliente separada do acesso ao portal |
 | 2026-09-29 | `95589d2` | Controles de acesso exibidos na ficha |
 | 2026-09-29 | `d731f79` | Blocos da ficha voltam a ter o fundo `papel` (cor `fundo` não existia) |
-| 2026-09-30 | — | Máscara e validação de celular para dados de cliente e Pessoas Envolvidas; ver [análise](../analises/formatacao-campos-telefone.md) |
+| 2026-09-30 | `1d88b94` | Máscara e validação de celular para dados de cliente e Pessoas Envolvidas; ver [análise](../analises/formatacao-campos-telefone.md) |

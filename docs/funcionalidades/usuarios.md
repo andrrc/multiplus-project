@@ -129,4 +129,4 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 | 2026-09-16 | `41e4198` | Correção da edição do próprio nome, com testes do RF-042 |
 | 2026-09-18 | `36bc769`, `29c71ee` | Link manual de convite, aberto em modal |
 | 2026-09-18 | `6afd91d` | Organização das ações na lista de usuários |
-| 2026-09-30 | — | Máscara e validação do telefone celular; ver [análise](../analises/formatacao-campos-telefone.md) |
+| 2026-09-30 | `1d88b94` | Máscara e validação do telefone celular; ver [análise](../analises/formatacao-campos-telefone.md) |
