@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-09-29 | [Subtarefas](funcionalidades/subtarefas.md) | O semáforo no campo Prazo já indica atraso; remover o texto de atraso redundante | `86bb070` |
 | 2026-09-29 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Semáforo global configurável: vermelho até 5 e amarelo até 10 dias úteis por padrão, aplicado a projetos, tarefas e subtarefas; antecedência de e-mail preservada | `f2ebb80` |
 | 2026-09-29 | Todos | Documentação por módulo em `docs/funcionalidades/` | `fe1b5b4` |
 | 2026-09-29 | [Identidade visual](Identidade_Visual_Multiplus.md) | Tokens `critico-cl` e `azul-cl`, e troca das cores inexistentes (`vermelho`, `fundo`, `black`). Sombra só em camadas flutuantes. Teste que barra token inexistente | `d731f79` |
