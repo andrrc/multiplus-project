@@ -1,9 +1,9 @@
 # Architecture Design Document — Múltiplus Software
 
-**Versão:** 1.10
-**Data:** 16/09/2026
+**Versão:** 1.11
+**Data:** 30/09/2026
 **Autor:** André (Somma)
-**Baseado em:** SRS v2.1 (RF-001 a RF-047, incluindo RF-002a a RF-002d)
+**Baseado em:** SRS v2.4 (RF-001 a RF-047, incluindo RF-002a a RF-002d e RN-010)
 
 ---
 
@@ -23,6 +23,11 @@ preferência explícita de controle total do servidor.
 - RF-016/RF-017 (adição de escopo): comentários com anexo de imagem/link em subtarefa, tarefa e projeto
 - **RF-018 a RF-021 (adição de escopo): modelo de 4 perfis com 3 granularidades de atribuição**
   **— este é o ponto que mais impacta a arquitetura desta revisão.** Ver Seção 3.1.
+- RF-006/RF-016/RF-022/RF-023: recorrência semanal com dia escolhido, menções autorizadas
+  e preferências por perfil com canais de e-mail e in-app independentes, incluindo
+  atribuições recebidas
+- RF-009: semáforo de prazos global, persistido separado da antecedência de avisos por e-mail
+- RN-010: campos editáveis de telefone validam celular brasileiro no servidor, além da máscara
 
 ---
 
@@ -165,8 +170,8 @@ escala.
 | Storage de imagens  | **MinIO self-hosted** (Docker, S3-compatible)                                      | RF-017 — mantém imagem fora do Postgres; roda no mesmo VPS, alinhado à preferência de controle total                              |
 | Reverse proxy / SSL | **Caddy**                                                                          | HTTPS automático via Let's Encrypt, config mínima pra manter sozinho                                                                |
 | Orquestração      | **Docker Compose**                                                                 | App + Postgres + MinIO + Caddy num único`docker-compose.yml`                                                                       |
-| Jobs/Recorrência   | **Cron do próprio VPS** (node-cron ou cron do sistema)                            | RF-006 (recorrência) e RF-007 (notificação de prazo)                                                                               |
-| E-mail transacional | **Resend**                                                                         | Independe da hospedagem; free tier cobre o volume esperado                                                                            |
+| Jobs/Recorrência   | **Conclusão transacional no PostgreSQL; job de prazo via endpoint protegido** | RF-006 materializa a próxima ocorrência na conclusão; RF-007 expõe job de aviso por endpoint, ainda sem scheduler ativo em staging |
+| E-mail transacional | **Resend**                                                                         | Avisos de prazo e eventos configuráveis (RF-007, RF-022/RF-023), além de convites e recuperação de acesso                              |
 | Backup              | **Cron + pg_dump** → Cloudflare R2 (banco) + sync do bucket MinIO → R2 (imagens) | Sem isso, falha no VPS apaga tudo                                                                                                     |
 | Monitoramento       | **UptimeRobot** (free)                                                             | Alerta de queda sem depender de provedor gerenciado                                                                                   |
 | CI/CD               | **GitHub Actions** → deploy via SSH                                               | Testes rodam antes do deploy (ver padrão de testes por sprint)                                                                       |
@@ -194,7 +199,8 @@ graph TD
         API[API Routes / Server Actions]
         AUTH[Auth.js]
         BL[Regras de Negócio<br/>indicador % em dia, recorrência]
-        CRON[Jobs de Recorrência e Notificação]
+        CRON[Job de Aviso de Prazo]
+        NOTIFY[Despachante de Notificações<br/>evento + perfil + canais]
     end
 
     subgraph Data["Dados (VPS Contabo)"]
@@ -215,9 +221,12 @@ graph TD
     API --> BL
     BL --> DB
     BL --> MINIO
+    API --> NOTIFY
+    BL --> NOTIFY
+    NOTIFY --> DB
+    NOTIFY --> EMAIL
     API --> CNPJAPI
-    CRON --> BL
-    CRON --> EMAIL
+    CRON --> NOTIFY
     DB -.backup diário.-> R2
     MINIO -.sync.-> R2
     MONITOR -.healthcheck.-> WEB
@@ -696,8 +705,9 @@ e `20260916190000_rls_heranca_projetos_tarefas` (herança até Projeto, Tarefa e
 
 ### ADR-009: Projeção visual de ocorrências recorrentes na agenda
 
-**Contexto:** o RF-036 exige que a agenda mostre ocorrências recorrentes, mas o RF-006 só as
-cria quando a anterior é concluída ou vence — meses futuros ficariam vazios.
+**Contexto:** o RF-036 exige que a agenda mostre ocorrências recorrentes futuras. A próxima
+ocorrência real é materializada na mesma transação em que a tarefa atual é concluída; sem
+projeção, os meses futuros ficariam vazios.
 
 **Opção escolhida:** calcular e exibir as ocorrências futuras em tempo de renderização, sem
 persistir. São itens indicativos, não editáveis.
@@ -706,11 +716,59 @@ persistir. São itens indicativos, não editáveis.
 próximas 12). Exigiria decidir a janela, tratar o cancelamento de série (RN-008) e evitar
 poluir o Painel de Subtarefas com tarefas que ninguém criou.
 
-**Consequência que exige teste:** a função de projeção precisa de teste unitário para cada
-periodicidade, incluindo o caso-limite de meses com menos dias (prazo 31/01 mensal → 28/02).
+**Consequência que exige teste:** a projeção precisa respeitar as periodicidades e o dia da
+semana escolhido para séries semanais, incluindo o caso-limite de meses com menos dias
+(prazo 31/01 mensal → 28/02).
 
-**Status:** decisão registrada; implementação na Sprint 4, junto do módulo de Projetos e
-Tarefas.
+**Status:** implementada. As projeções são calculadas sem gravar ocorrências futuras; a
+recorrência semanal persiste `diaSemana` e usa essa escolha tanto na próxima ocorrência
+quanto na projeção da Agenda.
+
+---
+
+### ADR-010: Preferências por perfil e despacho de notificações por canal
+
+**Contexto:** RF-022 exige que a Administradora escolha, para cada evento e perfil, se o
+aviso será enviado por e-mail, in-app, por ambos ou por nenhum canal. Comentários, menções,
+confirmações ao autor e atribuições recebidas precisam respeitar a mesma política.
+
+**Decisão:** persistir uma preferência por par perfil/evento em `PreferenciaNotificacao`,
+com flags independentes para e-mail e in-app. O despachante comum
+`dispararEventoNotificacao` lê a preferência e envia somente pelos canais ativos. Menções e
+confirmação do autor usam `NOVO_COMENTARIO`; criação ou troca de responsável usa
+`ATRIBUICAO_RECEBIDA`. Os destinatários de menção continuam limitados a usuários com acesso
+ao registro.
+
+**Alternativa descartada:** manter caminhos especiais que enviem e-mail diretamente e não
+consultem a preferência. Isso faria a tela apresentar controle que não corresponde ao
+comportamento real.
+
+**Consequências:** a configuração vale para todas as pessoas ativas do perfil; não há
+preferência individual. Falha no provedor de e-mail não deve cancelar a ação de negócio nem
+impedir o aviso in-app quando esse canal estiver ativo. O job de prazo continua dependente de
+um scheduler externo ao código da aplicação; em staging, ainda não há scheduler configurado.
+
+---
+
+### ADR-011: Configuração do semáforo separada dos avisos de prazo
+
+**Contexto:** RF-009 passou a permitir que a Administradora ajuste os limites de cor para
+projetos, tarefas e subtarefas. A antecedência dos e-mails de prazo é outra regra e não deve
+ser alterada ao mudar o semáforo.
+
+**Decisão:** persistir os limites visuais em uma configuração singleton
+`ConfiguracaoSemaforo` (`configuracoes_semaforo`), separada de
+`ConfiguracaoNotificacao.diasAntecedenciaPadrao`. A configuração é editável somente pelo
+`ADMIN`; a leitura é autenticada. Os valores padrão são vermelho até 5 e âmbar até 10 dias
+úteis, com fins de semana excluídos e feriados contados como dias normais.
+
+**Alternativa descartada:** reutilizar `diasAntecedenciaPadrao` ou os registros de
+`ConfiguracaoNotificacao`. Isso misturaria um indicador visual com o disparo automático de
+e-mail e poderia alterar avisos ao ajustar cores.
+
+**Consequências:** projetos, tarefas e subtarefas usam os mesmos limites; mudar o semáforo
+não modifica a antecedência nem o funcionamento do job de prazo. A decisão está implementada
+pela migration `20260929100000_configuracao_semaforo`.
 
 ---
 
@@ -756,6 +814,7 @@ confortável mesmo com crescimento moderado de uso.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 1.11 | 30/09/2026 | André (Somma) | Atualiza a base para o SRS v2.4; registra ADR-010 (preferências de notificação por perfil e canal) e ADR-011 (configuração independente do semáforo); atualiza ADR-009 para recorrência semanal e projeção já implementada; revisa diagrama e execução dos jobs. |
 | 1.10 | 16/09/2026 | André (Somma) | ADR-008 revisado após a auditoria da Sprint 3: a herança de acesso passa a valer para a cadeia inteira (Projeto, Tarefa e Subtarefa), separada da questão das colunas `ativo`, que seguem para a Sprint 4; registradas as três funções de herança (uma por nível, nunca subselect) e a correção da premissa do plano que gerou o vazamento. Migration `20260916190000_rls_heranca_projetos_tarefas` |
 | 1.9 | 16/09/2026 | André (Somma) | ADR-008 (soft delete com cascata por herança) registrado e implementado na Sprint 3, com as consequências que apareceram na implementação; ADR-009 (projeção de ocorrências recorrentes) registrado para a Sprint 4. Base atualizada para o SRS v2.1 |
 | 1.8 | 10/09/2026 | André (Somma) | Fechamento do ADR-007 (Pessoa Envolvida), com os dois bugs reais encontrados na implementação |
