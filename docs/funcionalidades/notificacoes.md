@@ -95,7 +95,7 @@ conforme as preferências.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
+| 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `5827166` | Healthcheck e CI (base para o job) |
 | 2026-09-17 | `022fec0`, `d6ed6d1`, `dc16183` | Disparo de notificações, templates de e-mail e central de notificações (Sprint 4B) |
 | 2026-09-18 | `a567583` | Correção do modelo de preferências |

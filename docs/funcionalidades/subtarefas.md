@@ -166,7 +166,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
+| 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `a79a2a8` | Painel de prazos (Sprint 4A) |
 | 2026-09-18 | `25b1e67`, `60b0fb7` | Atribuição de responsável a subtarefas |
 | 2026-09-18 | `ac5ce5f` | Integrante da equipe pode ser o responsável da subtarefa |

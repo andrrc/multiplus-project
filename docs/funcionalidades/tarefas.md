@@ -243,7 +243,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
+| 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder projetos, tarefas e subtarefas dos colaboradores |
 | 2026-09-17 | `6342b73`, `579cdd3`, `fe0ad63`, `47df249`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, RLS, recorrência, "% em dia", telas da Administradora e dos colaboradores |
 | 2026-09-18 | `13bb3ba` | Integrante da equipe pode ser o responsável da tarefa |

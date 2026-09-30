@@ -159,7 +159,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
+| 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder os projetos dele dos colaboradores |
 | 2026-09-17 | `6342b73`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, telas da Administradora e Meus Projetos |
 | 2026-09-18 | `305c823`, `f6c2bc4` | Valor contratado, com campo formatado em moeda |
