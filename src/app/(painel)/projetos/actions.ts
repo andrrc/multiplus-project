@@ -21,7 +21,7 @@ import {
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
 import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
-import { dispararEmailsMencaoComentario, dispararEventoNotificacao } from "@/lib/notificacoes";
+import { dispararNotificacoesMencaoComentario, dispararEventoNotificacao } from "@/lib/notificacoes";
 import { montarNumeroProposta } from "@/lib/numero-proposta";
 import type { EtiquetaSelecionada } from "@/lib/etiqueta-colors";
 
@@ -257,7 +257,7 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
     : `${ctx.perfil === "ADMIN" ? "/tarefas" : "/minhas-tarefas"}/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`;
   if (mencoesUsuarioIds.length) {
     const destinatariosComAcesso = await listarUsuariosMencionaveis(ctx, alvo);
-    void dispararEmailsMencaoComentario({ destinatarioIds: [ctx.usuarioId, ...mencoesUsuarioIds], autorId: ctx.usuarioId, comentario: comentario.texto, url: rotaRegistro });
+    void dispararNotificacoesMencaoComentario({ destinatarioIds: [ctx.usuarioId, ...mencoesUsuarioIds], autorId: ctx.usuarioId, comentario: comentario.texto, url: rotaRegistro, entidadeId: comentario.id });
     void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
       titulo: "Novo comentário",
       mensagem: "Um novo comentário foi publicado em um registro que você acompanha.",

@@ -10,6 +10,7 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
+import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 
 export type DadosProjeto = {
   clienteId: string;
@@ -371,8 +372,8 @@ async function sincronizarAtribuicaoAutomatica(
   tx: Prisma.TransactionClient,
   tarefaId: string,
   pessoaEnvolvidaId: string | null | undefined,
-): Promise<void> {
-  if (!pessoaEnvolvidaId) return;
+): Promise<string | null> {
+  if (!pessoaEnvolvidaId) return null;
   const pessoa = await tx.pessoaEnvolvida.findUnique({
     where: { id: pessoaEnvolvidaId },
     include: { usuario: true },
@@ -389,7 +390,9 @@ async function sincronizarAtribuicaoAutomatica(
       create: { usuarioId: pessoa.usuario.id, entidadeTipo: "TAREFA", entidadeId: tarefaId },
       update: {},
     });
+    return pessoa.usuario.id;
   }
+  return null;
 }
 
 async function validarResponsavel(
@@ -444,6 +447,20 @@ async function validarResponsavelSubtarefa(
     });
     if (!usuario) throw new Error("O responsável da equipe não está ativo ou não possui perfil de colaborador.");
   }
+}
+
+async function usuarioDaResponsabilidadeSubtarefa(
+  tx: Prisma.TransactionClient,
+  pessoaEnvolvidaId: string | null | undefined,
+  usuarioId: string | null | undefined,
+): Promise<string | null> {
+  if (usuarioId) return usuarioId;
+  if (!pessoaEnvolvidaId) return null;
+  const pessoa = await tx.pessoaEnvolvida.findUnique({
+    where: { id: pessoaEnvolvidaId },
+    select: { temAcesso: true, usuario: { select: { id: true, ativo: true } } },
+  });
+  return pessoa?.temAcesso && pessoa.usuario?.ativo ? pessoa.usuario.id : null;
 }
 
 export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
@@ -516,7 +533,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
     throw new Error("A antecedência deve ser maior que zero.");
   }
 
-  return comContextoDeUsuario(ctx, async (tx) => {
+  const resultado = await comContextoDeUsuario(ctx, async (tx) => {
     await validarResponsavel(tx, dados.projetoId, dados.responsavelId, dados.responsavelUsuarioId);
     const serieId = dados.periodicidade ? randomUUID() : null;
     const tarefa = await tx.tarefa.create({
@@ -537,16 +554,23 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         criadoPorId: ctx.usuarioId,
       },
     });
-    await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    const usuarioResponsavelId = await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    const usuariosAtribuidos = new Set<string>();
+    if (usuarioResponsavelId) usuariosAtribuidos.add(usuarioResponsavelId);
     if (dados.responsavelUsuarioId) {
       await tx.atribuicao.upsert({
         where: { usuarioId_entidadeTipo_entidadeId: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id } },
         create: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id },
         update: {},
       });
+      usuariosAtribuidos.add(dados.responsavelUsuarioId);
     }
-    return tarefa;
+    return { tarefa, usuariosAtribuidos: [...usuariosAtribuidos] };
   });
+  for (const usuarioId of resultado.usuariosAtribuidos) {
+    void dispararNotificacaoAtribuicaoRecebida(usuarioId, "TAREFA", resultado.tarefa.id);
+  }
+  return resultado.tarefa;
 }
 
 export async function atualizarTarefa(
@@ -561,7 +585,7 @@ export async function atualizarTarefa(
     throw new Error("A antecedência deve ser maior que zero.");
   }
 
-  return comContextoDeUsuario(ctx, async (tx) => {
+  const resultado = await comContextoDeUsuario(ctx, async (tx) => {
     const anterior = await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { responsavelId: true, responsavelUsuarioId: true, projetoId: true } });
     await validarResponsavel(tx, anterior.projetoId, dados.responsavelId, dados.responsavelUsuarioId);
     const tarefa = await tx.tarefa.update({
@@ -593,16 +617,27 @@ export async function atualizarTarefa(
     if (anterior.responsavelUsuarioId && anterior.responsavelUsuarioId !== dados.responsavelUsuarioId) {
       await tx.atribuicao.deleteMany({ where: { usuarioId: anterior.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
     }
-    await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    const usuariosAtribuidos = new Set<string>();
+    if (anterior.responsavelId !== dados.responsavelId) {
+      const usuarioResponsavelId = await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+      if (usuarioResponsavelId) usuariosAtribuidos.add(usuarioResponsavelId);
+    } else {
+      await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    }
     if (dados.responsavelUsuarioId) {
       await tx.atribuicao.upsert({
         where: { usuarioId_entidadeTipo_entidadeId: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id } },
         create: { usuarioId: dados.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefa.id },
         update: {},
       });
+      if (anterior.responsavelUsuarioId !== dados.responsavelUsuarioId) usuariosAtribuidos.add(dados.responsavelUsuarioId);
     }
-    return tarefa;
+    return { tarefa, usuariosAtribuidos: [...usuariosAtribuidos] };
   });
+  for (const usuarioId of resultado.usuariosAtribuidos) {
+    void dispararNotificacaoAtribuicaoRecebida(usuarioId, "TAREFA", resultado.tarefa.id);
+  }
+  return resultado.tarefa;
 }
 
 export async function atualizarStatusTarefa(ctx: ContextoUsuario, tarefaId: string, status: StatusTarefa) {
@@ -613,7 +648,7 @@ export async function atualizarStatusTarefa(ctx: ContextoUsuario, tarefaId: stri
 export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa) {
   const ehAdministrador = ctx.perfil === "ADMIN";
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
-  return comContextoDeUsuario(ctx, async (tx) => {
+  const subtarefa = await comContextoDeUsuario(ctx, async (tx) => {
     let responsavelId = dados.atribuidoAId;
     let responsavelUsuarioId = dados.atribuidoAUsuarioId;
     if (!ehAdministrador) {
@@ -630,7 +665,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
     }
     const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, dados.tarefaId, responsavelId, responsavelUsuarioId);
-    return tx.subtarefa.create({
+    const subtarefa = await tx.subtarefa.create({
       data: {
         tarefaId: dados.tarefaId,
         titulo: validarNome(dados.titulo, "da subtarefa"),
@@ -643,7 +678,13 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         criadoPorId: ctx.usuarioId,
       },
     });
+    const usuarioResponsavelId = await usuarioDaResponsabilidadeSubtarefa(tx, responsavelId, responsavelUsuarioId);
+    return { subtarefa, usuarioResponsavelId };
   });
+  if (subtarefa.usuarioResponsavelId && subtarefa.usuarioResponsavelId !== ctx.usuarioId) {
+    void dispararNotificacaoAtribuicaoRecebida(subtarefa.usuarioResponsavelId, "SUBTAREFA", subtarefa.subtarefa.id);
+  }
+  return subtarefa.subtarefa;
 }
 
 export async function atualizarSubtarefa(
@@ -653,11 +694,12 @@ export async function atualizarSubtarefa(
 ) {
   exigirAdministrador(ctx);
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
-  return comContextoDeUsuario(ctx, async (tx) => {
-    const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
+  const resultado = await comContextoDeUsuario(ctx, async (tx) => {
+    const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true, atribuidoAId: true, atribuidoAUsuarioId: true } });
+    const usuarioResponsavelAnterior = await usuarioDaResponsabilidadeSubtarefa(tx, atual.atribuidoAId, atual.atribuidoAUsuarioId);
     const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, atual.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
-    return tx.subtarefa.update({
+    const subtarefa = await tx.subtarefa.update({
       where: { id: subtarefaId },
       data: {
         titulo: validarNome(dados.titulo, "da subtarefa"),
@@ -669,16 +711,29 @@ export async function atualizarSubtarefa(
         atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
       },
     });
+    const usuarioResponsavelNovo = await usuarioDaResponsabilidadeSubtarefa(tx, subtarefa.atribuidoAId, subtarefa.atribuidoAUsuarioId);
+    return { subtarefa, usuarioResponsavelNovo: usuarioResponsavelAnterior !== usuarioResponsavelNovo ? usuarioResponsavelNovo : null };
   });
+  if (resultado.usuarioResponsavelNovo) {
+    void dispararNotificacaoAtribuicaoRecebida(resultado.usuarioResponsavelNovo, "SUBTAREFA", resultado.subtarefa.id);
+  }
+  return resultado.subtarefa;
 }
 
 export async function atualizarResponsavelSubtarefa(ctx: ContextoUsuario, subtarefaId: string, atribuidoAId: string | null, atribuidoAUsuarioId: string | null) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, async (tx) => {
-    const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true } });
+  const resultado = await comContextoDeUsuario(ctx, async (tx) => {
+    const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true, atribuidoAId: true, atribuidoAUsuarioId: true } });
+    const usuarioResponsavelAnterior = await usuarioDaResponsabilidadeSubtarefa(tx, atual.atribuidoAId, atual.atribuidoAUsuarioId);
     await validarResponsavelSubtarefa(tx, atual.tarefaId, atribuidoAId, atribuidoAUsuarioId);
-    return tx.subtarefa.update({ where: { id: subtarefaId }, data: { atribuidoAId, atribuidoAUsuarioId } });
+    const subtarefa = await tx.subtarefa.update({ where: { id: subtarefaId }, data: { atribuidoAId, atribuidoAUsuarioId } });
+    const usuarioResponsavelNovo = await usuarioDaResponsabilidadeSubtarefa(tx, subtarefa.atribuidoAId, subtarefa.atribuidoAUsuarioId);
+    return { subtarefa, usuarioResponsavelNovo: usuarioResponsavelAnterior !== usuarioResponsavelNovo ? usuarioResponsavelNovo : null };
   });
+  if (resultado.usuarioResponsavelNovo) {
+    void dispararNotificacaoAtribuicaoRecebida(resultado.usuarioResponsavelNovo, "SUBTAREFA", resultado.subtarefa.id);
+  }
+  return resultado.subtarefa;
 }
 
 export async function criarDocumentoProjeto(ctx: ContextoUsuario, dados: DadosDocumentoProjeto) {

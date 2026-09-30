@@ -11,3 +11,5 @@
  */
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 process.env.APP_DATABASE_URL = process.env.TEST_APP_DATABASE_URL;
+// Evita que notificações disparadas incidentalmente pelos testes usem um provedor real.
+process.env.RESEND_API_KEY = "";

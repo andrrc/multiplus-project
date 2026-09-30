@@ -100,8 +100,11 @@ describe("criar usuário interno → convite → definir senha → login → tel
     expect(naListagem?.totalAtribuicoes).toBe(1);
 
     // 3. Ela recebe o e-mail e define a senha pelo link.
-    expect(emailMock).toHaveBeenCalledTimes(1);
-    const token = extrairTokenDoEmail(emailMock.mock.calls[0][0].html);
+    await vi.waitFor(() => expect(emailMock).toHaveBeenCalledTimes(2));
+    const conviteEmail = emailMock.mock.calls.map(([email]) => email).find((email) => email.subject.includes("defina sua senha"));
+    expect(conviteEmail).toBeDefined();
+    expect(emailMock).toHaveBeenCalledWith(expect.objectContaining({ subject: "Nova atribuição: Licenciamento Gama" }));
+    const token = extrairTokenDoEmail(conviteEmail!.html);
 
     const validacao = await validarTokenAcesso(token);
     expect(validacao.valido).toBe(true);

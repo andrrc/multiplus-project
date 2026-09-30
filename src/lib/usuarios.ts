@@ -1,6 +1,7 @@
 import type { EntidadeTipo, Perfil } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
+import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
 import { linkDefinirSenha } from "@/lib/email";
 import { criarTokenAcesso } from "@/lib/tokens";
@@ -279,6 +280,9 @@ export async function criarUsuarioInterno(
   }
 
   const convite = await enviarConviteDefinicaoSenha(usuario, "USUARIO_INTERNO");
+  for (const atribuicao of new Map(dados.atribuicoes.map((item) => [`${item.entidadeTipo}:${item.entidadeId}`, item])).values()) {
+    void dispararNotificacaoAtribuicaoRecebida(usuario.id, atribuicao.entidadeTipo, atribuicao.entidadeId);
+  }
   return { sucesso: true, usuarioId: usuario.id, convite };
 }
 
@@ -591,12 +595,13 @@ export async function adicionarAtribuicao(
     return { sucesso: false, motivo: "incompativel_com_perfil" };
   }
 
-  await comContextoDeUsuario(ctx, (tx) =>
+  const { count } = await comContextoDeUsuario(ctx, (tx) =>
     tx.atribuicao.createMany({
       data: [{ usuarioId, ...entrada }],
       skipDuplicates: true,
     }),
   );
+  if (count > 0) void dispararNotificacaoAtribuicaoRecebida(usuarioId, entrada.entidadeTipo, entrada.entidadeId);
   return { sucesso: true };
 }
 

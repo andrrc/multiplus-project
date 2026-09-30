@@ -1,4 +1,5 @@
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
+import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 
 /**
  * RF-005/RN-006/ADR-007 — define o responsável de uma tarefa (qualquer Pessoa Envolvida,
@@ -21,7 +22,7 @@ export async function definirResponsavelTarefa(
   tarefaId: string,
   pessoaEnvolvidaId: string | null,
 ) {
-  return comContextoDeUsuario(ctx, async (tx) => {
+  const usuarioResponsavelId = await comContextoDeUsuario(ctx, async (tx) => {
     const tarefaAnterior = await tx.tarefa.findUniqueOrThrow({
       where: { id: tarefaId },
       select: { responsavelId: true },
@@ -62,6 +63,9 @@ export async function definirResponsavelTarefa(
         create: { usuarioId: pessoa.usuario.id, entidadeTipo: "TAREFA", entidadeId: tarefaId },
         update: {},
       });
+      return tarefaAnterior.responsavelId === pessoaEnvolvidaId ? null : pessoa.usuario.id;
     }
+    return null;
   });
+  if (usuarioResponsavelId) void dispararNotificacaoAtribuicaoRecebida(usuarioResponsavelId, "TAREFA", tarefaId);
 }

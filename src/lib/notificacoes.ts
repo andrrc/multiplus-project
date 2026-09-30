@@ -88,25 +88,80 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
   }
 }
 
-/** Menções são avisos direcionados e sempre usam e-mail, independentemente das preferências gerais. */
-export async function dispararEmailsMencaoComentario(dados: { destinatarioIds: string[]; autorId: string; comentario: string; url: string }) {
+/** Menções são direcionadas, mas respeitam os canais de NOVO_COMENTARIO do perfil. */
+export async function dispararNotificacoesMencaoComentario(dados: { destinatarioIds: string[]; autorId: string; comentario: string; url: string; entidadeId: string }) {
   try {
     const ids = [...new Set(dados.destinatarioIds)];
     if (!ids.length) return;
-    const usuarios = await prisma.usuario.findMany({ where: { id: { in: ids }, ativo: true }, select: { id: true, nome: true, email: true } });
+    const usuarios = await prisma.usuario.findMany({ where: { id: { in: ids }, ativo: true }, select: { id: true, nome: true, email: true, perfil: true } });
     const autor = await prisma.usuario.findUnique({ where: { id: dados.autorId }, select: { nome: true } });
+    const preferencias = await prisma.preferenciaNotificacao.findMany({ where: { evento: EventoNotificacao.NOVO_COMENTARIO } });
     await Promise.all(usuarios.map(async (usuario) => {
+      const preferencia = preferencias.find((item) => item.perfil === usuario.perfil);
+      if (!preferencia) return;
       const eAutor = usuario.id === dados.autorId;
       const titulo = eAutor ? "Menção enviada em comentário" : "Você foi mencionado em um comentário";
-      const mensagem = eAutor ? "Este e-mail confirma a menção publicada no comentário." : `${autor?.nome ?? "Alguém"} mencionou você em um comentário.`;
-      await enviarEmail({
-        to: usuario.email,
-        subject: titulo,
-        html: renderTemplateMencaoComentario({ nome: usuario.nome, titulo, mensagem, autor: autor?.nome ?? "Usuário", comentario: dados.comentario, url: dados.url }),
-      }).catch((erro: unknown) => console.error(`[mencao] falha ao enviar para ${usuario.email}:`, erro));
+      const mensagem = eAutor ? "Esta confirmação registra a publicação da menção no comentário." : `${autor?.nome ?? "Alguém"} mencionou você em um comentário.`;
+      if (preferencia.inApp) {
+        await prisma.notificacao.create({
+          data: {
+            usuarioId: usuario.id,
+            evento: EventoNotificacao.NOVO_COMENTARIO,
+            titulo,
+            mensagem,
+            url: dados.url,
+            entidadeId: dados.entidadeId,
+            dedupeKey: `mencao:${dados.entidadeId}:${usuario.id}`,
+          },
+        }).catch((erro: unknown) => {
+          if ((erro as { code?: string }).code !== "P2002") throw erro;
+        });
+      }
+      if (preferencia.email) {
+        await enviarEmail({
+          to: usuario.email,
+          subject: titulo,
+          html: renderTemplateMencaoComentario({ nome: usuario.nome, titulo, mensagem, autor: autor?.nome ?? "Usuário", comentario: dados.comentario, url: dados.url }),
+        }).catch((erro: unknown) => console.error(`[mencao] falha ao enviar para ${usuario.email}:`, erro));
+      }
     }));
   } catch (erro) {
     console.error("[mencao] falha ao preparar e-mails de comentário:", erro);
+  }
+}
+
+/** Dispara ATRIBUICAO_RECEBIDA conforme a preferência do usuário atribuído. */
+export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, entidadeTipo: "PROJETO" | "TAREFA" | "SUBTAREFA", entidadeId: string) {
+  try {
+    const registro = entidadeTipo === "PROJETO"
+      ? await prisma.projeto.findUnique({ where: { id: entidadeId }, select: { nome: true } })
+      : entidadeTipo === "TAREFA"
+      ? await prisma.tarefa.findUnique({ where: { id: entidadeId }, select: { nome: true } })
+      : await prisma.subtarefa.findUnique({ where: { id: entidadeId }, select: { titulo: true, tarefaId: true } });
+    if (!registro) return;
+    const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { perfil: true } });
+    if (!usuario) return;
+    const nome = "nome" in registro ? registro.nome : registro.titulo;
+    let url: string;
+    if (entidadeTipo === "PROJETO") {
+      url = `${usuario.perfil === "ADMIN" ? "/projetos" : "/meus-projetos"}/${entidadeId}`;
+    } else if (entidadeTipo === "TAREFA") {
+      url = `${usuario.perfil === "ADMIN" ? "/tarefas" : "/minhas-tarefas"}/${entidadeId}`;
+    } else {
+      if (!("tarefaId" in registro)) return;
+      url = usuario.perfil === "ADMIN"
+        ? `/tarefas/${registro.tarefaId}?subtarefa=${entidadeId}#subtarefa-${entidadeId}`
+        : `/minhas-tarefas/${registro.tarefaId}`;
+    }
+    await dispararEventoNotificacao(EventoNotificacao.ATRIBUICAO_RECEBIDA, {
+      titulo: `Nova atribuição: ${nome}`,
+      mensagem: entidadeTipo === "PROJETO" ? "Você recebeu acesso a um projeto." : entidadeTipo === "TAREFA" ? "Você recebeu uma tarefa." : "Você recebeu uma subtarefa.",
+      url,
+      entidadeId,
+      usuarioIds: [usuarioId],
+    });
+  } catch (erro) {
+    console.error(`[notificacao] falha ao preparar atribuição ${entidadeTipo}:${entidadeId}:`, erro);
   }
 }
 

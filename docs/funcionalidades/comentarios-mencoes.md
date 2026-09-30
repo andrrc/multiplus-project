@@ -1,6 +1,6 @@
 # Comentários e menções
 
-- **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
+- **Última revisão:** 2026-09-30, no commit a registrar do `staging`.
 - **Requisitos:** RF-016, RF-017, RF-047.
 - **Módulos relacionados:** Projetos, Tarefas, Subtarefas, Notificações.
 
@@ -9,7 +9,7 @@
 Projetos, tarefas e subtarefas têm uma área de **comentários**. Cada comentário pode ter
 um link e uma imagem. Comentários **não podem ser editados nem apagados** (RF-047). Ao
 escrever `@` é possível **mencionar** alguém que tenha acesso ao registro, e a pessoa
-mencionada recebe um e-mail.
+mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 ## Quem pode fazer o quê
 
@@ -46,16 +46,17 @@ mencionada recebe um e-mail.
 **Como funciona.**
 - **Sugestões:** ao digitar `@`, o sistema sugere as pessoas que podem ver aquele
   registro, e a menção aparece em azul.
-- **E-mails:** a pessoa mencionada recebe um e-mail, e quem mencionou recebe uma cópia de
-  confirmação.
+- **Avisos:** a pessoa mencionada recebe o aviso pelos canais configurados em “Novo
+  comentário” para o perfil dela. Quem mencionou também recebe a confirmação, seguindo os
+  canais configurados para o próprio perfil.
 - **Demais pessoas com acesso:** recebem o aviso de novo comentário.
 
 **Detalhes técnicos.**
-- **Funções:** `listarUsuariosMencionaveis` e `dispararEmailsMencaoComentario`.
+- **Funções:** `listarUsuariosMencionaveis` e `dispararNotificacoesMencaoComentario`.
 - **Validações:** o servidor recusa mencionar quem não tem acesso ao registro, e exige
   que o nome `@Fulano` continue no texto.
-- **E-mail de menção:** é sempre enviado, independentemente das preferências de
-  notificação.
+- **Preferências:** a menção e a confirmação do autor usam as preferências de
+  `NOVO_COMENTARIO`; cada canal (e-mail e App) é aplicado separadamente.
 
 ---
 
@@ -65,12 +66,13 @@ mencionada recebe um e-mail.
 |---|---|---|
 | L1 | **Comentário sem menção avisa colaboradores sem acesso ao registro.** O evento `NOVO_COMENTARIO` é disparado sem lista de destinatários, então vai para todos os usuários ativos dos perfis habilitados (por padrão: `ADMIN`, `ADMIN_INTERNO` e `ADMIN_EXTERNO`). | **Privacidade e ruído:** o colaborador recebe aviso e e-mail com o link de registros que não pode ver. Com menção, os destinatários são filtrados corretamente. |
 | L2 | O link do comentário é validado só como "URL válida". | Aceita esquemas diferentes de `http(s)`, como `javascript:`. O checklist do `AGENTS.md` pede aceitar só `http(s)`. |
-| L3 | Não há teste automatizado de comentários nem de menções. | A imutabilidade, o filtro de menções e o acesso à imagem não têm cobertura. |
+| L3 | A cobertura automatizada de comentários continua parcial. | Há integração cobrindo os canais das menções em `notificacoes-rf022.integration.test.ts`; imutabilidade, validação de acesso da menção e acesso à imagem ainda não têm cobertura. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-09-30 | a registrar | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-17 | `df1f2dc`, `c4d87e6` | Bucket privado e upload autenticado de imagens |
 | 2026-09-17 | `e974425` | Comentários imutáveis em projeto, tarefa e subtarefa (Sprint 4B) |
 | 2026-09-18 | `d57f65d`, `ac9eb34`, `92eaf1f` | Prévia, ampliação e download da imagem |
