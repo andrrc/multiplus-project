@@ -221,6 +221,12 @@ registro de quem criou e quando.
 
 ---
 
+### T11. Semáforo de prazo
+
+**Como funciona.** A lista administrativa, as telas de tarefas atribuídas e os detalhes mostram as cores de prazo configuradas globalmente: vermelho até o primeiro limite, amarelo até o segundo e verde acima dele. O cálculo usa dias úteis e exclui sábados e domingos. Concluído permanece verde, cancelado vermelho e sem prazo sem cor.
+
+**Detalhes técnicos.** `IndicadorSemaforoProjeto` recebe `LimitesSemaforo` carregados por `buscarLimitesSemaforo`; configuração singleton em `configuracoes_semaforo`, editável pelo ADMIN na página de notificações. Testes: `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -237,6 +243,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder projetos, tarefas e subtarefas dos colaboradores |
 | 2026-09-17 | `6342b73`, `579cdd3`, `fe0ad63`, `47df249`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, RLS, recorrência, "% em dia", telas da Administradora e dos colaboradores |
 | 2026-09-18 | `13bb3ba` | Integrante da equipe pode ser o responsável da tarefa |

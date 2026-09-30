@@ -1,3 +1,4 @@
+/** RF-009 — cálculo das faixas configuráveis do semáforo de prazos. */
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -30,6 +31,18 @@ describe("IndicadorSemaforoProjeto", () => {
 
     expect(renderizar("2026-10-06")).toContain("bg-ambar/8");
     expect(renderizar("2026-10-13")).toContain("bg-verde-cl");
+  });
+
+  it("usa limites configurados para as faixas de cor", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-28T15:00:00.000Z"));
+    const renderizar = (prazo: string) => renderToStaticMarkup(createElement(IndicadorSemaforoProjeto, {
+      prazo: new Date(`${prazo}T00:00:00.000Z`), status: "EM_ANDAMENTO",
+      limites: { diasVermelhoAte: 2, diasAmareloAte: 4 },
+    }));
+    expect(renderizar("2026-09-30")).toContain("bg-critico/8");
+    expect(renderizar("2026-10-02")).toContain("bg-ambar/8");
+    expect(renderizar("2026-10-05")).toContain("bg-verde-cl");
   });
 
   it("identifica prazo para hoje e prazo no fim de semana", () => {

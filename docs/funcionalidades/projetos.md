@@ -71,7 +71,7 @@ O **semáforo** mostra quantos dias úteis faltam para a conclusão prevista.
 **Como funciona.**
 - **O que mostra:** o número de **dias úteis** (segunda a sexta) até a conclusão prevista.
   Feriados contam como dia normal.
-- **Cores:** vermelho terra até 5 dias úteis, âmbar de 6 a 10 e verde acima de 10.
+- **Cores:** limites globais configuráveis pelo ADMIN. O padrão é vermelho até 5 dias úteis, âmbar de 6 a 10 e verde acima de 10.
 - **Situações especiais:** prazo vencido mostra o atraso em dias úteis. Prazo hoje ou no
   fim de semana tem rótulo próprio.
 - **Projetos sem contagem:** sem prazo, concluídos, cancelados ou desativados aparecem
@@ -82,8 +82,8 @@ O **semáforo** mostra quantos dias úteis faltam para a conclusão prevista.
 **Detalhes técnicos.**
 - **Componente e cálculo:** `IndicadorSemaforoProjeto` e `calcularDiasUteisRestantes`
   (`src/ui/indicador-dias-restantes.tsx`).
-- **Teste:** `indicador-dias-restantes.unit.test.ts`, que cobre cores, hoje, fim de
-  semana, atraso e rótulos.
+- **Configuração:** limites editáveis pelo ADMIN em `/notificacoes`; os mesmos valores são usados em projetos, tarefas e subtarefas.
+- **Testes:** `indicador-dias-restantes.unit.test.ts` cobre faixas, hoje, fim de semana, atraso e estados especiais; `semaforo-rf009.integration.test.ts` cobre leitura, edição e RLS.
 
 ### P4. Detalhe do projeto
 
@@ -159,6 +159,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder os projetos dele dos colaboradores |
 | 2026-09-17 | `6342b73`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, telas da Administradora e Meus Projetos |
 | 2026-09-18 | `305c823`, `f6c2bc4` | Valor contratado, com campo formatado em moeda |

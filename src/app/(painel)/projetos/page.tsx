@@ -4,6 +4,7 @@ import { listarProjetos } from "@/lib/projetos-tarefas";
 import { formatarMoeda } from "@/lib/formatacao";
 import { Etiqueta, inputClass } from "@/ui/campo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
+import { buscarLimitesSemaforo } from "@/lib/semaforo";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
@@ -12,7 +13,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
   const ctx = await exigirAcessoARota("/projetos");
   const { desativados, busca } = await searchParams;
   const incluir = desativados === "1";
-  const projetos = await listarProjetos(ctx, incluir, busca);
+  const [projetos, limites] = await Promise.all([listarProjetos(ctx, incluir, busca), buscarLimitesSemaforo(ctx)]);
 
   return (
     <div className="w-full max-w-[1120px]">
@@ -52,7 +53,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                   <p className="mt-4 text-[13px] text-cinza">Valor contratado: <strong className="font-medium text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "Não informado"}</strong></p>
                   <p className="mt-1 text-[13px] text-cinza">Proposta comercial: <strong className="font-medium text-tinta">{p.numeroProposta ?? "—"}</strong></p>
                   <p className="mt-1 text-[13px] text-cinza">Conclusão prevista: <strong className="font-medium text-tinta">{data(p.dataPrevistaConclusao)}</strong> · {p._count.tarefas} {p._count.tarefas === 1 ? "tarefa" : "tarefas"}</p>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Dias restantes:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} /></div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Dias restantes:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></div>
                 </div>
               </article>
             </li>
@@ -70,7 +71,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "—"}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta></Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-cinza">{data(p.dataPrevistaConclusao)}</Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} /></Link></td>
+                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></Link></td>
                 <td className="p-0 text-right"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 text-azul-esc hover:underline">Ver detalhe</Link></td>
               </tr>
             ))}

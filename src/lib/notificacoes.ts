@@ -180,14 +180,3 @@ export async function atualizarPreferenciaNotificacao(ctx: ContextoUsuario, perf
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
   return comContextoDeUsuario(ctx, (tx) => tx.preferenciaNotificacao.update({ where: { perfil_evento: { perfil, evento } }, data: canais }));
 }
-
-export async function buscarConfiguracaoNotificacao(ctx: ContextoUsuario) {
-  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
-  return comContextoDeUsuario(ctx, (tx) => tx.configuracaoNotificacao.findUniqueOrThrow({ where: { id: 1 } }));
-}
-
-export async function atualizarAntecedenciaNotificacao(ctx: ContextoUsuario, dias: number) {
-  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
-  if (!Number.isInteger(dias) || dias < 1 || dias > 365) throw new Error("Informe uma antecedência entre 1 e 365 dias.");
-  return comContextoDeUsuario(ctx, (tx) => tx.configuracaoNotificacao.update({ where: { id: 1 }, data: { diasAntecedenciaPadrao: dias } }));
-}

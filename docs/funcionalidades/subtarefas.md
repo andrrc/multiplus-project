@@ -147,6 +147,12 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 ---
 
+### S5. Semáforo de prazo
+
+**Como funciona.** Subtarefas exibem o mesmo indicador global de prazo que projetos e tarefas nas listas e nos detalhes. Os limites são configurados pelo ADMIN em `/notificacoes`; a contagem exclui fins de semana. Concluída permanece verde, cancelada vermelha e sem prazo sem cor.
+
+**Detalhes técnicos.** Reutiliza `IndicadorSemaforoProjeto` e `buscarLimitesSemaforo`. A lista respeita os filtros e o acesso já existentes. Testes unitários e de integração em `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -160,6 +166,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `a79a2a8` | Painel de prazos (Sprint 4A) |
 | 2026-09-18 | `25b1e67`, `60b0fb7` | Atribuição de responsável a subtarefas |
 | 2026-09-18 | `ac5ce5f` | Integrante da equipe pode ser o responsável da subtarefa |

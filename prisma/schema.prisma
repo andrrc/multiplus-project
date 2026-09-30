@@ -504,6 +504,16 @@ model ConfiguracaoNotificacao {
   @@map("configuracoes_notificacao")
 }
 
+/// RF-009 — limites globais de cor para os indicadores de prazo.
+model ConfiguracaoSemaforo {
+  id                    Int      @id @default(1)
+  diasVermelhoAte       Int      @default(5)
+  diasAmareloAte         Int      @default(10)
+  atualizadoEm          DateTime @updatedAt
+
+  @@map("configuracoes_semaforo")
+}
+
 /// RF-023 — caixa in-app individual; não há exclusão permanente.
 model Notificacao {
   id         String            @id @default(cuid())

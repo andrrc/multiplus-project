@@ -3,7 +3,8 @@
 import { EventoNotificacao } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { obterContexto } from "@/server/auth/contexto";
-import { atualizarAntecedenciaNotificacao, atualizarPreferenciaNotificacao, marcarNotificacaoLida, marcarTodasNotificacoesLidas } from "@/lib/notificacoes";
+import { atualizarPreferenciaNotificacao, marcarNotificacaoLida, marcarTodasNotificacoesLidas } from "@/lib/notificacoes";
+import { atualizarLimitesSemaforo } from "@/lib/semaforo";
 
 const perfis = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", "CLIENTE"] as const;
 
@@ -28,7 +29,10 @@ export async function atualizarPreferenciaAction(formData: FormData) {
   revalidatePath("/notificacoes");
 }
 
-export async function atualizarAntecedenciaAction(formData: FormData) {
-  await atualizarAntecedenciaNotificacao(await obterContexto(), Number(formData.get("dias")));
+export async function atualizarSemaforoAction(formData: FormData) {
+  await atualizarLimitesSemaforo(await obterContexto(), {
+    diasVermelhoAte: Number(formData.get("diasVermelhoAte")),
+    diasAmareloAte: Number(formData.get("diasAmareloAte")),
+  });
   revalidatePath("/notificacoes");
 }

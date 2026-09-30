@@ -1,3 +1,5 @@
+import { LIMITES_SEMAFORO_PADRAO, type LimitesSemaforo } from "@/lib/semaforo";
+
 const DIA_MS = 24 * 60 * 60 * 1000;
 const FUSO_HORARIO = "America/Sao_Paulo";
 
@@ -59,10 +61,12 @@ export function IndicadorSemaforoProjeto({
   prazo,
   status,
   ativo = true,
+  limites = LIMITES_SEMAFORO_PADRAO,
 }: {
   prazo: Date | null;
   status: string;
   ativo?: boolean;
+  limites?: LimitesSemaforo;
 }) {
   let texto: string;
   let cores: string;
@@ -81,9 +85,9 @@ export function IndicadorSemaforoProjeto({
     cores = "border-linha bg-branco text-cinza";
   } else {
     const dias = calcularDiasUteisRestantes(prazo);
-    cores = dias <= 5
+    cores = dias <= limites.diasVermelhoAte
       ? "border-critico/30 bg-critico/8 text-critico"
-      : dias <= 10
+      : dias <= limites.diasAmareloAte
         ? "border-ambar/30 bg-ambar/8 text-ambar"
         : "border-verde-borda bg-verde-cl text-verde-esc";
     texto = dias < 0

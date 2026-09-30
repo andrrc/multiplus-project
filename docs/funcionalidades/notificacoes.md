@@ -26,7 +26,7 @@ avisado.
 | Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
 | Ver a central de notificações | Sim | Não (sem menu) | Não (sem menu) | Não |
-| Configurar preferências por perfil e antecedência | Sim | Não | Não | Não |
+| Configurar preferências por perfil e limites do semáforo | Sim | Não | Não | Não |
 
 ---
 
@@ -42,6 +42,16 @@ avisado.
 - **Rota:** `/notificacoes`.
 - **Funções:** `listarNotificacoes` (últimas 50), `marcarNotificacaoLida` e
   `marcarTodasNotificacoesLidas`.
+
+### N5. Configuração global do semáforo
+
+**Como funciona.** O ADMIN configura os limites em dias úteis para vermelho e amarelo. Verde começa acima do limite amarelo. A configuração se aplica a projetos, tarefas e subtarefas. Padrão: vermelho até 5 e amarelo até 10; sábados e domingos são excluídos.
+
+A configuração visual é independente do prazo de antecedência dos e-mails. `diasAntecedenciaPadrao` e o job de notificações de prazo permanecem preservados.
+
+**Detalhes técnicos.** Singleton `ConfiguracaoSemaforo` em `configuracoes_semaforo`, com RLS permitindo leitura autenticada e atualização somente por ADMIN. Consulta/validação em `src/lib/semaforo.ts`, editor em `/notificacoes`. Migration `20260929100000_configuracao_semaforo`.
+
+
 
 ### N2. Preferências por perfil (RF-022)
 
@@ -85,6 +95,7 @@ conforme as preferências.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-09-29 | pendente | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `5827166` | Healthcheck e CI (base para o job) |
 | 2026-09-17 | `022fec0`, `d6ed6d1`, `dc16183` | Disparo de notificações, templates de e-mail e central de notificações (Sprint 4B) |
 | 2026-09-18 | `a567583` | Correção do modelo de preferências |

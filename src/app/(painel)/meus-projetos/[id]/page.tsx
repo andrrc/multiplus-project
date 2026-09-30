@@ -4,6 +4,7 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjetoAtribuido } from "@/lib/projetos-tarefas";
 import { Etiqueta } from "@/ui/campo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
+import { buscarLimitesSemaforo } from "@/lib/semaforo";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const taskStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -12,7 +13,7 @@ const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyl
 export default async function MeuProjetoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await exigirAcessoARota("/meus-projetos");
   const { id } = await params;
-  const p = await buscarProjetoAtribuido(ctx, id);
+  const [p, limites] = await Promise.all([buscarProjetoAtribuido(ctx, id), buscarLimitesSemaforo(ctx)]);
   if (!p) notFound();
 
   const documentos = [...p.documentos, ...p.cliente.documentos];
@@ -25,12 +26,12 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
         <h1 className="text-[28px]">{p.nome}</h1>
         <Etiqueta>{status[p.status]}</Etiqueta>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Semáforo do prazo:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} /></div>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Semáforo do prazo:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} limites={limites} /></div>
     </div>
     <section className="mt-8">
       <h2 className="text-[21px]">Tarefas do projeto</h2>
       <div className="mt-4 overflow-hidden border border-linha bg-branco">
-        {p.tarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa disponível.</p> : p.tarefas.map(t => <Link href={`/minhas-tarefas/${t.id}`} key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 hover:bg-verde-cl last:border-b-0"><div><p className="font-[family-name:var(--font-interface)] font-medium text-tinta">{t.nome}</p><p className="mt-1 text-[13px] text-cinza">Prazo: {data(t.prazo)} · {t.subtarefas.filter(s => s.status === "CONCLUIDO").length}/{t.subtarefas.length} subtarefas</p></div><Etiqueta tom={t.status === "CONCLUIDO" ? "positivo" : undefined}>{taskStatus[t.status] ?? t.status}</Etiqueta></Link>)}
+        {p.tarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa disponível.</p> : p.tarefas.map(t => <Link href={`/minhas-tarefas/${t.id}`} key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 hover:bg-verde-cl last:border-b-0"><div><p className="font-[family-name:var(--font-interface)] font-medium text-tinta">{t.nome}</p><p className="mt-1 text-[13px] text-cinza">Prazo: {data(t.prazo)} · <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} /> · {t.subtarefas.filter(s => s.status === "CONCLUIDO").length}/{t.subtarefas.length} subtarefas</p></div><Etiqueta tom={t.status === "CONCLUIDO" ? "positivo" : undefined}>{taskStatus[t.status] ?? t.status}</Etiqueta></Link>)}
       </div>
     </section>
     <section className="mt-8">

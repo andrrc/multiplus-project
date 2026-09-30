@@ -5,19 +5,21 @@ import { indicadorDePrazosSubtarefas, listarClientesParaProjeto, listarProjetos,
 import { estaAtrasada } from "@/lib/regras-projetos-tarefas";
 import { Etiqueta } from "@/ui/campo";
 import { FiltrosListagens } from "../filtros-listagens";
+import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 
-const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "Sem prazo";
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
 export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ projeto?: string; cliente?: string; tarefa?: string; todos?: string }> }) {
   const ctx = await exigirAcessoARota("/subtarefas");
   const filtros = await searchParams;
   const pendentes = filtros.todos !== "1";
-  const [subtarefas, projetos, clientes, tarefasFiltro] = await Promise.all([
+  const [subtarefas, projetos, clientes, tarefasFiltro, limites] = await Promise.all([
     listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, tarefaId: filtros.tarefa, pendentes }),
     listarProjetos(ctx),
     listarClientesParaProjeto(ctx),
     listarTarefasParaFiltro(ctx),
+    buscarLimitesSemaforo(ctx),
   ]);
   const indicador = indicadorDePrazosSubtarefas(subtarefas);
   const hoje = new Date();
@@ -53,7 +55,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
               <td className="p-0"><Link href={`/projetos/${s.tarefa.projeto.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></td>
               <td className="p-0"><Link href={`/clientes/${s.tarefa.projeto.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.cliente.razaoSocial}</Link></td>
               <td className="p-0"><Link href={hrefDetalhe} className="block px-5 py-4 text-cinza">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "—"}</Link></td>
-              <td className="p-0"><Link href={hrefDetalhe} className={`block px-5 py-4 tabular-nums ${atrasada ? "font-semibold text-critico" : "text-tinta"}`}>{data(s.prazo)}{atrasada && <span className="ml-2 text-[11px] uppercase">atrasada</span>}</Link></td>
+              <td className="p-0"><Link href={hrefDetalhe} className={`block px-5 py-4 tabular-nums ${atrasada ? "font-semibold text-critico" : "text-tinta"}`}><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} />{atrasada && <span className="ml-2 text-[11px] uppercase">atrasada</span>}</Link></td>
               <td className="p-0"><Link href={hrefDetalhe} className="block px-5 py-4"><Etiqueta tom={atrasada ? "atencao" : s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{status[s.status]}</Etiqueta></Link></td>
             </tr>;
           })}</tbody>
@@ -65,7 +67,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
           <article className={`relative rounded-[3px] border border-linha border-l-[3px] bg-branco px-4 py-4 hover:border-azul ${atrasada ? "border-l-critico" : "border-l-azul"}`}>
             <Link href={hrefSubtarefa(s.tarefa.id, s.id)} aria-label={`Abrir subtarefa ${s.titulo}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir subtarefa {s.titulo}</span></Link>
             <div className="pointer-events-none relative z-10">
-              <div className="flex justify-between gap-3"><p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><Etiqueta tom={atrasada ? "atencao" : undefined}>{atrasada ? "Atrasada" : data(s.prazo)}</Etiqueta></div>
+              <div className="flex justify-between gap-3"><p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></div>
               <p className="mt-1 text-[12px] text-cinza">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</p>
               <p className="mt-3 text-[13px]"><span className="text-cinza">Tarefa: </span><Link href={`/tarefas/${s.tarefa.id}`} className="pointer-events-auto relative z-20 text-azul-esc hover:underline">{s.tarefa.nome}</Link></p>
               <p className="mt-1 text-[13px]"><span className="text-cinza">Projeto: </span><Link href={`/projetos/${s.tarefa.projeto.id}`} className="pointer-events-auto relative z-20 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></p>

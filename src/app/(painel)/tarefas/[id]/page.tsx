@@ -16,6 +16,8 @@ import { StatusSubtarefa } from "@prisma/client";
 import { StatusInline } from "@/ui/status-inline";
 import { listarEtiquetas } from "@/lib/etiquetas";
 import { EtiquetasSubtarefa } from "@/ui/etiquetas-subtarefa";
+import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
+import { buscarLimitesSemaforo } from "@/lib/semaforo";
 
 const statuses: Record<string, string> = {
   A_INICIAR: "A iniciar",
@@ -41,9 +43,10 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const { subtarefa: subtarefaSelecionada } = await searchParams;
   const t = await buscarTarefa(ctx, id, true);
   if (!t) notFound();
-  const [{ pessoas, usuarios }, catalogoEtiquetas] = await Promise.all([
+  const [{ pessoas, usuarios }, catalogoEtiquetas, limites] = await Promise.all([
     listarPessoasParaProjeto(ctx, t.projeto.clienteId),
     listarEtiquetas(ctx),
+    buscarLimitesSemaforo(ctx),
   ]);
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
 
@@ -58,6 +61,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           <p className="text-[14px] text-cinza">{t.projeto.cliente.razaoSocial}</p>
           <h1 className="mt-1 text-[28px]">{t.nome}</h1>
           <p className="mt-2 text-[15px] text-cinza">Prazo: <strong className="font-medium text-tinta">{data(t.prazo)}</strong>{t.responsavel ? ` · Responsável: ${t.responsavel.nome}` : ""}</p>
+          <div className="mt-2"><IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} /></div>
           <p className="mt-1 text-[12px] text-cinza">Criado por: {t.criadoPorNome ?? "Registro anterior"} · {dataHora(t.criadoEm)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -87,7 +91,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
             <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="border-b border-linha px-5 py-4 last:border-b-0">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                 <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><span>{s.titulo}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
-                <span className="flex items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta></span>
+                <span className="flex flex-wrap items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta></span>
               </summary>
               <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
                 <p className="text-[14px] leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
