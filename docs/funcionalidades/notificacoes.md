@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-09-30, no commit ce3b73f do `staging`.
+- **Última revisão:** 2026-09-30, no commit a registrar do `staging`.
 - **Requisitos:** RF-007, RF-022, RF-023.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -19,7 +19,7 @@ avisado.
 | Tarefa concluída | Uma tarefa é concluída | Sim | Não | Não |
 | Projeto concluído | O projeto é marcado como concluído | Sim | Não | Não |
 | Novo comentário | Alguém comenta | Sim | Sim | Não |
-| Atribuição recebida | Previsto, mas **nunca disparado** (ver limitações) | Sim | Sim | Não |
+| Atribuição recebida | Nova atribuição de projeto, tarefa ou subtarefa | Sim | Sim | Não |
 
 ## Quem pode fazer o quê
 
@@ -100,7 +100,8 @@ conforme as preferências.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-30 | ce3b73f | Preferências controlam também menções e atribuições recebidas ([análise](../analises/controle-total-notificacoes.md)) |
+| 2026-09-30 | a registrar | Corrigir a documentação do disparo de atribuição recebida |
+| 2026-09-30 | ce3b73f | Preferências controlam menções, confirmações do autor e avisos de novas atribuições ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `5827166` | Healthcheck e CI (base para o job) |
 | 2026-09-17 | `022fec0`, `d6ed6d1`, `dc16183` | Disparo de notificações, templates de e-mail e central de notificações (Sprint 4B) |
