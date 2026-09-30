@@ -55,7 +55,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
               <td className="p-0"><Link href={`/projetos/${s.tarefa.projeto.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></td>
               <td className="p-0"><Link href={`/clientes/${s.tarefa.projeto.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.cliente.razaoSocial}</Link></td>
               <td className="p-0"><Link href={hrefDetalhe} className="block px-5 py-4 text-cinza">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "—"}</Link></td>
-              <td className="p-0"><Link href={hrefDetalhe} className={`block px-5 py-4 tabular-nums ${atrasada ? "font-semibold text-critico" : "text-tinta"}`}><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} />{atrasada && <span className="ml-2 text-[11px] uppercase">atrasada</span>}</Link></td>
+              <td className="p-0"><Link href={hrefDetalhe} className={`block px-5 py-4 tabular-nums ${atrasada ? "font-semibold text-critico" : "text-tinta"}`}><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></Link></td>
               <td className="p-0"><Link href={hrefDetalhe} className="block px-5 py-4"><Etiqueta tom={atrasada ? "atencao" : s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{status[s.status]}</Etiqueta></Link></td>
             </tr>;
           })}</tbody>
