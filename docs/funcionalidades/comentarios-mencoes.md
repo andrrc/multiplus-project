@@ -1,6 +1,6 @@
 # Comentários e menções
 
-- **Última revisão:** 2026-09-30, no commit a registrar do `staging`.
+- **Última revisão:** 2026-09-30, no commit ce3b73f do `staging`.
 - **Requisitos:** RF-016, RF-017, RF-047.
 - **Módulos relacionados:** Projetos, Tarefas, Subtarefas, Notificações.
 
@@ -72,7 +72,7 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-30 | a registrar | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |
+| 2026-09-30 | ce3b73f | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-17 | `df1f2dc`, `c4d87e6` | Bucket privado e upload autenticado de imagens |
 | 2026-09-17 | `e974425` | Comentários imutáveis em projeto, tarefa e subtarefa (Sprint 4B) |
 | 2026-09-18 | `d57f65d`, `ac9eb34`, `92eaf1f` | Prévia, ampliação e download da imagem |

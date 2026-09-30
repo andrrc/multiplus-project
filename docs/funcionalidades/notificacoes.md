@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-09-30, no commit a registrar do `staging`.
+- **Última revisão:** 2026-09-30, no commit ce3b73f do `staging`.
 - **Requisitos:** RF-007, RF-022, RF-023.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -100,7 +100,7 @@ conforme as preferências.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-09-30 | a registrar | Preferências controlam também menções e atribuições recebidas ([análise](../analises/controle-total-notificacoes.md)) |
+| 2026-09-30 | ce3b73f | Preferências controlam também menções e atribuições recebidas ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `5827166` | Healthcheck e CI (base para o job) |
 | 2026-09-17 | `022fec0`, `d6ed6d1`, `dc16183` | Disparo de notificações, templates de e-mail e central de notificações (Sprint 4B) |
