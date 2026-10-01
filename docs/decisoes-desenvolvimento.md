@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-01 | [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md), [Tarefas](funcionalidades/tarefas.md) | Destinatários de comentário e conclusão limitados; tarefas canceladas fora dos avisos de prazo | pendente |
 | 2026-10-01 | [Autenticação](funcionalidades/autenticacao-acesso.md), [Usuários](funcionalidades/usuarios.md) | Sessões revalidam status ativo e perfil atual do usuário em cada request autenticado | `9bce2c0` |
 | 2026-09-30 | [Agenda](funcionalidades/agenda.md), [Subtarefas](funcionalidades/subtarefas.md) | RF-036 e RF-037 formalizados no SRS v2.5 e alinhados ao ADD v1.12 | 8aa5ba1 |
 | 2026-09-30 | [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md) | Preferências de canal também controlam menções e atribuições recebidas | ce3b73f |

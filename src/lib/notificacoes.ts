@@ -10,7 +10,7 @@ type DadosEvento = {
   url?: string | null;
   entidadeId?: string | null;
   dedupeKey?: string | null;
-  usuarioIds?: string[];
+  usuarioIds: string[];
 };
 
 type Destinatario = {
@@ -20,7 +20,8 @@ type Destinatario = {
   preferenciasNotificacao: { email: boolean; inApp: boolean }[];
 };
 
-async function listarDestinatarios(evento: EventoNotificacao, usuarioIds?: string[]) {
+async function listarDestinatarios(evento: EventoNotificacao, usuarioIds: string[]) {
+  if (usuarioIds.length === 0) return [];
   const preferencias = await prisma.preferenciaNotificacao.findMany({
     where: { evento, OR: [{ email: true }, { inApp: true }] },
   });
@@ -28,7 +29,7 @@ async function listarDestinatarios(evento: EventoNotificacao, usuarioIds?: strin
   const usuarios = await prisma.usuario.findMany({
     where: {
       ativo: true,
-      ...(usuarioIds ? { id: { in: usuarioIds } } : {}),
+      id: { in: [...new Set(usuarioIds)] },
       perfil: { in: perfis },
     },
     select: {
@@ -130,6 +131,15 @@ export async function dispararNotificacoesMencaoComentario(dados: { destinatario
   }
 }
 
+/** O perfil ADMIN representa a conta da Talita, destinatária dos avisos de conclusão. */
+export async function listarAdministradoresAtivos(): Promise<string[]> {
+  const administradores = await prisma.usuario.findMany({
+    where: { ativo: true, perfil: "ADMIN" },
+    select: { id: true },
+  });
+  return administradores.map(({ id }) => id);
+}
+
 /** Dispara ATRIBUICAO_RECEBIDA conforme a preferência do usuário atribuído. */
 export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, entidadeTipo: "PROJETO" | "TAREFA" | "SUBTAREFA", entidadeId: string) {
   try {
@@ -175,7 +185,7 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
     where: {
       ativo: true,
       prazo: { gte: inicio, lte: fim },
-      status: { not: "CONCLUIDO" },
+      status: { notIn: ["CONCLUIDO", "CANCELADO"] },
       projeto: { ativo: true, cliente: { ativo: true } },
     },
     select: {

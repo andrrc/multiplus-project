@@ -49,7 +49,7 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 - **Avisos:** a pessoa mencionada recebe o aviso pelos canais configurados em “Novo
   comentário” para o perfil dela. Quem mencionou também recebe a confirmação, seguindo os
   canais configurados para o próprio perfil.
-- **Demais pessoas com acesso:** recebem o aviso de novo comentário.
+- **Demais pessoas com acesso:** recebem o aviso de novo comentário se estiverem ativas e a preferência do perfil permitir. Isso inclui o cliente vinculado ao registro quando a preferência de CLIENTE estiver habilitada. O autor não recebe aviso geral duplicado.
 
 **Detalhes técnicos.**
 - **Funções:** `listarUsuariosMencionaveis` e `dispararNotificacoesMencaoComentario`.
@@ -64,14 +64,14 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | **Comentário sem menção avisa colaboradores sem acesso ao registro.** O evento `NOVO_COMENTARIO` é disparado sem lista de destinatários, então vai para todos os usuários ativos dos perfis habilitados (por padrão: `ADMIN`, `ADMIN_INTERNO` e `ADMIN_EXTERNO`). | **Privacidade e ruído:** o colaborador recebe aviso e e-mail com o link de registros que não pode ver. Com menção, os destinatários são filtrados corretamente. |
-| L2 | O link do comentário é validado só como "URL válida". | Aceita esquemas diferentes de `http(s)`, como `javascript:`. O checklist do `AGENTS.md` pede aceitar só `http(s)`. |
-| L3 | A cobertura automatizada de comentários continua parcial. | Há integração cobrindo os canais das menções em `notificacoes-rf022.integration.test.ts`; imutabilidade, validação de acesso da menção e acesso à imagem ainda não têm cobertura. |
+| L1 | O link do comentário é validado só como "URL válida". | Aceita esquemas diferentes de `http(s)`, como `javascript:`. O checklist do `AGENTS.md` pede aceitar só `http(s)`. |
+| L2 | A cobertura automatizada de comentários continua parcial. | Há integração cobrindo os canais das menções e a lista explícita de destinatários em `notificacoes-rf022.integration.test.ts`; imutabilidade, validação de acesso da menção e acesso à imagem ainda não têm cobertura. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Avisos de comentário limitados a usuários ativos com acesso ao registro ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | ce3b73f | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-17 | `df1f2dc`, `c4d87e6` | Bucket privado e upload autenticado de imagens |
 | 2026-09-17 | `e974425` | Comentários imutáveis em projeto, tarefa e subtarefa (Sprint 4B) |

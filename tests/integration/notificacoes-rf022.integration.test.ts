@@ -10,14 +10,16 @@ vi.mock("@/lib/email", async (importOriginal) => {
 import { enviarEmail } from "@/lib/email";
 import { adicionarAtribuicao } from "@/lib/usuarios";
 import { criarSubtarefa, criarTarefa } from "@/lib/projetos-tarefas";
-import { atualizarPreferenciaNotificacao, dispararEventoNotificacao, dispararNotificacaoAtribuicaoRecebida, dispararNotificacoesMencaoComentario } from "@/lib/notificacoes";
+import { listarUsuariosMencionaveis } from "@/lib/comentarios";
+import { atualizarPreferenciaNotificacao, dispararEventoNotificacao, dispararNotificacaoAtribuicaoRecebida, dispararNotificacoesMencaoComentario, dispararPrazoProximo, listarAdministradoresAtivos } from "@/lib/notificacoes";
 import { fecharConexoes, limparFixtures, ownerDb } from "./setup/helpers";
 
 let adminId = "";
 let externoId = "";
 let tarefaId = "";
+let clienteId = "";
 
-async function preferencia(perfil: "ADMIN" | "ADMIN_EXTERNO", evento: "PRAZO_PROXIMO" | "NOVO_COMENTARIO" | "ATRIBUICAO_RECEBIDA", email: boolean, inApp: boolean) {
+async function preferencia(perfil: "ADMIN" | "ADMIN_EXTERNO" | "CLIENTE", evento: EventoNotificacao, email: boolean, inApp: boolean) {
   await ownerDb.preferenciaNotificacao.update({ where: { perfil_evento: { perfil, evento } }, data: { email, inApp } });
 }
 
@@ -33,6 +35,7 @@ beforeEach(async () => {
   adminId = admin.id;
   externoId = externo.id;
   tarefaId = tarefa.id;
+  clienteId = cliente.id;
 });
 
 afterAll(async () => {
@@ -45,6 +48,7 @@ afterEach(async () => {
   await ownerDb.notificacao.deleteMany();
   await Promise.all([
     preferencia("ADMIN", "NOVO_COMENTARIO", true, true),
+    preferencia("ADMIN", "PRAZO_PROXIMO", true, true),
     preferencia("ADMIN_EXTERNO", "PRAZO_PROXIMO", true, true),
     preferencia("ADMIN_EXTERNO", "NOVO_COMENTARIO", true, true),
     preferencia("ADMIN_EXTERNO", "ATRIBUICAO_RECEBIDA", true, true),
@@ -85,6 +89,85 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     await dispararEventoNotificacao(EventoNotificacao.PRAZO_PROXIMO, { titulo: "Prazo", mensagem: "Aviso", usuarioIds: [externoId] });
     expect(enviarEmail).not.toHaveBeenCalled();
     expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId } })).toBe(1);
+  });
+
+  it("limita e-mail e in-app à lista explícita de destinatários", async () => {
+    await preferencia("ADMIN", EventoNotificacao.NOVO_COMENTARIO, true, true);
+    await preferencia("ADMIN_EXTERNO", EventoNotificacao.NOVO_COMENTARIO, true, true);
+
+    await dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+      titulo: "Novo comentário",
+      mensagem: "Aviso restrito",
+      usuarioIds: [externoId],
+    });
+
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "NOVO_COMENTARIO" } })).toBe(0);
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId, evento: "NOVO_COMENTARIO" } })).toBe(1);
+    expect(enviarEmail).toHaveBeenCalledTimes(1);
+    expect(enviarEmail).toHaveBeenCalledWith(expect.objectContaining({ to: "externo.rf022@teste.local" }));
+
+    await dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+      titulo: "Novo comentário",
+      mensagem: "Audiência vazia",
+      usuarioIds: [],
+    });
+    expect(enviarEmail).toHaveBeenCalledTimes(1);
+    expect(await ownerDb.notificacao.count({ where: { evento: "NOVO_COMENTARIO" } })).toBe(1);
+  });
+
+  it("usa somente usuários ativos com acesso ao alvo no aviso geral de comentário", async () => {
+    const clienteUsuario = await ownerDb.usuario.create({
+      data: { nome: "Cliente RF022", email: "cliente.rf022@teste.local", perfil: "CLIENTE", clienteId },
+    });
+    const externoSemAcesso = await ownerDb.usuario.create({
+      data: { nome: "Externo sem acesso RF022", email: "sem-acesso.rf022@teste.local", perfil: "ADMIN_EXTERNO" },
+    });
+    await ownerDb.atribuicao.create({ data: { usuarioId: externoId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
+    await Promise.all([
+      preferencia("ADMIN", EventoNotificacao.NOVO_COMENTARIO, false, true),
+      preferencia("ADMIN_EXTERNO", EventoNotificacao.NOVO_COMENTARIO, false, true),
+      preferencia("CLIENTE", EventoNotificacao.NOVO_COMENTARIO, false, true),
+    ]);
+
+    const destinatarios = await listarUsuariosMencionaveis({ usuarioId: adminId, perfil: "ADMIN" }, { tarefaId });
+    const ids = destinatarios.map(({ id }) => id);
+    expect(ids).toEqual(expect.arrayContaining([externoId, clienteUsuario.id]));
+    expect(ids).not.toContain(externoSemAcesso.id);
+    expect(ids).not.toContain(adminId);
+
+    await dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
+      titulo: "Novo comentário",
+      mensagem: "Aviso de comentário",
+      usuarioIds: ids,
+    });
+
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId, evento: "NOVO_COMENTARIO" } })).toBe(1);
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: clienteUsuario.id, evento: "NOVO_COMENTARIO" } })).toBe(1);
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: externoSemAcesso.id, evento: "NOVO_COMENTARIO" } })).toBe(0);
+    expect(await listarAdministradoresAtivos()).toEqual([adminId]);
+
+    await ownerDb.cliente.update({ where: { id: clienteId }, data: { ativo: false } });
+    const destinatariosAposDesativacao = await listarUsuariosMencionaveis({ usuarioId: adminId, perfil: "ADMIN" }, { tarefaId });
+    expect(destinatariosAposDesativacao.map(({ id }) => id)).not.toEqual(expect.arrayContaining([externoId, clienteUsuario.id]));
+  });
+
+  it("não dispara prazo próximo para tarefa cancelada", async () => {
+    await preferencia("ADMIN", EventoNotificacao.PRAZO_PROXIMO, false, true);
+    const prazo = new Date("2026-10-04T00:00:00.000Z");
+    const tarefaElegivel = await ownerDb.tarefa.update({
+      where: { id: tarefaId },
+      data: { prazo, status: "EM_ANDAMENTO" },
+    });
+    const projetoId = (await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { projetoId: true } })).projetoId;
+    const tarefaCancelada = await ownerDb.tarefa.create({
+      data: { projetoId, nome: "Tarefa cancelada RF022", prazo, status: "CANCELADO" },
+    });
+
+    const resultado = await dispararPrazoProximo(7, new Date("2026-10-01T00:00:00.000Z"));
+
+    expect(resultado.encontradas).toBe(1);
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "PRAZO_PROXIMO", entidadeId: tarefaElegivel.id } })).toBe(1);
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "PRAZO_PROXIMO", entidadeId: tarefaCancelada.id } })).toBe(0);
   });
 
   it("aplica NOVO_COMENTARIO aos canais da pessoa mencionada e à confirmação do autor", async () => {

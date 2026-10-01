@@ -196,6 +196,7 @@ Administradora continua vendo tudo.
 **Como funciona.**
 - **O que dispara:** tarefas que vencem dentro da antecedência configurada geram um aviso
   no sistema e por e-mail.
+- **Exclusões:** tarefas concluídas, canceladas ou inativas não geram aviso.
 - **Destinatário:** o responsável recebe o aviso. Sem responsável com acesso, o aviso vai
   para a Administradora.
 - **Configuração:** a antecedência padrão é de 7 dias e pode ser alterada em
@@ -233,16 +234,16 @@ registro de quem criou e quando.
 |---|---|---|
 | L1 | Nenhum agendador chama `/api/jobs/notificacoes-prazo`. Na VPS só existe o cron de backup. Item já listado em `pendencias-antes-producao.md`. | **Nenhum aviso de prazo é disparado.** |
 | L2 | O campo "Antecedência (dias)" da tarefa é salvo, mas o aviso usa só a antecedência padrão global. | A configuração por tarefa não tem efeito. |
-| L3 | O aviso de prazo exclui tarefas concluídas, mas não as **canceladas**. | Tarefa cancelada ainda gera aviso. |
-| L4 | O botão de desativação diz "Excluir", mas a ação é reversível. | O rótulo contradiz o RF-039 ("desativar", nunca excluir). |
-| L5 | A listagem `/tarefas` só mostra tarefas ativas e não tem "Mostrar desativadas" (RF-039). | Uma tarefa desativada só é encontrada pela URL direta, então na prática não dá para reativá-la pela interface. |
-| L6 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
-| L7 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
+| L3 | O botão de desativação diz "Excluir", mas a ação é reversível. | O rótulo contradiz o RF-039 ("desativar", nunca excluir). |
+| L4 | A listagem `/tarefas` só mostra tarefas ativas e não tem "Mostrar desativadas" (RF-039). | Uma tarefa desativada só é encontrada pela URL direta, então na prática não dá para reativá-la pela interface. |
+| L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
+| L6 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Avisos de prazo excluem tarefas canceladas ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder projetos, tarefas e subtarefas dos colaboradores |
 | 2026-09-17 | `6342b73`, `579cdd3`, `fe0ad63`, `47df249`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, RLS, recorrência, "% em dia", telas da Administradora e dos colaboradores |

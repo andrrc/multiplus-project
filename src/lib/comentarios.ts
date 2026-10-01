@@ -15,22 +15,22 @@ async function obterEscopoDoAlvo(ctx: ContextoUsuario, alvo: AlvoComentario) {
     if ("projetoId" in alvo) {
       const projeto = await tx.projeto.findFirst({
         where: { id: alvo.projetoId, ativo: true },
-        select: { id: true, clienteId: true, tarefas: { where: { ativo: true }, select: { id: true } } },
+        select: { id: true, clienteId: true, cliente: { select: { ativo: true } }, tarefas: { where: { ativo: true }, select: { id: true } } },
       });
-      return projeto ? { projetoId: projeto.id, clienteId: projeto.clienteId, tarefaIds: projeto.tarefas.map((t) => t.id) } : null;
+      return projeto ? { projetoId: projeto.id, clienteId: projeto.clienteId, clienteAtivo: projeto.cliente.ativo, tarefaIds: projeto.tarefas.map((t) => t.id) } : null;
     }
     if ("tarefaId" in alvo) {
       const tarefa = await tx.tarefa.findFirst({
         where: { id: alvo.tarefaId, ativo: true, projeto: { ativo: true } },
-        select: { id: true, projeto: { select: { id: true, clienteId: true } } },
+        select: { id: true, projeto: { select: { id: true, clienteId: true, cliente: { select: { ativo: true } } } } },
       });
-      return tarefa ? { projetoId: tarefa.projeto.id, clienteId: tarefa.projeto.clienteId, tarefaIds: [tarefa.id] } : null;
+      return tarefa ? { projetoId: tarefa.projeto.id, clienteId: tarefa.projeto.clienteId, clienteAtivo: tarefa.projeto.cliente.ativo, tarefaIds: [tarefa.id] } : null;
     }
     const subtarefa = await tx.subtarefa.findFirst({
       where: { id: alvo.subtarefaId, ativo: true, tarefa: { ativo: true, projeto: { ativo: true } } },
-      select: { tarefa: { select: { id: true, projeto: { select: { id: true, clienteId: true } } } } },
+      select: { tarefa: { select: { id: true, projeto: { select: { id: true, clienteId: true, cliente: { select: { ativo: true } } } } } } },
     });
-    return subtarefa ? { projetoId: subtarefa.tarefa.projeto.id, clienteId: subtarefa.tarefa.projeto.clienteId, tarefaIds: [subtarefa.tarefa.id] } : null;
+    return subtarefa ? { projetoId: subtarefa.tarefa.projeto.id, clienteId: subtarefa.tarefa.projeto.clienteId, clienteAtivo: subtarefa.tarefa.projeto.cliente.ativo, tarefaIds: [subtarefa.tarefa.id] } : null;
   });
 }
 
@@ -43,9 +43,11 @@ export async function listarUsuariosMencionaveis(ctx: ContextoUsuario, alvo: Alv
       ativo: true,
       OR: [
         { perfil: Perfil.ADMIN },
-        { perfil: Perfil.CLIENTE, clienteId: escopo.clienteId },
-        { perfil: Perfil.ADMIN_INTERNO, atribuicoes: { some: { entidadeTipo: "PROJETO", entidadeId: escopo.projetoId } } },
-        ...(escopo.tarefaIds.length ? [{ perfil: Perfil.ADMIN_EXTERNO, atribuicoes: { some: { entidadeTipo: "TAREFA" as const, entidadeId: { in: escopo.tarefaIds } } } }] : []),
+        ...(escopo.clienteAtivo ? [
+          { perfil: Perfil.CLIENTE, clienteId: escopo.clienteId },
+          { perfil: Perfil.ADMIN_INTERNO, atribuicoes: { some: { entidadeTipo: "PROJETO" as const, entidadeId: escopo.projetoId } } },
+          ...(escopo.tarefaIds.length ? [{ perfil: Perfil.ADMIN_EXTERNO, atribuicoes: { some: { entidadeTipo: "TAREFA" as const, entidadeId: { in: escopo.tarefaIds } } } }] : []),
+        ] : []),
       ],
     },
     select: { id: true, nome: true, perfil: true },

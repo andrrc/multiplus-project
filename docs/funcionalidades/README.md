@@ -35,7 +35,6 @@ básico:
 | Módulo | Limitação |
 |---|---|
 | Autenticação | L2: login sem limite de tentativas |
-| Comentários e Notificações | L1 e L2: comentário sem menção avisa colaboradores sem acesso ao registro |
 | Tarefas e Notificações | L1: nenhum agendador dispara os avisos de prazo |
 | Clientes, Projetos e Comentários | Links (Drive e comentário) aceitam qualquer esquema, inclusive `javascript:` |
 | Tarefas | L5: tarefa desativada não pode ser reativada pela interface |

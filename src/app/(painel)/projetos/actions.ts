@@ -21,7 +21,7 @@ import {
   desativarOuReativar,
 } from "@/lib/projetos-tarefas";
 import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
-import { dispararNotificacoesMencaoComentario, dispararEventoNotificacao } from "@/lib/notificacoes";
+import { dispararNotificacoesMencaoComentario, dispararEventoNotificacao, listarAdministradoresAtivos } from "@/lib/notificacoes";
 import { montarNumeroProposta } from "@/lib/numero-proposta";
 import type { EtiquetaSelecionada } from "@/lib/etiqueta-colors";
 
@@ -120,6 +120,7 @@ export async function atualizarProjetoAction(projetoId: string, formData: FormDa
     url: `/projetos/${projeto.id}`,
     entidadeId: projeto.id,
     dedupeKey: `projeto-concluido:${projeto.id}:${projeto.atualizadoEm.toISOString()}`,
+    usuarioIds: (await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== ctx.usuarioId),
   });
   revalidatePath(`/projetos/${projetoId}`);
   revalidatePath("/projetos");
@@ -138,6 +139,7 @@ export async function alterarStatusProjetoAction(projetoId: string, formData: Fo
     url: `/projetos/${projeto.id}`,
     entidadeId: projeto.id,
     dedupeKey: `projeto-concluido:${projeto.id}:${projeto.atualizadoEm.toISOString()}`,
+    usuarioIds: (await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== ctx.usuarioId),
   });
   revalidatePath(`/projetos/${projetoId}`);
   revalidatePath("/projetos");
@@ -203,6 +205,7 @@ export async function alterarStatusTarefaAction(tarefaId: string, formData: Form
     url: `/tarefas/${tarefa.id}`,
     entidadeId: tarefa.id,
     dedupeKey: `tarefa-concluida:${tarefa.id}:${tarefa.atualizadoEm.toISOString()}`,
+    usuarioIds: (await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== ctx.usuarioId),
   });
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${tarefa.projetoId}`);
@@ -255,8 +258,8 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
   const rotaRegistro = nivel === "projeto"
     ? `${ctx.perfil === "ADMIN" ? "/projetos" : "/meus-projetos"}/${id}`
     : `${ctx.perfil === "ADMIN" ? "/tarefas" : "/minhas-tarefas"}/${nivel === "tarefa" ? id : texto(formData, "tarefaId")}`;
+  const destinatariosComAcesso = await listarUsuariosMencionaveis(ctx, alvo);
   if (mencoesUsuarioIds.length) {
-    const destinatariosComAcesso = await listarUsuariosMencionaveis(ctx, alvo);
     void dispararNotificacoesMencaoComentario({ destinatarioIds: [ctx.usuarioId, ...mencoesUsuarioIds], autorId: ctx.usuarioId, comentario: comentario.texto, url: rotaRegistro, entidadeId: comentario.id });
     void dispararEventoNotificacao(EventoNotificacao.NOVO_COMENTARIO, {
       titulo: "Novo comentário",
@@ -272,6 +275,7 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
     url: rotaRegistro,
     entidadeId: comentario.id,
     dedupeKey: `comentario:${comentario.id}`,
+    usuarioIds: destinatariosComAcesso.map(({ id: usuarioId }) => usuarioId).filter((usuarioId) => usuarioId !== ctx.usuarioId),
   });
   if (nivel === "projeto") revalidatePath(`/projetos/${id}`);
   if (nivel === "tarefa") revalidatePath(`/tarefas/${id}`);
@@ -335,6 +339,7 @@ export async function concluirTarefaAction(tarefaId: string) {
     url: `/tarefas/${tarefaId}`,
     entidadeId: tarefaId,
     dedupeKey: `tarefa-concluida:${tarefaId}:${resultado.tarefa.atualizadoEm.toISOString()}`,
+    usuarioIds: (await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== ctx.usuarioId),
   });
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${resultado.tarefa.projetoId}`);

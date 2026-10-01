@@ -16,9 +16,9 @@ avisado.
 | Evento | Quando acontece | ADMIN | ADMIN_INTERNO e ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
 | Prazo próximo | A tarefa vence dentro da antecedência | Sim | Sim | Não |
-| Tarefa concluída | Uma tarefa é concluída | Sim | Não | Não |
-| Projeto concluído | O projeto é marcado como concluído | Sim | Não | Não |
-| Novo comentário | Alguém comenta | Sim | Sim | Não |
+| Tarefa concluída | Uma tarefa é concluída | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Não |
+| Projeto concluído | O projeto é marcado como concluído | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Não |
+| Novo comentário | Alguém comenta em registro acessível | Conforme acesso e preferência | Conforme acesso e preferência | Se vinculado ao cliente e preferência habilitada |
 | Atribuição recebida | Nova atribuição de projeto, tarefa ou subtarefa | Sim | Sim | Não |
 
 ## Quem pode fazer o quê
@@ -68,6 +68,7 @@ recebida” é enviado pelos canais configurados para o perfil da pessoa.
 - **Teste:** `notificacoes-rf022.integration.test.ts`, com as combinações de canais, menção
   e atribuição recebida.
 - **Falhas:** erro de e-mail não bloqueia a ação que gerou o aviso.
+- **Audiência:** `dispararEventoNotificacao` exige `usuarioIds`; lista vazia não envia. Comentários usam usuários ativos com acesso ao alvo. Eventos de conclusão direcionam somente à conta ADMIN da Talita e não notificam o executor. Preferências por perfil/canal continuam valendo.
 
 ### N3. Aviso de prazo próximo (RF-007)
 
@@ -92,14 +93,14 @@ conforme as preferências.
 | # | Situação | Efeito |
 |---|---|---|
 | L1 | **Nenhum agendador chama o job de prazo** (`/api/jobs/notificacoes-prazo`). | Avisos de prazo nunca são disparados. Ver L1 em `tarefas.md`. |
-| L2 | **Eventos sem destinatário explícito vão para todos os usuários ativos dos perfis habilitados.** Isso vale para comentário sem menção, tarefa concluída e projeto concluído. | Colaboradores recebem avisos, com nome e link, de registros a que não têm acesso. Hoje afeta comentários (ver L1 em `comentarios-mencoes.md`). Afeta conclusões se a Administradora ativar esses avisos para colaboradores. |
-| L3 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
-| L4 | A antecedência por tarefa é ignorada. Ver L2 em `tarefas.md`. | — |
+| L2 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
+| L3 | A antecedência por tarefa é ignorada. Ver L2 em `tarefas.md`. | — |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | 011bc10 | Corrigir a documentação do disparo de atribuição recebida |
 | 2026-09-30 | ce3b73f | Preferências controlam menções, confirmações do autor e avisos de novas atribuições ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
