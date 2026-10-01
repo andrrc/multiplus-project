@@ -1,5 +1,6 @@
 import type { Perfil } from "@prisma/client";
 import { auth, signOut } from "@/server/auth";
+import { obterContexto } from "@/server/auth/contexto";
 import { MenuMobile } from "./menu-mobile";
 import { NavegacaoPainel } from "./navegacao-painel";
 
@@ -49,13 +50,14 @@ function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }
 
 export default async function PainelLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  const ctx = await obterContexto();
   const usuario = session!.user;
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       <MenuMobile
-        navegacao={<Navegacao perfil={usuario.perfil} />}
-        usuario={<BlocoUsuario nome={usuario.name} perfil={usuario.perfil} />}
+        navegacao={<Navegacao perfil={ctx.perfil} />}
+        usuario={<BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />}
       />
 
       <aside className="relative hidden w-[250px] shrink-0 flex-col bg-tinta lg:flex">
@@ -70,11 +72,11 @@ export default async function PainelLayout({ children }: { children: React.React
         </div>
 
         <nav className="flex flex-col gap-0.5 px-3">
-          <Navegacao perfil={usuario.perfil} />
+          <Navegacao perfil={ctx.perfil} />
         </nav>
 
         <div className="mt-auto border-t border-[color:var(--tinta2)] px-6 py-5">
-          <BlocoUsuario nome={usuario.name} perfil={usuario.perfil} />
+          <BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />
         </div>
       </aside>
 

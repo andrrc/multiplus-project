@@ -91,12 +91,17 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 **Como funciona.**
 - **Desativar:** o usuário desativado não consegue mais entrar, e o histórico dele é
   mantido.
+- **Sessão aberta:** a desativação bloqueia o próximo request autenticado e leva a pessoa
+  de volta ao login. Se o perfil mudar, o novo perfil vale no request seguinte.
 - **Proteção:** a Administradora não pode desativar a si mesma.
 
 **Detalhes técnicos.**
 - **Função:** `definirAtivo` com a entidade `usuario`. O caso `auto_desativacao` é
   recusado.
-- **Testes:** `administracao-acesso.smoke.test.ts`.
+- **Revalidação:** `obterContexto` consulta `ativo` e `perfil` do banco; não confia nos
+  claims antigos do JWT para autorização. Ver também `autenticacao-acesso.md`.
+- **Testes:** `administracao-acesso.smoke.test.ts` e
+  `revalidacao-sessao.integration.test.ts`.
 
 ### U5. Meu Perfil (RF-042)
 
@@ -117,7 +122,7 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | **Desativar um usuário não encerra a sessão aberta dele.** A sessão é um JWT e o perfil vem do token, sem nova consulta ao banco (`obterContexto`, `app_current_perfil`). | **Risco de segurança:** o usuário desativado continua acessando até a sessão expirar (padrão do Auth.js: 30 dias). O mesmo vale para mudança de perfil. **Prioridade alta.** Ver L1 em `autenticacao-acesso.md`. |
+| — | Não há limitação conhecida para desativação ou atualização de perfil durante uma sessão aberta. | — |
 
 ## Histórico de alterações
 
@@ -130,3 +135,4 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 | 2026-09-18 | `36bc769`, `29c71ee` | Link manual de convite, aberto em modal |
 | 2026-09-18 | `6afd91d` | Organização das ações na lista de usuários |
 | 2026-09-30 | `1d88b94` | Máscara e validação do telefone celular; ver [análise](../analises/formatacao-campos-telefone.md) |
+| 2026-10-01 | `e60121d` | Sessões passam a respeitar a desativação e o perfil atual ([análise](../analises/revalidacao-sessao-usuarios.md)) |

@@ -78,13 +78,20 @@ acessar.
 
 **Detalhes técnicos.**
 - **Duas camadas:**
-  - `src/proxy.ts` barra a navegação;
-  - `exigirAcessoARota` (`src/server/auth/contexto.ts`) protege cada página.
+  - `src/proxy.ts` encaminha sessões ausentes ao login, sem usar perfil possivelmente antigo
+    para decidir permissões;
+  - `exigirAcessoARota` (`src/server/auth/contexto.ts`) protege cada página com o perfil
+    atual do banco.
 - **Configuração:** as regras vêm de `MENU` e `perfilPodeAcessar` (`src/lib/navegacao.ts`).
 - **Dados:** a camada que vale é o RLS no banco, que recebe perfil e usuário por
   `comContextoDeUsuario`.
-- **Teste:** `administracao-acesso.unit.test.ts`, que cobre negação de rota, sub-rota e
-  rota desconhecida.
+- **Sessão atualizada:** `obterContexto` consulta a própria linha do usuário no banco em
+  cada request autenticado. Conta inativa ou ausente é redirecionada ao login com uma
+  mensagem; mudança de perfil passa a valer no request seguinte. O layout também usa o
+  perfil atual para montar o menu.
+- **Testes:** `administracao-acesso.unit.test.ts`, que cobre negação de rota, sub-rota e
+  rota desconhecida, e `revalidacao-sessao.integration.test.ts`, que cobre desativação,
+  remoção e mudança de perfil durante uma sessão existente.
 
 ---
 
@@ -92,7 +99,6 @@ acessar.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | **A sessão não é revalidada no banco.** O perfil e o usuário vêm do JWT, e nem `obterContexto` nem o RLS conferem `usuarios.ativo`. | **Risco de segurança:** usuário desativado ou com perfil alterado mantém o acesso antigo até a sessão expirar (padrão do Auth.js: 30 dias). **Prioridade alta.** |
 | L2 | O **login** não tem limite de tentativas. Só a recuperação de senha tem. | A senha fica exposta a tentativa e erro automatizada. |
 | L3 | O limite de tentativas é em memória. | Zera a cada reinício do app e não funciona com mais de uma instância. |
 | L4 | O painel do cliente (RF-012) não existe. | O cliente logado só vê Meu Perfil. |
@@ -106,3 +112,4 @@ acessar.
 | 2026-09-16 | `eaecd57` | Envio do e-mail de recuperação fora do caminho da resposta |
 | 2026-09-17 | `4f08144` | SEO e identidade da aplicação |
 | 2026-09-25 | `0956cdf` | Tela inicial da Administradora passa a ser Subtarefas |
+| 2026-10-01 | `e60121d` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |

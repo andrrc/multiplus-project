@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
-import { perfilPodeAcessar, telaInicial } from "@/lib/navegacao";
 
 const ROTAS_PUBLICAS = ["/login", "/esqueci-senha", "/definir-senha"];
 
@@ -8,6 +7,8 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
   const isRotaPublica = ROTAS_PUBLICAS.some((rota) => pathname.startsWith(rota));
+  const sessaoInvalidada =
+    pathname === "/login" && req.nextUrl.searchParams.get("motivo") === "sessao-invalidada";
 
   if (!isLoggedIn && !isRotaPublica) {
     const url = new URL("/login", req.nextUrl.origin);
@@ -15,18 +16,13 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   }
 
-  if (isLoggedIn && pathname === "/login") {
+  if (isLoggedIn && pathname === "/login" && !sessaoInvalidada) {
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 
-  // RF-043 — acesso direto por URL a rota fora do perfil. Isto é a checagem otimista: o
-  // proxy é o lugar errado para ser a única autorização (a própria documentação do Next
-  // diz isso), então cada página protegida repete a verificação no servidor via
-  // `exigirAcessoARota`, e a RLS continua sendo a última palavra sobre os dados.
-  const perfil = req.auth?.user?.perfil;
-  if (isLoggedIn && perfil && !isRotaPublica && !perfilPodeAcessar(perfil, pathname)) {
-    return NextResponse.redirect(new URL(telaInicial(perfil), req.nextUrl.origin));
-  }
+  // O proxy só usa o JWT para encaminhar pessoas sem sessão ao login. O perfil no token
+  // pode ter ficado antigo; páginas e actions revalidam o contexto no banco, e o RLS
+  // continua sendo a última palavra sobre acesso aos dados.
 });
 
 export const config = {

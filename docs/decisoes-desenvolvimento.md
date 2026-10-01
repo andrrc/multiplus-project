@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-01 | [Autenticação](funcionalidades/autenticacao-acesso.md), [Usuários](funcionalidades/usuarios.md) | Sessões revalidam status ativo e perfil atual do usuário em cada request autenticado | `e60121d` |
 | 2026-09-30 | [Agenda](funcionalidades/agenda.md), [Subtarefas](funcionalidades/subtarefas.md) | RF-036 e RF-037 formalizados no SRS v2.5 e alinhados ao ADD v1.12 | 8aa5ba1 |
 | 2026-09-30 | [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md) | Preferências de canal também controlam menções e atribuições recebidas | ce3b73f |
 | 2026-09-30 | [Clientes](funcionalidades/clientes.md), [Usuários](funcionalidades/usuarios.md) | Máscara `(DD) XXXXX-XXXX` e validação de celulares nos formulários | `1d88b94` |

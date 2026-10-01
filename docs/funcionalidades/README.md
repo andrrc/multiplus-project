@@ -34,7 +34,6 @@ básico:
 
 | Módulo | Limitação |
 |---|---|
-| Autenticação | L1: usuário desativado ou com perfil alterado mantém o acesso até a sessão expirar (até 30 dias) |
 | Autenticação | L2: login sem limite de tentativas |
 | Comentários e Notificações | L1 e L2: comentário sem menção avisa colaboradores sem acesso ao registro |
 | Tarefas e Notificações | L1: nenhum agendador dispara os avisos de prazo |
