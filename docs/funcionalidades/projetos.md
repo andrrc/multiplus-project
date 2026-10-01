@@ -100,8 +100,8 @@ O **semáforo** mostra quantos dias úteis faltam para a conclusão prevista.
 ### P5. Documentos do projeto (RF-013)
 
 **Como funciona.**
-- **O que é:** a Administradora vincula links (Google Drive) com um nome ao projeto. Não
-  há upload de arquivo.
+- **O que é:** a Administradora vincula links (Google Drive) com um nome ao projeto. Links
+  novos devem ser URLs HTTP ou HTTPS válidas, validadas no servidor. Não há upload de arquivo.
 - **Onde aparecem:** na tela do projeto e, para os colaboradores, junto com os documentos
   gerais do cliente.
 
@@ -153,12 +153,12 @@ Descritos em `comentarios-mencoes.md`.
 |---|---|---|
 | L1 | O semáforo conta feriados como dia útil. | Perto de feriados, o prazo parece maior do que é. Decisão registrada (ver histórico). |
 | L2 | O mesmo indicador tem dois nomes: "Dias restantes" na listagem e "Semáforo do prazo" nas demais telas. | É intencional, pela decisão de 29/09. |
-| L3 | O link de documento do projeto só é conferido como "não vazio" (`criarDocumentoProjeto`). | Aceita texto que não é link e esquemas como `javascript:`. Ver L3 em `clientes.md`. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder os projetos dele dos colaboradores |
 | 2026-09-17 | `6342b73`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, telas da Administradora e Meus Projetos |

@@ -2,6 +2,7 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { prisma } from "@/lib/prisma";
 import { armazenarImagemComentario, removerImagemComentario } from "@/lib/storage";
 import { Perfil } from "@prisma/client";
+import { validarUrlHttp } from "@/lib/validacao-url";
 
 export type AlvoComentario =
   | { projetoId: string; tarefaId?: never; subtarefaId?: never }
@@ -79,9 +80,7 @@ export async function criarComentario(ctx: ContextoUsuario, alvo: AlvoComentario
   const conteudo = texto.trim();
   if (!conteudo) throw new Error("Escreva um comentário antes de publicar.");
   const url = link?.trim() || null;
-  if (url) {
-    try { new URL(url); } catch { throw new Error("Informe um link válido."); }
-  }
+  const urlValidada = url ? validarUrlHttp(url) : null;
   const mencoesUnicas = [...new Set(mencoesUsuarioIds)];
   if (mencoesUnicas.length) {
     const usuariosMencionaveis = await listarUsuariosMencionaveis(ctx, alvo);
@@ -93,7 +92,7 @@ export async function criarComentario(ctx: ContextoUsuario, alvo: AlvoComentario
   if (imagem && imagem.size > 0) imagemChave = (await armazenarImagemComentario(imagem)).chave;
   try {
     return await comContextoDeUsuario(ctx, (tx) => tx.comentario.create({
-      data: { ...alvo, texto: conteudo, link: url, imagemChave, autorId: ctx.usuarioId, mencoesUsuarioIds: mencoesUnicas },
+      data: { ...alvo, texto: conteudo, link: urlValidada, imagemChave, autorId: ctx.usuarioId, mencoesUsuarioIds: mencoesUnicas },
     }));
   } catch (erro) {
     if (imagemChave) await removerImagemComentario(imagemChave).catch(() => undefined);

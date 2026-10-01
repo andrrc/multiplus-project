@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-01 | [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md), [Comentários](funcionalidades/comentarios-mencoes.md) | Links gravados no servidor aceitam somente URLs HTTP/HTTPS ([análise](analises/validacao-esquema-links.md)) | pendente |
 | 2026-10-01 | [Tarefas e Notificações](funcionalidades/tarefas.md) | Antecedência por tarefa, métricas de execução e preparação do cron diário; ativação na VPS pendente | `2154bb3` |
 | 2026-10-01 | [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md), [Tarefas](funcionalidades/tarefas.md) | Destinatários de comentário e conclusão limitados; tarefas canceladas fora dos avisos de prazo | 83f7524 |
 | 2026-10-01 | [Autenticação](funcionalidades/autenticacao-acesso.md), [Usuários](funcionalidades/usuarios.md) | Sessões revalidam status ativo e perfil atual do usuário em cada request autenticado | `9bce2c0` |

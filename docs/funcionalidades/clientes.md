@@ -13,7 +13,7 @@ Múltiplus. Cada cliente recebe um **número de identificação** sequencial.
 Além dos dados cadastrais, um cliente PJ pode ter:
 - um **Responsável Legal** e um **Ponto de Contato**;
 - **Pessoas Envolvidas**, que podem ser pessoas ou empresas terceiras;
-- **documentos**, que são links do Google Drive;
+- **documentos**, que são links do Google Drive; novos links precisam ser URLs HTTP ou HTTPS válidas, validadas no servidor;
 - **projetos**;
 - um **acesso ao portal** para o próprio cliente.
 
@@ -170,13 +170,13 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 |---|---|---|
 | L1 | O painel do cliente (RF-012) e o controle de licenças (RF-010) ainda não existem. | O cliente com acesso ao portal só vê Meu Perfil. |
 | L2 | A migração assistida de dados (RF-044) e a exclusão por solicitação LGPD (RF-045) não foram implementadas. | — |
-| L3 | O link de documento do Drive só é conferido como "não vazio" (`adicionarDocumento`). Não se valida o formato nem o esquema. | Aceita texto que não é link e esquemas como `javascript:`. O checklist do `AGENTS.md` pede aceitar só `http(s)`. |
 | L4 | Pasta vazia ``src/app/(painel)/meus-clientes/`[id`]``, resíduo de um comando do PowerShell. | Fora do git e sem efeito. Pode ser apagada. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-09-09 | `d84bd34` | Sprint 2: cadastro de clientes PJ com Responsável Legal, Ponto de Contato, pessoas e documentos |
 | 2026-09-10 | `334d49e` | Cliente Pessoa Física (ADR-006) |
 | 2026-09-10 | `4818298` | Correções pós-aprovação: Pessoas Envolvidas substituem "Pessoas do Operacional" (ADR-007) |

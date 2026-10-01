@@ -11,6 +11,7 @@ import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etique
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
+import { validarUrlHttp } from "@/lib/validacao-url";
 
 export type DadosProjeto = {
   clienteId: string;
@@ -739,8 +740,9 @@ export async function atualizarResponsavelSubtarefa(ctx: ContextoUsuario, subtar
 export async function criarDocumentoProjeto(ctx: ContextoUsuario, dados: DadosDocumentoProjeto) {
   exigirAdministrador(ctx);
   const nome = validarNome(dados.nome, "do documento");
-  const link = dados.link.trim();
-  if (!link) throw new Error("Informe o link do documento.");
+  const linkInformado = dados.link.trim();
+  if (!linkInformado) throw new Error("Informe o link do documento.");
+  const link = validarUrlHttp(linkInformado);
 
   return comContextoDeUsuario(ctx, async (tx) => {
     if (dados.projetoId) {

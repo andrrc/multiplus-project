@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { limparDadosPessoa, type DadosPessoa } from "@/lib/heranca-pessoa";
 import { criarAcessoPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
 import { exigirClienteAtivo } from "@/lib/desativacao";
+import { validarUrlHttp } from "@/lib/validacao-url";
 
 export type { DadosPessoa } from "@/lib/heranca-pessoa";
 export { heredarDadosPontoContato } from "@/lib/heranca-pessoa";
@@ -456,7 +457,8 @@ export async function adicionarDocumento(
   nome: string,
   link: string,
 ) {
-  return comContextoDeUsuario(ctx, (tx) => tx.documento.create({ data: { clienteId, nome, link } }));
+  const url = validarUrlHttp(link);
+  return comContextoDeUsuario(ctx, (tx) => tx.documento.create({ data: { clienteId, nome, link: url } }));
 }
 
 export type ResultadoCriarAcesso =

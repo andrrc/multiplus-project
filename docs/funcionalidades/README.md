@@ -36,7 +36,6 @@ básico:
 |---|---|
 | Autenticação | L2: login sem limite de tentativas |
 | Tarefas e Notificações | L1: código pronto; ativação manual do cron na VPS pendente |
-| Clientes, Projetos e Comentários | Links (Drive e comentário) aceitam qualquer esquema, inclusive `javascript:` |
 | Tarefas | L5: tarefa desativada não pode ser reativada pela interface |
 
 ## Perfis

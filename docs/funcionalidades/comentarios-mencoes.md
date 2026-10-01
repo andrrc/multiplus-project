@@ -26,7 +26,7 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 ### M1. Publicar comentário com link e imagem (RF-016, RF-017)
 
 **Como funciona.**
-- **Conteúdo:** texto obrigatório, com link e imagem opcionais.
+- **Conteúdo:** texto obrigatório, com link e imagem opcionais. O link, quando informado, deve ser uma URL absoluta `http` ou `https`; a regra é validada no servidor.
 - **Imagem:** WebP, JPEG ou PNG, até 10 MB. Aparece como prévia, pode ser ampliada e
   pode ser salva.
 - **Links:** aparecem destacados.
@@ -64,13 +64,13 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | O link do comentário é validado só como "URL válida". | Aceita esquemas diferentes de `http(s)`, como `javascript:`. O checklist do `AGENTS.md` pede aceitar só `http(s)`. |
 | L2 | A cobertura automatizada de comentários continua parcial. | Há integração cobrindo os canais das menções e a lista explícita de destinatários em `notificacoes-rf022.integration.test.ts`; imutabilidade, validação de acesso da menção e acesso à imagem ainda não têm cobertura. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Links de comentário limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-10-01 | 83f7524 | Avisos de comentário limitados a usuários ativos com acesso ao registro ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | ce3b73f | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-17 | `df1f2dc`, `c4d87e6` | Bucket privado e upload autenticado de imagens |
