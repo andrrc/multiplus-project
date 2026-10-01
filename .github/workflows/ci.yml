@@ -139,7 +139,8 @@ jobs:
 
       - name: Executar deploy seguro
         run: |
-          ssh -i ~/.ssh/id_deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+          ssh -i ~/.ssh/id_deploy -o ServerAliveInterval=30 -o ServerAliveCountMax=20 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "mkdir -p '${{ secrets.DEPLOY_PATH }}' && \
              tar -xzf '/tmp/multiplus-${GITHUB_SHA}.tgz' -C '${{ secrets.DEPLOY_PATH }}' && \
              rm -f '/tmp/multiplus-${GITHUB_SHA}.tgz' && \
