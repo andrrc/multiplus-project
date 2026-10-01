@@ -71,7 +71,7 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-01 | pendente | Avisos de comentário limitados a usuários ativos com acesso ao registro ([análise](../analises/notificacao-comentario-com-acesso.md)) |
+| 2026-10-01 | 83f7524 | Avisos de comentário limitados a usuários ativos com acesso ao registro ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | ce3b73f | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-17 | `df1f2dc`, `c4d87e6` | Bucket privado e upload autenticado de imagens |
 | 2026-09-17 | `e974425` | Comentários imutáveis em projeto, tarefa e subtarefa (Sprint 4B) |

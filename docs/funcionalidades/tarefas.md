@@ -243,7 +243,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-01 | pendente | Avisos de prazo excluem tarefas canceladas ([análise](../analises/notificacao-comentario-com-acesso.md)) |
+| 2026-10-01 | 83f7524 | Avisos de prazo excluem tarefas canceladas ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder projetos, tarefas e subtarefas dos colaboradores |
 | 2026-09-17 | `6342b73`, `579cdd3`, `fe0ad63`, `47df249`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, RLS, recorrência, "% em dia", telas da Administradora e dos colaboradores |

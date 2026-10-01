@@ -100,7 +100,7 @@ conforme as preferências.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-01 | pendente | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |
+| 2026-10-01 | 83f7524 | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | 011bc10 | Corrigir a documentação do disparo de atribuição recebida |
 | 2026-09-30 | ce3b73f | Preferências controlam menções, confirmações do autor e avisos de novas atribuições ([análise](../analises/controle-total-notificacoes.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
