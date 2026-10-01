@@ -112,4 +112,4 @@ acessar.
 | 2026-09-16 | `eaecd57` | Envio do e-mail de recuperação fora do caminho da resposta |
 | 2026-09-17 | `4f08144` | SEO e identidade da aplicação |
 | 2026-09-25 | `0956cdf` | Tela inicial da Administradora passa a ser Subtarefas |
-| 2026-10-01 | `e60121d` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |
+| 2026-10-01 | `9bce2c0` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |
