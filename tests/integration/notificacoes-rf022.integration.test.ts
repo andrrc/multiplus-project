@@ -11,8 +11,9 @@ import { enviarEmail } from "@/lib/email";
 import { adicionarAtribuicao } from "@/lib/usuarios";
 import { criarSubtarefa, criarTarefa } from "@/lib/projetos-tarefas";
 import { listarUsuariosMencionaveis } from "@/lib/comentarios";
-import { atualizarPreferenciaNotificacao, dispararEventoNotificacao, dispararNotificacaoAtribuicaoRecebida, dispararNotificacoesMencaoComentario, dispararPrazoProximo, listarAdministradoresAtivos } from "@/lib/notificacoes";
-import { fecharConexoes, limparFixtures, ownerDb } from "./setup/helpers";
+import { atualizarPreferenciaNotificacao, buscarStatusJobPrazo, dispararEventoNotificacao, dispararNotificacaoAtribuicaoRecebida, dispararNotificacoesMencaoComentario, dispararPrazoProximo, executarJobPrazo, listarAdministradoresAtivos } from "@/lib/notificacoes";
+import { fecharConexoes, limparFixtures, ownerDb, appDb } from "./setup/helpers";
+import { GET } from "@/app/api/jobs/notificacoes-prazo/route";
 
 let adminId = "";
 let externoId = "";
@@ -24,6 +25,7 @@ async function preferencia(perfil: "ADMIN" | "ADMIN_EXTERNO" | "CLIENTE", evento
 }
 
 beforeEach(async () => {
+  await ownerDb.registroEnvioPrazo.deleteMany();
   await ownerDb.notificacao.deleteMany();
   await limparFixtures();
   vi.clearAllMocks();
@@ -39,12 +41,15 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
+  await ownerDb.registroEnvioPrazo.deleteMany();
   await ownerDb.notificacao.deleteMany();
   await limparFixtures();
   await fecharConexoes();
 });
 
 afterEach(async () => {
+  delete process.env.CRON_SECRET;
+  await ownerDb.registroEnvioPrazo.deleteMany();
   await ownerDb.notificacao.deleteMany();
   await Promise.all([
     preferencia("ADMIN", "NOVO_COMENTARIO", true, true),
@@ -168,6 +173,62 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     expect(resultado.encontradas).toBe(1);
     expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "PRAZO_PROXIMO", entidadeId: tarefaElegivel.id } })).toBe(1);
     expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "PRAZO_PROXIMO", entidadeId: tarefaCancelada.id } })).toBe(0);
+  });
+
+  it("usa antecedência individual e fallback global, e deduplica os dois canais no mesmo dia", async () => {
+    await preferencia("ADMIN", "PRAZO_PROXIMO", true, true);
+    await preferencia("ADMIN_EXTERNO", "PRAZO_PROXIMO", false, false);
+    await ownerDb.configuracaoNotificacao.update({ where: { id: 1 }, data: { diasAntecedenciaPadrao: 5 } });
+    const projetoId = (await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { projetoId: true } })).projetoId;
+    const prazo = (dias: number) => new Date(Date.UTC(2026, 9, 1 + dias, 18));
+    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: prazo(2), diasAntecedencia: 2 } });
+    const fallback = await ownerDb.tarefa.create({ data: { projetoId, nome: "Fallback global", prazo: prazo(5) } });
+    const fora = await ownerDb.tarefa.create({ data: { projetoId, nome: "Antecedência individual", prazo: prazo(8), diasAntecedencia: 10 } });
+
+    const primeira = await dispararPrazoProximo(undefined, new Date("2026-10-01T00:00:00.000Z"));
+    const segunda = await dispararPrazoProximo(undefined, new Date("2026-10-01T00:00:00.000Z"));
+
+    expect(primeira.encontradas).toBe(3);
+    expect(primeira.emailsEnviados).toBe(3);
+    expect(primeira.inAppCriadas).toBe(3);
+    expect(segunda.emailsEnviados).toBe(0);
+    expect(segunda.inAppCriadas).toBe(0);
+    expect(await ownerDb.notificacao.count({ where: { evento: "PRAZO_PROXIMO" } })).toBe(3);
+    expect(await ownerDb.notificacao.count({ where: { evento: "PRAZO_PROXIMO", entidadeId: fallback.id } })).toBe(1);
+    expect(await ownerDb.registroEnvioPrazo.count()).toBe(3);
+    expect(await ownerDb.notificacao.findFirst({ where: { entidadeId: fora.id } })).not.toBeNull();
+    await expect(appDb.registroEnvioPrazo.count()).rejects.toThrow(/permission denied/i);
+  });
+
+  it("persiste sucesso e falha sem perder as métricas da última execução válida", async () => {
+    const primeiro = await executarJobPrazo(new Date("2026-10-01T00:00:00.000Z"));
+    expect(primeiro.status).toBe("SUCESSO");
+    const statusSucesso = await buscarStatusJobPrazo();
+    expect(statusSucesso).toMatchObject({ ultimaExecucaoPrazoStatus: "SUCESSO", ultimoSucessoPrazoTarefas: 0, ultimoSucessoPrazoEmailsEnviados: 0, ultimoSucessoPrazoInAppCriados: 0 });
+
+    await preferencia("ADMIN", "PRAZO_PROXIMO", true, false);
+    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: new Date("2026-10-02T00:00:00.000Z"), status: "EM_ANDAMENTO" } });
+    vi.mocked(enviarEmail).mockRejectedValueOnce(new Error("Falha simulada do provedor"));
+    const resultado = await executarJobPrazo(new Date("2026-10-01T00:00:00.000Z"));
+    expect(resultado.status).toBe("FALHA");
+    const statusFalha = await buscarStatusJobPrazo();
+    expect(statusFalha?.ultimaExecucaoPrazoStatus).toBe("FALHA");
+    expect(statusFalha?.ultimoSucessoPrazoEm).toEqual(statusSucesso?.ultimoSucessoPrazoEm);
+  });
+
+  it("protege o endpoint do cron e retorna erro quando o envio falha", async () => {
+    process.env.CRON_SECRET = "x".repeat(32);
+    const negada = await GET(new Request("https://app.test/api/jobs/notificacoes-prazo"));
+    expect(negada.status).toBe(401);
+    const invalida = await GET(new Request("https://app.test/api/jobs/notificacoes-prazo", { headers: { authorization: "Bearer incorreto" } }));
+    expect(invalida.status).toBe(401);
+
+    await preferencia("ADMIN", "PRAZO_PROXIMO", true, false);
+    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: new Date("2026-10-02T00:00:00.000Z"), status: "EM_ANDAMENTO" } });
+    vi.mocked(enviarEmail).mockRejectedValueOnce(new Error("Falha simulada do provedor"));
+    const autorizada = await GET(new Request("https://app.test/api/jobs/notificacoes-prazo", { headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } }));
+    expect(autorizada.status).toBe(500);
+    delete process.env.CRON_SECRET;
   });
 
   it("aplica NOVO_COMENTARIO aos canais da pessoa mencionada e à confirmação do autor", async () => {

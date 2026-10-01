@@ -1,4 +1,4 @@
-import { EventoNotificacao } from "@prisma/client";
+import { EventoNotificacao, Prisma } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
 import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
 import { prisma } from "@/lib/prisma";
@@ -47,11 +47,21 @@ async function listarDestinatarios(evento: EventoNotificacao, usuarioIds: string
 
 /** B6 — dispara in-app e e-mail sem deixar a integração externa bloquear a ação. */
 export async function dispararEventoNotificacao(evento: EventoNotificacao, dados: DadosEvento) {
+  const metricas = { emailsEnviados: 0, inAppCriadas: 0, falhas: 0 };
   try {
     const destinatarios = await listarDestinatarios(evento, dados.usuarioIds);
     await Promise.all(destinatarios.map(async (destinatario: Destinatario) => {
       const preferencia = destinatario.preferenciasNotificacao[0];
       if (!preferencia) return;
+
+      if (dados.dedupeKey && evento === EventoNotificacao.PRAZO_PROXIMO) {
+        try {
+          await prisma.registroEnvioPrazo.create({ data: { chave: `${dados.dedupeKey}:${destinatario.id}` } });
+        } catch (erro) {
+          if ((erro as { code?: string }).code === "P2002") return;
+          throw erro;
+        }
+      }
 
       if (preferencia.inApp) {
         await prisma.notificacao.create({
@@ -64,7 +74,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
             entidadeId: dados.entidadeId ?? null,
             dedupeKey: dados.dedupeKey ? `${dados.dedupeKey}:${destinatario.id}` : null,
           },
-        }).catch((erro: unknown) => {
+        }).then(() => { metricas.inAppCriadas += 1; }).catch((erro: unknown) => {
           if ((erro as { code?: string }).code !== "P2002") throw erro;
         });
       }
@@ -79,14 +89,17 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
             mensagem: dados.mensagem,
             url: dados.url,
           }),
-        }).catch((erro: unknown) => {
+        }).then(() => { metricas.emailsEnviados += 1; }).catch((erro: unknown) => {
+          metricas.falhas += 1;
           console.error(`[notificacao] falha ao enviar para ${destinatario.email}:`, erro);
         });
       }
     }));
   } catch (erro) {
+    metricas.falhas += 1;
     console.error(`[notificacao] falha no evento ${evento}:`, erro);
   }
+  return metricas;
 }
 
 /** Menções são direcionadas, mas respeitam os canais de NOVO_COMENTARIO do perfil. */
@@ -179,43 +192,83 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
   const configuracao = await prisma.configuracaoNotificacao.findUnique({ where: { id: 1 } });
   const antecedencia = dias ?? configuracao?.diasAntecedenciaPadrao ?? 7;
   const inicio = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), hoje.getUTCDate()));
+  const whereBase: Prisma.TarefaWhereInput = { ativo: true, prazo: { gte: inicio }, status: { notIn: ["CONCLUIDO", "CANCELADO"] }, projeto: { ativo: true, cliente: { ativo: true } } };
+  const maiorAntecedencia = await prisma.tarefa.aggregate({ where: whereBase, _max: { diasAntecedencia: true } });
   const fim = new Date(inicio);
-  fim.setUTCDate(fim.getUTCDate() + antecedencia);
+  fim.setUTCDate(fim.getUTCDate() + Math.max(antecedencia, maiorAntecedencia._max?.diasAntecedencia ?? 0));
+  fim.setUTCHours(23, 59, 59, 999);
   const tarefas = await prisma.tarefa.findMany({
     where: {
-      ativo: true,
+      ...whereBase,
       prazo: { gte: inicio, lte: fim },
-      status: { notIn: ["CONCLUIDO", "CANCELADO"] },
-      projeto: { ativo: true, cliente: { ativo: true } },
     },
     select: {
       id: true,
       nome: true,
       prazo: true,
+      diasAntecedencia: true,
       responsavel: { select: { usuario: { select: { id: true, ativo: true } } } },
       responsavelUsuario: { select: { id: true, ativo: true } },
     },
   });
 
   let processadas = 0;
+  let emailsEnviados = 0;
+  let inAppCriadas = 0;
+  let falhas = 0;
   const administradores = await prisma.usuario.findMany({ where: { ativo: true, perfil: "ADMIN" }, select: { id: true } });
-  for (const tarefa of tarefas) {
+  const elegiveis = tarefas.filter((tarefa) => {
+    const limite = new Date(inicio);
+    limite.setUTCDate(limite.getUTCDate() + (dias ?? tarefa.diasAntecedencia ?? antecedencia));
+    limite.setUTCHours(23, 59, 59, 999);
+    return tarefa.prazo !== null && tarefa.prazo <= limite;
+  });
+  for (const tarefa of elegiveis) {
     const alvo = tarefa.responsavelUsuario?.ativo
       ? [tarefa.responsavelUsuario.id]
       : tarefa.responsavel?.usuario?.ativo
       ? [tarefa.responsavel.usuario.id]
       : administradores.map((administrador) => administrador.id);
-    await dispararEventoNotificacao(EventoNotificacao.PRAZO_PROXIMO, {
+    const metricas = await dispararEventoNotificacao(EventoNotificacao.PRAZO_PROXIMO, {
       titulo: `Prazo próximo: ${tarefa.nome}`,
-      mensagem: `A tarefa vence em ${tarefa.prazo?.toLocaleDateString("pt-BR")}.`,
+      mensagem: `A tarefa vence em ${tarefa.prazo ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(tarefa.prazo) : "data não definida"}.`,
       url: `/tarefas/${tarefa.id}`,
       entidadeId: tarefa.id,
       dedupeKey: `prazo:${tarefa.id}:${inicio.toISOString().slice(0, 10)}`,
       usuarioIds: alvo,
     });
+    emailsEnviados += metricas.emailsEnviados;
+    inAppCriadas += metricas.inAppCriadas;
+    falhas += metricas.falhas;
     processadas += 1;
   }
-  return { encontradas: tarefas.length, processadas };
+  return { encontradas: elegiveis.length, processadas, emailsEnviados, inAppCriadas, falhas };
+}
+
+export async function executarJobPrazo(hoje = new Date()) {
+  const inicio = new Date();
+  await prisma.configuracaoNotificacao.upsert({ where: { id: 1 }, create: { id: 1, ultimaExecucaoPrazoEm: inicio, ultimaExecucaoPrazoStatus: "EM_EXECUCAO" }, update: { ultimaExecucaoPrazoEm: inicio, ultimaExecucaoPrazoStatus: "EM_EXECUCAO" } });
+  try {
+    const resultado = await dispararPrazoProximo(undefined, hoje);
+    const sucesso = resultado.falhas === 0;
+    await prisma.configuracaoNotificacao.update({ where: { id: 1 }, data: {
+      ultimaExecucaoPrazoStatus: sucesso ? "SUCESSO" : "FALHA",
+      ...(sucesso ? { ultimoSucessoPrazoEm: new Date(), ultimoSucessoPrazoTarefas: resultado.processadas, ultimoSucessoPrazoEmailsEnviados: resultado.emailsEnviados, ultimoSucessoPrazoInAppCriados: resultado.inAppCriadas } : {}),
+    } });
+    console.info(JSON.stringify({ evento: "job_notificacoes_prazo", status: sucesso ? "SUCESSO" : "FALHA", ...resultado }));
+    return { ...resultado, status: sucesso ? "SUCESSO" : "FALHA" };
+  } catch (erro) {
+    await prisma.configuracaoNotificacao.update({ where: { id: 1 }, data: { ultimaExecucaoPrazoStatus: "FALHA" } }).catch(() => undefined);
+    console.error(JSON.stringify({ evento: "job_notificacoes_prazo", status: "FALHA" }), erro);
+    throw erro;
+  }
+}
+
+export async function buscarStatusJobPrazo() {
+  return prisma.configuracaoNotificacao.findUnique({ where: { id: 1 }, select: {
+    ultimaExecucaoPrazoEm: true, ultimaExecucaoPrazoStatus: true, ultimoSucessoPrazoEm: true,
+    ultimoSucessoPrazoTarefas: true, ultimoSucessoPrazoEmailsEnviados: true, ultimoSucessoPrazoInAppCriados: true,
+  } });
 }
 
 export async function listarNotificacoes(ctx: ContextoUsuario) {

@@ -497,11 +497,26 @@ model PreferenciaNotificacao {
 
 /// RF-007 — configuração global, com sobrescrita por tarefa em `diasAntecedencia`.
 model ConfiguracaoNotificacao {
-  id                     Int      @id @default(1)
-  diasAntecedenciaPadrao Int      @default(7)
-  atualizadoEm           DateTime @updatedAt
+  id                               Int      @id @default(1)
+  diasAntecedenciaPadrao           Int      @default(7)
+  ultimaExecucaoPrazoEm            DateTime?
+  ultimaExecucaoPrazoStatus        String?
+  ultimoSucessoPrazoEm             DateTime?
+  ultimoSucessoPrazoTarefas        Int?
+  ultimoSucessoPrazoEmailsEnviados Int?
+  ultimoSucessoPrazoInAppCriados   Int?
+  atualizadoEm                     DateTime @updatedAt
 
   @@map("configuracoes_notificacao")
+}
+
+/// Registro interno de idempotência dos envios diários de prazo.
+model RegistroEnvioPrazo {
+  id        String   @id @default(cuid())
+  chave     String   @unique
+  criadoEm  DateTime @default(now())
+
+  @@map("registros_envio_prazo")
 }
 
 /// RF-009 — limites globais de cor para os indicadores de prazo.

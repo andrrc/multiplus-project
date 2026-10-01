@@ -61,3 +61,21 @@ sozinho não protege contra perda da VPS.
 
 Antes de liberar dados reais, restaure pelo menos um dump em uma base isolada e extraia o
 tar do MinIO em um volume temporário.
+
+## Avisos diários de prazo
+
+O serviço exige `CRON_SECRET` com pelo menos 32 caracteres em `.env`. Se ele estiver vazio
+ou ausente, `ops/deploy.sh` gera e persiste um valor hexadecimal de 32 bytes sem imprimi-lo.
+O deploy valida o segredo e injeta-o no container da aplicação. Também é possível defini-lo
+manualmente com `openssl rand -hex 32`.
+Depois que o código estiver implantado, instale no crontab do usuário que executa o deploy
+(substitua pelo caminho real do clone):
+
+```cron
+CRON_TZ=America/Sao_Paulo
+0 8 * * * /opt/multiplus-project/ops/disparar-notificacoes-prazo.sh
+```
+
+O script lê `.env` sem imprimir o segredo e chama o endpoint autenticado. Confira o
+resultado em `/notificacoes`; a linha L1 de tarefas/notificações só deve ser removida
+depois da primeira execução automática confirmada.

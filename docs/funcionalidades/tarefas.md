@@ -200,13 +200,17 @@ Administradora continua vendo tudo.
 - **Destinatário:** o responsável recebe o aviso. Sem responsável com acesso, o aviso vai
   para a Administradora.
 - **Configuração:** a antecedência padrão é de 7 dias e pode ser alterada em
-  Notificações.
+  Notificações. O valor definido na tarefa prevalece; sem valor próprio, aplica-se o
+  padrão global.
 
 **Detalhes técnicos.**
 - **Código:** `dispararPrazoProximo` (`src/lib/notificacoes.ts`), exposto em
   `GET /api/jobs/notificacoes-prazo`. Exige `Authorization: Bearer $CRON_SECRET`.
-- **Deduplicação:** um aviso por tarefa por dia.
-- **Situação atual:** **não está funcionando em staging** (ver limitações).
+- **Deduplicação:** um aviso por tarefa, dia e destinatário; cobre e-mail e in-app.
+- **Execução:** endpoint autenticado por `CRON_SECRET`; procedimento diário às 08:00
+  (horário de Brasília) em `ops/README.md`. A página `/notificacoes` mostra tentativas e
+  contagens do último sucesso.
+- **Situação atual:** código pronto; ativação manual do cron na VPS pendente.
 
 ### T10. Permitir que o responsável crie subtarefas
 
@@ -232,8 +236,7 @@ registro de quem criou e quando.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | Nenhum agendador chama `/api/jobs/notificacoes-prazo`. Na VPS só existe o cron de backup. Item já listado em `pendencias-antes-producao.md`. | **Nenhum aviso de prazo é disparado.** |
-| L2 | O campo "Antecedência (dias)" da tarefa é salvo, mas o aviso usa só a antecedência padrão global. | A configuração por tarefa não tem efeito. |
+| L1 | O código do job e o script de cron estão prontos, mas a linha ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão enviados automaticamente até ativar o cron e confirmar a primeira execução. |
 | L3 | O botão de desativação diz "Excluir", mas a ação é reversível. | O rótulo contradiz o RF-039 ("desativar", nunca excluir). |
 | L4 | A listagem `/tarefas` só mostra tarefas ativas e não tem "Mostrar desativadas" (RF-039). | Uma tarefa desativada só é encontrada pela URL direta, então na prática não dá para reativá-la pela interface. |
 | L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
@@ -243,6 +246,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Aplicar antecedência por tarefa, preservar exclusão de canceladas e preparar agendador/observabilidade ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Avisos de prazo excluem tarefas canceladas ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder projetos, tarefas e subtarefas dos colaboradores |

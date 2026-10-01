@@ -17,6 +17,18 @@ set -a
 . ./.env
 set +a
 
+# Gera uma chave privada persistente na primeira implantação, sem imprimir seu valor.
+if [[ -z "${CRON_SECRET:-}" ]]; then
+  command -v openssl >/dev/null || die "OpenSSL é necessário para gerar CRON_SECRET"
+  CRON_SECRET="$(openssl rand -hex 32)"
+  if grep -q '^CRON_SECRET=' .env; then
+    sed -i "s/^CRON_SECRET=.*/CRON_SECRET=${CRON_SECRET}/" .env
+  else
+    printf '\nCRON_SECRET=%s\n' "$CRON_SECRET" >> .env
+  fi
+  export CRON_SECRET
+fi
+
 compose_files=(-f docker-compose.yml)
 if [[ "${PROXY_MODE:-standalone}" == "external" ]]; then
   compose_files+=(-f docker-compose.proxy.yml)
@@ -26,11 +38,13 @@ compose() {
   docker compose "${compose_files[@]}" "$@"
 }
 
-for nome in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB APP_DATABASE_PASSWORD AUTH_SECRET APP_DOMAIN MINIO_ROOT_USER MINIO_ROOT_PASSWORD MINIO_BUCKET; do
+for nome in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB APP_DATABASE_PASSWORD AUTH_SECRET APP_DOMAIN MINIO_ROOT_USER MINIO_ROOT_PASSWORD MINIO_BUCKET CRON_SECRET; do
   [[ -n "${!nome:-}" ]] || die "$nome precisa estar definido em .env"
 done
 
 [[ ${#AUTH_SECRET} -ge 32 ]] || die "AUTH_SECRET precisa ter pelo menos 32 caracteres"
+[[ ${#CRON_SECRET} -ge 32 ]] || die "CRON_SECRET precisa ter pelo menos 32 caracteres"
+[[ "$CRON_SECRET" =~ ^[A-Fa-f0-9]+$ ]] || die "CRON_SECRET deve conter somente caracteres hexadecimais"
 [[ "$APP_DOMAIN" != http://* && "$APP_DOMAIN" != https://* ]] || die "APP_DOMAIN deve ser somente hostname, sem esquema"
 [[ "$APP_DOMAIN" != localhost* ]] || die "APP_DOMAIN não pode ser localhost em produção"
 [[ "$POSTGRES_PASSWORD" != *troque-esta* && "$APP_DATABASE_PASSWORD" != *troque-esta* && "$MINIO_ROOT_PASSWORD" != *troque-esta* ]] || die "troque as senhas de exemplo antes do deploy"

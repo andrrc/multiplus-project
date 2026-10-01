@@ -58,6 +58,7 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET}
       RESEND_API_KEY: ${RESEND_API_KEY}
       EMAIL_FROM: ${EMAIL_FROM}
+      CRON_SECRET: ${CRON_SECRET:-}
       CNPJ_API_BASE_URL: ${CNPJ_API_BASE_URL}
       NODE_ENV: production
     healthcheck:

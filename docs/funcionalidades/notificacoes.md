@@ -72,8 +72,10 @@ recebida” é enviado pelos canais configurados para o perfil da pessoa.
 
 ### N3. Aviso de prazo próximo (RF-007)
 
-Descrito em `tarefas.md`, na seção T9. A antecedência padrão é de 7 dias e pode ser
-alterada nesta tela.
+Descrito em `tarefas.md`, na seção T9. A antecedência global pode ser alterada nesta tela;
+quando a tarefa define sua própria antecedência, ela prevalece. O job é preparado para
+execução diária às 08:00 (horário de Brasília). A última tentativa e as métricas do último
+sucesso aparecem nesta página, exclusiva do ADMIN.
 
 ### N4. Conclusão de tarefa e projeto (RF-023)
 
@@ -86,20 +88,26 @@ conforme as preferências.
 - **Teste:** `notificacoes-email.unit.test.ts`, que cobre a renderização, o escape do
   conteúdo e o link interno.
 
+**Detalhes técnicos do job de prazo.** A rota exige `CRON_SECRET` em bearer; o deploy valida
+e entrega o segredo ao container. `ops/disparar-notificacoes-prazo.sh` pode ser agendado
+após o deploy. A observabilidade grava tentativa/estado e, no sucesso, tarefas processadas,
+e-mails enviados e notificações in-app criadas. `RegistroEnvioPrazo` impede repetição por
+tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
+
 ---
 
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | **Nenhum agendador chama o job de prazo** (`/api/jobs/notificacoes-prazo`). | Avisos de prazo nunca são disparados. Ver L1 em `tarefas.md`. |
+| L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
 | L2 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
-| L3 | A antecedência por tarefa é ignorada. Ver L2 em `tarefas.md`. | — |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-01 | pendente | Aplicar antecedência por tarefa, deduplicar canais, medir execuções e preparar cron diário ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | 011bc10 | Corrigir a documentação do disparo de atribuição recebida |
 | 2026-09-30 | ce3b73f | Preferências controlam menções, confirmações do autor e avisos de novas atribuições ([análise](../analises/controle-total-notificacoes.md)) |

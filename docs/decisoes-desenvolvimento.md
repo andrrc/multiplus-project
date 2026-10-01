@@ -29,6 +29,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 | 2026-09-28 | [Tarefas](funcionalidades/tarefas.md) | Responsável pode criar subtarefas, com permissão | `9066c72`, `5f6a3b4` |
 | 2026-09-28 | [Projetos](funcionalidades/projetos.md) | Número da proposta comercial | `a976715` |
 | 2026-09-28 | [Clientes](funcionalidades/clientes.md) | Número de identificação sequencial, filtros automáticos e desativação separada do acesso ao portal | `f005c46`, `2af30bc`, `edac240` |
+| 2026-10-01 | [Tarefas e Notificações](funcionalidades/tarefas.md) | Antecedência por tarefa, métricas de execução e preparação do cron diário; ativação na VPS pendente | pendente |
 | 2026-09-25 | [Subtarefas](funcionalidades/subtarefas.md) | Subtarefas completas. O Painel de Prazos vira painel de Subtarefas | `c907c9d`, `0956cdf` |
 | 2026-09-25 | [Tarefas](funcionalidades/tarefas.md) | Filtros dependentes por cliente e projeto | `3b4a259`, `06bdbfc` |
 | 2026-09-25 | [Clientes](funcionalidades/clientes.md) | Ficha do cliente para colaboradores, projetos na ficha e atalho para criar projeto | `65bf329`, `d26ab9d`, `28537e0` |
