@@ -176,7 +176,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-01 | pendente | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
+| 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-09-09 | `d84bd34` | Sprint 2: cadastro de clientes PJ com Responsável Legal, Ponto de Contato, pessoas e documentos |
 | 2026-09-10 | `334d49e` | Cliente Pessoa Física (ADR-006) |
 | 2026-09-10 | `4818298` | Correções pós-aprovação: Pessoas Envolvidas substituem "Pessoas do Operacional" (ADR-007) |
