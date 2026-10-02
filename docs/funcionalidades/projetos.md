@@ -1,7 +1,7 @@
 # Projetos
 
-- **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
-- **Requisitos:** RF-004, RF-009, RF-013, RF-016, RF-018, RF-020, RF-024, RF-038, RF-039.
+- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Requisitos:** RF-004, RF-009, RF-013, RF-016, RF-018, RF-020, RF-024, RF-038, RF-039, RF-048, RF-049, RF-050.
 - **Módulos relacionados:** Clientes, Tarefas, Comentários.
 
 ## Visão geral
@@ -25,12 +25,23 @@ O **semáforo** mostra quantos dias úteis faltam para a conclusão prevista.
 | Criar, editar, mudar o status, desativar e reativar | Sim | Não | Não | Não |
 | Ver todos os projetos (`/projetos`) | Sim | Não | Não | Não |
 | Ver os próprios projetos (`/meus-projetos`) | — | Os atribuídos a ele e os que contêm tarefas dele | Os que contêm tarefas ou subtarefas dele | Não |
+| Ver conclusão nas telas de projeto/tarefa | Sim | Sim, no escopo atribuído | Sim, no escopo atribuído | Sim, no portal próprio |
+| Acessar `/portal` | Não | Não | Não | Projetos próprios ativos |
 | Ver o **valor contratado** | Sim | **Não** (bloqueado no banco) | **Não** | Não |
 | Vincular documento ao projeto | Sim | Não | Não | Não |
 
 ---
 
 ## Funcionalidades
+
+### P10. Percentual de conclusão e acompanhamento do cliente (RF-048 a RF-050)
+
+**Como funciona.** Projeto e telas de equipe mostram a conclusão das tarefas ativas; cada tarefa mostra progresso das subtarefas elegíveis. O portal do cliente lista projetos por última movimentação e mostra status, datas, tarefas, responsável, progresso agregado e links de documento. Cancelados e desativados não entram nos indicadores.
+
+**Detalhes técnicos.**
+- **Portal:** `/portal` e `/portal/[id]`; dados filtrados por vínculo do cliente e selects com campos explícitos.
+- **Agregações protegidas:** subtarefas retornam só `{total, concluidas}`; comentários, valores de projeto e conteúdo de subtarefa permanecem inacessíveis a CLIENTE via RLS.
+- **Testes:** `projetos-tarefas.unit.test.ts`, `portal-cliente-sprint6.integration.test.ts` e `administracao-acesso.unit.test.ts`.
 
 ### P1. Criar e editar projeto (RF-038)
 
@@ -159,6 +170,7 @@ Descritos em `comentarios-mencoes.md`.
 | Data | Commit | Alteração |
 |---|---|---|
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
+| 2026-10-02 | Sprint 6 | Indicadores de conclusão e portal próprio de acompanhamento do cliente; RLS sem leitura de comentários/subtarefas/valores ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder os projetos dele dos colaboradores |
 | 2026-09-17 | `6342b73`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, telas da Administradora e Meus Projetos |

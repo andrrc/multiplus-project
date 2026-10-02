@@ -1,7 +1,7 @@
 # Autenticação e acesso
 
-- **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
-- **Requisitos:** RF-011, RF-014, RF-031, RF-032, RF-043.
+- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Requisitos:** RF-011, RF-014, RF-031, RF-032, RF-043, RF-050.
 - **Módulos relacionados:** Usuários, Clientes.
 
 ## Visão geral
@@ -20,7 +20,7 @@ acessar.
 | `ADMIN` | Subtarefas | Clientes, Usuários, Projetos, Subtarefas, Agenda, Etiquetas, Notificações, Tarefas, Meu Perfil |
 | `ADMIN_INTERNO` | Minhas Tarefas | Clientes, Meus Projetos, Minhas Tarefas, Meu Perfil |
 | `ADMIN_EXTERNO` | Minhas Tarefas | Clientes, Meus Projetos, Minhas Tarefas, Meu Perfil |
-| `CLIENTE` | Meu Perfil | Meu Perfil |
+| `CLIENTE` | Acompanhamento (`/portal`) | Acompanhamento, Meu Perfil |
 
 ---
 
@@ -101,7 +101,7 @@ acessar.
 |---|---|---|
 | L2 | O **login** não tem limite de tentativas. Só a recuperação de senha tem. | A senha fica exposta a tentativa e erro automatizada. |
 | L3 | O limite de tentativas é em memória. | Zera a cada reinício do app e não funciona com mais de uma instância. |
-| L4 | O painel do cliente (RF-012) não existe. | O cliente logado só vê Meu Perfil. |
+| L4 | CLIENTE ainda não tem página própria para os avisos in-app. | Notificações com canal in-app habilitado não aparecem numa caixa do cliente; o canal de e-mail funciona. Ver `area-exclusiva-cliente.md`. |
 
 ## Histórico de alterações
 
@@ -113,3 +113,4 @@ acessar.
 | 2026-09-17 | `4f08144` | SEO e identidade da aplicação |
 | 2026-09-25 | `0956cdf` | Tela inicial da Administradora passa a ser Subtarefas |
 | 2026-10-01 | `9bce2c0` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |
+| 2026-10-02 | Sprint 6 | CLIENTE passa a abrir `/portal`; rotas continuam protegidas por perfil e o bloqueio de sessão permanece aplicado ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

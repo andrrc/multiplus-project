@@ -1,7 +1,7 @@
 # Notificações
 
-- **Última revisão:** 2026-09-30, no commit 011bc10 do `staging`.
-- **Requisitos:** RF-007, RF-022, RF-023.
+- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Requisitos:** RF-007, RF-022, RF-023, RF-050.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
 ## Visão geral
@@ -16,9 +16,9 @@ avisado.
 | Evento | Quando acontece | ADMIN | ADMIN_INTERNO e ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
 | Prazo próximo | A tarefa vence dentro da antecedência | Sim | Sim | Não |
-| Tarefa concluída | Uma tarefa é concluída | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Não |
-| Projeto concluído | O projeto é marcado como concluído | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Não |
-| Novo comentário | Alguém comenta em registro acessível | Conforme acesso e preferência | Conforme acesso e preferência | Se vinculado ao cliente e preferência habilitada |
+| Tarefa concluída | Uma tarefa é concluída | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Cliente vinculado, se a preferência CLIENTE estiver habilitada |
+| Projeto concluído | O projeto é marcado como concluído | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Cliente vinculado, se a preferência CLIENTE estiver habilitada |
+| Novo comentário | Alguém comenta em registro acessível | Conforme acesso e preferência | Conforme acesso e preferência | Cliente vinculado recebe aviso sem conteúdo, se habilitado |
 | Atribuição recebida | Nova atribuição de projeto, tarefa ou subtarefa | Sim | Sim | Não |
 
 ## Quem pode fazer o quê
@@ -102,11 +102,13 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 |---|---|---|
 | L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
 | L2 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
+| L3 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-02 | Sprint 6 | Preferências CLIENTE começam desligadas; conclusões e comentários podem avisar somente clientes vinculados, com link do próprio portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-01 | `2154bb3` | Aplicar antecedência por tarefa, deduplicar canais, medir execuções e preparar cron diário ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | 011bc10 | Corrigir a documentação do disparo de atribuição recebida |

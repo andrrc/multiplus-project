@@ -92,6 +92,7 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
         cliente: { select: { id: true, razaoSocial: true } },
         valorContratado: { select: { valorContratado: true } },
         _count: { select: { tarefas: true } },
+        tarefas: { select: { ativo: true, status: true } },
       },
       orderBy: [{ ativo: "desc" }, { atualizadoEm: "desc" }],
     }),
@@ -242,7 +243,7 @@ export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
     ]);
     return tx.projeto.findMany({
       where: { id: { in: [...atribuicoes.map((a) => a.entidadeId), ...tarefas.map((tarefa) => tarefa.projetoId)] }, ativo: true },
-      include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true } } },
+      include: { cliente: { select: { razaoSocial: true } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, ativo: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } } } } },
       orderBy: { dataPrevistaConclusao: "asc" },
     });
   });
@@ -256,7 +257,7 @@ export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: st
       tx.tarefa.findMany({ where: { projetoId, ativo: true }, select: { id: true } }),
     ]);
     if (!acessoAoProjeto && tarefas.length === 0) return null;
-    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } }, documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, subtarefas: { where: { ativo: true }, select: { status: true } } }, orderBy: { prazo: "asc" } } } });
+    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } }, documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, ativo: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } } }, orderBy: { prazo: "asc" } } } });
   });
 }
 
@@ -292,7 +293,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       },
       include: {
         projeto: { select: { id: true, nome: true, cliente: { select: { razaoSocial: true } } } },
-        subtarefas: { where: { ativo: true }, select: { status: true } },
+        subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],

@@ -1,4 +1,4 @@
-import { EventoNotificacao, Prisma } from "@prisma/client";
+import { EventoNotificacao, Perfil, Prisma } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
 import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +8,7 @@ type DadosEvento = {
   titulo: string;
   mensagem: string;
   url?: string | null;
+  urlCliente?: string | null;
   entidadeId?: string | null;
   dedupeKey?: string | null;
   usuarioIds: string[];
@@ -17,6 +18,7 @@ type Destinatario = {
   id: string;
   nome: string;
   email: string;
+  perfil: Perfil;
   preferenciasNotificacao: { email: boolean; inApp: boolean }[];
 };
 
@@ -70,7 +72,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
             evento,
             titulo: dados.titulo,
             mensagem: dados.mensagem,
-            url: dados.url ?? null,
+            url: destinatario.perfil === "CLIENTE" ? dados.urlCliente ?? null : dados.url ?? null,
             entidadeId: dados.entidadeId ?? null,
             dedupeKey: dados.dedupeKey ? `${dados.dedupeKey}:${destinatario.id}` : null,
           },
@@ -87,7 +89,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
             nome: destinatario.nome,
             titulo: dados.titulo,
             mensagem: dados.mensagem,
-            url: dados.url,
+            url: destinatario.perfil === "CLIENTE" ? dados.urlCliente ?? null : dados.url,
           }),
         }).then(() => { metricas.emailsEnviados += 1; }).catch((erro: unknown) => {
           metricas.falhas += 1;
@@ -151,6 +153,28 @@ export async function listarAdministradoresAtivos(): Promise<string[]> {
     select: { id: true },
   });
   return administradores.map(({ id }) => id);
+}
+
+/** RF-022 — resolve clientes ativos vinculados ao projeto sem aceitar IDs de destinatário do formulário. */
+export async function listarClientesAtivosDoProjeto(projetoId: string): Promise<string[]> {
+  const projeto = await prisma.projeto.findFirst({
+    where: { id: projetoId, ativo: true, cliente: { ativo: true } },
+    select: { clienteId: true },
+  });
+  if (!projeto) return [];
+  const usuarios = await prisma.usuario.findMany({
+    where: { perfil: Perfil.CLIENTE, ativo: true, clienteId: projeto.clienteId, cliente: { ativo: true } },
+    select: { id: true },
+  });
+  return usuarios.map(({ id }) => id);
+}
+
+export async function buscarProjetoAtivoDaTarefa(tarefaId: string): Promise<string | null> {
+  const tarefa = await prisma.tarefa.findFirst({
+    where: { id: tarefaId, ativo: true, projeto: { ativo: true, cliente: { ativo: true } } },
+    select: { projetoId: true },
+  });
+  return tarefa?.projetoId ?? null;
 }
 
 /** Dispara ATRIBUICAO_RECEBIDA conforme a preferência do usuário atribuído. */

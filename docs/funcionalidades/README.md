@@ -26,6 +26,7 @@ mesmo commit da alteração.
 | Notificações | [`notificacoes.md`](notificacoes.md) | Documentado |
 | Usuários e atribuições | [`usuarios.md`](usuarios.md) | Documentado |
 | Autenticação e acesso | [`autenticacao-acesso.md`](autenticacao-acesso.md) | Documentado |
+| Área Exclusiva do Cliente | [`area-exclusiva-cliente.md`](area-exclusiva-cliente.md) | Documentado |
 
 ## Limitações de maior prioridade
 
@@ -45,7 +46,7 @@ básico:
 | `ADMIN` | Administradora (Talita) | Tudo |
 | `ADMIN_INTERNO` | Colaborador interno | Projetos atribuídos a ele e o que estiver sob sua responsabilidade |
 | `ADMIN_EXTERNO` | Colaborador externo | Tarefas atribuídas a ele e o que estiver sob sua responsabilidade |
-| `CLIENTE` | Cliente final | Somente leitura do próprio cadastro |
+| `CLIENTE` | Cliente final | Somente leitura do próprio cadastro e dos projetos em `/portal` |
 
 ## Formato de cada arquivo de módulo
 

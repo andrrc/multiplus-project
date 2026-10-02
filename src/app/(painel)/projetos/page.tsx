@@ -5,6 +5,8 @@ import { formatarMoeda } from "@/lib/formatacao";
 import { Etiqueta, inputClass } from "@/ui/campo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
+import { IndicadorConclusao } from "@/ui/indicador-conclusao";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
@@ -53,6 +55,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                   <p className="mt-4 text-[13px] text-cinza">Valor contratado: <strong className="font-medium text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "Não informado"}</strong></p>
                   <p className="mt-1 text-[13px] text-cinza">Proposta comercial: <strong className="font-medium text-tinta">{p.numeroProposta ?? "—"}</strong></p>
                   <p className="mt-1 text-[13px] text-cinza">Conclusão prevista: <strong className="font-medium text-tinta">{data(p.dataPrevistaConclusao)}</strong> · {p._count.tarefas} {p._count.tarefas === 1 ? "tarefa" : "tarefas"}</p>
+                  <p className="mt-1 text-[13px] text-cinza">Conclusão: <IndicadorConclusao indicador={calcularPercentualConclusao(p.tarefas)} /></p>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Dias restantes:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></div>
                 </div>
               </article>
@@ -61,7 +64,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
         </ul>
 
         <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
-          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
+          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Conclusão</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
           <tbody>
             {projetos.map((p) => (
               <tr key={p.id} className={`border-t border-linha hover:bg-verde-cl ${p.ativo ? "bg-branco" : "bg-papel"}`}>
@@ -69,6 +72,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                 <td className="p-0"><Link href={`/clientes/${p.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.numeroProposta ?? "—"}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "—"}</Link></td>
+                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorConclusao indicador={calcularPercentualConclusao(p.tarefas)} /></Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta></Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-cinza">{data(p.dataPrevistaConclusao)}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></Link></td>

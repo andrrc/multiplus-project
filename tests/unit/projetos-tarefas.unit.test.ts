@@ -1,6 +1,9 @@
+/** RF-009/RF-048/RF-049; RN-001/RN-008/RN-014/RN-015 — indicadores e regras de projeto/tarefa. */
 import { describe, expect, it } from "vitest";
 import { StatusTarefa } from "@prisma/client";
 import {
+  calcularPercentualConclusao,
+  calcularUltimaAtualizacaoProjeto,
   calcularPercentualEmDia,
   calcularProximaOcorrencia,
   estaAtrasada,
@@ -9,6 +12,50 @@ import {
 } from "@/lib/regras-projetos-tarefas";
 
 const data = (valor: string) => new Date(`${valor}T00:00:00.000Z`);
+
+describe("RF-048/RN-014 — percentual de conclusão", () => {
+  it("ignora canceladas e desativadas, e não mostra percentual sem itens elegíveis", () => {
+    expect(calcularPercentualConclusao([
+      { ativo: true, status: "CONCLUIDO" },
+      { ativo: true, status: "CANCELADO" },
+      { ativo: false, status: "EM_ANDAMENTO" },
+    ])).toEqual({ total: 1, concluidas: 1, percentual: 100 });
+    expect(calcularPercentualConclusao([{ ativo: true, status: "CANCELADO" }])).toEqual({ total: 0, concluidas: 0, percentual: null });
+  });
+
+  it("retorna 0%, 50% e 100% conforme a conclusão ativa", () => {
+    expect(calcularPercentualConclusao([{ ativo: true, status: "EM_ANDAMENTO" }]).percentual).toBe(0);
+    expect(calcularPercentualConclusao([{ ativo: true, status: "CONCLUIDO" }, { ativo: true, status: "A_INICIAR" }]).percentual).toBe(50);
+    expect(calcularPercentualConclusao([{ ativo: true, status: "CONCLUIDO" }]).percentual).toBe(100);
+  });
+});
+
+describe("RF-049/RN-015 — última atualização do projeto", () => {
+  it("considera escritas recentes em registros ativos e comentários", () => {
+    const base = new Date("2026-09-01T00:00:00.000Z");
+    const escrita = new Date("2026-09-03T00:00:00.000Z");
+    const resultado = calcularUltimaAtualizacaoProjeto({
+      projeto: { ativo: true, atualizadoEm: base },
+      tarefas: [{ ativo: true, atualizadoEm: escrita }],
+      subtarefas: [], documentos: [],
+      comentarios: [{ registroAtivo: true, criadoEm: new Date("2026-09-02T00:00:00.000Z") }],
+    });
+    expect(resultado).toEqual(escrita);
+  });
+
+  it("ignora escritas em registros desativados e retorna nulo sem dados elegíveis", () => {
+    expect(calcularUltimaAtualizacaoProjeto({
+      projeto: { ativo: false, atualizadoEm: new Date("2026-09-05T00:00:00.000Z") },
+      tarefas: [{ ativo: false, atualizadoEm: new Date("2026-09-04T00:00:00.000Z") }],
+      subtarefas: [], documentos: [], comentarios: [],
+    })).toBeNull();
+  });
+
+  it("não muda sem uma nova escrita (leituras não participam da agregação)", () => {
+    const dados = { projeto: { ativo: true, atualizadoEm: new Date("2026-09-01T00:00:00.000Z") }, tarefas: [], subtarefas: [], documentos: [], comentarios: [] };
+    expect(calcularUltimaAtualizacaoProjeto(dados)).toEqual(dados.projeto.atualizadoEm);
+  });
+});
 
 describe("RN-008 — próxima ocorrência ancorada no prazo original", () => {
   it("calcula as periodicidades aprovadas", () => {

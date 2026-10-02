@@ -5,6 +5,8 @@ import { buscarProjetoAtribuido } from "@/lib/projetos-tarefas";
 import { Etiqueta } from "@/ui/campo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
+import { IndicadorConclusao } from "@/ui/indicador-conclusao";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const taskStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -31,7 +33,7 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
     <section className="mt-8">
       <h2 className="text-[21px]">Tarefas do projeto</h2>
       <div className="mt-4 overflow-hidden border border-linha bg-branco">
-        {p.tarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa disponível.</p> : p.tarefas.map(t => <Link href={`/minhas-tarefas/${t.id}`} key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 hover:bg-verde-cl last:border-b-0"><div><p className="font-[family-name:var(--font-interface)] font-medium text-tinta">{t.nome}</p><p className="mt-1 text-[13px] text-cinza">Prazo: {data(t.prazo)} · <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} /> · {t.subtarefas.filter(s => s.status === "CONCLUIDO").length}/{t.subtarefas.length} subtarefas</p></div><Etiqueta tom={t.status === "CONCLUIDO" ? "positivo" : undefined}>{taskStatus[t.status] ?? t.status}</Etiqueta></Link>)}
+        {p.tarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa disponível.</p> : p.tarefas.map(t => { const progresso = t.subtarefas.length ? calcularPercentualConclusao(t.subtarefas) : calcularPercentualConclusao([{ ativo: true, status: t.status }]); return <Link href={`/minhas-tarefas/${t.id}`} key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 hover:bg-verde-cl last:border-b-0"><div><p className="font-[family-name:var(--font-interface)] font-medium text-tinta">{t.nome}</p><p className="mt-1 text-[13px] text-cinza">Prazo: {data(t.prazo)} · <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} /> · <IndicadorConclusao indicador={progresso} detalhado />{t.subtarefas.length ? " subtarefas" : ""}</p></div><Etiqueta tom={t.status === "CONCLUIDO" ? "positivo" : undefined}>{taskStatus[t.status] ?? t.status}</Etiqueta></Link>; })}
       </div>
     </section>
     <section className="mt-8">

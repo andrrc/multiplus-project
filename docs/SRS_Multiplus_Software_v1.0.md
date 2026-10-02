@@ -1,9 +1,9 @@
 # Especificação de Requisitos — Múltiplus Software
 
-**Versão:** 2.5
-**Data:** 30/09/2026
+**Versão:** 2.7
+**Data:** 02/10/2026
 **Autor:** André (Somma)
-**Status:** Rascunho — requisitos atualizados para refletir a configuração independente dos canais de notificação, o semáforo global de prazos, a validação padronizada de celulares e os requisitos completos da Agenda (RF-036) e do Painel de Subtarefas (RF-037). RF-039 a RF-047 e RN-007 a RN-009 incorporados a partir do documento complementar `docs/rfs-novos-srs-multiplus.md`.
+**Status:** Atualizado para incluir o portal somente leitura do cliente, indicadores de conclusão e última movimentação, e controles de acesso do RF-048 ao RF-050. RF-039 a RF-047 e RN-007 a RN-009 vieram do documento complementar `docs/rfs-novos-srs-multiplus.md`.
 **Tipo de sistema:** SaaS com múltiplos perfis (equipe interna + portal do cliente)
 
 ---
@@ -705,13 +705,11 @@ depois exige migration: a lista muda por decisão registrada, não por ajuste de
 | ------ | ------ |
 | **ID** | RF-043 |
 | **Módulo** | Transversal / Navegação |
-| **Descrição** | O menu do sistema deve exibir apenas os itens acessíveis ao perfil autenticado — itens não acessíveis **não aparecem**, não ficam desabilitados (mesma lógica do RF-020). Cada perfil tem uma tela inicial definida após o login: Administrador no Painel de Subtarefas em `/subtarefas` (RF-037), com menu Subtarefas, Agenda, Clientes, Projetos, Usuários, Notificações e Perfil; Colaborador Interno em Meus Projetos, com menu Meus Projetos e Perfil; Colaborador Externo em Minhas Tarefas, com menu Minhas Tarefas e Perfil; Cliente na Área Exclusiva (Sprint 6) |
+| **Descrição** | O menu do sistema deve exibir apenas os itens acessíveis ao perfil autenticado — itens não acessíveis **não aparecem**, não ficam desabilitados (mesma lógica do RF-020). Cada perfil tem uma tela inicial definida após o login: Administrador no Painel de Subtarefas em `/subtarefas` (RF-037), com menu Subtarefas, Agenda, Clientes, Projetos, Usuários, Notificações e Perfil; Colaborador Interno em Meus Projetos, com menu Meus Projetos e Perfil; Colaborador Externo em Minhas Tarefas, com menu Minhas Tarefas e Perfil; Cliente em `/portal` (RF-050), com menu Acompanhamento e Meu Perfil |
 | **Prioridade** | Must |
 | **Critério de aceite** | Dado um usuário autenticado, quando o login for concluído, então ele deve ser direcionado à tela inicial do seu perfil. Dado um Colaborador Interno ou Externo, quando visualizar o menu, então os itens Agenda, Subtarefas, Clientes e Usuários não devem estar presentes. Dado uma tentativa de acesso direto por URL a rota fora do perfil, então o sistema deve negar o acesso |
 | **Nota** | A escolha do Painel de Subtarefas como tela inicial do Administrador se deve a ser a tela de trabalho diário, já ordenada por urgência e filtrada com pendentes |
 | **Status** | Implementado na Sprint 3. O menu do Administrador traz, por ora, apenas Clientes, Usuários e Perfil, e a tela inicial dele é o painel de Clientes: os demais itens entram conforme a Sprint 4 construir cada tela, porque item de menu que leva a rota inexistente é pior que a ausência dele |
-
----
 
 ### 3.17 Complementos do módulo de Projetos e Tarefas (Sprint 4)
 
@@ -769,6 +767,41 @@ depois exige migration: a lista muda por decisão registrada, não por ajuste de
 | **Prioridade** | Should |
 | **Critério de aceite** | Dado um comentário publicado, quando qualquer perfil visualizar o item, então não devem existir ações de editar ou excluir aquele comentário |
 | **Nota** | Em contexto de prazo regulatório ambiental, o histórico de quem disse o quê e quando tem valor probatório — permitir edição posterior esvaziaria isso |
+
+---
+
+#### RF-048 — Percentual de conclusão
+
+| Campo | Valor |
+| ------ | ------ |
+| **ID** | RF-048 |
+| **Módulo** | Projetos e Tarefas / Área Exclusiva do Cliente |
+| **Descrição** | O sistema apresenta percentual de conclusão de projetos, tarefas e subtarefas. O projeto usa tarefas concluídas sobre tarefas ativas elegíveis; a tarefa usa subtarefas concluídas sobre subtarefas ativas elegíveis. Registros cancelados e desativados ficam fora do numerador e denominador. Tarefa sem subtarefas elegíveis usa indicador binário pelo status; não exibir percentual sem filhos ativos |
+| **Prioridade** | Must |
+| **Critério de aceite** | Administrador, colaboradores autorizados e cliente vinculado veem percentual e contagem. Sem registros elegíveis, não há percentual. Tarefa sem subtarefas usa 0% ou 100% conforme o status |
+| **Regra** | RN-014 |
+
+#### RF-049 — Última atualização do projeto
+
+| Campo | Valor |
+| ------ | ------ |
+| **ID** | RF-049 |
+| **Módulo** | Projetos e Tarefas / Área Exclusiva do Cliente |
+| **Descrição** | Mostrar a data e hora da última escrita em projeto, tarefa, subtarefa, comentário ou documento vinculado. Leituras e escritas em registros desativados não alteram a data exibida |
+| **Prioridade** | Must |
+| **Critério de aceite** | Uma escrita em registro ativo atualiza a data para a atividade mais recente; uma leitura mantém a data igual |
+| **Regra** | RN-015 |
+
+#### RF-050 — Área de acompanhamento do cliente
+
+| Campo | Valor |
+| ------ | ------ |
+| **ID** | RF-050 |
+| **Módulo** | Área Exclusiva do Cliente |
+| **Descrição** | Após autenticar, CLIENTE abre `/portal` e acessa somente projetos, tarefas e documentos ativos do próprio cadastro. O detalhe mostra status, datas, responsável e progresso. O cliente não consulta conteúdo de subtarefa, comentários ou valor contratado. O menu contém Acompanhamento e Meu Perfil |
+| **Prioridade** | Must |
+| **Critério de aceite** | Cliente vê os campos autorizados dos próprios projetos; trocar o ID da URL não revela outro cliente. Perfis de equipe não acessam `/portal`; CLIENTE não acessa rotas administrativas ou de colaborador |
+| **Regra** | RN-016 |
 
 ---
 
@@ -866,6 +899,9 @@ depois exige migration: a lista muda por decisão registrada, não por ajuste de
 | RN-008 | A próxima ocorrência de uma tarefa recorrente é sempre contada a partir da **data de prazo original**, nunca da data de conclusão. Cancelar uma tarefa recorrente **encerra a série inteira** — nenhuma ocorrência futura é gerada | Tarefa mensal com prazo 10/09 concluída em 20/09 gera a próxima em **10/10**, não 20/10. Se a série derivasse pela data de conclusão, um prazo regulatório anual sairia do lugar ao longo dos anos |
 | RN-009 | Registro desativado (RF-039) é excluído de todo cálculo, visão gerencial e disparo automático: "% em dia" (RF-009), Agenda (RF-036), Painel de Subtarefas (RF-037) e notificação de prazo (RF-007). A desativação de um pai torna os filhos inacessíveis por herança, sem marcá-los individualmente | Desativar um projeto com 12 tarefas tira as 12 de todos os painéis; reativá-lo devolve todas ao estado exato anterior |
 | RN-010 | Todo campo editável de telefone aceita somente celular brasileiro com 11 dígitos, apresentado como `(DD) XXXXX-XXXX`; a validação ocorre também no servidor. A entrada pode ser colada com `+55`, que é removido da apresentação. A regra se aplica aos campos de telefone de clientes, pessoas vinculadas e usuários, sem alterar quem pode editar cada campo | Colar `+55 11 98765-4321` exibe `(11) 98765-4321`; telefone fixo de 10 dígitos é recusado |
+| RN-014 | Percentual de conclusão usa tarefas/subtarefas ativas concluídas sobre ativas elegíveis; cancelados e desativados ficam fora. Tarefa sem subtarefas ativas é binária; sem itens válidos, não se exibe percentual | Um projeto sem tarefas ativas não mostra percentual |
+| RN-015 | Última atualização é a maior data de escrita em projeto, tarefa, subtarefa, comentário ou documento ativo; leituras e registros desativados não contam | Abrir a página sem editar não altera a data exibida |
+| RN-016 | CLIENTE vê apenas projetos, tarefas e documentos ativos do próprio cadastro; não lê conteúdo de subtarefa, comentário ou valor contratado. A contagem de subtarefas só expõe totais agregados | Uma consulta direta da role de aplicação não retorna linhas de subtarefa/comentário/valor para CLIENTE |
 
 ---
 
@@ -925,6 +961,7 @@ natural após este SRS.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 2.7 | 02/10/2026 | André (Somma) | Sprint 6: RF-048 a RF-050 e RN-014 a RN-016; portal `/portal`, percentuais de conclusão, agregação de última atividade e isolamento de dados do cliente. |
 | 2.6 | 01/10/2026 | André (Somma) | RF-039 passa a explicitar o bloqueio da sessão após desativação e a aplicação imediata do perfil atual em requests autenticados. |
 | 2.5 | 30/09/2026 | André (Somma) | Formaliza RF-036 (Agenda mensal do Administrador) e RF-037 (Painel de Subtarefas), incluindo escopo, filtros, estados, acesso, projeção recorrente e regras para registros desativados. |
 | 2.4 | 30/09/2026 | André (Somma) | Atualiza RF-006 e RN-002 para periodicidades e recorrência semanal; RF-009 para semáforo global de dias úteis; RF-016 para menções autorizadas; RF-022 e RF-023 para canais independentes por perfil, menções e atribuições recebidas; acrescenta RN-010 para formato e validação de celulares. Alinhado às decisões e análises aprovadas em 28 a 30/09/2026. |

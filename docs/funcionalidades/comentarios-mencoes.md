@@ -49,7 +49,7 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 - **Avisos:** a pessoa mencionada recebe o aviso pelos canais configurados em “Novo
   comentário” para o perfil dela. Quem mencionou também recebe a confirmação, seguindo os
   canais configurados para o próprio perfil.
-- **Demais pessoas com acesso:** recebem o aviso de novo comentário se estiverem ativas e a preferência do perfil permitir. Isso inclui o cliente vinculado ao registro quando a preferência de CLIENTE estiver habilitada. O autor não recebe aviso geral duplicado.
+- **Demais pessoas com acesso:** recebem o aviso de novo comentário se estiverem ativas e a preferência do perfil permitir. O cliente vinculado pode receber somente um aviso sem o texto do comentário, com link para o próprio portal; CLIENTE não é sugerido como pessoa mencionável. O autor não recebe aviso geral duplicado.
 
 **Detalhes técnicos.**
 - **Funções:** `listarUsuariosMencionaveis` e `dispararNotificacoesMencaoComentario`.

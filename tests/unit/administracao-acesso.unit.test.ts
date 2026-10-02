@@ -78,6 +78,16 @@ describe("RF-043 — menu e tela inicial por perfil", () => {
       expect(perfilPodeAcessar(perfil, telaInicial(perfil))).toBe(true);
     }
   });
+
+  it("o cliente recebe o portal na tela inicial e o portal só abre para CLIENTE", () => {
+    expect(telaInicial("CLIENTE")).toBe("/portal");
+    expect(menuDoPerfil("CLIENTE").map((item) => item.href)).toEqual(["/meu-perfil", "/portal"]);
+    expect(perfilPodeAcessar("CLIENTE", "/portal")).toBe(true);
+    expect(perfilPodeAcessar("CLIENTE", "/portal/projeto-123")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN", "/portal")).toBe(false);
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/portal/projeto-123")).toBe(false);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/portal")).toBe(false);
+  });
 });
 
 describe("RF-043 — guarda de rota", () => {

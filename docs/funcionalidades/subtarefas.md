@@ -1,6 +1,6 @@
 # Subtarefas e etiquetas
 
-- **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
+- **Última revisão:** 2026-10-02, implementação da Sprint 6.
 - **Requisitos:** RF-008, RF-009, RF-021, RF-025, RF-037, RF-039; RN-001, RN-004.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -182,3 +182,4 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 | 2026-09-28 | `c297878`, `0062cb6`, `d65f10e` | Paleta de 12 cores. O ajuste de tons quebrou um teste, e as cores antigas voltaram a ser aceitas |
 | 2026-09-30 | `8aa5ba1` | RF-037 formalizado no SRS v2.5 para o Painel de Subtarefas |
 | 2026-09-29 | `d731f79` | Subtarefas atrasadas voltam a aparecer em vermelho terra |
+| 2026-10-02 | a definir | CLIENTE não consulta diretamente conteúdo de subtarefas; o portal recebe apenas contagem agregada protegida por RLS ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

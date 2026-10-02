@@ -45,9 +45,9 @@ export async function listarUsuariosMencionaveis(ctx: ContextoUsuario, alvo: Alv
       OR: [
         { perfil: Perfil.ADMIN },
         ...(escopo.clienteAtivo ? [
-          { perfil: Perfil.CLIENTE, clienteId: escopo.clienteId },
           { perfil: Perfil.ADMIN_INTERNO, atribuicoes: { some: { entidadeTipo: "PROJETO" as const, entidadeId: escopo.projetoId } } },
           ...(escopo.tarefaIds.length ? [{ perfil: Perfil.ADMIN_EXTERNO, atribuicoes: { some: { entidadeTipo: "TAREFA" as const, entidadeId: { in: escopo.tarefaIds } } } }] : []),
+          { perfil: Perfil.CLIENTE, clienteId: escopo.clienteId },
         ] : []),
       ],
     },

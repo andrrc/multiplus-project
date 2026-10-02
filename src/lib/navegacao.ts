@@ -36,6 +36,7 @@ export const MENU: ItemMenu[] = [
     rotulo: "Meu Perfil",
     perfis: ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", "CLIENTE"],
   },
+  { href: "/portal", rotulo: "Acompanhamento", perfis: ["CLIENTE"] },
 ];
 
 export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
@@ -57,7 +58,7 @@ export const TELA_INICIAL: Record<Perfil, string> = {
   ADMIN: "/subtarefas",
   ADMIN_INTERNO: "/minhas-tarefas",
   ADMIN_EXTERNO: "/minhas-tarefas",
-  CLIENTE: "/meu-perfil",
+  CLIENTE: "/portal",
 };
 
 export function telaInicial(perfil: Perfil): string {

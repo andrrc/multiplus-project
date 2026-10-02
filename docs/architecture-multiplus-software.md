@@ -1,9 +1,9 @@
 # Architecture Design Document — Múltiplus Software
 
-**Versão:** 1.12
-**Data:** 30/09/2026
+**Versão:** 1.13
+**Data:** 02/10/2026
 **Autor:** André (Somma)
-**Baseado em:** SRS v2.5 (RF-001 a RF-047, incluindo RF-002a a RF-002d e RN-010)
+**Baseado em:** SRS v2.7 (RF-001 a RF-050 e RN-010, RN-014 a RN-016)
 
 ---
 
@@ -772,6 +772,30 @@ pela migration `20260929100000_configuracao_semaforo`.
 
 ---
 
+### ADR-012: Portal do cliente sem leitura de conteúdo de subtarefas
+
+**Contexto:** RF-050 permite ao cliente acompanhar tarefas, mas não pode revelar conteúdo
+interno de subtarefas, comentários ou valor contratado. A RLS anterior permitia que
+CLIENTE consultasse subtarefas e comentários próprios diretamente, além de não incluir
+documentos no escopo de leitura.
+
+**Decisão:** o portal usa selects explícitos por vínculo do cliente. RLS nega `SELECT` de
+subtarefas e acesso a comentários para CLIENTE. Funções `SECURITY DEFINER` com `search_path`
+fixo e `EXECUTE` restrito à role `multiplus_app` retornam apenas `{total, concluidas}`, a
+última data agregada e o nome do responsável autorizado. Documentos ativos próprios são
+legíveis; valores continuam em tabela restrita ao ADMIN.
+
+**Alternativa descartada:** liberar leitura de subtarefas para somar os estados e confiar
+que a interface não renderize título/descrição. Isso permitiria extração direta via SQL e
+DevTools.
+
+**Consequências:** uma função SQL mantém contagem e atividade atualizadas sem coluna ou
+triggers descendentes; cada agregação valida o vínculo ativo do usuário. Comentários
+continuam internos. As preferências de CLIENTE são inicialmente desligadas e notificações
+habilitadas usam o detalhe do projeto em `/portal`.
+
+---
+
 ### Nota de arquitetura — API de localidades (Município/Estado)
 
 A pedido da Talita (RF-002c), o cadastro de cliente passa a consultar uma API pública de
@@ -814,6 +838,7 @@ confortável mesmo com crescimento moderado de uso.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 1.13 | 02/10/2026 | André (Somma) | Arquitetura do portal `/portal`; agregações `SECURITY DEFINER` minimizadas e RLS de comentários/subtarefas para CLIENTE. |
 | 1.12 | 30/09/2026 | André (Somma) | Atualiza a base para o SRS v2.5, que formaliza RF-036 (Agenda) e RF-037 (Painel de Subtarefas); mantém ADR-009 como decisão técnica para projeções recorrentes. |
 | 1.11 | 30/09/2026 | André (Somma) | Atualiza a base para o SRS v2.4; registra ADR-010 (preferências de notificação por perfil e canal) e ADR-011 (configuração independente do semáforo); atualiza ADR-009 para recorrência semanal e projeção já implementada; revisa diagrama e execução dos jobs. |
 | 1.10 | 16/09/2026 | André (Somma) | ADR-008 revisado após a auditoria da Sprint 3: a herança de acesso passa a valer para a cadeia inteira (Projeto, Tarefa e Subtarefa), separada da questão das colunas `ativo`, que seguem para a Sprint 4; registradas as três funções de herança (uma por nível, nunca subselect) e a correção da premissa do plano que gerou o vazamento. Migration `20260916190000_rls_heranca_projetos_tarefas` |

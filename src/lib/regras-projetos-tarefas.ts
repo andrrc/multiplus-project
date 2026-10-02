@@ -112,6 +112,41 @@ export function calcularPercentualEmDia(
   };
 }
 
+export type RegistroParaConclusao = { ativo: boolean; status: string };
+export type IndicadorConclusao = { total: number; concluidas: number; percentual: number | null };
+
+/** RF-048/RN-014 — conclusão ignora registros desativados e cancelados. */
+export function calcularPercentualConclusao(registros: readonly RegistroParaConclusao[]): IndicadorConclusao {
+  const elegiveis = registros.filter((registro) => registro.ativo && registro.status !== "CANCELADO" && registro.status !== "Cancelado");
+  const concluidas = elegiveis.filter((registro) => registro.status === "CONCLUIDO" || registro.status === "Concluído").length;
+  return {
+    total: elegiveis.length,
+    concluidas,
+    percentual: elegiveis.length === 0 ? null : Math.round((concluidas / elegiveis.length) * 100),
+  };
+}
+
+export type RegistroParaAtualizacao = { ativo: boolean; atualizadoEm: Date | null };
+export type ComentarioParaAtualizacao = { registroAtivo: boolean; criadoEm: Date };
+
+/** RN-015 — agrega escritas em registros ativos; leituras não são entradas dessa regra. */
+export function calcularUltimaAtualizacaoProjeto(dados: {
+  projeto: RegistroParaAtualizacao;
+  tarefas: readonly RegistroParaAtualizacao[];
+  subtarefas: readonly RegistroParaAtualizacao[];
+  documentos: readonly RegistroParaAtualizacao[];
+  comentarios: readonly ComentarioParaAtualizacao[];
+}): Date | null {
+  const datas = [
+    ...(dados.projeto.ativo && dados.projeto.atualizadoEm ? [dados.projeto.atualizadoEm] : []),
+    ...dados.tarefas.filter((item) => item.ativo && item.atualizadoEm).map((item) => item.atualizadoEm!),
+    ...dados.subtarefas.filter((item) => item.ativo && item.atualizadoEm).map((item) => item.atualizadoEm!),
+    ...dados.documentos.filter((item) => item.ativo && item.atualizadoEm).map((item) => item.atualizadoEm!),
+    ...dados.comentarios.filter((item) => item.registroAtivo).map((item) => item.criadoEm),
+  ];
+  return datas.reduce<Date | null>((maisRecente, atual) => !maisRecente || atual > maisRecente ? atual : maisRecente, null);
+}
+
 export function filtrarAtivos<T extends { ativo: boolean }>(registros: readonly T[]): T[] {
   return registros.filter((registro) => registro.ativo);
 }
