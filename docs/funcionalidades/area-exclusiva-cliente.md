@@ -69,4 +69,4 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-02 | Sprint 6 | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
+| 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |

@@ -40,14 +40,16 @@ npm run db:seed   # imprime no console o link de "definir senha" do primeiro ADM
 npm run dev
 ```
 
-Acesse `http://localhost:3000`, abra o link impresso pelo seed pra definir a senha do
-ADMIN, e faça login.
+Acesse a URL `Múltiplus local:` impressa por `npm run dev`, abra o link impresso pelo
+seed pra definir a senha do ADMIN, e faça login. O inicializador escolhe uma porta livre
+e ajusta `AUTH_URL` à mesma porta, mesmo quando `localhost:3000` está sendo usado por
+outro projeto.
 
 ## Scripts
 
 | Comando | O que faz |
 |---|---|
-| `npm run dev` | Servidor de desenvolvimento |
+| `npm run dev` | Servidor local do Múltiplus numa porta livre, com URL de autenticação alinhada |
 | `npm run build` / `npm run start` | Build e start de produção |
 | `npm run db:migrate` | Aplica migrations do Prisma (`prisma migrate dev`) |
 | `npm run db:seed` | Cria o usuário ADMIN inicial, se ainda não existir |

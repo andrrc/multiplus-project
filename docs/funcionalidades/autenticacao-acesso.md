@@ -113,4 +113,4 @@ acessar.
 | 2026-09-17 | `4f08144` | SEO e identidade da aplicação |
 | 2026-09-25 | `0956cdf` | Tela inicial da Administradora passa a ser Subtarefas |
 | 2026-10-01 | `9bce2c0` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |
-| 2026-10-02 | Sprint 6 | CLIENTE passa a abrir `/portal`; rotas continuam protegidas por perfil e o bloqueio de sessão permanece aplicado ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
+| 2026-10-02 | `b81feaf` | CLIENTE passa a abrir `/portal`; rotas continuam protegidas por perfil e o bloqueio de sessão permanece aplicado ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

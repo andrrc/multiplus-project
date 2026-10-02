@@ -182,4 +182,4 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 | 2026-09-28 | `c297878`, `0062cb6`, `d65f10e` | Paleta de 12 cores. O ajuste de tons quebrou um teste, e as cores antigas voltaram a ser aceitas |
 | 2026-09-30 | `8aa5ba1` | RF-037 formalizado no SRS v2.5 para o Painel de Subtarefas |
 | 2026-09-29 | `d731f79` | Subtarefas atrasadas voltam a aparecer em vermelho terra |
-| 2026-10-02 | a definir | CLIENTE não consulta diretamente conteúdo de subtarefas; o portal recebe apenas contagem agregada protegida por RLS ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
+| 2026-10-02 | `b81feaf` | CLIENTE não consulta diretamente conteúdo de subtarefas; o portal recebe apenas contagem agregada protegida por RLS ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

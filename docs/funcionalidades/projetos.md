@@ -170,7 +170,7 @@ Descritos em `comentarios-mencoes.md`.
 | Data | Commit | Alteração |
 |---|---|---|
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
-| 2026-10-02 | Sprint 6 | Indicadores de conclusão e portal próprio de acompanhamento do cliente; RLS sem leitura de comentários/subtarefas/valores ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
+| 2026-10-02 | `b81feaf` | Indicadores de conclusão e portal próprio de acompanhamento do cliente; RLS sem leitura de comentários/subtarefas/valores ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-16 | `26160cf` | Desativar o cliente passa a esconder os projetos dele dos colaboradores |
 | 2026-09-17 | `6342b73`, `4ec8adf`, `5522d07` | Sprint 4A: cadastro, telas da Administradora e Meus Projetos |

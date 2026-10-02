@@ -9,7 +9,8 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
-| 2026-10-02 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md), [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Notificações](funcionalidades/notificacoes.md) | Portal `/portal`; conclusão por agregação; última atividade agregada na consulta; CLIENTE sem SELECT de subtarefas/comentários/valor e avisos limitados ao projeto próprio ([análise](analises/area-exclusiva-cliente-sprint-6.md)) | a definir |
+| 2026-10-02 | [Setup local](../README.md) | `npm run dev` escolhe porta livre e alinha `AUTH_URL` para impedir redirecionamento a outro projeto local ([análise](analises/ambiente-local-projeto-correto.md)) | a definir |
+| 2026-10-02 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md), [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Notificações](funcionalidades/notificacoes.md) | Portal `/portal`; conclusão por agregação; última atividade agregada na consulta; CLIENTE sem SELECT de subtarefas/comentários/valor e avisos limitados ao projeto próprio ([análise](analises/area-exclusiva-cliente-sprint-6.md)) | `b81feaf` |
 | 2026-10-01 | [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md), [Comentários](funcionalidades/comentarios-mencoes.md) | Links gravados no servidor aceitam somente URLs HTTP/HTTPS ([análise](analises/validacao-esquema-links.md)) | `9e20f9c` |
 | 2026-10-01 | [Tarefas e Notificações](funcionalidades/tarefas.md) | Antecedência por tarefa, métricas de execução e preparação do cron diário; ativação na VPS pendente | `2154bb3` |
 | 2026-10-01 | [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md), [Tarefas](funcionalidades/tarefas.md) | Destinatários de comentário e conclusão limitados; tarefas canceladas fora dos avisos de prazo | 83f7524 |

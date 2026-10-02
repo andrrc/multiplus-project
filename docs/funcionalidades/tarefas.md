@@ -246,7 +246,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-02 | Sprint 6 | Percentual de conclusão exclui tarefas/subtarefas canceladas e desativadas; progresso de tarefa aparece também no portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
+| 2026-10-02 | `b81feaf` | Percentual de conclusão exclui tarefas/subtarefas canceladas e desativadas; progresso de tarefa aparece também no portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-01 | `2154bb3` | Aplicar antecedência por tarefa, preservar exclusão de canceladas e preparar agendador/observabilidade ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Avisos de prazo excluem tarefas canceladas ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
