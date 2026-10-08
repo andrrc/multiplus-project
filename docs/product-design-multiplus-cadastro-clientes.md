@@ -271,10 +271,9 @@ de campos sensíveis conforme RF-020)
   [AÇÃO: Bloquear acesso] (se ativo, RF-029) [AÇÃO: Criar acesso] (se não criado, RF-031)
   Bloquear a conta impede o login, mas não desativa o cadastro da empresa.
 
-[BLOCO: Cadastro da empresa]
-  [AÇÃO: Desativar cadastro] (RF-039)
-  A empresa sai das listagens ativas e seus registros vinculados ficam indisponíveis no portal;
-  isso não bloqueia o login da conta do cliente.
+[NO TOPO DA FICHA: Desativar cliente / Reativar cliente] (RF-039)
+  A ação alterna conforme o estado do cadastro; desativar preserva o histórico e não bloqueia
+  o login da conta do cliente.
 
 [BLOCO: Projetos] (fora do escopo deste documento — ver módulo Controle de Projetos e Tarefas)
 ```

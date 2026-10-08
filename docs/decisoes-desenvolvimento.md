@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-08 | [Clientes](funcionalidades/clientes.md) | Ação única para desativar/reativar no topo da ficha | `aeb2288` |
 | 2026-10-08 | [Clientes](funcionalidades/clientes.md) | Diferenciar visualmente login do portal da situação do cadastro e remover botão duplicado de desativação | `d27e273` |
 | 2026-10-08 | [Notificações](funcionalidades/notificacoes.md) | Corrigir fixture temporal do teste RF-022 para validar falha real de envio e HTTP 500 ([análise](analises/fixture-temporal-notificacoes-rf022.md)) | `20dd992` |
 | 2026-10-05 | [Clientes](funcionalidades/clientes.md), [Autenticação](funcionalidades/autenticacao-acesso.md) | Link temporário de definição de senha aparece para ADMIN ao criar acesso do cliente; token continua de uso único e armazenado apenas como hash ([análise](analises/link-manual-convite-cliente.md)) | `1339997` |

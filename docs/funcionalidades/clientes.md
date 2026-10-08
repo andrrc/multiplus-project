@@ -160,6 +160,9 @@ Além dos dados cadastrais, um cliente PJ pode ter:
   Pessoas, documentos, projetos, tarefas e subtarefas vinculados ficam indisponíveis até a
   reativação; o histórico é preservado. Isso **não bloqueia o login do portal**: para impedir
   a entrada do cliente, é preciso bloquear a conta em C7, “Login do cliente no portal”.
+- **Ação na ficha:** um único botão “Desativar cliente”/“Reativar cliente” fica no topo da
+  página de detalhes. A seção “Cadastro da empresa” foi removida para evitar controles
+  duplicados; o botão de login do portal continua separado.
 - **Reativar:** devolve tudo como estava.
 
 **Detalhes técnicos.**
@@ -184,6 +187,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | `aeb2288` | Manter um único botão de desativar/reativar cliente no topo da ficha |
 | 2026-10-08 | `d27e273` | Separar na ficha o controle de login do portal da situação do cadastro e remover ação duplicada de desativação |
 | 2026-10-05 | `1339997` | Link manual de definição de senha mostrado após criar acesso, com cópia e estado do envio ([análise](../analises/link-manual-convite-cliente.md)) |
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
