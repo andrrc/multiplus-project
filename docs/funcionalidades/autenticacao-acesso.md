@@ -51,8 +51,9 @@ acessar.
   e-mail atual da conta. O link anterior é invalidado; o novo vale sete dias e também fica
   copiável na ficha, inclusive se o Resend estiver indisponível. Conta já ativada deve usar
   recuperação de senha; conta bloqueada ou cliente desativado não permite reenvio.
-- **Apresentação:** o convite enviado por e-mail usa o logo da Múltiplus, um botão para
-  definir a senha e o link em texto para os casos em que o botão não funcione.
+- **Apresentação:** o convite enviado por e-mail usa a estrutura institucional compartilhada
+  pelos e-mails do sistema: logo da Múltiplus, cartão, botão principal e link em texto para
+  os casos em que o botão não funcione.
 - **Política de senha:** no mínimo 8 caracteres, com pelo menos uma letra e um número.
 
 **Detalhes técnicos.**
@@ -123,6 +124,7 @@ acessar.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | `fd8d21f` | Unificar o layout visual dos convites, notificações e menções |
 | 2026-10-08 | `ee7db52` | Reenvio de convite para acesso CLIENTE pendente; substitui o token anterior e retorna link copiável transitório ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-09-09 | `c016fe4` | Sprint 1: login, definição de senha, recuperação de senha, RLS base |
 | 2026-09-16 | `1169d46` | Sprint 3: menu e tela inicial por perfil, e proteção de rotas |

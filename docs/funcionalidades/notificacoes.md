@@ -69,6 +69,10 @@ recebida” é enviado pelos canais configurados para o perfil da pessoa.
   atribuição recebida e falha de envio no endpoint com fixture de prazo futuro.
 - **Falhas:** erro de e-mail não bloqueia a ação que gerou o aviso.
 - **Audiência:** `dispararEventoNotificacao` exige `usuarioIds`; lista vazia não envia. Comentários usam usuários ativos com acesso ao alvo. Eventos de conclusão direcionam somente à conta ADMIN da Talita e não notificam o executor. Preferências por perfil/canal continuam valendo.
+- **Apresentação do e-mail:** notificações e menções usam o mesmo cartão institucional dos
+  convites de acesso, com logo pública, conteúdo alinhado à esquerda, botão verde e rodapé.
+  O evento de atribuição também cobre atribuições de subtarefas. Concluir uma subtarefa não
+  dispara e-mail atualmente; não existe evento `SUBTAREFA_CONCLUIDA`.
 
 ### N3. Aviso de prazo próximo (RF-007)
 
@@ -108,6 +112,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | `fd8d21f` | Alinhar notificações e menções ao layout institucional dos convites de acesso |
 | 2026-10-08 | `20dd992` | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |
 | 2026-10-02 | `b81feaf` | Preferências CLIENTE começam desligadas; conclusões e comentários podem avisar somente clientes vinculados, com link do próprio portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-01 | `2154bb3` | Aplicar antecedência por tarefa, deduplicar canais, medir execuções e preparar cron diário ([análise](../analises/agendador-avisos-prazo.md)) |
