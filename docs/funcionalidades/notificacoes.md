@@ -108,7 +108,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-08 | pendente | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |
+| 2026-10-08 | `20dd992` | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |
 | 2026-10-02 | `b81feaf` | Preferências CLIENTE começam desligadas; conclusões e comentários podem avisar somente clientes vinculados, com link do próprio portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-01 | `2154bb3` | Aplicar antecedência por tarefa, deduplicar canais, medir execuções e preparar cron diário ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |

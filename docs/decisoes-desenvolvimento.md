@@ -9,6 +9,8 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-08 | [Notificações](funcionalidades/notificacoes.md) | Corrigir fixture temporal do teste RF-022 para validar falha real de envio e HTTP 500 ([análise](analises/fixture-temporal-notificacoes-rf022.md)) | `20dd992` |
+| 2026-10-05 | [Clientes](funcionalidades/clientes.md), [Autenticação](funcionalidades/autenticacao-acesso.md) | Link temporário de definição de senha aparece para ADMIN ao criar acesso do cliente; token continua de uso único e armazenado apenas como hash ([análise](analises/link-manual-convite-cliente.md)) | `1339997` |
 | 2026-10-02 | [Setup local](../README.md) | `npm run dev` escolhe porta livre e alinha `AUTH_URL` para impedir redirecionamento a outro projeto local ([análise](analises/ambiente-local-projeto-correto.md)) | `212f84a` |
 | 2026-10-02 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md), [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Notificações](funcionalidades/notificacoes.md) | Portal `/portal`; conclusão por agregação; última atividade agregada na consulta; CLIENTE sem SELECT de subtarefas/comentários/valor e avisos limitados ao projeto próprio ([análise](analises/area-exclusiva-cliente-sprint-6.md)) | `b81feaf` |
 | 2026-10-01 | [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md), [Comentários](funcionalidades/comentarios-mencoes.md) | Links gravados no servidor aceitam somente URLs HTTP/HTTPS ([análise](analises/validacao-esquema-links.md)) | `9e20f9c` |

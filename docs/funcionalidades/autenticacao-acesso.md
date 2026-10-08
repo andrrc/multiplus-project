@@ -122,5 +122,5 @@ acessar.
 | 2026-09-25 | `0956cdf` | Tela inicial da Administradora passa a ser Subtarefas |
 | 2026-10-01 | `9bce2c0` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |
 | 2026-10-02 | `b81feaf` | CLIENTE passa a abrir `/portal`; rotas continuam protegidas por perfil e o bloqueio de sessão permanece aplicado ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
-| 2026-10-05 | a definir | Link de definição de senha copiável na ficha ao criar acesso do cliente ([análise](../analises/link-manual-convite-cliente.md)) |
-| 2026-10-08 | a definir | Convite de definição de senha ganha layout visual com marca, botão principal e link alternativo |
+| 2026-10-05 | `1339997` | Link de definição de senha copiável na ficha ao criar acesso do cliente ([análise](../analises/link-manual-convite-cliente.md)) |
+| 2026-10-08 | `1339997` | Convite de definição de senha ganha layout visual com marca, botão principal e link alternativo |
