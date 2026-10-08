@@ -184,7 +184,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-08 | a definir | Separar na ficha o controle de login do portal da situação do cadastro e remover ação duplicada de desativação |
+| 2026-10-08 | `d27e273` | Separar na ficha o controle de login do portal da situação do cadastro e remover ação duplicada de desativação |
 | 2026-10-05 | `1339997` | Link manual de definição de senha mostrado após criar acesso, com cópia e estado do envio ([análise](../analises/link-manual-convite-cliente.md)) |
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-09-09 | `d84bd34` | Sprint 2: cadastro de clientes PJ com Responsável Legal, Ponto de Contato, pessoas e documentos |
