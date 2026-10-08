@@ -113,6 +113,12 @@ export default async function DetalheClientePage({
         </div>
         {ctx.perfil === "ADMIN" && (
           <div className="flex flex-wrap items-center gap-2">
+            <BotaoDesativarCliente
+              clienteId={id}
+              nome={cliente.razaoSocial}
+              ativo={cliente.ativo}
+              instancia="detalhe-topo"
+            />
             {cliente.ativo && (
               <Link
                 href={`/clientes/${id}/editar`}
@@ -125,16 +131,13 @@ export default async function DetalheClientePage({
         )}
       </div>
 
-      {/* RF-039 — cliente desativado é somente leitura; a faixa diz isso antes de a pessoa
-          procurar o botão de editar que não está mais lá. */}
+      {/* RF-039 — cliente desativado é somente leitura; a faixa explica por que a edição
+          não está disponível. A reativação fica no botão único do topo. */}
       {!cliente.ativo && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border-l-[3px] border-ambar bg-branco px-5 py-4">
           <p className="text-[14.5px] text-ambar">
             Cadastro desativado. Os registros e projetos vinculados ficam indisponíveis até a reativação.
           </p>
-          {ctx.perfil === "ADMIN" && (
-            <BotaoDesativarCliente clienteId={id} nome={cliente.razaoSocial} ativo={false} instancia="detalhe" />
-          )}
         </div>
       )}
 
@@ -380,27 +383,6 @@ export default async function DetalheClientePage({
             ? "Ocultar pessoas e links do Drive desativados"
             : "Mostrar pessoas e links do Drive desativados"}
         </Link>
-      )}
-
-      {ctx.perfil === "ADMIN" && cliente.ativo && (
-        <Bloco
-          titulo="Cadastro da empresa"
-          acao={
-            <BotaoDesativar
-              clienteId={id}
-              entidade="cliente"
-              id={id}
-              ativo
-              efeito="A empresa e os registros vinculados saem das listagens e ficam indisponíveis no portal até a reativação. A conta do cliente continuará permitindo login."
-            />
-          }
-        >
-          <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
-            Desativar mantém o histórico, mas tira a empresa das listagens e deixa o cadastro
-            somente para consulta. Isso não bloqueia o login do portal; para impedir a entrada,
-            bloqueie a conta na seção “Login do cliente no portal”.
-          </p>
-        </Bloco>
       )}
 
     </div>
