@@ -163,6 +163,9 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 - **Ação na ficha:** um único botão “Desativar cliente”/“Reativar cliente” fica no topo da
   página de detalhes. A seção “Cadastro da empresa” foi removida para evitar controles
   duplicados; o botão de login do portal continua separado.
+- **Filtro de registros vinculados:** antes da seção de projetos, a Administradora pode
+  mostrar ou ocultar projetos, pessoas envolvidas e links do Drive desativados. O texto de
+  apoio informa o escopo desse filtro.
 - **Reativar:** devolve tudo como estava.
 
 **Detalhes técnicos.**
@@ -187,6 +190,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | `a5191c8` | Reposicionar e esclarecer o filtro de registros desativados na ficha |
 | 2026-10-08 | `aeb2288` | Manter um único botão de desativar/reativar cliente no topo da ficha |
 | 2026-10-08 | `d27e273` | Separar na ficha o controle de login do portal da situação do cadastro e remover ação duplicada de desativação |
 | 2026-10-05 | `1339997` | Link manual de definição de senha mostrado após criar acesso, com cópia e estado do envio ([análise](../analises/link-manual-convite-cliente.md)) |

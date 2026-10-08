@@ -275,6 +275,10 @@ de campos sensíveis conforme RF-020)
   A ação alterna conforme o estado do cadastro; desativar preserva o histórico e não bloqueia
   o login da conta do cliente.
 
+[FILTRO ANTES DOS PROJETOS: Registros desativados]
+  Texto de apoio informa o escopo: projetos, pessoas envolvidas e links do Drive.
+  [AÇÃO: Mostrar desativados / Ocultar desativados]
+
 [BLOCO: Projetos] (fora do escopo deste documento — ver módulo Controle de Projetos e Tarefas)
 ```
 
