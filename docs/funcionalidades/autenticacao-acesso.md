@@ -125,7 +125,7 @@ acessar.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-08 | pendente | Limite de falhas no login, origem confiável do IP, CSP e grants das funções SECURITY DEFINER ([análise](../analises/remediacao-auditoria-seguranca.md)) |
+| 2026-10-08 | `900b406` | Limite de falhas no login, origem confiável do IP, CSP e grants das funções SECURITY DEFINER ([análise](../analises/remediacao-auditoria-seguranca.md)) |
 | 2026-10-08 | `fd8d21f` | Unificar o layout visual dos convites, notificações e menções |
 | 2026-10-08 | `ee7db52` | Reenvio de convite para acesso CLIENTE pendente; substitui o token anterior e retorna link copiável transitório ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-09-09 | `c016fe4` | Sprint 1: login, definição de senha, recuperação de senha, RLS base |
