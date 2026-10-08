@@ -224,9 +224,13 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     expect(invalida.status).toBe(401);
 
     await preferencia("ADMIN", "PRAZO_PROXIMO", true, false);
-    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: new Date("2026-10-02T00:00:00.000Z"), status: "EM_ANDAMENTO" } });
+    const prazoFuturo = new Date();
+    prazoFuturo.setUTCHours(12, 0, 0, 0);
+    prazoFuturo.setUTCDate(prazoFuturo.getUTCDate() + 1);
+    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: prazoFuturo, status: "EM_ANDAMENTO" } });
     vi.mocked(enviarEmail).mockRejectedValueOnce(new Error("Falha simulada do provedor"));
     const autorizada = await GET(new Request("https://app.test/api/jobs/notificacoes-prazo", { headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } }));
+    expect(enviarEmail).toHaveBeenCalledOnce();
     expect(autorizada.status).toBe(500);
     delete process.env.CRON_SECRET;
   });

@@ -65,8 +65,8 @@ recebida” é enviado pelos canais configurados para o perfil da pessoa.
 - **Tabela:** `PreferenciaNotificacao`, com uma linha por perfil e evento.
 - **Funções:** `atualizarPreferenciaNotificacao`, `dispararEventoNotificacao`,
   `dispararNotificacoesMencaoComentario` e `dispararNotificacaoAtribuicaoRecebida`.
-- **Teste:** `notificacoes-rf022.integration.test.ts`, com as combinações de canais, menção
-  e atribuição recebida.
+- **Teste:** `notificacoes-rf022.integration.test.ts`, com as combinações de canais, menção,
+  atribuição recebida e falha de envio no endpoint com fixture de prazo futuro.
 - **Falhas:** erro de e-mail não bloqueia a ação que gerou o aviso.
 - **Audiência:** `dispararEventoNotificacao` exige `usuarioIds`; lista vazia não envia. Comentários usam usuários ativos com acesso ao alvo. Eventos de conclusão direcionam somente à conta ADMIN da Talita e não notificam o executor. Preferências por perfil/canal continuam valendo.
 
@@ -108,6 +108,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | pendente | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |
 | 2026-10-02 | `b81feaf` | Preferências CLIENTE começam desligadas; conclusões e comentários podem avisar somente clientes vinculados, com link do próprio portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-01 | `2154bb3` | Aplicar antecedência por tarefa, deduplicar canais, medir execuções e preparar cron diário ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Lista obrigatória de destinatários, conclusão somente para Talita e audiência por acesso ([análise](../analises/notificacao-comentario-com-acesso.md)) |
