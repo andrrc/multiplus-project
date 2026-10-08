@@ -244,7 +244,9 @@ export async function buscarClienteDetalheSeguro(
         }),
         tx.usuario.findFirst({
           where: { clienteId, perfil: "CLIENTE" },
-          select: { id: true, ativo: true, senhaHash: true },
+          select: ctx.perfil === "ADMIN"
+            ? { id: true, ativo: true, senhaHash: true, email: true }
+            : { id: true, ativo: true, senhaHash: true },
         }),
         ctx.perfil === "ADMIN"
           ? tx.valorProjeto.aggregate({
@@ -261,7 +263,16 @@ export async function buscarClienteDetalheSeguro(
       pessoasEnvolvidas,
       documentos,
       projetos,
-      usuarioAcesso,
+      usuarioAcesso: usuarioAcesso
+        ? {
+            id: usuarioAcesso.id,
+            ativo: usuarioAcesso.ativo,
+            senhaHash: usuarioAcesso.senhaHash,
+            email: "email" in usuarioAcesso
+              ? (usuarioAcesso as typeof usuarioAcesso & { email?: string }).email ?? null
+              : null,
+          }
+        : null,
       valorTotalProjetos: valorTotalProjetos?._sum.valorContratado ?? null,
     };
   });
@@ -508,6 +519,56 @@ export async function criarAcessoCliente(clienteId: string): Promise<ResultadoCr
   });
 
   return { sucesso: true, convite, link };
+}
+
+export type ResultadoReenvioAcessoCliente =
+  | {
+      sucesso: true;
+      convite: ResultadoConvite;
+      link: string;
+      destinatario: string;
+    }
+  | {
+      sucesso: false;
+      motivo:
+        | "sem_permissao"
+        | "cliente_nao_encontrado"
+        | "cliente_desativado"
+        | "acesso_nao_encontrado"
+        | "acesso_bloqueado"
+        | "ja_ativado";
+    };
+
+/**
+ * RF-031 — reemite o convite apenas para a conta CLIENTE pendente vinculada à ficha.
+ * Roda na role dona, então a autorização ADMIN e a validação do vínculo são explícitas
+ * aqui, além da checagem na Server Action.
+ */
+export async function reenviarConviteAcessoCliente(
+  ctx: ContextoUsuario,
+  clienteId: string,
+): Promise<ResultadoReenvioAcessoCliente> {
+  if (ctx.perfil !== "ADMIN") return { sucesso: false, motivo: "sem_permissao" };
+
+  const cliente = await prisma.cliente.findUnique({
+    where: { id: clienteId },
+    select: { id: true, ativo: true },
+  });
+  if (!cliente) return { sucesso: false, motivo: "cliente_nao_encontrado" };
+  if (!cliente.ativo) return { sucesso: false, motivo: "cliente_desativado" };
+
+  const usuario = await prisma.usuario.findFirst({
+    where: { clienteId: cliente.id, perfil: "CLIENTE" },
+    select: { id: true, nome: true, email: true, ativo: true, senhaHash: true },
+  });
+  if (!usuario) return { sucesso: false, motivo: "acesso_nao_encontrado" };
+  if (!usuario.ativo) return { sucesso: false, motivo: "acesso_bloqueado" };
+  if (usuario.senhaHash) return { sucesso: false, motivo: "ja_ativado" };
+
+  const { convite, link } = await enviarConviteDefinicaoSenha(usuario, "CLIENTE", {
+    incluirLink: true,
+  });
+  return { sucesso: true, convite, link, destinatario: usuario.email };
 }
 
 /** RF-029 — bloqueio/desbloqueio de acesso do cliente reaproveita `usuarios.ativo`. */

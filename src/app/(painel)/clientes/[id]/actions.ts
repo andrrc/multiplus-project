@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { obterContexto, exigirAdmin } from "@/server/auth/contexto";
-import { adicionarDocumento, criarAcessoCliente, definirAcessoClienteAtivo } from "@/lib/clientes";
+import {
+  adicionarDocumento,
+  criarAcessoCliente,
+  definirAcessoClienteAtivo,
+  reenviarConviteAcessoCliente,
+} from "@/lib/clientes";
 import {
   adicionarPessoaEnvolvida,
   criarAcessoPessoaEnvolvida,
@@ -108,6 +113,43 @@ export async function criarAcessoAction(clienteId: string): Promise<EstadoCriarA
   }
 
   return { convite: resultado.convite, link: resultado.link };
+}
+
+export type EstadoReenviarConviteCliente = {
+  erro?: string;
+  convite?: "enviado" | "nao_configurado" | "falha_no_envio";
+  link?: string;
+  destinatario?: string;
+};
+
+/** RF-031 — reenvia convite só para a conta CLIENTE pendente da ficha informada. */
+export async function reenviarConviteClienteAction(
+  clienteId: string,
+): Promise<EstadoReenviarConviteCliente> {
+  const ctx = await exigirAdmin();
+
+  // A action também confere o vínculo sob RLS; o serviço repete a guarda porque usa role dona.
+  const barrado = await barrarClienteDesativado(ctx, clienteId, "reenviar o convite");
+  if (barrado) return barrado;
+
+  const resultado = await reenviarConviteAcessoCliente(ctx, clienteId);
+  if (!resultado.sucesso) {
+    const mensagens: Record<typeof resultado.motivo, string> = {
+      sem_permissao: "Ação restrita ao Administrador.",
+      cliente_nao_encontrado: "Cliente não encontrado.",
+      cliente_desativado: "Reative o cadastro do cliente antes de reenviar o convite.",
+      acesso_nao_encontrado: "Este cliente ainda não tem acesso ao portal para reenviar.",
+      acesso_bloqueado: "Desbloqueie o acesso do cliente antes de reenviar o convite.",
+      ja_ativado: "A conta já foi ativada. O cliente deve usar “Esqueci minha senha” na tela de login.",
+    };
+    return { erro: mensagens[resultado.motivo] };
+  }
+
+  return {
+    convite: resultado.convite,
+    link: resultado.link,
+    destinatario: resultado.destinatario,
+  };
 }
 
 export async function definirAcessoAtivoAction(

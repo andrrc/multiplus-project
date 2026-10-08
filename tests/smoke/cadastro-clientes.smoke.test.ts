@@ -1,7 +1,7 @@
 /**
  * RF-001/RF-002 (cadastro via CNPJ + dados complementares), RF-026/RF-027 (Responsável
  * Legal / Ponto de Contato), RF-028/RF-033 (Pessoa Envolvida, com/sem acesso, ADR-007),
- * RF-031 (criar acesso do cliente, reaproveitando o onboarding RF-030) e RF-014 (login).
+ * RF-031 (criar e reenviar acesso do cliente, reaproveitando o onboarding RF-030) e RF-014 (login).
  * Módulo SRS: Cadastro de Clientes.
  *
  * Smoke test do caminho feliz ponta a ponta, chamando o código real de produção
@@ -26,7 +26,12 @@ import { ownerDb, limparFixtures, fecharConexoes } from "../integration/setup/he
 import { validarTokenAcesso, consumirTokenAcesso } from "@/lib/tokens";
 import { hashSenha } from "@/lib/senha";
 import { autenticarComCredenciais } from "@/server/auth/credentials";
-import { criarCliente, criarAcessoCliente, buscarClienteDetalheSeguro } from "@/lib/clientes";
+import {
+  criarCliente,
+  criarAcessoCliente,
+  buscarClienteDetalheSeguro,
+  reenviarConviteAcessoCliente,
+} from "@/lib/clientes";
 import { adicionarPessoaEnvolvida, criarAcessoPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
 import { enviarEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
@@ -131,6 +136,62 @@ describe("cadastro de cliente → criar acesso → login do cliente", () => {
     // RF-020: como ADMIN, a leitura segura devolve o telefone normalmente.
     const detalhe = await buscarClienteDetalheSeguro(ctxAdmin, cliente.id);
     expect(detalhe?.responsavelLegal?.telefone).toBe("11988887777");
+  });
+});
+
+describe("RF-031 — reenviar convite expirado ou perdido do cliente", () => {
+  it("substitui o link anterior e permite definir a senha e entrar no portal", async () => {
+    const admin = await ownerDb.usuario.create({
+      data: { nome: "Talita", email: "talita.smoke-reenvio-cliente@teste.local", perfil: "ADMIN" },
+    });
+    const ctxAdmin = { usuarioId: admin.id, perfil: "ADMIN" as const };
+    const cliente = await criarCliente(ctxAdmin, {
+      tipo: "PESSOA_JURIDICA",
+      razaoSocial: "Cliente Smoke Reenvio Ltda",
+      cnpj: "11.222.333/0001-81",
+      segmento: "Indústria",
+      origemContato: "Indicação",
+      responsavelLegal: { nome: "Responsável", endereco: "Rua 1", rg: "123", cpf: "111.444.777-35", telefone: "11988887777", email: "responsavel.reenvio@teste.local" },
+      pontoContato: { nome: "Contato Reenvio", endereco: "Rua 1", rg: "123", cpf: "111.444.777-35", telefone: "11988886666", email: "cliente.reenvio@teste.local", cargo: "Gerente" },
+      pessoasEnvolvidas: [],
+    });
+
+    const conviteInicial = await criarAcessoCliente(cliente.id);
+    expect(conviteInicial.sucesso).toBe(true);
+    if (!conviteInicial.sucesso) return;
+    const emailInicial = vi.mocked(enviarEmail).mock.calls[0]?.[0];
+    const tokenAnterior = extrairTokenDoEmail(emailInicial!.html);
+    vi.mocked(enviarEmail).mockClear();
+
+    const reenvio = await reenviarConviteAcessoCliente(ctxAdmin, cliente.id);
+    expect(reenvio).toMatchObject({
+      sucesso: true,
+      convite: "enviado",
+      destinatario: "cliente.reenvio@teste.local",
+    });
+    if (!reenvio.sucesso) return;
+
+    const emailNovo = vi.mocked(enviarEmail).mock.calls[0]?.[0];
+    expect(emailNovo?.to).toBe("cliente.reenvio@teste.local");
+    expect(emailNovo?.html).toContain(reenvio.link);
+    const tokenNovo = new URL(reenvio.link).searchParams.get("token")!;
+    expect(await validarTokenAcesso(tokenAnterior)).toEqual({ valido: false, motivo: "ja_usado" });
+    const validacao = await validarTokenAcesso(tokenNovo);
+    expect(validacao).toMatchObject({ valido: true });
+    if (!validacao.valido) throw new Error("novo link deveria ser válido");
+
+    await ownerDb.usuario.update({
+      where: { id: validacao.usuarioId },
+      data: { senhaHash: await hashSenha("SenhaReenvioSmoke123") },
+    });
+    await consumirTokenAcesso(validacao.tokenId);
+
+    const autenticado = await autenticarComCredenciais({
+      email: "cliente.reenvio@teste.local",
+      senha: "SenhaReenvioSmoke123",
+    });
+    expect(autenticado?.perfil).toBe("CLIENTE");
+    expect(autenticado?.clienteId).toBe(cliente.id);
   });
 });
 
@@ -259,7 +320,7 @@ describe("Pessoa Envolvida — colaborador com acesso, e promoção posterior (R
     const cliente = await criarCliente(ctxAdmin, {
       tipo: "PESSOA_JURIDICA",
       razaoSocial: "Ambiental Colaborador Inline Ltda",
-      cnpj: "33.444.555/0001-63",
+      cnpj: "11.222.333/0001-81",
       segmento: "Indústria",
       origemContato: "Google",
       responsavelLegal: { nome: "", endereco: "", rg: "", cpf: "", telefone: "", email: "" },

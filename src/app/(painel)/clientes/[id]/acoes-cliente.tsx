@@ -12,6 +12,7 @@ import {
   criarAcessoPessoaEnvolvidaAction,
   definirAcessoAtivoAction,
   definirAtivoAction,
+  reenviarConviteClienteAction,
 } from "./actions";
 
 /**
@@ -230,6 +231,129 @@ export function BotaoCriarAcesso({ clienteId }: { clienteId: string }) {
                 }
               }}
               className="min-h-11 rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul"
+            >
+              {copiado ? "Link copiado" : "Copiar link"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function BotaoReenviarConviteCliente({
+  clienteId,
+  email,
+}: {
+  clienteId: string;
+  email: string;
+}) {
+  const [pendente, startTransition] = useTransition();
+  const [confirmando, setConfirmando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<{
+    convite: "enviado" | "nao_configurado" | "falha_no_envio";
+    link: string;
+    destinatario: string;
+  } | null>(null);
+  const [copiado, setCopiado] = useState(false);
+  const confirmacaoId = `confirmar-reenvio-convite-${clienteId}`;
+
+  function reenviar() {
+    setConfirmando(false);
+    setErro(null);
+    setResultado(null);
+    setCopiado(false);
+    startTransition(async () => {
+      const resposta = await reenviarConviteClienteAction(clienteId);
+      if (resposta.erro) {
+        setErro(resposta.erro);
+        return;
+      }
+      if (resposta.convite && resposta.link && resposta.destinatario) {
+        setResultado({
+          convite: resposta.convite,
+          link: resposta.link,
+          destinatario: resposta.destinatario,
+        });
+      }
+    });
+  }
+
+  return (
+    <div className="mt-4">
+      <button
+        type="button"
+        aria-expanded={confirmando}
+        aria-controls={confirmacaoId}
+        disabled={pendente}
+        onClick={() => {
+          setErro(null);
+          setConfirmando((aberto) => !aberto);
+        }}
+        className="min-h-11 rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-azul-esc hover:border-azul-esc disabled:opacity-60"
+      >
+        {pendente ? "Reenviando…" : "Reenviar convite"}
+      </button>
+
+      {confirmando && (
+        <div id={confirmacaoId} className="mt-3 max-w-2xl border-l-[3px] border-azul-esc bg-papel px-4 py-3">
+          <p className="font-[family-name:var(--font-leitura)] text-[14px] leading-5 text-tinta">
+            O novo convite será enviado para <strong className="break-all">{email}</strong> e substituirá o link anterior. Ele valerá por 7 dias.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setConfirmando(false)}
+              className="min-h-11 rounded-[3px] border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] text-tinta hover:bg-papel"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={pendente}
+              onClick={reenviar}
+              className="min-h-11 rounded-[3px] bg-verde px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+            >
+              {pendente ? "Reenviando…" : "Confirmar reenvio"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {erro && <p role="alert" className="mt-3 text-[14px] text-critico">{erro}</p>}
+
+      {resultado && (
+        <div className="mt-3 max-w-2xl rounded-[3px] border border-linha bg-branco p-4" role="status">
+          <p className="font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta">
+            {resultado.convite === "enviado"
+              ? `Convite reenviado para ${resultado.destinatario}.`
+              : resultado.convite === "nao_configurado"
+                ? `E-mail não configurado. Compartilhe o novo link com ${resultado.destinatario}.`
+                : `Não foi possível enviar o e-mail. Compartilhe o novo link com ${resultado.destinatario}.`}
+          </p>
+          <p className="mt-2 font-[family-name:var(--font-leitura)] text-[14px] leading-5 text-cinza">
+            O link vale por 7 dias, só pode ser usado uma vez e substitui o convite anterior.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              aria-label="Novo link para definir a senha do cliente"
+              readOnly
+              value={resultado.link}
+              onFocus={(evento) => evento.currentTarget.select()}
+              className={`${inputClass} min-w-0 flex-1 break-all`}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(resultado.link);
+                  setCopiado(true);
+                } catch {
+                  setCopiado(false);
+                }
+              }}
+              className="min-h-11 rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
             >
               {copiado ? "Link copiado" : "Copiar link"}
             </button>

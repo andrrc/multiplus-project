@@ -9,6 +9,7 @@ import {
   FormularioPessoaEnvolvida,
   BotaoCriarAcesso,
   BotaoCriarAcessoPessoaEnvolvida,
+  BotaoReenviarConviteCliente,
   BotaoAlternarAcesso,
   BotaoDesativar,
   BotaoDesativarCliente,
@@ -161,6 +162,14 @@ export default async function DetalheClientePage({
               <span className="text-linha">·</span>
               <BotaoAlternarAcesso clienteId={id} usuarioId={usuarioAcesso.id} ativo={usuarioAcesso.ativo} />
             </div>
+          )}
+          {statusChave === "pendente" && cliente.ativo && usuarioAcesso?.email && (
+            <BotaoReenviarConviteCliente clienteId={id} email={usuarioAcesso.email} />
+          )}
+          {statusChave === "ativo" && (
+            <p className="mt-4 font-[family-name:var(--font-leitura)] text-[13.5px] text-cinza">
+              A conta já foi ativada. Se o cliente perdeu acesso, ele pode usar “Esqueci minha senha” na tela de login.
+            </p>
           )}
         </Bloco>
       )}
