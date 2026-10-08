@@ -190,6 +190,25 @@ export default async function DetalheClientePage({
         </div>
       </Bloco>
 
+      {ctx.perfil === "ADMIN" && (
+        <div className="flex flex-col gap-3 border-l-[3px] border-azul-esc bg-branco px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5">
+          <div className="min-w-0">
+            <p className="font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta">
+              Registros desativados
+            </p>
+            <p className="mt-0.5 font-[family-name:var(--font-leitura)] text-[13.5px] leading-5 text-cinza">
+              Inclui projetos, pessoas envolvidas e links do Drive nesta ficha.
+            </p>
+          </div>
+          <Link
+            href={`/clientes/${id}${mostrarDesativados ? "" : "?desativados=1"}`}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-medium text-azul-esc hover:border-azul-esc hover:bg-papel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:self-auto"
+          >
+            {mostrarDesativados ? "Ocultar desativados" : "Mostrar desativados"}
+          </Link>
+        </div>
+      )}
+
       <Bloco
         titulo="Projetos"
         acao={
@@ -371,19 +390,6 @@ export default async function DetalheClientePage({
           </ul>
         )}
       </Bloco>
-
-      {/* RF-039 — o toggle fica ao lado das duas listas que ele revela, não no topo da
-          tela: é ali que a ausência de um registro desativado é percebida. */}
-      {ctx.perfil === "ADMIN" && (
-        <Link
-          href={`/clientes/${id}${mostrarDesativados ? "" : "?desativados=1"}`}
-          className="self-start text-[14px] font-medium text-azul-esc hover:underline"
-        >
-          {mostrarDesativados
-            ? "Ocultar pessoas e links do Drive desativados"
-            : "Mostrar pessoas e links do Drive desativados"}
-        </Link>
-      )}
 
     </div>
   );
