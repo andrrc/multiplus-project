@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-08 | [Clientes](funcionalidades/clientes.md), [Autenticação](funcionalidades/autenticacao-acesso.md) | Reenvio do convite de acesso para conta CLIENTE pendente: e-mail associado, token anterior invalidado e novo link copiável por 7 dias ([análise](analises/reenviar-convite-cliente-pendente.md)) | `ee7db52` |
 | 2026-10-08 | [Clientes](funcionalidades/clientes.md) | Reposicionar e explicitar o escopo do filtro de registros desativados | `a5191c8` |
 | 2026-10-08 | [Clientes](funcionalidades/clientes.md) | Ação única para desativar/reativar no topo da ficha | `aeb2288` |
 | 2026-10-08 | [Clientes](funcionalidades/clientes.md) | Diferenciar visualmente login do portal da situação do cadastro e remover botão duplicado de desativação | `d27e273` |

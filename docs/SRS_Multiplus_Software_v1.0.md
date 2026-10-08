@@ -1,9 +1,9 @@
 # Especificação de Requisitos — Múltiplus Software
 
-**Versão:** 2.7
-**Data:** 02/10/2026
+**Versão:** 2.8
+**Data:** 08/10/2026
 **Autor:** André (Somma)
-**Status:** Atualizado para incluir o portal somente leitura do cliente, indicadores de conclusão e última movimentação, e controles de acesso do RF-048 ao RF-050. RF-039 a RF-047 e RN-007 a RN-009 vieram do documento complementar `docs/rfs-novos-srs-multiplus.md`.
+**Status:** Atualizado para incluir o reenvio de convites de acesso pendentes do RF-031, o portal somente leitura do cliente, indicadores de conclusão e última movimentação, e controles de acesso do RF-048 ao RF-050. RF-039 a RF-047 e RN-007 a RN-009 vieram do documento complementar `docs/rfs-novos-srs-multiplus.md`.
 **Tipo de sistema:** SaaS com múltiplos perfis (equipe interna + portal do cliente)
 
 ---
@@ -583,9 +583,9 @@ depois exige migration: a lista muda por decisão registrada, não por ajuste de
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **ID**                   | RF-031                                                                                                                                                                                                                                                                                                                                   |
 | **Módulo**              | Autenticação (extensão)                                                                                                                                                                                                                                                                                                               |
-| **Descrição**          | Ao cadastrar um cliente Pessoa Jurídica (RF-001), o sistema deve permitir gerar um acesso de login para o Ponto de Contato, com o mesmo fluxo de definição de senha por e-mail do RF-030. Para cliente Pessoa Física (RF-035), o acesso é gerado diretamente para a própria pessoa cadastrada, sem Ponto de Contato intermediário |
+| **Descrição**          | Ao cadastrar um cliente Pessoa Jurídica (RF-001), o sistema deve permitir gerar um acesso de login para o Ponto de Contato, com o mesmo fluxo de definição de senha por e-mail do RF-030. Para cliente Pessoa Física (RF-035), o acesso é gerado diretamente para a própria pessoa cadastrada, sem Ponto de Contato intermediário. Para conta CLIENTE ativa e ainda pendente de ativação (sem senha), a ADMIN pode reenviar o convite para o `Usuario.email` associado ao cliente; a emissão invalida o link anterior, cria outro com validade de 7 dias e uso único, e devolve um link copiável transitório mesmo se o envio por e-mail falhar. Conta bloqueada, cliente desativado ou conta já ativada não pode receber reenvio; para conta ativada, usar recuperação de senha (RF-032). |
 | **Prioridade**           | Must                                                                                                                                                                                                                                                                                                                                     |
-| **Critério de aceite**  | Dado um cliente recém-cadastrado, quando a Talita optar por criar o acesso, então o destinatário do convite deve ser o Ponto de Contato (PJ) ou a própria pessoa (PF); após a criação, a Administradora deve receber na ficha um link copiável de definição de senha, mesmo se o e-mail for enviado. O link tem validade de 7 dias, uso único e não é persistido em texto puro. |
+| **Critério de aceite**  | Dado um cliente recém-cadastrado, quando a Talita optar por criar o acesso, então o destinatário do convite deve ser o Ponto de Contato (PJ) ou a própria pessoa (PF); após a criação, a Administradora deve receber na ficha um link copiável de definição de senha, mesmo se o e-mail for enviado. Se a conta permanecer pendente, a ADMIN pode reenviar ao e-mail atual associado; o novo link invalida o anterior, vale 7 dias, tem uso único e não é persistido em texto puro. |
 | **User Story vinculada** | —                                                                                                                                                                                                                                                                                                                                       |
 
 #### RF-032 — Recuperação de senha
@@ -961,6 +961,7 @@ natural após este SRS.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 2.8 | 08/10/2026 | André (Somma) | RF-031: permitir à ADMIN reenviar convite para conta CLIENTE pendente, invalidar link anterior e fornecer link copiável temporário mesmo se o Resend falhar. |
 | 2.7 | 02/10/2026 | André (Somma) | Sprint 6: RF-048 a RF-050 e RN-014 a RN-016; portal `/portal`, percentuais de conclusão, agregação de última atividade e isolamento de dados do cliente. |
 | 2.6 | 01/10/2026 | André (Somma) | RF-039 passa a explicitar o bloqueio da sessão após desativação e a aplicação imediata do perfil atual em requests autenticados. |
 | 2.5 | 30/09/2026 | André (Somma) | Formaliza RF-036 (Agenda mensal do Administrador) e RF-037 (Painel de Subtarefas), incluindo escopo, filtros, estados, acesso, projeção recorrente e regras para registros desativados. |

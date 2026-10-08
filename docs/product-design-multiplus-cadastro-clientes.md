@@ -269,6 +269,10 @@ de campos sensíveis conforme RF-020)
 [BLOCO: Login do cliente no portal] (Pessoa Jurídica: via Ponto de Contato; Pessoa Física: via a própria pessoa)
   "Acesso do cliente: [Não criado / Pendente de ativação / Ativo / Bloqueado]"
   [AÇÃO: Bloquear acesso] (se ativo, RF-029) [AÇÃO: Criar acesso] (se não criado, RF-031)
+  Se pendente e cadastro ativo: destinatário do convite e [AÇÃO: Reenviar convite].
+  Confirmar que o novo link substituirá o anterior; após o envio, mostrar status do e-mail
+  e link copiável temporário com validade de 7 dias, mesmo se o Resend falhar.
+  Se ativo: orientar “Esqueci minha senha”; não oferecer reenvio de convite.
   Bloquear a conta impede o login, mas não desativa o cadastro da empresa.
 
 [NO TOPO DA FICHA: Desativar cliente / Reativar cliente] (RF-039)

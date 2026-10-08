@@ -140,18 +140,25 @@ Além dos dados cadastrais, um cliente PJ pode ter:
   enviado. Se o Resend não estiver configurado ou falhar, pode compartilhar esse link
   manualmente. O link vale 7 dias, só pode ser usado uma vez e desaparece ao sair da tela;
   quem o receber pode definir a senha da conta.
+- **Reenviar convite pendente:** enquanto o acesso estiver pendente, a ADMIN pode reenviar
+  o convite para o e-mail atualmente associado ao login. Cada reenvio invalida o link
+  anterior e cria outro com validade de 7 dias; a ficha exibe o novo link copiável mesmo
+  quando o Resend falha. O reenvio não aparece para conta bloqueada, cliente desativado ou
+  conta que já definiu senha; neste último caso, a pessoa usa “Esqueci minha senha”.
 - **Login do cliente no portal:** bloquear a conta impede o login sem desativar a empresa.
   O controle fica separado da situação do cadastro.
 - **Hoje:** o cliente, ao entrar, vê apenas **Meu Perfil** (ver limitações).
 
 **Detalhes técnicos.**
 - **Funções:** `criarAcessoCliente` (cria o `Usuario` com perfil `CLIENTE` e obtém o link
-  junto ao status de envio), `enviarConviteDefinicaoSenha` (só devolve o link quando o
-  chamador do acesso do cliente solicita explicitamente) e `definirAcessoClienteAtivo`.
+  junto ao status de envio), `reenviarConviteAcessoCliente` (resolve a conta pelo vínculo
+  cliente/perfil e reemite convite pendente), `enviarConviteDefinicaoSenha` (reutilizado
+  pelos dois fluxos) e `definirAcessoClienteAtivo`.
 - **Segurança:** o link só volta pela Server Action protegida para `ADMIN`; o banco guarda
   somente o hash do token. O link não aparece na consulta da ficha nem fica persistido.
-- **Testes:** `cadastro-clientes.smoke.test.ts`, com o cliente PJ e o PF logando com a
-  senha definida.
+- **Testes:** `reenviar-convite-cliente.integration.test.ts` cobre autorização, vínculo,
+  estados, e-mail, invalidação e falha do Resend; `cadastro-clientes.smoke.test.ts` cobre
+  reenvio e uso do novo link, além dos fluxos de criação para PJ e PF.
 
 ### C8. Desativar e reativar (RF-039, ADR-008)
 
@@ -190,6 +197,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | `ee7db52` | Reenviar convite de acesso para cliente pendente, com link copiável e invalidação do anterior ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-10-08 | `a5191c8` | Reposicionar e esclarecer o filtro de registros desativados na ficha |
 | 2026-10-08 | `aeb2288` | Manter um único botão de desativar/reativar cliente no topo da ficha |
 | 2026-10-08 | `d27e273` | Separar na ficha o controle de login do portal da situação do cadastro e remover ação duplicada de desativação |

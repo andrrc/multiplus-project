@@ -47,6 +47,10 @@ acessar.
   e compartilhar manualmente, mesmo se o Resend enviar o e-mail. Sem Resend, a criação da
   conta continua válida e o link manual é a forma de entregar o convite. O link fica apenas
   no resultado transitório da ação e some ao sair da ficha.
+- **Reenvio:** para conta CLIENTE ainda pendente, a ADMIN pode enviar um novo convite ao
+  e-mail atual da conta. O link anterior é invalidado; o novo vale sete dias e também fica
+  copiável na ficha, inclusive se o Resend estiver indisponível. Conta já ativada deve usar
+  recuperação de senha; conta bloqueada ou cliente desativado não permite reenvio.
 - **Apresentação:** o convite enviado por e-mail usa o logo da Múltiplus, um botão para
   definir a senha e o link em texto para os casos em que o botão não funcione.
 - **Política de senha:** no mínimo 8 caracteres, com pelo menos uma letra e um número.
@@ -56,8 +60,12 @@ acessar.
 - **Funções:** `validarTokenAcesso`, `consumirTokenAcesso` e `validarPoliticaSenha`
   (`src/lib/politica-senha.ts`).
 - **Token:** `DEFINIR_SENHA`, com TTL de 168 h.
-- **Escopo do link manual:** exclusivo da criação de acesso de cliente; convites de usuários
+- **Reenvio de cliente:** `reenviarConviteAcessoCliente` localiza o usuário por `clienteId`
+  e perfil `CLIENTE`, exige ADMIN, cadastro e conta ativos e senha ainda não definida.
+- **Escopo do link manual:** criação e reenvio de acesso de cliente; convites de usuários
   internos e Pessoas Envolvidas mantêm o fluxo atual sem devolver o segredo à tela.
+- **Testes:** `reenviar-convite-cliente.integration.test.ts` e
+  `cadastro-clientes.smoke.test.ts` cobrem as permissões, token substituído e ativação.
 
 ### A3. Recuperar senha (RF-032)
 
@@ -115,6 +123,7 @@ acessar.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | `ee7db52` | Reenvio de convite para acesso CLIENTE pendente; substitui o token anterior e retorna link copiável transitório ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-09-09 | `c016fe4` | Sprint 1: login, definição de senha, recuperação de senha, RLS base |
 | 2026-09-16 | `1169d46` | Sprint 3: menu e tela inicial por perfil, e proteção de rotas |
 | 2026-09-16 | `eaecd57` | Envio do e-mail de recuperação fora do caminho da resposta |
