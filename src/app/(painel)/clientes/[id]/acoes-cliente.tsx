@@ -174,23 +174,68 @@ export function FormularioDocumento({ clienteId }: { clienteId: string }) {
 export function BotaoCriarAcesso({ clienteId }: { clienteId: string }) {
   const [pendente, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
+  const [convite, setConvite] = useState<"enviado" | "nao_configurado" | "falha_no_envio" | null>(null);
+  const [link, setLink] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState(false);
 
   return (
     <div>
-      <button
-        type="button"
-        disabled={pendente}
-        onClick={() =>
-          startTransition(async () => {
-            const resultado = await criarAcessoAction(clienteId);
-            setErro(resultado.erro ?? null);
-          })
-        }
-        className="rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-60"
-      >
-        {pendente ? "Criando…" : "Criar acesso do cliente"}
-      </button>
+      {!link && (
+        <button
+          type="button"
+          disabled={pendente}
+          onClick={() =>
+            startTransition(async () => {
+              const resultado = await criarAcessoAction(clienteId);
+              setErro(resultado.erro ?? null);
+              setConvite(resultado.convite ?? null);
+              setLink(resultado.link ?? null);
+              setCopiado(false);
+            })
+          }
+          className="min-h-11 rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-60"
+        >
+          {pendente ? "Criando…" : "Criar acesso do cliente"}
+        </button>
+      )}
       {erro && <p className="mt-2 text-[14px] text-critico">{erro}</p>}
+      {link && convite && (
+        <div className="mt-4 max-w-2xl rounded-[3px] border border-linha bg-branco p-4" role="status">
+          <p className="font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta">
+            {convite === "enviado"
+              ? "Convite enviado por e-mail."
+              : convite === "nao_configurado"
+                ? "E-mail não configurado; compartilhe o link manualmente."
+                : "Não foi possível enviar o e-mail; compartilhe o link manualmente."}
+          </p>
+          <p className="mt-2 font-[family-name:var(--font-leitura)] text-[14px] text-cinza">
+            Link válido por 7 dias e de uso único. Quem tiver o link poderá definir a senha desta conta.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              aria-label="Link para definir a senha do cliente"
+              readOnly
+              value={link}
+              onFocus={(evento) => evento.currentTarget.select()}
+              className={`${inputClass} min-w-0 flex-1 break-all`}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(link);
+                  setCopiado(true);
+                } catch {
+                  setCopiado(false);
+                }
+              }}
+              className="min-h-11 rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul"
+            >
+              {copiado ? "Link copiado" : "Copiar link"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

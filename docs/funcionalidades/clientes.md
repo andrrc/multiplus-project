@@ -136,13 +136,20 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 **Como funciona.**
 - **Criar o acesso:** a Administradora cria o acesso, e o convite vai para o e-mail do
   Ponto de Contato (PJ) ou da própria pessoa (PF).
+- Após criar, a Administradora recebe um link copiável na ficha mesmo quando o e-mail foi
+  enviado. Se o Resend não estiver configurado ou falhar, pode compartilhar esse link
+  manualmente. O link vale 7 dias, só pode ser usado uma vez e desaparece ao sair da tela;
+  quem o receber pode definir a senha da conta.
 - **Bloquear:** o acesso pode ser bloqueado e desbloqueado **sem desativar o cliente**.
   São controles separados na ficha.
 - **Hoje:** o cliente, ao entrar, vê apenas **Meu Perfil** (ver limitações).
 
 **Detalhes técnicos.**
-- **Funções:** `criarAcessoCliente` (cria o `Usuario` com perfil `CLIENTE` e envia o
-  convite) e `definirAcessoClienteAtivo`.
+- **Funções:** `criarAcessoCliente` (cria o `Usuario` com perfil `CLIENTE` e obtém o link
+  junto ao status de envio), `enviarConviteDefinicaoSenha` (só devolve o link quando o
+  chamador do acesso do cliente solicita explicitamente) e `definirAcessoClienteAtivo`.
+- **Segurança:** o link só volta pela Server Action protegida para `ADMIN`; o banco guarda
+  somente o hash do token. O link não aparece na consulta da ficha nem fica persistido.
 - **Testes:** `cadastro-clientes.smoke.test.ts`, com o cliente PJ e o PF logando com a
   senha definida.
 
@@ -176,6 +183,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-05 | a definir | Link manual de definição de senha mostrado após criar acesso, com cópia e estado do envio ([análise](../analises/link-manual-convite-cliente.md)) |
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-09-09 | `d84bd34` | Sprint 2: cadastro de clientes PJ com Responsável Legal, Ponto de Contato, pessoas e documentos |
 | 2026-09-10 | `334d49e` | Cliente Pessoa Física (ADR-006) |

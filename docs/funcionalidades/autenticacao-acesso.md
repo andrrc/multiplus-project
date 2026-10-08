@@ -43,6 +43,12 @@ acessar.
 
 **Como funciona.**
 - **O link:** vale por **7 dias** e só pode ser usado uma vez.
+- **Acesso do cliente:** ao criar a conta, o `ADMIN` também vê na ficha o link para copiar
+  e compartilhar manualmente, mesmo se o Resend enviar o e-mail. Sem Resend, a criação da
+  conta continua válida e o link manual é a forma de entregar o convite. O link fica apenas
+  no resultado transitório da ação e some ao sair da ficha.
+- **Apresentação:** o convite enviado por e-mail usa o logo da Múltiplus, um botão para
+  definir a senha e o link em texto para os casos em que o botão não funcione.
 - **Política de senha:** no mínimo 8 caracteres, com pelo menos uma letra e um número.
 
 **Detalhes técnicos.**
@@ -50,6 +56,8 @@ acessar.
 - **Funções:** `validarTokenAcesso`, `consumirTokenAcesso` e `validarPoliticaSenha`
   (`src/lib/politica-senha.ts`).
 - **Token:** `DEFINIR_SENHA`, com TTL de 168 h.
+- **Escopo do link manual:** exclusivo da criação de acesso de cliente; convites de usuários
+  internos e Pessoas Envolvidas mantêm o fluxo atual sem devolver o segredo à tela.
 
 ### A3. Recuperar senha (RF-032)
 
@@ -114,3 +122,5 @@ acessar.
 | 2026-09-25 | `0956cdf` | Tela inicial da Administradora passa a ser Subtarefas |
 | 2026-10-01 | `9bce2c0` | Revalidar status ativo e perfil da sessão a cada request autenticado ([análise](../analises/revalidacao-sessao-usuarios.md)) |
 | 2026-10-02 | `b81feaf` | CLIENTE passa a abrir `/portal`; rotas continuam protegidas por perfil e o bloqueio de sessão permanece aplicado ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
+| 2026-10-05 | a definir | Link de definição de senha copiável na ficha ao criar acesso do cliente ([análise](../analises/link-manual-convite-cliente.md)) |
+| 2026-10-08 | a definir | Convite de definição de senha ganha layout visual com marca, botão principal e link alternativo |

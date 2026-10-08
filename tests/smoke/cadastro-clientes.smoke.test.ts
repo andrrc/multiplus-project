@@ -15,6 +15,7 @@
  * RESEND_API_KEY configurada, ele já só loga no console — não bate em rede real).
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { createHash } from "node:crypto";
 
 vi.mock("@/lib/email", async (importOriginal) => {
   const mod = await importOriginal<typeof import("@/lib/email")>();
@@ -95,13 +96,20 @@ describe("cadastro de cliente → criar acesso → login do cliente", () => {
 
     // RF-031: cria o acesso do cliente a partir do Ponto de Contato.
     const resultadoAcesso = await criarAcessoCliente(cliente.id);
-    expect(resultadoAcesso).toEqual({ sucesso: true, convite: "enviado" });
+    expect(resultadoAcesso).toMatchObject({ sucesso: true, convite: "enviado" });
 
     const emailEnviado = vi.mocked(enviarEmail).mock.calls[0]?.[0];
     expect(emailEnviado?.to).toBe("contato.smoke@teste.local");
 
     // RF-030 (fluxo de onboarding reaproveitado): define a senha pelo link recebido.
     const token = extrairTokenDoEmail(emailEnviado!.html);
+    expect(resultadoAcesso).toMatchObject({
+      link: expect.stringContaining(`/definir-senha?token=${token}`),
+    });
+    const tokenPersistido = await ownerDb.tokenAcesso.findUniqueOrThrow({
+      where: { tokenHash: createHash("sha256").update(token).digest("hex") },
+    });
+    expect(tokenPersistido.tokenHash).not.toBe(token);
     const validacao = await validarTokenAcesso(token);
     expect(validacao.valido).toBe(true);
     if (!validacao.valido) throw new Error("token deveria ser válido");
@@ -153,12 +161,15 @@ describe("cadastro de cliente Pessoa Física (RF-034/RF-035) → criar acesso �
 
     // RF-031: para PF, o acesso vai direto pra própria pessoa, sem Ponto de Contato.
     const resultadoAcesso = await criarAcessoCliente(cliente.id);
-    expect(resultadoAcesso).toEqual({ sucesso: true, convite: "enviado" });
+    expect(resultadoAcesso).toMatchObject({ sucesso: true, convite: "enviado" });
 
     const emailEnviado = vi.mocked(enviarEmail).mock.calls[0]?.[0];
     expect(emailEnviado?.to).toBe("maria.smoke-pf@teste.local");
 
     const token = extrairTokenDoEmail(emailEnviado!.html);
+    expect(resultadoAcesso).toMatchObject({
+      link: expect.stringContaining(`/definir-senha?token=${token}`),
+    });
     const validacao = await validarTokenAcesso(token);
     expect(validacao.valido).toBe(true);
     if (!validacao.valido) throw new Error("token deveria ser válido");

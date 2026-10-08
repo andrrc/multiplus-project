@@ -81,7 +81,11 @@ export async function adicionarDocumentoAction(
   return { sucessoEm: Date.now() };
 }
 
-export type EstadoCriarAcesso = { erro?: string };
+export type EstadoCriarAcesso = {
+  erro?: string;
+  convite?: "enviado" | "nao_configurado" | "falha_no_envio";
+  link?: string;
+};
 
 export async function criarAcessoAction(clienteId: string): Promise<EstadoCriarAcesso> {
   const ctx = await exigirAdmin();
@@ -103,8 +107,7 @@ export async function criarAcessoAction(clienteId: string): Promise<EstadoCriarA
     return { erro: mensagens[resultado.motivo] };
   }
 
-  revalidatePath(`/clientes/${clienteId}`);
-  return {};
+  return { convite: resultado.convite, link: resultado.link };
 }
 
 export async function definirAcessoAtivoAction(

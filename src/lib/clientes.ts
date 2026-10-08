@@ -462,7 +462,7 @@ export async function adicionarDocumento(
 }
 
 export type ResultadoCriarAcesso =
-  | { sucesso: true; convite: ResultadoConvite }
+  | { sucesso: true; convite: ResultadoConvite; link: string }
   | { sucesso: false; motivo: "sem_email" | "ja_existe" | "cliente_desativado" };
 
 /**
@@ -503,9 +503,11 @@ export async function criarAcessoCliente(clienteId: string): Promise<ResultadoCr
     data: { nome, email, perfil: "CLIENTE", clienteId },
   });
 
-  const convite = await enviarConviteDefinicaoSenha(usuario, "CLIENTE");
+  const { convite, link } = await enviarConviteDefinicaoSenha(usuario, "CLIENTE", {
+    incluirLink: true,
+  });
 
-  return { sucesso: true, convite };
+  return { sucesso: true, convite, link };
 }
 
 /** RF-029 — bloqueio/desbloqueio de acesso do cliente reaproveita `usuarios.ativo`. */

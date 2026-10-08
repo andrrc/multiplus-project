@@ -391,7 +391,7 @@ describe("RF-039 — desativar cliente → some da listagem → reativar → vol
 
     // Reativar devolve o caminho: o mesmo serviço, no mesmo cliente, agora cria o acesso.
     expect(await definirAtivo(ctxAdmin, "cliente", cliente.id, true)).toEqual({ sucesso: true });
-    expect(await criarAcessoCliente(cliente.id)).toEqual({ sucesso: true, convite: "enviado" });
+    expect(await criarAcessoCliente(cliente.id)).toMatchObject({ sucesso: true, convite: "enviado" });
     expect(emailMock).toHaveBeenCalledTimes(1);
   });
 

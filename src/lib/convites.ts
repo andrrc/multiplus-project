@@ -1,5 +1,6 @@
 import { criarTokenAcesso } from "@/lib/tokens";
 import { EmailNaoConfiguradoError, enviarEmail, linkDefinirSenha } from "@/lib/email";
+import { renderTemplateConvite } from "@/lib/email-templates";
 
 /**
  * RF-030 / RF-031 / RF-032 — o convite de definição de senha, num lugar só.
@@ -19,6 +20,7 @@ export type OrigemConvite = "USUARIO_INTERNO" | "COLABORADOR_EXTERNO" | "CLIENTE
  * não consegue mais criar.
  */
 export type ResultadoConvite = "enviado" | "nao_configurado" | "falha_no_envio";
+export type ResultadoConviteComLink = { convite: ResultadoConvite; link: string };
 
 const APRESENTACAO: Record<OrigemConvite, string> = {
   USUARIO_INTERNO: "Você recebeu acesso ao Múltiplus Software.",
@@ -26,23 +28,37 @@ const APRESENTACAO: Record<OrigemConvite, string> = {
   CLIENTE: "Seu acesso à área de cliente do Múltiplus foi liberado.",
 };
 
+export function enviarConviteDefinicaoSenha(
+  usuario: { id: string; nome: string; email: string },
+  origem: OrigemConvite,
+): Promise<ResultadoConvite>;
+export function enviarConviteDefinicaoSenha(
+  usuario: { id: string; nome: string; email: string },
+  origem: OrigemConvite,
+  opcoes: { incluirLink: true },
+): Promise<ResultadoConviteComLink>;
 export async function enviarConviteDefinicaoSenha(
   usuario: { id: string; nome: string; email: string },
   origem: OrigemConvite,
-): Promise<ResultadoConvite> {
+  opcoes?: { incluirLink: true },
+): Promise<ResultadoConvite | ResultadoConviteComLink> {
   const token = await criarTokenAcesso(usuario.id, "DEFINIR_SENHA");
   const link = linkDefinirSenha(token);
+  const concluir = (convite: ResultadoConvite) =>
+    opcoes?.incluirLink ? { convite, link } : convite;
 
   try {
     await enviarEmail({
       to: usuario.email,
       subject: "Acesso ao Múltiplus — defina sua senha",
-      html: `<p>Olá, ${usuario.nome}.</p><p>${APRESENTACAO[origem]}</p><p>Defina sua senha de acesso: <a href="${link}">${link}</a></p><p>O link vale por 7 dias.</p>`,
+      html: renderTemplateConvite(usuario.nome, APRESENTACAO[origem], link),
     });
-    return "enviado";
+    return concluir("enviado");
   } catch (erro) {
-    if (erro instanceof EmailNaoConfiguradoError) return "nao_configurado";
-    console.error("[convite] falha ao enviar e-mail de definição de senha:", erro);
-    return "falha_no_envio";
+    if (erro instanceof EmailNaoConfiguradoError) return concluir("nao_configurado");
+    // Não registrar o objeto de erro: provedores podem incluir partes da requisição, que
+    // contém o link com token de uso único.
+    console.error("[convite] falha ao enviar e-mail de definição de senha.");
+    return concluir("falha_no_envio");
   }
 }
