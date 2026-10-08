@@ -11,11 +11,32 @@ function escapar(valor: string) {
   return valor.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
-/** RF-030/RF-031 — convite responsivo para definição de senha, com CTA e link alternativo. */
-export function renderTemplateConvite(nome: string, apresentacao: string, link: string): string {
+type AcaoEmail = { url: string; texto: string };
+
+/** Estrutura institucional compartilhada pelos e-mails transacionais do Múltiplus. */
+function renderLayoutEmail({
+  nome,
+  titulo,
+  conteudo,
+  acao,
+  nota,
+  rodape,
+}: {
+  nome: string;
+  titulo: string;
+  conteudo: string;
+  acao?: AcaoEmail;
+  nota?: string;
+  rodape: string;
+}): string {
   const base = process.env.AUTH_URL ?? "http://localhost:3000";
   const logo = `${base.replace(/\/+$/, "")}/logo-multiplus.png`;
-  const linkSeguro = escapar(link);
+  const botao = acao
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#0e7a3c" style="border-radius:3px"><a href="${escapar(acao.url)}" style="display:inline-block;padding:14px 22px;font-size:16px;line-height:22px;font-weight:600;color:#ffffff;text-decoration:none">${escapar(acao.texto)}</a></td></tr></table>`
+    : "";
+  const blocoNota = nota
+    ? `<p style="margin:24px 0 0;font-size:14px;line-height:22px;color:#52666f">${escapar(nota)}</p>`
+    : "";
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -35,21 +56,15 @@ export function renderTemplateConvite(nome: string, apresentacao: string, link: 
           <tr>
             <td class="email-pad" style="padding:32px">
               <p style="margin:0 0 12px;font-size:16px;line-height:24px;color:#18313c">Olá, ${escapar(nome)}.</p>
-              <h1 style="margin:0 0 16px;font-size:26px;line-height:32px;font-weight:600;color:#18313c">Seu acesso está pronto</h1>
-              <p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52666f">${escapar(apresentacao)} Para começar, defina sua senha de acesso.</p>
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                <tr><td align="center" bgcolor="#0e7a3c" style="border-radius:3px">
-                  <a href="${linkSeguro}" style="display:inline-block;padding:14px 22px;font-size:16px;line-height:22px;font-weight:600;color:#ffffff;text-decoration:none">Definir minha senha</a>
-                </td></tr>
-              </table>
-              <p style="margin:24px 0 0;font-size:14px;line-height:22px;color:#52666f">Este link pode ser usado uma única vez e expira em 7 dias.</p>
-              <p style="margin:22px 0 8px;font-size:13px;line-height:20px;color:#52666f">Se o botão não funcionar, use este link:</p>
-              <p style="margin:0;font-size:13px;line-height:20px"><a href="${linkSeguro}" style="color:#0b6fb0;text-decoration:underline">Definir senha no Múltiplus</a></p>
+              <h1 style="margin:0 0 16px;font-size:26px;line-height:32px;font-weight:600;color:#18313c">${escapar(titulo)}</h1>
+              ${conteudo}
+              ${botao}
+              ${blocoNota}
             </td>
           </tr>
           <tr>
             <td style="padding:18px 32px;background-color:#f8fafb;border-top:1px solid #e5ecee">
-              <p style="margin:0;font-size:12px;line-height:19px;color:#657780">Mensagem automática da Múltiplus Ambiental. Se você não esperava receber este acesso, ignore este e-mail.</p>
+              <p style="margin:0;font-size:12px;line-height:19px;color:#657780">${escapar(rodape)}</p>
             </td>
           </tr>
         </table>
@@ -57,6 +72,19 @@ export function renderTemplateConvite(nome: string, apresentacao: string, link: 
     </table>
   </body>
 </html>`;
+}
+
+/** RF-030/RF-031 — convite responsivo para definição de senha, com CTA e link alternativo. */
+export function renderTemplateConvite(nome: string, apresentacao: string, link: string): string {
+  const linkSeguro = escapar(link);
+  return renderLayoutEmail({
+    nome,
+    titulo: "Seu acesso está pronto",
+    conteudo: `<p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52666f">${escapar(apresentacao)} Para começar, defina sua senha de acesso.</p><p style="margin:24px 0 8px;font-size:13px;line-height:20px;color:#52666f">Se o botão não funcionar, use este link:</p><p style="margin:0;font-size:13px;line-height:20px"><a href="${linkSeguro}" style="color:#0b6fb0;text-decoration:underline">Definir senha no Múltiplus</a></p>`,
+    acao: { url: link, texto: "Definir minha senha" },
+    nota: "Este link pode ser usado uma única vez e expira em 7 dias.",
+    rodape: "Mensagem automática da Múltiplus Ambiental. Se você não esperava receber este acesso, ignore este e-mail.",
+  });
 }
 
 const chamadaPorEvento: Record<EventoNotificacao, string> = {
@@ -69,14 +97,23 @@ const chamadaPorEvento: Record<EventoNotificacao, string> = {
 
 /** B7 — template único, compatível com o envio atual e pronto para virar template do Resend. */
 export function renderTemplateNotificacao(evento: EventoNotificacao, dados: DadosTemplateNotificacao) {
-  const link = dados.url
-    ? `<p style="margin:24px 0"><a href="${escapar(dados.url)}" style="background:#1d5c63;color:#fff;padding:12px 18px;text-decoration:none;border-radius:3px">Abrir no Múltiplus</a></p>`
-    : "";
-  return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f4f1ea;color:#202525;font-family:Arial,sans-serif"><main style="max-width:560px;margin:32px auto;padding:32px;background:#fff"><p style="color:#1d5c63;font-size:12px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase">Múltiplus Software</p><h1 style="font-size:24px;font-weight:500">${escapar(dados.titulo)}</h1><p>Olá, ${escapar(dados.nome)}.</p><p>${escapar(chamadaPorEvento[evento])}</p><p>${escapar(dados.mensagem)}</p>${link}<p style="color:#6b7471;font-size:12px">Você recebeu este aviso conforme as preferências de notificações do seu perfil.</p></main></body></html>`;
+  return renderLayoutEmail({
+    nome: dados.nome,
+    titulo: dados.titulo,
+    conteudo: `<p style="margin:0 0 12px;font-size:16px;line-height:25px;color:#52666f">${escapar(chamadaPorEvento[evento])}</p><p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52666f;white-space:pre-wrap">${escapar(dados.mensagem)}</p>`,
+    acao: dados.url ? { url: dados.url, texto: "Abrir no Múltiplus" } : undefined,
+    rodape: "Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.",
+  });
 }
 
 export function renderTemplateMencaoComentario(dados: DadosTemplateNotificacao & { autor: string; comentario: string }) {
   const base = process.env.AUTH_URL ?? "http://localhost:3000";
   const url = dados.url ? new URL(dados.url, base).toString() : base;
-  return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f4f1ea;color:#202525;font-family:Arial,sans-serif"><main style="max-width:560px;margin:32px auto;padding:32px;background:#fff"><p style="color:#1d5c63;font-size:12px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase">Múltiplus Software</p><h1 style="font-size:24px;font-weight:500">${escapar(dados.titulo)}</h1><p>Olá, ${escapar(dados.nome)}.</p><p>${escapar(dados.mensagem)}</p><p><strong>${escapar(dados.autor)}</strong> escreveu:</p><blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #1d5c63;background:#f4f1ea;white-space:pre-wrap">${escapar(dados.comentario)}</blockquote><p style="margin:24px 0"><a href="${escapar(url)}" style="background:#1d5c63;color:#fff;padding:12px 18px;text-decoration:none;border-radius:3px">Abrir comentário</a></p></main></body></html>`;
+  return renderLayoutEmail({
+    nome: dados.nome,
+    titulo: dados.titulo,
+    conteudo: `<p style="margin:0 0 20px;font-size:16px;line-height:25px;color:#52666f">${escapar(dados.mensagem)}</p><p style="margin:0 0 10px;font-size:14px;line-height:22px;color:#52666f"><strong style="color:#18313c">${escapar(dados.autor)}</strong> escreveu:</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;background-color:#f8fafb;border-left:3px solid #0e7a3c"><tr><td style="padding:14px 16px;font-size:15px;line-height:24px;color:#52666f;white-space:pre-wrap">${escapar(dados.comentario)}</td></tr></table>`,
+    acao: { url, texto: "Abrir comentário" },
+    rodape: "Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.",
+  });
 }
