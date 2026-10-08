@@ -121,9 +121,6 @@ export default async function DetalheClientePage({
                 Editar
               </Link>
             )}
-            {cliente.ativo && (
-              <BotaoDesativarCliente clienteId={id} nome={cliente.razaoSocial} ativo instancia="detalhe" />
-            )}
           </div>
         )}
       </div>
@@ -142,9 +139,9 @@ export default async function DetalheClientePage({
       )}
 
       {ctx.perfil === "ADMIN" && (
-        <Bloco titulo="Acesso ao portal do cliente">
+        <Bloco titulo="Login do cliente no portal">
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
-            Esta configuração controla apenas o login do portal. Ela é independente da situação do cadastro e pode ser alterada separadamente.
+            Bloquear aqui impede o cliente de entrar no portal, mas não desativa a empresa nem o cadastro dela.
           </p>
           {!usuarioAcesso || !statusChave ? (
             cliente.ativo ? (
@@ -387,20 +384,21 @@ export default async function DetalheClientePage({
 
       {ctx.perfil === "ADMIN" && cliente.ativo && (
         <Bloco
-          titulo="Cadastro"
+          titulo="Cadastro da empresa"
           acao={
             <BotaoDesativar
               clienteId={id}
               entidade="cliente"
               id={id}
               ativo
-              efeito="Este cliente sai das listagens, junto com as pessoas envolvidas e os links do Drive dele."
+              efeito="A empresa e os registros vinculados saem das listagens e ficam indisponíveis no portal até a reativação. A conta do cliente continuará permitindo login."
             />
           }
         >
           <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
-            Desativar mantém tudo registrado — o cadastro apenas deixa de aparecer nas
-            listagens e não pode mais ser editado.
+            Desativar mantém o histórico, mas tira a empresa das listagens e deixa o cadastro
+            somente para consulta. Isso não bloqueia o login do portal; para impedir a entrada,
+            bloqueie a conta na seção “Login do cliente no portal”.
           </p>
         </Bloco>
       )}

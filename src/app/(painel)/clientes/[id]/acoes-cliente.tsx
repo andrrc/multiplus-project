@@ -340,7 +340,7 @@ export function BotaoDesativarCliente({
               O cadastro sairá das listas de clientes ativos e ficará somente para consulta. Os projetos e registros vinculados deixarão de ficar disponíveis enquanto ele estiver desativado. O histórico será preservado e você poderá reativá-lo depois.
             </p>
             <p id={`${dialogId}-acesso`} className="mt-3 border-l-2 border-azul-esc pl-3 text-[13px] leading-5 text-cinza">
-              Esta ação não bloqueia o login do portal. Para bloquear o acesso, use “Acesso ao portal do cliente” separadamente.
+              Esta ação não bloqueia o login do cliente. Para impedir a entrada no portal, bloqueie a conta na seção “Login do cliente no portal”.
             </p>
             {erro && <p role="alert" className="mt-4 text-[13px] text-critico">{erro}</p>}
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

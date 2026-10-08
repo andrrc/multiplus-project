@@ -140,8 +140,8 @@ Além dos dados cadastrais, um cliente PJ pode ter:
   enviado. Se o Resend não estiver configurado ou falhar, pode compartilhar esse link
   manualmente. O link vale 7 dias, só pode ser usado uma vez e desaparece ao sair da tela;
   quem o receber pode definir a senha da conta.
-- **Bloquear:** o acesso pode ser bloqueado e desbloqueado **sem desativar o cliente**.
-  São controles separados na ficha.
+- **Login do cliente no portal:** bloquear a conta impede o login sem desativar a empresa.
+  O controle fica separado da situação do cadastro.
 - **Hoje:** o cliente, ao entrar, vê apenas **Meu Perfil** (ver limitações).
 
 **Detalhes técnicos.**
@@ -156,9 +156,10 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 ### C8. Desativar e reativar (RF-039, ADR-008)
 
 **Como funciona.**
-- **Desativar:** o cliente desativado vira somente leitura e some para todos, exceto a
-  Administradora. Com ele somem as pessoas, os documentos, os projetos, as tarefas e as
-  subtarefas.
+- **Desativar o cadastro:** a empresa sai das listagens ativas e fica somente para consulta.
+  Pessoas, documentos, projetos, tarefas e subtarefas vinculados ficam indisponíveis até a
+  reativação; o histórico é preservado. Isso **não bloqueia o login do portal**: para impedir
+  a entrada do cliente, é preciso bloquear a conta em C7, “Login do cliente no portal”.
 - **Reativar:** devolve tudo como estava.
 
 **Detalhes técnicos.**
@@ -183,6 +184,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | a definir | Separar na ficha o controle de login do portal da situação do cadastro e remover ação duplicada de desativação |
 | 2026-10-05 | `1339997` | Link manual de definição de senha mostrado após criar acesso, com cópia e estado do envio ([análise](../analises/link-manual-convite-cliente.md)) |
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-09-09 | `d84bd34` | Sprint 2: cadastro de clientes PJ com Responsável Legal, Ponto de Contato, pessoas e documentos |

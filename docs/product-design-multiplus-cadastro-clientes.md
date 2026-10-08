@@ -266,9 +266,15 @@ de campos sensíveis conforme RF-020)
   [AÇÃO: + Adicionar link de documento]
   [VAZIO — "Nenhum documento vinculado ainda"]
 
-[BLOCO: Status de Acesso] (Pessoa Jurídica: via Ponto de Contato; Pessoa Física: via a própria pessoa)
+[BLOCO: Login do cliente no portal] (Pessoa Jurídica: via Ponto de Contato; Pessoa Física: via a própria pessoa)
   "Acesso do cliente: [Não criado / Pendente de ativação / Ativo / Bloqueado]"
   [AÇÃO: Bloquear acesso] (se ativo, RF-029) [AÇÃO: Criar acesso] (se não criado, RF-031)
+  Bloquear a conta impede o login, mas não desativa o cadastro da empresa.
+
+[BLOCO: Cadastro da empresa]
+  [AÇÃO: Desativar cadastro] (RF-039)
+  A empresa sai das listagens ativas e seus registros vinculados ficam indisponíveis no portal;
+  isso não bloqueia o login da conta do cliente.
 
 [BLOCO: Projetos] (fora do escopo deste documento — ver módulo Controle de Projetos e Tarefas)
 ```
