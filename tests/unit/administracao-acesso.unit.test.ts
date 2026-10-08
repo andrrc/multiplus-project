@@ -17,7 +17,13 @@ import {
   telaInicial,
 } from "@/lib/navegacao";
 import { avaliarSenha, validarPoliticaSenha } from "@/lib/politica-senha";
-import { limparRateLimit, registrarTentativa } from "@/lib/rate-limit";
+import {
+  limparChaveRateLimit,
+  limparRateLimit,
+  limiteAtingido,
+  registrarFalha,
+  registrarTentativa,
+} from "@/lib/rate-limit";
 
 describe("RF-040 — status de acesso derivado", () => {
   it("é Ativo quando o usuário está ativo e já definiu senha", () => {
@@ -211,6 +217,41 @@ describe("RF-032 (B2) — limite de tentativas", () => {
 
       vi.advanceTimersByTime(60_001);
       expect(registrarTentativa(chave, 1, 60_000).permitido).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("RF-014 — limite de falhas no login", () => {
+  beforeEach(() => limparRateLimit());
+
+  it("conta falhas sem consumir tentativas na consulta e bloqueia no limite", () => {
+    const chave = "login:email:alguem@teste.local";
+    expect(limiteAtingido(chave, 5)).toBe(false);
+    for (let i = 0; i < 5; i += 1) registrarFalha(chave, 15 * 60 * 1000);
+    expect(limiteAtingido(chave, 5)).toBe(true);
+  });
+
+  it("mantém contagens separadas por IP e e-mail e permite limpar no sucesso", () => {
+    const email = "login:email:alguem@teste.local";
+    const ip = "login:ip:198.51.100.20";
+    for (let i = 0; i < 5; i += 1) registrarFalha(email, 15 * 60 * 1000);
+    registrarFalha(ip, 15 * 60 * 1000);
+    expect(limiteAtingido(email, 5)).toBe(true);
+    expect(limiteAtingido(ip, 20)).toBe(false);
+    limparChaveRateLimit(email);
+    expect(limiteAtingido(email, 5)).toBe(false);
+  });
+
+  it("libera o IP e o e-mail depois da janela de 15 minutos", () => {
+    vi.useFakeTimers();
+    try {
+      const chave = "login:ip:198.51.100.20";
+      for (let i = 0; i < 20; i += 1) registrarFalha(chave, 15 * 60 * 1000);
+      expect(limiteAtingido(chave, 20)).toBe(true);
+      vi.advanceTimersByTime(15 * 60 * 1000 + 1);
+      expect(limiteAtingido(chave, 20)).toBe(false);
     } finally {
       vi.useRealTimers();
     }

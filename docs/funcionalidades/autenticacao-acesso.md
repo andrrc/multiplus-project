@@ -1,6 +1,6 @@
 # Autenticação e acesso
 
-- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Última revisão:** 2026-10-08, hardening do login e cabeçalhos de segurança.
 - **Requisitos:** RF-011, RF-014, RF-031, RF-032, RF-043, RF-050.
 - **Módulos relacionados:** Usuários, Clientes.
 
@@ -37,6 +37,8 @@ acessar.
 - **Funções:** `autenticarComCredenciais` (`src/server/auth/credentials.ts`) e Auth.js,
   com sessão JWT (`src/server/auth/config.ts`).
 - **Senha:** hash com bcrypt (`src/lib/senha.ts`).
+- **Proteção contra tentativa e erro:** 5 falhas por e-mail e 20 por IP em cada janela de 15 minutos. Somente falhas são contadas; credenciais válidas não consomem o limite. O bloqueio é temporário e a recuperação de senha continua disponível.
+- **Origem do IP:** o Caddy substitui `X-Real-IP` pelo peer da conexão; o app não confia no `X-Forwarded-For` fornecido pelo cliente.
 - **Teste:** `autenticacao.smoke.test.ts`.
 
 ### A2. Definir senha pelo convite (RF-031)
@@ -116,14 +118,14 @@ acessar.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L2 | O **login** não tem limite de tentativas. Só a recuperação de senha tem. | A senha fica exposta a tentativa e erro automatizada. |
-| L3 | O limite de tentativas é em memória. | Zera a cada reinício do app e não funciona com mais de uma instância. |
+| L3 | Limites de login e recuperação de senha ficam em memória. | Zera a cada reinício do app e não funciona com mais de uma instância. |
 | L4 | CLIENTE ainda não tem página própria para os avisos in-app. | Notificações com canal in-app habilitado não aparecem numa caixa do cliente; o canal de e-mail funciona. Ver `area-exclusiva-cliente.md`. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-08 | pendente | Limite de falhas no login, origem confiável do IP, CSP e grants das funções SECURITY DEFINER ([análise](../analises/remediacao-auditoria-seguranca.md)) |
 | 2026-10-08 | `fd8d21f` | Unificar o layout visual dos convites, notificações e menções |
 | 2026-10-08 | `ee7db52` | Reenvio de convite para acesso CLIENTE pendente; substitui o token anterior e retorna link copiável transitório ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-09-09 | `c016fe4` | Sprint 1: login, definição de senha, recuperação de senha, RLS base |

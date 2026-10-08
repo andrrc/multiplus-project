@@ -28,8 +28,7 @@ const JANELA_MS = 15 * 60 * 1000;
  */
 async function ipDaRequisicao(): Promise<string> {
   const cabecalhos = await headers();
-  const encaminhado = cabecalhos.get("x-forwarded-for");
-  return encaminhado?.split(",")[0]?.trim() || cabecalhos.get("x-real-ip") || "desconhecido";
+  return cabecalhos.get("x-real-ip")?.trim() || "desconhecido";
 }
 
 export async function esqueciSenhaAction(

@@ -17,7 +17,7 @@ vi.mock("@/lib/email", async (importOriginal) => {
 const ipFalso = { valor: "203.0.113.10" };
 
 vi.mock("next/headers", () => ({
-  headers: async () => new Map([["x-forwarded-for", ipFalso.valor]]),
+  headers: async () => new Map([["x-real-ip", ipFalso.valor]]),
 }));
 
 import { ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";

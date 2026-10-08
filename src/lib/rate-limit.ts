@@ -18,6 +18,38 @@ const buckets = (globalParaRateLimit.rateLimitBuckets ??= new Map<string, Regist
 
 export type ResultadoRateLimit = { permitido: boolean; tentativasRestantes: number };
 
+/** Consulta um bucket sem contabilizar uma tentativa. */
+export function limiteAtingido(chave: string, limite: number): boolean {
+  const atual = buckets.get(chave);
+  if (!atual || atual.expiraEm <= Date.now()) {
+    if (atual) buckets.delete(chave);
+    return false;
+  }
+  return atual.contagem >= limite;
+}
+
+/** Registra apenas uma falha, iniciando a janela no primeiro evento. */
+export function registrarFalha(chave: string, janelaMs: number): void {
+  const agora = Date.now();
+  const atual = buckets.get(chave);
+  if (!atual || atual.expiraEm <= agora) {
+    buckets.set(chave, { contagem: 1, expiraEm: agora + janelaMs });
+  } else {
+    atual.contagem += 1;
+  }
+
+  if (buckets.size > 5_000) {
+    for (const [k, v] of buckets) {
+      if (v.expiraEm <= agora) buckets.delete(k);
+    }
+  }
+}
+
+/** Limpa um bucket após autenticação válida. */
+export function limparChaveRateLimit(chave: string): void {
+  buckets.delete(chave);
+}
+
 /**
  * Conta uma tentativa para `chave` e diz se ela cabe no limite. A janela é fixa (não
  * deslizante): a contagem zera inteira quando expira.

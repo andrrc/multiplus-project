@@ -18,6 +18,9 @@ import { ownerDb, limparFixtures, fecharConexoes } from "../integration/setup/he
 import { criarTokenAcesso, validarTokenAcesso, consumirTokenAcesso } from "@/lib/tokens";
 import { hashSenha } from "@/lib/senha";
 import { autenticarComCredenciais } from "@/server/auth/credentials";
+import { limparRateLimit } from "@/lib/rate-limit";
+import { authConfig } from "@/server/auth/config";
+import type { CredentialsConfig } from "next-auth/providers/credentials";
 
 async function definirSenha(usuarioId: string, tokenId: string, senha: string) {
   await ownerDb.usuario.update({ where: { id: usuarioId }, data: { senhaHash: await hashSenha(senha) } });
@@ -29,6 +32,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
+  limparRateLimit();
   await limparFixtures();
 });
 
@@ -71,6 +75,75 @@ describe("onboarding (RF-030/031) → login (RF-014)", () => {
     expect(reuso.valido).toBe(false);
     if (reuso.valido) throw new Error("token não deveria mais ser válido");
     expect(reuso.motivo).toBe("ja_usado");
+  });
+
+  it("bloqueia a sexta falha no mesmo e-mail por 15 minutos, inclusive no provider Credentials", async () => {
+    const usuario = await ownerDb.usuario.create({
+      data: {
+        nome: "Login Limitado",
+        email: "login.limitado@teste.local",
+        perfil: "ADMIN_INTERNO",
+        senhaHash: await hashSenha("SenhaForte123"),
+      },
+    });
+    const request = new Request("https://app.teste.local/api/auth/callback/credentials", {
+      headers: { "x-real-ip": "198.51.100.10", "x-forwarded-for": "203.0.113.9" },
+    });
+    const provider = authConfig.providers[0] as CredentialsConfig;
+    if (!provider.authorize) throw new Error("provider Credentials sem authorize");
+
+    for (let i = 0; i < 5; i += 1) {
+      expect(await provider.authorize({ email: usuario.email, senha: "incorreta" }, request)).toBeNull();
+    }
+    expect(await provider.authorize({ email: usuario.email, senha: "SenhaForte123" }, request)).toBeNull();
+
+    // Um login válido após limpar o estado continua disponível, sem alterar a senha.
+    limparRateLimit();
+    expect((await autenticarComCredenciais({ email: usuario.email, senha: "SenhaForte123" }, request))?.id)
+      .toBe(usuario.id);
+  });
+
+  it("login válido limpa as falhas anteriores por e-mail e IP", async () => {
+    const usuario = await ownerDb.usuario.create({
+      data: {
+        nome: "Login que limpa falhas",
+        email: "login.limpa@teste.local",
+        perfil: "ADMIN_INTERNO",
+        senhaHash: await hashSenha("SenhaForte123"),
+      },
+    });
+    const request = new Request("https://app.teste.local/api/auth/callback/credentials", {
+      headers: { "x-real-ip": "198.51.100.12" },
+    });
+    for (let i = 0; i < 2; i += 1) {
+      expect(await autenticarComCredenciais({ email: usuario.email, senha: "incorreta" }, request)).toBeNull();
+    }
+    expect((await autenticarComCredenciais({ email: usuario.email, senha: "SenhaForte123" }, request))?.id)
+      .toBe(usuario.id);
+    for (let i = 0; i < 3; i += 1) {
+      expect(await autenticarComCredenciais({ email: usuario.email, senha: "incorreta" }, request)).toBeNull();
+    }
+    expect((await autenticarComCredenciais({ email: usuario.email, senha: "SenhaForte123" }, request))?.id)
+      .toBe(usuario.id);
+  });
+
+  it("bloqueia o IP após 20 falhas distribuídas entre e-mails", async () => {
+    const usuario = await ownerDb.usuario.create({
+      data: {
+        nome: "Login por IP",
+        email: "login.ip@teste.local",
+        perfil: "ADMIN_INTERNO",
+        senhaHash: await hashSenha("SenhaForte123"),
+      },
+    });
+    const request = new Request("https://app.teste.local/api/auth/callback/credentials", {
+      headers: { "x-real-ip": "198.51.100.11" },
+    });
+    for (let i = 0; i < 20; i += 1) {
+      expect(await autenticarComCredenciais({ email: `inexistente${i}@teste.local`, senha: "incorreta" }, request))
+        .toBeNull();
+    }
+    expect(await autenticarComCredenciais({ email: usuario.email, senha: "SenhaForte123" }, request)).toBeNull();
   });
 });
 
