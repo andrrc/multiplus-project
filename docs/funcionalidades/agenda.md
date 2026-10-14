@@ -1,6 +1,6 @@
 # Agenda
 
-- **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
+- **Última revisão:** 2026-10-14.
 - **Requisitos:** RF-036; ADR-009.
 - **Módulos relacionados:** Tarefas.
 
@@ -24,8 +24,9 @@ hora, para a Administradora planejar o mês.
 
 **Como funciona.**
 - **Navegação:** mês anterior e próximo mês, com o dia de hoje destacado.
-- **Tipos de item:** prazo normal, atrasado (vermelho terra), visita/reunião e ocorrência
-  projetada (fundo azul claro com borda tracejada).
+- **Tipos de item:** prazo normal, atrasado (vermelho terra), visita/reunião e tarefa
+  recorrente ainda não criada (fundo azul claro com borda tracejada, identificada como
+  "Tarefa recorrente").
 - **Filtros:** por cliente, por projeto e "Só visitas/reuniões".
 - **Mês vazio:** a tela avisa que não há prazos no mês.
 
@@ -38,7 +39,7 @@ hora, para a Administradora planejar o mês.
 
 **Como funciona.**
 - **O que é:** para tarefas recorrentes, a agenda mostra as ocorrências futuras que ainda
-  não foram criadas.
+  não foram criadas. Na interface, elas são identificadas como "Tarefa recorrente".
 - **Quando vira real:** a ocorrência só é criada de fato quando a anterior é concluída
   (ver T5 em `tarefas.md`).
 
@@ -66,3 +67,4 @@ hora, para a Administradora planejar o mês.
 | 2026-09-28 | `9969bff` | Projeção semanal respeita o dia da semana escolhido |
 | 2026-09-29 | `d731f79` | Atrasados e ocorrências projetadas voltam a ter cor (tokens inexistentes corrigidos) |
 | 2026-09-30 | `8aa5ba1` | RF-036 formalizado no SRS v2.5; escopo atual mantém a Agenda limitada a tarefas |
+| 2026-10-14 | pendente de commit | Renomear na interface a ocorrência projetada para "Tarefa recorrente" |
