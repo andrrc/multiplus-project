@@ -9,7 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
-| 2026-10-14 | [Agenda](funcionalidades/agenda.md) | Identificar ocorrências projetadas na interface como "Tarefa recorrente" | pendente de commit |
+| 2026-10-14 | [Agenda](funcionalidades/agenda.md) | Identificar ocorrências projetadas na interface como "Tarefa recorrente" | `48dd05d` |
 | 2026-10-14 | [Projetos](funcionalidades/projetos.md) | Menu de status das tarefas não é mais cortado pelo contêiner da lista | este commit |
 | 2026-10-08 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Hardening do login, cabeçalhos CSP e execução restrita de funções SECURITY DEFINER ([análise](analises/remediacao-auditoria-seguranca.md)) | `900b406` |
 | 2026-10-08 | [Autenticação](funcionalidades/autenticacao-acesso.md), [Notificações](funcionalidades/notificacoes.md) | Unificar o corpo visual dos e-mails de notificação e menção ao padrão de convite; conclusão de subtarefa continua sem evento de e-mail | `fd8d21f` |
