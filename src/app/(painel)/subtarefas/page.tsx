@@ -49,7 +49,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
           <tbody>{subtarefas.map(s => {
             const atrasada = estaAtrasada(s.prazo, s.status === StatusSubtarefa.CONCLUIDO || s.status === StatusSubtarefa.CANCELADO, hoje);
             const hrefDetalhe = hrefSubtarefa(s.tarefa.id, s.id);
-            return <tr key={s.id} className="border-t border-linha">
+            return <tr key={s.id} className="border-t border-linha bg-branco hover:bg-papel">
               <td className="p-0 font-medium"><Link href={hrefDetalhe} className="block px-5 py-4 hover:text-azul-esc">{s.titulo}</Link></td>
               <td className="p-0"><Link href={`/tarefas/${s.tarefa.id}`} className="block px-5 py-4 text-tinta hover:text-azul-esc hover:underline">{s.tarefa.nome}</Link></td>
               <td className="p-0"><Link href={`/projetos/${s.tarefa.projeto.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></td>

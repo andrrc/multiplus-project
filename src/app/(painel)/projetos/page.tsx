@@ -67,7 +67,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
           <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Conclusão</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
           <tbody>
             {projetos.map((p) => (
-              <tr key={p.id} className="border-t border-linha">
+              <tr key={p.id} className="border-t border-linha bg-branco hover:bg-papel">
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 font-medium hover:text-azul-esc">{p.nome}</Link></td>
                 <td className="p-0"><Link href={`/clientes/${p.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.numeroProposta ?? "—"}</Link></td>

@@ -71,8 +71,8 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
   **Dias restantes** e status.
 - **Busca:** por projeto ou cliente.
 - **Desativados:** "Mostrar desativados" inclui os projetos desativados.
-- **Linhas:** sem cor de fundo, nem ao passar o mouse nem para projeto desativado, que
-  aparece identificado pelo texto "Desativado" no semáforo.
+- **Linhas:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse. Não há cor de fundo por
+  situação: o projeto desativado aparece identificado pelo texto "Desativado" no semáforo.
 
 **Detalhes técnicos.**
 - **Rota:** `/projetos`.
@@ -173,7 +173,8 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Botão "Editar" da lista de tarefas com a mesma altura visual da etiqueta de status, mantendo 44 px de área de toque |
+| 2026-10-15 | este commit | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
+| 2026-10-15 | `8e1304b` | Botão "Editar" da lista de tarefas com a mesma altura visual da etiqueta de status, mantendo 44 px de área de toque |
 | 2026-10-15 | `dff749e` | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto |
 | 2026-10-15 | `75498a1` | Linhas da listagem sem cor de fundo, inclusive ao passar o mouse e para desativados ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |

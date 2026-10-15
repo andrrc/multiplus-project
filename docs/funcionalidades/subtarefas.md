@@ -87,7 +87,8 @@ pessoa (RN-004).
 
 **Como funciona.**
 - **Conteúdo:** lista as subtarefas de todos os projetos, ordenadas por prazo.
-- **Destaques:** a linha não tem cor de fundo em nenhuma situação. O atraso aparece no
+- **Destaques:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse, sem outra cor de fundo,
+  nem quando a subtarefa está atrasada. O atraso aparece no
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
   mostra o percentual no prazo. No celular, os cartões são brancos com borda esquerda azul.
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
@@ -169,6 +170,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-15 | este commit | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `75498a1` | Lista sem cor de fundo nas linhas (inclusive atrasadas) e sem borda vermelha; atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |

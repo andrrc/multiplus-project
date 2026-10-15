@@ -128,3 +128,9 @@ Não se aplica: sem migration. Os prazos continuam gravados como data à meia-no
 3. **Cartão no celular:** hoje é branco sobre o fundo da página. Fica transparente (proposta,
    seguindo o "nenhuma cor de fundo") ou o branco do cartão é aceitável? — **Resposta
    (2026-10-15):** branco, sem mudança.
+
+**Ajuste posterior (2026-10-15):** a Talita aceita destaque **ao passar o mouse**, sem verde.
+As linhas das tabelas de `/subtarefas`, `/projetos` e `/tarefas` ficam brancas (`bg-branco`) e
+passam a cinza-papel (`hover:bg-papel`) ao passar o mouse. Como o fundo da página já é papel, a
+linha precisa ser branca para o hover aparecer. Continua não havendo cor de fundo por situação
+(atrasada, desativada).
