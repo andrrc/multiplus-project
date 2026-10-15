@@ -759,8 +759,9 @@ ser alterada ao mudar o semáforo.
 **Decisão:** persistir os limites visuais em uma configuração singleton
 `ConfiguracaoSemaforo` (`configuracoes_semaforo`), separada de
 `ConfiguracaoNotificacao.diasAntecedenciaPadrao`. A configuração é editável somente pelo
-`ADMIN`; a leitura é autenticada. Os valores padrão são vermelho até 5 e âmbar até 10 dias
-corridos (até 15/10/2026 a contagem era em dias úteis, sem fins de semana).
+`ADMIN`; a leitura é autenticada. Desde 15/10/2026 há um único limite,
+`diasAmareloAte` (padrão 5 dias corridos): o vermelho é reservado ao prazo vencido. Antes
+havia também o limite vermelho (padrão 5/10) e a contagem era em dias úteis.
 
 **Alternativa descartada:** reutilizar `diasAntecedenciaPadrao` ou os registros de
 `ConfiguracaoNotificacao`. Isso misturaria um indicador visual com o disparo automático de

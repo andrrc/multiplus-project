@@ -45,7 +45,7 @@ avisado.
 
 ### N5. Configuração global do semáforo
 
-**Como funciona.** O ADMIN configura os limites em dias corridos para vermelho e amarelo. Verde começa acima do limite amarelo. A configuração se aplica a projetos, tarefas e subtarefas. Padrão: vermelho até 5 e amarelo até 10; sábados, domingos e feriados contam.
+**Como funciona.** O vermelho é reservado ao prazo vencido. O ADMIN configura um único limite, "Amarelo até (dias)": do dia do prazo até esse limite o indicador fica âmbar, e acima dele, verde. A configuração se aplica a projetos, tarefas e subtarefas. Padrão: 5 dias corridos; sábados, domingos e feriados contam.
 
 A configuração visual é independente do prazo de antecedência dos e-mails. `diasAntecedenciaPadrao` e o job de notificações de prazo permanecem preservados.
 
@@ -112,7 +112,8 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Limites do semáforo passam a valer em dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
+| 2026-10-15 | este commit | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
+| 2026-10-15 | `035aa9a` | Limites do semáforo passam a valer em dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-08 | `fd8d21f` | Alinhar notificações e menções ao layout institucional dos convites de acesso |
 | 2026-10-08 | `20dd992` | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |
 | 2026-10-02 | `b81feaf` | Preferências CLIENTE começam desligadas; conclusões e comentários podem avisar somente clientes vinculados, com link do próprio portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

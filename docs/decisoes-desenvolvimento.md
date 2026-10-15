@@ -9,9 +9,10 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Semáforo: vermelho só para prazo vencido, âmbar até um único limite configurável (padrão 5 dias), cancelado em cinza ([análise](analises/semaforo-vermelho-so-atrasado.md)) | este commit |
 | 2026-10-14 | [Agenda](funcionalidades/agenda.md) | Identificar ocorrências projetadas na interface como "Tarefa recorrente" | `48dd05d` |
-| 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Semáforo de prazo passa a contar dias corridos, mantendo os limites 5/10 ([análise](analises/semaforo-dias-corridos.md)) | este commit |
-| 2026-10-14 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Prazo vencido passa a usar caixa vermelha sólida e texto branco | este commit |
+| 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Semáforo de prazo passa a contar dias corridos, mantendo os limites 5/10 ([análise](analises/semaforo-dias-corridos.md)) | `035aa9a` |
+| 2026-10-14 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Prazo vencido passa a usar caixa vermelha sólida e texto branco | `035aa9a` |
 | 2026-10-14 | [Projetos](funcionalidades/projetos.md) | Menu de status das tarefas não é mais cortado pelo contêiner da lista | `1f63d75` |
 | 2026-10-08 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Hardening do login, cabeçalhos CSP e execução restrita de funções SECURITY DEFINER ([análise](analises/remediacao-auditoria-seguranca.md)) | `900b406` |
 | 2026-10-08 | [Autenticação](funcionalidades/autenticacao-acesso.md), [Notificações](funcionalidades/notificacoes.md) | Unificar o corpo visual dos e-mails de notificação e menção ao padrão de convite; conclusão de subtarefa continua sem evento de e-mail | `fd8d21f` |

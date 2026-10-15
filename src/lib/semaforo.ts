@@ -1,23 +1,23 @@
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 
-export type LimitesSemaforo = { diasVermelhoAte: number; diasAmareloAte: number };
-export const LIMITES_SEMAFORO_PADRAO: LimitesSemaforo = { diasVermelhoAte: 5, diasAmareloAte: 10 };
+/** Vermelho só para prazo vencido; âmbar de "vence hoje" até `diasAmareloAte`; verde acima. */
+export type LimitesSemaforo = { diasAmareloAte: number };
+export const LIMITES_SEMAFORO_PADRAO: LimitesSemaforo = { diasAmareloAte: 5 };
 
 export async function buscarLimitesSemaforo(ctx: ContextoUsuario): Promise<LimitesSemaforo> {
   return comContextoDeUsuario(ctx, async (tx) => {
     const configuracao = await tx.configuracaoSemaforo.findUnique({ where: { id: 1 } });
-    return configuracao ?? LIMITES_SEMAFORO_PADRAO;
+    return configuracao ? { diasAmareloAte: configuracao.diasAmareloAte } : LIMITES_SEMAFORO_PADRAO;
   });
 }
 
 export async function atualizarLimitesSemaforo(ctx: ContextoUsuario, limites: LimitesSemaforo) {
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
-  const { diasVermelhoAte, diasAmareloAte } = limites;
-  if (!Number.isInteger(diasVermelhoAte) || !Number.isInteger(diasAmareloAte)
-    || diasVermelhoAte < 0 || diasVermelhoAte > 365 || diasAmareloAte < 0 || diasAmareloAte > 365 || diasVermelhoAte >= diasAmareloAte) {
-    throw new Error("Informe limites inteiros entre 0 e 365, com o limite vermelho menor que o amarelo.");
+  const { diasAmareloAte } = limites;
+  if (!Number.isInteger(diasAmareloAte) || diasAmareloAte < 0 || diasAmareloAte > 365) {
+    throw new Error("Informe o limite amarelo como um número inteiro de dias entre 0 e 365.");
   }
   return comContextoDeUsuario(ctx, (tx) => tx.configuracaoSemaforo.update({
-    where: { id: 1 }, data: { diasVermelhoAte, diasAmareloAte },
+    where: { id: 1 }, data: { diasAmareloAte },
   }));
 }

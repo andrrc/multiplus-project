@@ -42,16 +42,15 @@ export function IndicadorSemaforoProjeto({
     cores = "border-verde-borda bg-verde-cl text-verde-esc";
   } else if (status === "CANCELADO") {
     texto = "Cancelado";
-    cores = "border-critico/30 bg-critico/8 text-critico";
+    cores = "border-linha bg-papel text-cinza";
   } else if (!prazo) {
     texto = "Sem prazo";
     cores = "border-linha bg-branco text-cinza";
   } else {
     const dias = calcularDiasRestantes(prazo);
+    // Vermelho só para prazo vencido; do dia do prazo até o limite configurado, âmbar.
     cores = dias < 0
       ? "border-critico bg-critico text-branco"
-      : dias <= limites.diasVermelhoAte
-      ? "border-critico/30 bg-critico/8 text-critico"
       : dias <= limites.diasAmareloAte
         ? "border-ambar/30 bg-ambar/8 text-ambar"
         : "border-verde-borda bg-verde-cl text-verde-esc";

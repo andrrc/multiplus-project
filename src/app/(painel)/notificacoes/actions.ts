@@ -31,7 +31,6 @@ export async function atualizarPreferenciaAction(formData: FormData) {
 
 export async function atualizarSemaforoAction(formData: FormData) {
   await atualizarLimitesSemaforo(await obterContexto(), {
-    diasVermelhoAte: Number(formData.get("diasVermelhoAte")),
     diasAmareloAte: Number(formData.get("diasAmareloAte")),
   });
   revalidatePath("/notificacoes");

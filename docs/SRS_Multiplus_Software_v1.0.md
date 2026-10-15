@@ -1,6 +1,6 @@
 # Especificação de Requisitos — Múltiplus Software
 
-**Versão:** 2.9
+**Versão:** 2.10
 **Data:** 15/10/2026
 **Autor:** André (Somma)
 **Status:** Atualizado para incluir o reenvio de convites de acesso pendentes do RF-031, o portal somente leitura do cliente, indicadores de conclusão e última movimentação, e controles de acesso do RF-048 ao RF-050. RF-039 a RF-047 e RN-007 a RN-009 vieram do documento complementar `docs/rfs-novos-srs-multiplus.md`.
@@ -257,17 +257,18 @@ link — não há upload direto de arquivos dentro do sistema nesta fase.
 | **Módulo**              | Indicadores                                                                                                                                                                                         |
 | **Descrição**          | O sistema deve calcular e exibir um indicador visual de percentual de tarefas/projetos em dia versus atrasados e um semáforo global de prazo para projetos, tarefas e subtarefas. O semáforo é configurado pela Administradora e não altera o percentual em dia nem os avisos automáticos. |
 | **Prioridade**           | Must                                                                                                                                                                                                |
-| **Critério de aceite**  | Dado um conjunto de tarefas com prazos, quando o usuário acessar o painel do cliente/projeto, então deve visualizar o percentual em dia calculado com base nos prazos vencidos e não concluídos. Dado os limites globais do semáforo, quando forem alterados pela Administradora, então as cores de projetos, tarefas e subtarefas devem usar os novos limites em dias corridos. |
+| **Critério de aceite**  | Dado um conjunto de tarefas com prazos, quando o usuário acessar o painel do cliente/projeto, então deve visualizar o percentual em dia calculado com base nos prazos vencidos e não concluídos. Dado os limites globais do semáforo, quando forem alterados pela Administradora, então as cores de projetos, tarefas e subtarefas devem usar o novo limite em dias corridos, e somente prazos vencidos ficam vermelhos. |
 | **User Story vinculada** | US-009                                                                                                                                                                                              |
 
 > ⚠️ **A validar:** a regra de cálculo de "em dia" (ex.: o que conta como atrasado, se há tolerância)
 > não está especificada. Ver RN-001.
 
 **Semáforo de prazos:** além do percentual em dia, o sistema deve exibir nos projetos,
-tarefas e subtarefas um indicador de dias corridos restantes, com limites globais configurados
-pela Administradora em `/notificacoes`. O padrão é vermelho até 5 dias, âmbar de 6 a
-10 e verde acima de 10. Sábados, domingos e feriados contam como qualquer outro dia.
-Itens concluídos permanecem verdes, itens cancelados ficam vermelhos e itens sem prazo não
+tarefas e subtarefas um indicador de dias corridos restantes. Vermelho indica somente prazo
+vencido. Do dia do prazo até o limite configurado pela Administradora em `/notificacoes`
+(padrão 5 dias) o indicador fica âmbar, e acima dele, verde. Sábados, domingos e feriados
+contam como qualquer outro dia.
+Itens concluídos permanecem verdes, itens cancelados ficam cinza e itens sem prazo não
 recebem cor de faixa. O semáforo é visual e não altera o cálculo do percentual em dia nem os
 avisos automáticos de prazo.
 
@@ -961,6 +962,7 @@ natural após este SRS.
 
 | Versão | Data | Autor | Alterações |
 | ------- | ---- | ----- | ---------- |
+| 2.10 | 15/10/2026 | André (Somma) | RF-009: vermelho do semáforo reservado ao prazo vencido; um único limite configurável para o âmbar (padrão 5 dias); cancelados em cinza. A pedido da Talita. |
 | 2.9 | 15/10/2026 | André (Somma) | RF-009: o semáforo de prazo passa a contar dias corridos em vez de dias úteis, a pedido da Talita; limites padrão 5/10 mantidos. |
 | 2.8 | 08/10/2026 | André (Somma) | RF-031: permitir à ADMIN reenviar convite para conta CLIENTE pendente, invalidar link anterior e fornecer link copiável temporário mesmo se o Resend falhar. |
 | 2.7 | 02/10/2026 | André (Somma) | Sprint 6: RF-048 a RF-050 e RN-014 a RN-016; portal `/portal`, percentuais de conclusão, agregação de última atividade e isolamento de dados do cliente. |

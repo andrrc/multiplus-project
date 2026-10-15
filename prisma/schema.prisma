@@ -522,8 +522,8 @@ model RegistroEnvioPrazo {
 /// RF-009 — limites globais de cor para os indicadores de prazo.
 model ConfiguracaoSemaforo {
   id                    Int      @id @default(1)
-  diasVermelhoAte       Int      @default(5)
-  diasAmareloAte         Int      @default(10)
+  /// Âmbar de "vence hoje" até este número de dias; vermelho só para prazo vencido.
+  diasAmareloAte         Int      @default(5)
   atualizadoEm          DateTime @updatedAt
 
   @@map("configuracoes_semaforo")

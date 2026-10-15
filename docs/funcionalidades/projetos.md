@@ -82,11 +82,12 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 **Como funciona.**
 - **O que mostra:** o número de **dias corridos** até a conclusão prevista. Sábados, domingos
   e feriados contam como qualquer outro dia.
-- **Cores:** limites globais configuráveis pelo ADMIN. O padrão é vermelho até 5 dias, âmbar de 6 a 10 e verde acima de 10.
+- **Cores:** vermelho só para prazo vencido. Do dia do prazo até o limite configurado pelo ADMIN
+  (padrão 5 dias), âmbar; acima dele, verde.
 - **Situações especiais:** prazo vencido mostra o atraso em dias numa caixa vermelha
   sólida com texto branco. Prazo hoje mostra "Vence hoje".
 - **Projetos sem contagem:** sem prazo, concluídos, cancelados ou desativados aparecem
-  identificados por texto.
+  identificados por texto. Concluído fica verde; cancelado e desativado, cinza.
 - **Nomes na interface:** na listagem, a coluna se chama "Dias restantes". No detalhe e em
   Meus Projetos, o nome é "Semáforo do prazo".
 
@@ -169,8 +170,9 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Semáforo passa a contar dias corridos, com os mesmos limites 5/10 ([análise](../analises/semaforo-dias-corridos.md)) |
-| 2026-10-14 | este commit | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
+| 2026-10-15 | este commit | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
+| 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos, com os mesmos limites 5/10 ([análise](../analises/semaforo-dias-corridos.md)) |
+| 2026-10-14 | `035aa9a` | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
 | 2026-10-14 | `1f63d75` | Corrigir recorte do menu de status das tarefas no detalhe do projeto |
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-10-02 | `b81feaf` | Indicadores de conclusão e portal próprio de acompanhamento do cliente; RLS sem leitura de comentários/subtarefas/valores ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
