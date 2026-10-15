@@ -173,7 +173,8 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto |
+| 2026-10-15 | este commit | Botão "Editar" da lista de tarefas com a mesma altura visual da etiqueta de status, mantendo 44 px de área de toque |
+| 2026-10-15 | `dff749e` | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto |
 | 2026-10-15 | `75498a1` | Linhas da listagem sem cor de fundo, inclusive ao passar o mouse e para desativados ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos, com os mesmos limites 5/10 ([análise](../analises/semaforo-dias-corridos.md)) |
