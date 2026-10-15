@@ -1,4 +1,5 @@
 import type { Periodicidade } from "@prisma/client";
+import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
 
 export type PeriodicidadeLike = Periodicidade | "SEMANAL" | "MENSAL" | "TRIMESTRAL" | "SEMESTRAL" | "ANUAL";
 
@@ -70,14 +71,19 @@ export function calcularProximaOcorrencia(
   return dataMensalAncorada(ano, mes, original.getUTCDate());
 }
 
-/** RN-001 — o dia do prazo ainda conta como em dia; atraso começa no dia seguinte. */
+/**
+ * RN-001 — o dia do prazo ainda conta como em dia; atraso começa no dia seguinte, à meia-noite de
+ * Brasília (o mesmo "hoje" do semáforo). `agora` é um instante, não uma data.
+ */
 export function estaAtrasada(
   prazo: DataLike | null | undefined,
   concluida: boolean,
-  hoje: DataLike = new Date(),
+  agora: DataLike = new Date(),
 ): boolean {
   if (!prazo || concluida) return false;
-  return dataUTC(prazo).getTime() < dataUTC(hoje).getTime();
+  const instante = agora instanceof Date ? agora : new Date(agora);
+  if (Number.isNaN(instante.getTime())) throw new Error("Data inválida");
+  return dataUTC(prazo).getTime() < dataDeHojeEmSaoPaulo(instante);
 }
 
 export type TarefaParaIndicador = {

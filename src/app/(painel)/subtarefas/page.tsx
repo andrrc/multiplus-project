@@ -49,7 +49,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
           <tbody>{subtarefas.map(s => {
             const atrasada = estaAtrasada(s.prazo, s.status === StatusSubtarefa.CONCLUIDO || s.status === StatusSubtarefa.CANCELADO, hoje);
             const hrefDetalhe = hrefSubtarefa(s.tarefa.id, s.id);
-            return <tr key={s.id} className={`border-t border-linha ${atrasada ? "border-l-[3px] border-l-critico bg-critico-cl" : "hover:bg-verde-cl"}`}>
+            return <tr key={s.id} className="border-t border-linha">
               <td className="p-0 font-medium"><Link href={hrefDetalhe} className="block px-5 py-4 hover:text-azul-esc">{s.titulo}</Link></td>
               <td className="p-0"><Link href={`/tarefas/${s.tarefa.id}`} className="block px-5 py-4 text-tinta hover:text-azul-esc hover:underline">{s.tarefa.nome}</Link></td>
               <td className="p-0"><Link href={`/projetos/${s.tarefa.projeto.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></td>
@@ -62,9 +62,8 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
         </table>
       </div>
       <ul className="mt-7 flex flex-col gap-3 md:hidden">{subtarefas.map(s => {
-        const atrasada = estaAtrasada(s.prazo, s.status === StatusSubtarefa.CONCLUIDO || s.status === StatusSubtarefa.CANCELADO, hoje);
         return <li key={s.id}>
-          <article className={`relative rounded-[3px] border border-linha border-l-[3px] bg-branco px-4 py-4 hover:border-azul ${atrasada ? "border-l-critico" : "border-l-azul"}`}>
+          <article className="relative rounded-[3px] border border-linha border-l-[3px] border-l-azul bg-branco px-4 py-4 hover:border-azul">
             <Link href={hrefSubtarefa(s.tarefa.id, s.id)} aria-label={`Abrir subtarefa ${s.titulo}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir subtarefa {s.titulo}</span></Link>
             <div className="pointer-events-none relative z-10">
               <div className="flex justify-between gap-3"><p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></div>

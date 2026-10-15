@@ -10,8 +10,11 @@ import {
   filtrarAtivos,
   projetarOcorrenciasFuturas,
 } from "@/lib/regras-projetos-tarefas";
+import { calcularDiasRestantes } from "@/ui/indicador-dias-restantes";
 
 const data = (valor: string) => new Date(`${valor}T00:00:00.000Z`);
+/** Instante ao meio-dia de Brasília (15h UTC) — "hoje" para as regras de atraso. */
+const meioDia = (valor: string) => new Date(`${valor}T15:00:00.000Z`);
 
 describe("RF-048/RN-014 — percentual de conclusão", () => {
   it("ignora canceladas e desativadas, e não mostra percentual sem itens elegíveis", () => {
@@ -92,9 +95,24 @@ describe("RN-008 — próxima ocorrência ancorada no prazo original", () => {
 
 describe("RN-001 — atraso sem tolerância", () => {
   it("considera hoje em dia e ontem atrasada", () => {
-    expect(estaAtrasada(data("2026-09-10"), false, data("2026-09-10"))).toBe(false);
-    expect(estaAtrasada(data("2026-09-09"), false, data("2026-09-10"))).toBe(true);
-    expect(estaAtrasada(data("2026-09-09"), true, data("2026-09-10"))).toBe(false);
+    expect(estaAtrasada(data("2026-09-10"), false, meioDia("2026-09-10"))).toBe(false);
+    expect(estaAtrasada(data("2026-09-09"), false, meioDia("2026-09-10"))).toBe(true);
+    expect(estaAtrasada(data("2026-09-09"), true, meioDia("2026-09-10"))).toBe(false);
+  });
+
+  it("vira o dia à meia-noite de Brasília, não à meia-noite UTC", () => {
+    // 02:30 UTC de 11/09 ainda é 23:30 de 10/09 em Brasília: o prazo de 10/09 vence hoje.
+    expect(estaAtrasada(data("2026-09-10"), false, new Date("2026-09-11T02:30:00.000Z"))).toBe(false);
+    // 03:30 UTC de 11/09 já é 00:30 de 11/09 em Brasília: o prazo de 10/09 atrasou.
+    expect(estaAtrasada(data("2026-09-10"), false, new Date("2026-09-11T03:30:00.000Z"))).toBe(true);
+  });
+
+  it("concorda com o semáforo em qualquer horário do dia", () => {
+    const prazo = data("2026-09-10");
+    for (let hora = 0; hora < 48; hora += 1) {
+      const agora = new Date(Date.UTC(2026, 8, 10, hora, 30));
+      expect(estaAtrasada(prazo, false, agora)).toBe(calcularDiasRestantes(prazo, agora) < 0);
+    }
   });
 });
 
@@ -106,13 +124,19 @@ describe("RF-009 — percentual em dia", () => {
         { ativo: true, prazo: data("2026-09-09"), status: StatusTarefa.CONCLUIDO },
         { ativo: false, prazo: data("2026-09-01"), status: "A_INICIAR" },
       ],
-      data("2026-09-10"),
+      meioDia("2026-09-10"),
     );
     expect(resultado).toEqual({ total: 2, emDia: 2, percentual: 100 });
   });
 
+  it("mantém em dia a tarefa que vence hoje até a meia-noite de Brasília", () => {
+    const tarefas = [{ ativo: true, prazo: data("2026-09-10"), status: "A_INICIAR" }];
+    expect(calcularPercentualEmDia(tarefas, new Date("2026-09-11T02:30:00.000Z")).percentual).toBe(100);
+    expect(calcularPercentualEmDia(tarefas, new Date("2026-09-11T03:30:00.000Z")).percentual).toBe(0);
+  });
+
   it("retorna percentual nulo quando não há tarefas ativas", () => {
-    expect(calcularPercentualEmDia([{ ativo: false, prazo: data("2026-09-09") }], data("2026-09-10"))).toEqual({
+    expect(calcularPercentualEmDia([{ ativo: false, prazo: data("2026-09-09") }], meioDia("2026-09-10"))).toEqual({
       total: 0,
       emDia: 0,
       percentual: null,

@@ -71,6 +71,8 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
   **Dias restantes** e status.
 - **Busca:** por projeto ou cliente.
 - **Desativados:** "Mostrar desativados" inclui os projetos desativados.
+- **Linhas:** sem cor de fundo, nem ao passar o mouse nem para projeto desativado, que
+  aparece identificado pelo texto "Desativado" no semáforo.
 
 **Detalhes técnicos.**
 - **Rota:** `/projetos`.
@@ -170,7 +172,8 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
+| 2026-10-15 | este commit | Linhas da listagem sem cor de fundo, inclusive ao passar o mouse e para desativados ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos, com os mesmos limites 5/10 ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-14 | `035aa9a` | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
 | 2026-10-14 | `1f63d75` | Corrigir recorte do menu de status das tarefas no detalhe do projeto |

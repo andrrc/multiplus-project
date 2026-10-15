@@ -107,12 +107,14 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
 | L2 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
 | L3 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
+| L4 | O aviso de prazo próximo (`dispararPrazoProximo`) ainda calcula "hoje" em UTC, diferente do semáforo e da regra de atraso, que usam o horário de Brasília. | Se o cron rodar entre 21h e meia-noite de Brasília, a janela de aviso começa um dia depois. Depende do horário do cron na VPS. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
+| 2026-10-15 | este commit | Registrar a limitação L4: o aviso de prazo próximo ainda usa "hoje" em UTC, enquanto semáforo e atraso passaram ao horário de Brasília ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Limites do semáforo passam a valer em dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-08 | `fd8d21f` | Alinhar notificações e menções ao layout institucional dos convites de acesso |
 | 2026-10-08 | `20dd992` | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |

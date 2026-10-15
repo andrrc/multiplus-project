@@ -78,7 +78,9 @@ Administradora continua vendo tudo.
 - **Funções:** `listarPrazos` (com `pendentes: false`), `listarTarefasParaFiltro` e o
   componente `src/app/(painel)/filtros-listagens.tsx`.
 - **Atraso:** segue o RN-001. O dia do prazo ainda conta como em dia, e o atraso começa no
-  dia seguinte (`estaAtrasada`).
+  dia seguinte, à meia-noite de Brasília (`estaAtrasada`, com o mesmo "hoje" do semáforo:
+  `dataDeHojeEmSaoPaulo`, em `src/lib/datas.ts`). Vale também para o "% em dia" e a agenda.
+- **Linhas:** sem cor de fundo, nem ao passar o mouse.
 
 ### T3. Detalhe e edição da tarefa (Administradora)
 
@@ -246,7 +248,8 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
+| 2026-10-15 | este commit | Atraso passa a virar à meia-noite de Brasília, igual ao semáforo, também no "% em dia"; linhas de `/tarefas` sem fundo ao passar o mouse ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-14 | `035aa9a` | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
 | 2026-10-02 | `b81feaf` | Percentual de conclusão exclui tarefas/subtarefas canceladas e desativadas; progresso de tarefa aparece também no portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

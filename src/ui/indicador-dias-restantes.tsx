@@ -1,23 +1,12 @@
+import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
 import { LIMITES_SEMAFORO_PADRAO, type LimitesSemaforo } from "@/lib/semaforo";
 
 const DIA_MS = 24 * 60 * 60 * 1000;
-const FUSO_HORARIO = "America/Sao_Paulo";
-
-function dataLocalHoje(hoje: Date) {
-  const partes = new Intl.DateTimeFormat("en-CA", {
-    timeZone: FUSO_HORARIO,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(hoje);
-  const parte = (tipo: string) => Number(partes.find((item) => item.type === tipo)?.value);
-  return Date.UTC(parte("year"), parte("month") - 1, parte("day"));
-}
 
 /** Conta dias corridos entre hoje (no fuso de São Paulo) e o prazo; negativo quando já venceu. */
 export function calcularDiasRestantes(prazo: Date, hoje = new Date()) {
   const prazoUTC = Date.UTC(prazo.getUTCFullYear(), prazo.getUTCMonth(), prazo.getUTCDate());
-  return Math.round((prazoUTC - dataLocalHoje(hoje)) / DIA_MS);
+  return Math.round((prazoUTC - dataDeHojeEmSaoPaulo(hoje)) / DIA_MS);
 }
 
 export function IndicadorSemaforoProjeto({
