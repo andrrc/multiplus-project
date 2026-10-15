@@ -760,7 +760,7 @@ ser alterada ao mudar o semáforo.
 `ConfiguracaoSemaforo` (`configuracoes_semaforo`), separada de
 `ConfiguracaoNotificacao.diasAntecedenciaPadrao`. A configuração é editável somente pelo
 `ADMIN`; a leitura é autenticada. Os valores padrão são vermelho até 5 e âmbar até 10 dias
-úteis, com fins de semana excluídos e feriados contados como dias normais.
+corridos (até 15/10/2026 a contagem era em dias úteis, sem fins de semana).
 
 **Alternativa descartada:** reutilizar `diasAntecedenciaPadrao` ou os registros de
 `ConfiguracaoNotificacao`. Isso misturaria um indicador visual com o disparo automático de

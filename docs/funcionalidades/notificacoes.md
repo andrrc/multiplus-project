@@ -45,7 +45,7 @@ avisado.
 
 ### N5. Configuração global do semáforo
 
-**Como funciona.** O ADMIN configura os limites em dias úteis para vermelho e amarelo. Verde começa acima do limite amarelo. A configuração se aplica a projetos, tarefas e subtarefas. Padrão: vermelho até 5 e amarelo até 10; sábados e domingos são excluídos.
+**Como funciona.** O ADMIN configura os limites em dias corridos para vermelho e amarelo. Verde começa acima do limite amarelo. A configuração se aplica a projetos, tarefas e subtarefas. Padrão: vermelho até 5 e amarelo até 10; sábados, domingos e feriados contam.
 
 A configuração visual é independente do prazo de antecedência dos e-mails. `diasAntecedenciaPadrao` e o job de notificações de prazo permanecem preservados.
 
@@ -112,6 +112,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-15 | este commit | Limites do semáforo passam a valer em dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-08 | `fd8d21f` | Alinhar notificações e menções ao layout institucional dos convites de acesso |
 | 2026-10-08 | `20dd992` | Fixture temporal do RF-022 garante que o job processe tarefa e exercite o retorno HTTP 500 ([análise](../analises/fixture-temporal-notificacoes-rf022.md)) |
 | 2026-10-02 | `b81feaf` | Preferências CLIENTE começam desligadas; conclusões e comentários podem avisar somente clientes vinculados, com link do próprio portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |

@@ -149,7 +149,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 ### S5. Semáforo de prazo
 
-**Como funciona.** Subtarefas exibem o mesmo indicador global de prazo que projetos e tarefas nas listas e nos detalhes. Nas listas, o indicador de atraso já informa que o prazo passou; não há um segundo rótulo “Atrasada” na mesma coluna. Os limites são configurados pelo ADMIN em `/notificacoes`; a contagem exclui fins de semana. Concluída permanece verde, cancelada vermelha e sem prazo sem cor.
+**Como funciona.** Subtarefas exibem o mesmo indicador global de prazo que projetos e tarefas nas listas e nos detalhes. Nas listas, o indicador de atraso já informa que o prazo passou; não há um segundo rótulo “Atrasada” na mesma coluna. O atraso aparece numa caixa vermelha sólida com texto branco. Os limites são configurados pelo ADMIN em `/notificacoes`; a contagem é em dias corridos, incluindo fins de semana. Concluída permanece verde, cancelada vermelha e sem prazo sem cor.
 
 **Detalhes técnicos.** Reutiliza `IndicadorSemaforoProjeto` e `buscarLimitesSemaforo`. A lista respeita os filtros e o acesso já existentes. Testes unitários e de integração em `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
 
@@ -166,6 +166,8 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-15 | este commit | Semáforo passa a contar dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
+| 2026-10-14 | este commit | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
 | 2026-09-29 | `86bb070` | Remover o rótulo de atraso duplicado na coluna de prazo, mantendo o semáforo como único indicador |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
 | 2026-09-17 | `a79a2a8` | Painel de prazos (Sprint 4A) |

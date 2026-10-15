@@ -228,7 +228,7 @@ registro de quem criou e quando.
 
 ### T11. Semáforo de prazo
 
-**Como funciona.** A lista administrativa, as telas de tarefas atribuídas e os detalhes mostram as cores de prazo configuradas globalmente: vermelho até o primeiro limite, amarelo até o segundo e verde acima dele. O cálculo usa dias úteis e exclui sábados e domingos. Concluído permanece verde, cancelado vermelho e sem prazo sem cor.
+**Como funciona.** A lista administrativa, as telas de tarefas atribuídas e os detalhes mostram as cores de prazo configuradas globalmente: vermelho até o primeiro limite, amarelo até o segundo e verde acima dele. Um prazo vencido usa caixa vermelha sólida com texto branco. O cálculo usa dias corridos, incluindo fins de semana e feriados. Concluído permanece verde, cancelado vermelho e sem prazo sem cor.
 
 **Detalhes técnicos.** `IndicadorSemaforoProjeto` recebe `LimitesSemaforo` carregados por `buscarLimitesSemaforo`; configuração singleton em `configuracoes_semaforo`, editável pelo ADMIN na página de notificações. Testes: `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
 
@@ -246,6 +246,8 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-15 | este commit | Semáforo passa a contar dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
+| 2026-10-14 | este commit | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
 | 2026-10-02 | `b81feaf` | Percentual de conclusão exclui tarefas/subtarefas canceladas e desativadas; progresso de tarefa aparece também no portal ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-01 | `2154bb3` | Aplicar antecedência por tarefa, preservar exclusão de canceladas e preparar agendador/observabilidade ([análise](../analises/agendador-avisos-prazo.md)) |
 | 2026-10-01 | 83f7524 | Avisos de prazo excluem tarefas canceladas ([análise](../analises/notificacao-comentario-com-acesso.md)) |

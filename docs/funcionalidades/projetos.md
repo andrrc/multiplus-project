@@ -16,7 +16,7 @@ Os campos de um projeto são:
 - data de início e conclusão prevista;
 - status: A iniciar, Em andamento, Concluído ou Cancelado.
 
-O **semáforo** mostra quantos dias úteis faltam para a conclusão prevista.
+O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 
 ## Quem pode fazer o quê
 
@@ -80,27 +80,28 @@ O **semáforo** mostra quantos dias úteis faltam para a conclusão prevista.
 ### P3. Dias restantes e semáforo do prazo
 
 **Como funciona.**
-- **O que mostra:** o número de **dias úteis** (segunda a sexta) até a conclusão prevista.
-  Feriados contam como dia normal.
-- **Cores:** limites globais configuráveis pelo ADMIN. O padrão é vermelho até 5 dias úteis, âmbar de 6 a 10 e verde acima de 10.
-- **Situações especiais:** prazo vencido mostra o atraso em dias úteis. Prazo hoje ou no
-  fim de semana tem rótulo próprio.
+- **O que mostra:** o número de **dias corridos** até a conclusão prevista. Sábados, domingos
+  e feriados contam como qualquer outro dia.
+- **Cores:** limites globais configuráveis pelo ADMIN. O padrão é vermelho até 5 dias, âmbar de 6 a 10 e verde acima de 10.
+- **Situações especiais:** prazo vencido mostra o atraso em dias numa caixa vermelha
+  sólida com texto branco. Prazo hoje mostra "Vence hoje".
 - **Projetos sem contagem:** sem prazo, concluídos, cancelados ou desativados aparecem
   identificados por texto.
 - **Nomes na interface:** na listagem, a coluna se chama "Dias restantes". No detalhe e em
   Meus Projetos, o nome é "Semáforo do prazo".
 
 **Detalhes técnicos.**
-- **Componente e cálculo:** `IndicadorSemaforoProjeto` e `calcularDiasUteisRestantes`
-  (`src/ui/indicador-dias-restantes.tsx`).
+- **Componente e cálculo:** `IndicadorSemaforoProjeto` e `calcularDiasRestantes`
+  (`src/ui/indicador-dias-restantes.tsx`), com "hoje" no fuso `America/Sao_Paulo`.
 - **Configuração:** limites editáveis pelo ADMIN em `/notificacoes`; os mesmos valores são usados em projetos, tarefas e subtarefas.
-- **Testes:** `indicador-dias-restantes.unit.test.ts` cobre faixas, hoje, fim de semana, atraso e estados especiais; `semaforo-rf009.integration.test.ts` cobre leitura, edição e RLS.
+- **Testes:** `indicador-dias-restantes.unit.test.ts` cobre faixas em dias corridos, hoje, prazo no fim de semana, fuso, atraso e estados especiais; `semaforo-rf009.integration.test.ts` cobre leitura, edição e RLS.
 
 ### P4. Detalhe do projeto
 
 **Como funciona.**
 - **Painel:** mostra valor contratado, janela do projeto (início e conclusão), semáforo,
-  tarefas concluídas e status. O status pode ser trocado ali mesmo.
+  tarefas concluídas e status. O status pode ser trocado ali mesmo. Na lista de tarefas,
+  o menu de status abre por cima do cartão sem ser cortado pelas bordas.
 - **Seções:** lista de tarefas (com troca de status), documentos do projeto e comentários.
 
 **Detalhes técnicos.**
@@ -162,14 +163,15 @@ Descritos em `comentarios-mencoes.md`.
 
 | # | Situação | Efeito |
 |---|---|---|
-| L1 | O semáforo conta feriados como dia útil. | Perto de feriados, o prazo parece maior do que é. Decisão registrada (ver histórico). |
 | L2 | O mesmo indicador tem dois nomes: "Dias restantes" na listagem e "Semáforo do prazo" nas demais telas. | É intencional, pela decisão de 29/09. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-14 | este commit | Corrigir recorte do menu de status das tarefas no detalhe do projeto |
+| 2026-10-15 | este commit | Semáforo passa a contar dias corridos, com os mesmos limites 5/10 ([análise](../analises/semaforo-dias-corridos.md)) |
+| 2026-10-14 | este commit | Destacar prazos vencidos com caixa vermelha sólida e texto branco |
+| 2026-10-14 | `1f63d75` | Corrigir recorte do menu de status das tarefas no detalhe do projeto |
 | 2026-10-01 | `9e20f9c` | Links de documentos limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-10-02 | `b81feaf` | Indicadores de conclusão e portal próprio de acompanhamento do cliente; RLS sem leitura de comentários/subtarefas/valores ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-09-29 | `f2ebb80` | Semáforo configurável compartilhado entre projetos, tarefas e subtarefas ([análise](../analises/semaforo-prazos-projetos-tarefas.md)) |
@@ -192,5 +194,6 @@ Descritos em `comentarios-mencoes.md`.
 - **O que foi decidido:**
   - só o rótulo da coluna e do campo mudou para "Dias restantes", e o indicador colorido
     continua;
-  - a contagem é em dias úteis, sem sábados e domingos;
+  - a contagem era em dias úteis, sem sábados e domingos (substituída por dias corridos em
+    15/10/2026);
   - o semáforo permanece com esse nome nas demais telas.
