@@ -105,7 +105,8 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 - **Painel:** mostra valor contratado, janela do projeto (início e conclusão), semáforo,
   tarefas concluídas e status. O status pode ser trocado ali mesmo. Na lista de tarefas,
   o menu de status abre por cima do cartão sem ser cortado pelas bordas.
-- **Seções:** lista de tarefas (com troca de status), documentos do projeto e comentários.
+- **Seções:** lista de tarefas (com troca de status e botão "Editar" em cada tarefa ativa,
+  que abre `/tarefas/[id]/editar`), documentos do projeto e comentários.
 
 **Detalhes técnicos.**
 - **Rota:** `/projetos/[id]`.
@@ -172,7 +173,8 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Linhas da listagem sem cor de fundo, inclusive ao passar o mouse e para desativados ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-15 | este commit | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto |
+| 2026-10-15 | `75498a1` | Linhas da listagem sem cor de fundo, inclusive ao passar o mouse e para desativados ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos, com os mesmos limites 5/10 ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-14 | `035aa9a` | Destacar prazos vencidos com caixa vermelha sólida e texto branco |

@@ -169,7 +169,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Lista sem cor de fundo nas linhas (inclusive atrasadas) e sem borda vermelha; atraso passa a virar à meia-noite de brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-15 | `75498a1` | Lista sem cor de fundo nas linhas (inclusive atrasadas) e sem borda vermelha; atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-14 | `035aa9a` | Destacar prazos vencidos com caixa vermelha sólida e texto branco |

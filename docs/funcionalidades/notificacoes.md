@@ -113,7 +113,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Registrar a limitação L4: o aviso de prazo próximo ainda usa "hoje" em UTC, enquanto semáforo e atraso passaram ao horário de Brasília ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-15 | `75498a1` | Registrar a limitação L4: o aviso de prazo próximo ainda usa "hoje" em UTC, enquanto semáforo e atraso passaram ao horário de Brasília ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Limites do semáforo passam a valer em dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
 | 2026-10-08 | `fd8d21f` | Alinhar notificações e menções ao layout institucional dos convites de acesso |
