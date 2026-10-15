@@ -33,7 +33,8 @@ pessoa (RN-004).
 ### S1. Criar e editar subtarefa
 
 **Como funciona.**
-- **Onde:** na tela da tarefa, em "Nova subtarefa".
+- **Onde:** na tela da tarefa, em "Nova subtarefa". Para editar, cada subtarefa ativa tem um
+  botão "Editar" na própria linha da lista, sem precisar abrir os detalhes.
 - **Campos:** título, descrição, prazo de conclusão (opcional), status, responsável e
   etiquetas.
 - **Responsável:** alguém da "Equipe Múltiplus" ou uma das "Pessoas envolvidas" do
@@ -170,7 +171,8 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
+| 2026-10-15 | este commit | Botão "Editar" na linha de cada subtarefa ativa, na lista do detalhe da tarefa |
+| 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `75498a1` | Lista sem cor de fundo nas linhas (inclusive atrasadas) e sem borda vermelha; atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Semáforo passa a contar dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |

@@ -173,7 +173,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
+| 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `8e1304b` | Botão "Editar" da lista de tarefas com a mesma altura visual da etiqueta de status, mantendo 44 px de área de toque |
 | 2026-10-15 | `dff749e` | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto |
 | 2026-10-15 | `75498a1` | Linhas da listagem sem cor de fundo, inclusive ao passar o mouse e para desativados ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |

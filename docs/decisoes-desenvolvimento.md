@@ -9,7 +9,8 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
-| 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Linhas das tabelas brancas, com cinza-papel ao passar o mouse; continuam sem cor de fundo por situação ([análise](analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) | este commit |
+| 2026-10-15 | [Subtarefas](funcionalidades/subtarefas.md) | Botão "Editar" na linha de cada subtarefa ativa, no detalhe da tarefa | este commit |
+| 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Linhas das tabelas brancas, com cinza-papel ao passar o mouse; continuam sem cor de fundo por situação ([análise](analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) | `9b5195d` |
 | 2026-10-15 | [Projetos](funcionalidades/projetos.md) | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto, alinhado à etiqueta de status | `dff749e`, `8e1304b` |
 | 2026-10-15 | [Subtarefas](funcionalidades/subtarefas.md), [Tarefas](funcionalidades/tarefas.md), [Projetos](funcionalidades/projetos.md), [Agenda](funcionalidades/agenda.md) | Atraso vira à meia-noite de Brasília, como o semáforo (inclui "% em dia" e agenda); listas de subtarefas, projetos e tarefas sem cor de fundo nas linhas ([análise](analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) | `75498a1` |
 | 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Semáforo: vermelho só para prazo vencido, âmbar até um único limite configurável (padrão 5 dias), cancelado em cinza ([análise](analises/semaforo-vermelho-so-atrasado.md)) | `9f3a725` |
