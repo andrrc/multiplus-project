@@ -72,6 +72,9 @@ Administradora continua vendo tudo.
 - **Filtros:** por cliente, projeto e tarefa. Eles se aplicam automaticamente e dependem
   um do outro: escolher um cliente limita os projetos oferecidos.
 - **Destaque:** um indicador mostra quantas subtarefas estão sem responsável.
+- **Responsável:** fica em coluna própria, entre Cliente e Prazo, e mostra "—" quando a
+  tarefa não tem responsável. No celular, o cartão traz a linha "Responsável:" (ou "Sem
+  responsável").
 
 **Detalhes técnicos.**
 - **Rota:** `/tarefas` (e `/tarefa`, que redireciona para ela).
@@ -248,6 +251,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-16 | este commit | Responsável ganha coluna própria na tabela de `/tarefas` (antes vinha ao lado do nome); no celular, linha "Responsável:" no cartão |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `75498a1` | Atraso passa a virar à meia-noite de Brasília, igual ao semáforo, também no "% em dia"; linhas de `/tarefas` sem fundo ao passar o mouse ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |

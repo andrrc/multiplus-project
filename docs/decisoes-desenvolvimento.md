@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-16 | [Tarefas](funcionalidades/tarefas.md) | Coluna "Responsável" própria na listagem de `/tarefas` | este commit |
 | 2026-10-15 | [Subtarefas](funcionalidades/subtarefas.md) | Botão "Editar" na linha de cada subtarefa ativa, no detalhe da tarefa | este commit |
 | 2026-10-15 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Linhas das tabelas brancas, com cinza-papel ao passar o mouse; continuam sem cor de fundo por situação ([análise](analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) | `9b5195d` |
 | 2026-10-15 | [Projetos](funcionalidades/projetos.md) | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto, alinhado à etiqueta de status | `dff749e`, `8e1304b` |
