@@ -104,7 +104,9 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 **Como funciona.**
 - **Painel:** mostra valor contratado, janela do projeto (início e conclusão), semáforo,
   tarefas concluídas e status. O status pode ser trocado ali mesmo. Na lista de tarefas,
-  o menu de status abre por cima do cartão sem ser cortado pelas bordas.
+  o menu de status abre por cima do cartão sem ser cortado pelas bordas. Os menus de
+  status (do projeto e das tarefas) fecham ao escolher uma opção, ao clicar fora ou ao
+  apertar Esc.
 - **Seções:** lista de tarefas (com troca de status e botão "Editar" em cada tarefa ativa,
   que abre `/tarefas/[id]/editar`), documentos do projeto e comentários.
 
@@ -173,6 +175,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-16 | este commit | Menus de status do projeto e das tarefas fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `8e1304b` | Botão "Editar" da lista de tarefas com a mesma altura visual da etiqueta de status, mantendo 44 px de área de toque |
 | 2026-10-15 | `dff749e` | Botão "Editar" em cada tarefa ativa da lista do detalhe do projeto |

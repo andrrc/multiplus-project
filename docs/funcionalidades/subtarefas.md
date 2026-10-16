@@ -35,6 +35,8 @@ pessoa (RN-004).
 **Como funciona.**
 - **Onde:** na tela da tarefa, em "Nova subtarefa". Para editar, cada subtarefa ativa tem um
   botão "Editar" na própria linha da lista, sem precisar abrir os detalhes.
+- **Status nos detalhes:** a etiqueta "Status ▾" abre um menu suspenso (antes era uma
+  fileira de botões), que fecha ao escolher uma opção, ao clicar fora ou ao apertar Esc.
 - **Campos:** título, descrição, prazo de conclusão (opcional), status, responsável e
   etiquetas.
 - **Responsável:** alguém da "Equipe Múltiplus" ou uma das "Pessoas envolvidas" do
@@ -171,7 +173,8 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-15 | este commit | Botão "Editar" na linha de cada subtarefa ativa, na lista do detalhe da tarefa |
+| 2026-10-16 | este commit | Status da subtarefa nos detalhes vira menu suspenso, que fecha ao escolher, ao clicar fora ou ao apertar Esc |
+| 2026-10-15 | `7218e25` | Botão "Editar" na linha de cada subtarefa ativa, na lista do detalhe da tarefa |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `75498a1` | Lista sem cor de fundo nas linhas (inclusive atrasadas) e sem borda vermelha; atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |

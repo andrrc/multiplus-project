@@ -92,6 +92,9 @@ Administradora continua vendo tudo.
   status) e os comentários.
 - **Ações:** a Administradora muda o status, conclui, edita e desativa a tarefa por essa
   tela.
+- **Menu de status:** a etiqueta "Status ▾" abre um menu suspenso, que fecha ao escolher
+  uma opção, ao clicar fora dele ou ao apertar Esc. O mesmo vale para o status de cada
+  subtarefa.
 
 **Detalhes técnicos.**
 - **Rotas:** `/tarefas/[id]` e `/tarefas/[id]/editar`.
@@ -251,7 +254,8 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-16 | este commit | Responsável ganha coluna própria na tabela de `/tarefas` (antes vinha ao lado do nome); no celular, linha "Responsável:" no cartão |
+| 2026-10-16 | este commit | Menus de status (tarefa e subtarefa) fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |
+| 2026-10-16 | `348405d` | Responsável ganha coluna própria na tabela de `/tarefas` (antes vinha ao lado do nome); no celular, linha "Responsável:" no cartão |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `75498a1` | Atraso passa a virar à meia-noite de Brasília, igual ao semáforo, também no "% em dia"; linhas de `/tarefas` sem fundo ao passar o mouse ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
