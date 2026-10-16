@@ -118,6 +118,8 @@ pessoa (RN-004).
 - **Etiqueta nova:** ao marcar uma subtarefa, dá para criar uma etiqueta ali mesmo,
   escolhendo uma das 12 cores (Azul, Ciano, Verde, Lima, Amarelo, Âmbar, Laranja,
   Vermelho, Rosa, Roxo, Índigo, Cinza).
+- **Painel "Adicionar etiqueta":** continua aberto enquanto se escolhem várias etiquetas
+  e fecha ao clicar fora dele, ao apertar Esc ou em "Fechar etiquetas".
 
 **Detalhes técnicos.**
 - **Função:** `salvarEtiquetasSubtarefa` (`src/lib/etiquetas.ts`).
@@ -173,7 +175,8 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-16 | este commit | Status da subtarefa nos detalhes vira menu suspenso, que fecha ao escolher, ao clicar fora ou ao apertar Esc |
+| 2026-10-16 | este commit | Painel "Adicionar etiqueta" fecha ao clicar fora ou ao apertar Esc |
+| 2026-10-16 | `fc53ae2` | Status da subtarefa nos detalhes vira menu suspenso, que fecha ao escolher, ao clicar fora ou ao apertar Esc |
 | 2026-10-15 | `7218e25` | Botão "Editar" na linha de cada subtarefa ativa, na lista do detalhe da tarefa |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `75498a1` | Lista sem cor de fundo nas linhas (inclusive atrasadas) e sem borda vermelha; atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |

@@ -1,14 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { CORES_ETIQUETA, type EtiquetaSelecionada } from "@/lib/etiqueta-colors";
 import { inputClass } from "@/ui/campo";
+import { useFecharAoClicarFora } from "@/ui/use-fechar-ao-clicar-fora";
 
 type EtiquetaDisponivel = { id: string; nome: string; cor: string };
 type EtiquetaEscolhida = EtiquetaSelecionada & { nova: boolean };
 
 export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { disponiveis: EtiquetaDisponivel[]; selecionadasIniciais?: EtiquetaSelecionada[] }) {
   const [aberto, setAberto] = useState(false);
+  const painelRef = useRef<HTMLDivElement>(null);
+  const botaoRef = useRef<HTMLButtonElement>(null);
+  const fechar = useCallback(() => setAberto(false), []);
+  useFecharAoClicarFora(painelRef, aberto, fechar, botaoRef);
   const [busca, setBusca] = useState("");
   const [selecionadas, setSelecionadas] = useState<EtiquetaEscolhida[]>(() => selecionadasIniciais.map((etiqueta) => ({ ...etiqueta, nova: false })));
   const catalogo = useMemo(() => new Map(disponiveis.map((etiqueta) => [etiqueta.nome.toLocaleLowerCase("pt-BR"), etiqueta])), [disponiveis]);
@@ -36,7 +41,7 @@ export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { d
     setSelecionadas((atuais) => atuais.filter((etiqueta) => etiqueta.nome !== nome));
   }
 
-  return <div className="grid gap-2">
+  return <div ref={painelRef} className="grid gap-2">
     <span className="text-[13px] font-medium">Etiquetas <span className="font-normal text-cinza">(opcional)</span></span>
     <div className="flex flex-wrap gap-1.5" aria-live="polite">
       {selecionadas.map((etiqueta) => {
@@ -49,7 +54,7 @@ export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { d
     </div>
     {selecionadas.map((etiqueta) => <input key={etiqueta.nome} type="hidden" name="etiquetaNome" value={etiqueta.nome} />)}
     <input type="hidden" name="novasEtiquetas" value={JSON.stringify(novasSelecionadas)} />
-    <button type="button" aria-expanded={aberto} onClick={() => setAberto((atual) => !atual)} className="inline-flex min-h-10 w-fit items-center gap-2 rounded-[3px] border border-dashed border-linha bg-branco px-3 text-[13px] font-medium text-cinza hover:border-azul hover:text-azul-esc focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul">
+    <button ref={botaoRef} type="button" aria-expanded={aberto} onClick={() => setAberto((atual) => !atual)} className="inline-flex min-h-10 w-fit items-center gap-2 rounded-[3px] border border-dashed border-linha bg-branco px-3 text-[13px] font-medium text-cinza hover:border-azul hover:text-azul-esc focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul">
       <span aria-hidden="true" className="text-[18px] leading-none">{aberto ? "−" : "+"}</span>{aberto ? "Fechar etiquetas" : "Adicionar etiqueta"}
     </button>
     {aberto && <div className="grid gap-3 rounded-[3px] border border-linha bg-papel p-3">
