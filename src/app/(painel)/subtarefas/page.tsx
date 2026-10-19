@@ -1,7 +1,8 @@
+import { interpretarResponsavel } from "@/lib/filtro-responsavel";
 import Link from "next/link";
 import { StatusSubtarefa } from "@prisma/client";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { indicadorDePrazosSubtarefas, listarClientesParaProjeto, listarProjetos, listarSubtarefasPrazos, listarTarefasParaFiltro } from "@/lib/projetos-tarefas";
+import { indicadorDePrazosSubtarefas, listarClientesParaProjeto, listarProjetos, listarSubtarefasPrazos, listarTarefasParaFiltro, listarResponsaveisParaFiltro } from "@/lib/projetos-tarefas";
 import { estaAtrasada } from "@/lib/regras-projetos-tarefas";
 import { Etiqueta } from "@/ui/campo";
 import { FiltrosListagens } from "../filtros-listagens";
@@ -10,16 +11,19 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
-export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ projeto?: string; cliente?: string; tarefa?: string; todos?: string }> }) {
+export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; projeto?: string; cliente?: string; tarefa?: string; todos?: string }> }) {
   const ctx = await exigirAcessoARota("/subtarefas");
   const filtros = await searchParams;
+  const responsavelInvalido = interpretarResponsavel(filtros.responsavel).tipo === "invalido";
+  const responsavelInicial = typeof filtros.responsavel === "string" ? filtros.responsavel : filtros.responsavel ? "invalido" : "";
   const pendentes = filtros.todos !== "1";
-  const [subtarefas, projetos, clientes, tarefasFiltro, limites] = await Promise.all([
-    listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, tarefaId: filtros.tarefa, pendentes }),
+  const [subtarefas, projetos, clientes, tarefasFiltro, limites, responsaveis] = await Promise.all([
+    listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, tarefaId: filtros.tarefa, responsavel: filtros.responsavel, pendentes }),
     listarProjetos(ctx),
     listarClientesParaProjeto(ctx),
     listarTarefasParaFiltro(ctx),
     buscarLimitesSemaforo(ctx),
+    listarResponsaveisParaFiltro(ctx, "subtarefas", { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, pendentes }),
   ]);
   const indicador = indicadorDePrazosSubtarefas(subtarefas);
   const hoje = new Date();
@@ -31,17 +35,20 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
       <div className="border-l-[3px] border-ambar bg-branco px-5 py-3"><p className="text-[11px] uppercase tracking-[0.08em] text-cinza">Em dia</p><p className="font-[family-name:var(--font-interface)] text-[25px] font-semibold text-tinta">{indicador.percentual === null ? "—" : `${indicador.percentual}%`} <span className="text-[13px] font-normal text-cinza">({indicador.emDia}/{indicador.total})</span></p></div>
     </div>
     <FiltrosListagens
-      key={`${filtros.cliente ?? ""}|${filtros.projeto ?? ""}|${filtros.tarefa ?? ""}|${filtros.todos ?? ""}`}
+      key={`${responsavelInicial}|${filtros.cliente ?? ""}|${filtros.projeto ?? ""}|${filtros.tarefa ?? ""}|${filtros.todos ?? ""}`}
       rota="/subtarefas"
       clientes={clientes}
       projetos={projetos.map(({ id, nome, cliente }) => ({ id, nome, cliente: { id: cliente.id } }))}
       tarefas={tarefasFiltro}
+      responsaveis={responsaveis}
+      responsavelInicial={responsavelInicial}
       clienteInicial={filtros.cliente}
       projetoInicial={filtros.projeto}
       tarefaInicial={filtros.tarefa}
       mostrarConcluidasInicial={!pendentes}
       incluirFiltroConcluidas
     />
+    {responsavelInvalido && <p role="alert" className="mt-4 text-[14px] text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
     {subtarefas.length === 0 ? <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
       <div className="mt-7 hidden overflow-x-auto md:block">
         <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">

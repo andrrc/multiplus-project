@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-19 | [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Filtrar por responsável direto (pessoa envolvida ou equipe), incluindo sem responsável, combinado com os filtros existentes ([análise](analises/filtro-responsavel-tarefas-subtarefas.md)) | este commit |
 | 2026-10-16 | [Subtarefas](funcionalidades/subtarefas.md) | Painel "Adicionar etiqueta" fecha ao clicar fora ou ao apertar Esc | este commit |
 | 2026-10-16 | [Tarefas](funcionalidades/tarefas.md), [Projetos](funcionalidades/projetos.md), [Subtarefas](funcionalidades/subtarefas.md) | Menus de status fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc | `fc53ae2` |
 | 2026-10-16 | [Tarefas](funcionalidades/tarefas.md) | Coluna "Responsável" própria na listagem de `/tarefas` | `348405d` |

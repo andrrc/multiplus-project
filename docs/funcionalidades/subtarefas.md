@@ -93,14 +93,16 @@ pessoa (RN-004).
 - **Destaques:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse, sem outra cor de fundo,
   nem quando a subtarefa está atrasada. O atraso aparece no
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
-  mostra o percentual no prazo. No celular, os cartões são brancos com borda esquerda azul.
+  mostra o percentual no prazo somente dos registros encontrados pelos filtros. No celular, os cartões são brancos com borda esquerda azul.
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
   Brasília, o mesmo horário em que o semáforo muda.
-- **Filtros:** por cliente, projeto e tarefa. Por padrão, mostra só as pendentes, e
+- **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da subtarefa, independentemente do responsável da tarefa pai. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Por padrão, mostra só as pendentes, e
   "Mostrar concluídas e canceladas" inclui o resto.
 - **Link antigo:** a rota antiga `/prazos` redireciona para cá.
 
 **Detalhes técnicos.**
+- **Filtro por responsável (RF-005/RF-037):** `responsavel=pessoa:<id>`, `usuario:<id>` ou `sem`; validado e aplicado no servidor em `listarPrazos`/`listarSubtarefasPrazos`. Parâmetro inválido mostra aviso e resultado vazio. `listarResponsaveisParaFiltro` exige ADMIN e retorna apenas valor e rótulo, com origem e cliente para distinguir pessoas envolvidas. Opções consideram os demais filtros e o toggle, incluem responsáveis inativos ainda vinculados a registros elegíveis e não expõem dados de contato. A agenda continua sem esse filtro.
+- **Testes do filtro:** `filtro-responsavel.integration.test.ts` (origens, homônimos, nulos, composição, inativos, indicador, agenda e perfis negados) e `filtro-responsavel.unit.test.ts` (parâmetros, URL, seleção sem resultado e nome da equipe na tabela/cartão).
 - **Rota:** `/subtarefas`, que é a tela inicial do `ADMIN`.
 - **Funções:** `listarSubtarefasPrazos` e `indicadorDePrazosSubtarefas`.
 - **Regras de prazo:**
@@ -175,6 +177,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-19 | este commit | Filtro por responsável, combinado com os filtros existentes, com opção sem responsável e nome da equipe em tarefas ([análise](../analises/filtro-responsavel-tarefas-subtarefas.md)) |
 | 2026-10-16 | este commit | Painel "Adicionar etiqueta" fecha ao clicar fora ou ao apertar Esc |
 | 2026-10-16 | `fc53ae2` | Status da subtarefa nos detalhes vira menu suspenso, que fecha ao escolher, ao clicar fora ou ao apertar Esc |
 | 2026-10-15 | `7218e25` | Botão "Editar" na linha de cada subtarefa ativa, na lista do detalhe da tarefa |

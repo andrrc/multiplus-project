@@ -1,3 +1,4 @@
+import { condicaoResponsavel, type OpcaoResponsavel } from "@/lib/filtro-responsavel";
 import { randomUUID } from "node:crypto";
 import {
   StatusProjeto,
@@ -111,16 +112,37 @@ export async function listarTarefasParaFiltro(ctx: ContextoUsuario) {
   }));
 }
 
-export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean } = {}) {
+export type FiltrosPrazos = { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean; responsavel?: string | string[] };
+
+function whereTarefas(filtros: FiltrosPrazos): Prisma.TarefaWhereInput {
+  return {
+    ativo: true,
+    projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
+    ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
+    ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
+    ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
+    ...condicaoResponsavel(filtros.responsavel, "responsavelId", "responsavelUsuarioId"),
+  };
+}
+
+function whereSubtarefas(filtros: FiltrosPrazos): Prisma.SubtarefaWhereInput {
+  return {
+    ativo: true,
+    tarefa: {
+      ativo: true,
+      ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
+      ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
+      projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
+    },
+    ...(filtros.pendentes ? { status: { notIn: [StatusSubtarefa.CONCLUIDO, StatusSubtarefa.CANCELADO] } } : {}),
+    ...condicaoResponsavel(filtros.responsavel, "atribuidoAId", "atribuidoAUsuarioId"),
+  };
+}
+
+export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
-    where: {
-      ativo: true,
-      projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
-      ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
-      ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
-      ...(filtros.pendentes ? { status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] } } : {}),
-    },
+    where: whereTarefas(filtros),
     include: {
       projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
       responsavel: { select: { nome: true } },
@@ -131,19 +153,10 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: { projetoId?: 
   }));
 }
 
-export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean } = {}) {
+export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.findMany({
-    where: {
-      ativo: true,
-      tarefa: {
-        ativo: true,
-        ...(filtros.tarefaId ? { id: filtros.tarefaId } : {}),
-        ...(filtros.projetoId ? { projetoId: filtros.projetoId } : {}),
-        projeto: { ativo: true, ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}) },
-      },
-      ...(filtros.pendentes ? { status: { notIn: [StatusSubtarefa.CONCLUIDO, StatusSubtarefa.CANCELADO] } } : {}),
-    },
+    where: whereSubtarefas(filtros),
     include: {
       tarefa: { select: { id: true, nome: true, projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } } } },
       atribuidoA: { select: { nome: true } },
@@ -151,6 +164,34 @@ export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: { pr
     },
     orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { titulo: "asc" }],
   }));
+}
+
+export async function listarResponsaveisParaFiltro(ctx: ContextoUsuario, entidade: "tarefas" | "subtarefas", filtros: FiltrosPrazos = {}): Promise<OpcaoResponsavel[]> {
+  exigirAdministrador(ctx);
+  const base = { ...filtros, responsavel: undefined };
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const registros = entidade === "tarefas"
+      ? (await tx.tarefa.findMany({
+          where: whereTarefas(base),
+          select: { responsavel: { select: { id: true, nome: true } }, responsavelUsuario: { select: { id: true, nome: true } }, projeto: { select: { cliente: { select: { razaoSocial: true } } } } },
+        })).map(r => ({ pessoa: r.responsavel, usuario: r.responsavelUsuario, cliente: r.projeto.cliente.razaoSocial }))
+      : (await tx.subtarefa.findMany({
+          where: whereSubtarefas(base),
+          select: { atribuidoA: { select: { id: true, nome: true } }, atribuidoAUsuario: { select: { id: true, nome: true } }, tarefa: { select: { projeto: { select: { cliente: { select: { razaoSocial: true } } } } } } },
+        })).map(r => ({ pessoa: r.atribuidoA, usuario: r.atribuidoAUsuario, cliente: r.tarefa.projeto.cliente.razaoSocial }));
+    const opcoes = new Map<string, OpcaoResponsavel>();
+    for (const r of registros) {
+      if (r.pessoa) {
+        const valor = `pessoa:${r.pessoa.id}`;
+        opcoes.set(valor, { valor, nome: `${r.pessoa.nome} · Pessoa envolvida · ${r.cliente}` });
+      }
+      if (r.usuario) {
+        const valor = `usuario:${r.usuario.id}`;
+        opcoes.set(valor, { valor, nome: `${r.usuario.nome} · Equipe Múltiplus` });
+      }
+    }
+    return [...opcoes.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR") || a.valor.localeCompare(b.valor));
+  });
 }
 
 export type ItemAgenda = {

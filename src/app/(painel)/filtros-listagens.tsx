@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { urlFiltrosListagens, type OpcaoResponsavel, type ValoresFiltrosListagens } from "@/lib/filtro-responsavel";
 import { inputClass } from "@/ui/campo";
 
 type ClienteFiltro = { id: string; razaoSocial: string };
@@ -13,6 +14,8 @@ export function FiltrosListagens({
   clientes,
   projetos,
   tarefas,
+  responsaveis,
+  responsavelInicial = "",
   clienteInicial = "",
   projetoInicial = "",
   tarefaInicial = "",
@@ -23,6 +26,8 @@ export function FiltrosListagens({
   clientes: ClienteFiltro[];
   projetos: ProjetoFiltro[];
   tarefas: TarefaFiltro[];
+  responsaveis: OpcaoResponsavel[];
+  responsavelInicial?: string;
   clienteInicial?: string;
   projetoInicial?: string;
   tarefaInicial?: string;
@@ -31,6 +36,7 @@ export function FiltrosListagens({
 }) {
   const router = useRouter();
   const [pendente, startTransition] = useTransition();
+  const [responsavel, setResponsavel] = useState(responsavelInicial);
   const [cliente, setCliente] = useState(clienteInicial);
   const [projeto, setProjeto] = useState(projetoInicial);
   const [tarefa, setTarefa] = useState(tarefaInicial);
@@ -42,18 +48,12 @@ export function FiltrosListagens({
     (!projeto || item.projetoId === projeto),
   );
 
-  function aplicarFiltros(valores: { cliente: string; projeto: string; tarefa: string; mostrarConcluidas: boolean }) {
-    const parametros = new URLSearchParams();
-    if (valores.cliente) parametros.set("cliente", valores.cliente);
-    if (valores.projeto) parametros.set("projeto", valores.projeto);
-    if (valores.tarefa) parametros.set("tarefa", valores.tarefa);
-    if (incluirFiltroConcluidas && valores.mostrarConcluidas) parametros.set("todos", "1");
-    const query = parametros.toString();
-    startTransition(() => router.push(query ? `${rota}?${query}` : rota, { scroll: false }));
+  function aplicarFiltros(valores: ValoresFiltrosListagens) {
+    startTransition(() => router.push(urlFiltrosListagens(rota, valores, incluirFiltroConcluidas), { scroll: false }));
   }
 
   function alterarCliente(valor: string) {
-    const novosFiltros = { cliente: valor, projeto: "", tarefa: "", mostrarConcluidas };
+    const novosFiltros = { cliente: valor, projeto: "", tarefa: "", mostrarConcluidas, responsavel };
     setCliente(valor);
     setProjeto("");
     setTarefa("");
@@ -61,44 +61,58 @@ export function FiltrosListagens({
   }
 
   function alterarProjeto(valor: string) {
-    const novosFiltros = { cliente, projeto: valor, tarefa: "", mostrarConcluidas };
+    const novosFiltros = { cliente, projeto: valor, tarefa: "", mostrarConcluidas, responsavel };
     setProjeto(valor);
     setTarefa("");
     aplicarFiltros(novosFiltros);
   }
 
   function alterarTarefa(valor: string) {
-    const novosFiltros = { cliente, projeto, tarefa: valor, mostrarConcluidas };
+    const novosFiltros = { cliente, projeto, tarefa: valor, mostrarConcluidas, responsavel };
     setTarefa(valor);
     aplicarFiltros(novosFiltros);
   }
 
   function alterarConcluidas(valor: boolean) {
     setMostrarConcluidas(valor);
-    aplicarFiltros({ cliente, projeto, tarefa, mostrarConcluidas: valor });
+    aplicarFiltros({ cliente, projeto, tarefa, responsavel, mostrarConcluidas: valor });
+  }
+
+  function alterarResponsavel(valor: string) {
+    setResponsavel(valor);
+    aplicarFiltros({ cliente, projeto, tarefa, responsavel: valor, mostrarConcluidas });
   }
 
   return (
     <div className="mt-7 flex flex-wrap items-end gap-3" aria-label="Filtros da listagem">
-      <label className="flex min-w-[210px] flex-col gap-1.5">
+      <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[210px]">
         <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Cliente</span>
         <select name="cliente" value={cliente} disabled={pendente} onChange={(event) => alterarCliente(event.target.value)} className={inputClass}>
           <option value="">Todos os clientes</option>
           {clientes.map((item) => <option key={item.id} value={item.id}>{item.razaoSocial}</option>)}
         </select>
       </label>
-      <label className="flex min-w-[210px] flex-col gap-1.5">
+      <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[210px]">
         <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Projeto</span>
         <select name="projeto" value={projeto} disabled={pendente} onChange={(event) => alterarProjeto(event.target.value)} className={inputClass}>
           <option value="">Todos os projetos</option>
           {projetosVisiveis.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}
         </select>
       </label>
-      <label className="flex min-w-[240px] flex-col gap-1.5">
+      <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[240px]">
         <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Tarefa</span>
         <select name="tarefa" value={tarefa} disabled={pendente} onChange={(event) => alterarTarefa(event.target.value)} className={inputClass}>
           <option value="">Todas as tarefas</option>
           {tarefasVisiveis.map((item) => <option key={item.id} value={item.id}>{item.projeto.nome} · {item.nome}</option>)}
+        </select>
+      </label>
+      <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[260px]">
+        <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Responsável</span>
+        <select name="responsavel" value={responsavel} disabled={pendente} onChange={(event) => alterarResponsavel(event.target.value)} className={inputClass}>
+          <option value="">Todos os responsáveis</option>
+          <option value="sem">Sem responsável</option>
+          {responsavel && responsavel !== "sem" && !responsaveis.some(item => item.valor === responsavel) && <option value={responsavel}>Sem resultados nesta seleção</option>}
+          {responsaveis.map(item => <option key={item.valor} value={item.valor}>{item.nome}</option>)}
         </select>
       </label>
       {incluirFiltroConcluidas && <label className="flex min-h-11 items-center gap-2 pb-2 text-[14px]">
