@@ -139,18 +139,37 @@ function whereSubtarefas(filtros: FiltrosPrazos): Prisma.SubtarefaWhereInput {
   };
 }
 
-export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}) {
+export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}, incluirProgresso = false) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
-    where: whereTarefas(filtros),
-    include: {
-      projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
-      responsavel: { select: { nome: true } },
-      responsavelUsuario: { select: { nome: true } },
-      _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
-    },
-    orderBy: [{ prazo: "asc" }, { nome: "asc" }],
-  }));
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const tarefas = await tx.tarefa.findMany({
+      where: whereTarefas(filtros),
+      include: {
+        projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
+        responsavel: { select: { nome: true } },
+        responsavelUsuario: { select: { nome: true } },
+        _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
+      },
+      orderBy: [{ prazo: "asc" }, { nome: "asc" }],
+    });
+    // Uma agregação para a lista inteira; o filtro de responsável pertence à tarefa.
+    const grupos = incluirProgresso && tarefas.length > 0 ? await tx.subtarefa.groupBy({
+      by: ["tarefaId", "status"],
+      where: { tarefaId: { in: tarefas.map(tarefa => tarefa.id) }, ativo: true, status: { not: StatusSubtarefa.CANCELADO } },
+      _count: { _all: true },
+    }) : [];
+    const progresso = new Map<string, { concluidas: number; total: number }>();
+    for (const grupo of grupos) {
+      const contagem = progresso.get(grupo.tarefaId) ?? { concluidas: 0, total: 0 };
+      contagem.total += grupo._count._all;
+      if (grupo.status === StatusSubtarefa.CONCLUIDO) contagem.concluidas += grupo._count._all;
+      progresso.set(grupo.tarefaId, contagem);
+    }
+    return tarefas.map(tarefa => ({
+      ...tarefa,
+      ...(incluirProgresso ? { progressoSubtarefas: progresso.get(tarefa.id) ?? { concluidas: 0, total: 0 } } : {}),
+    }));
+  });
 }
 
 export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}) {

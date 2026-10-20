@@ -71,12 +71,27 @@ Administradora continua vendo tudo.
   status e responsável.
 - **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da tarefa. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Escolher um cliente limita os projetos oferecidos.
 - **Destaque:** um indicador mostra quantas subtarefas estão sem responsável.
+- **Progresso das subtarefas:** ao filtrar por responsável (inclusive "Sem responsável"),
+  a coluna "Subtarefas" mostra concluídas/total, como `2/6`. Considera todas as subtarefas
+  ativas da tarefa, mesmo atribuídas a outras pessoas; canceladas e desativadas ficam
+  fora. Sem subtarefas elegíveis, mostra `0/0`. Ao voltar a "Todos os responsáveis", a
+  coluna desaparece. No celular, o cartão mostra "Subtarefas: 2/6 concluídas".
 - **Responsável:** fica em coluna própria, entre Cliente e Prazo, e mostra "—" quando a
   tarefa não tem responsável. O nome é exibido tanto para pessoa envolvida quanto para usuário da equipe. No celular, o cartão traz a linha "Responsável:" (ou "Sem
   responsável").
 
 **Detalhes técnicos.**
 - **Filtro por responsável (RF-005/RF-037):** `responsavel=pessoa:<id>`, `usuario:<id>` ou `sem`; validado e aplicado no servidor em `listarPrazos`/`listarSubtarefasPrazos`. Parâmetro inválido mostra aviso e resultado vazio. `listarResponsaveisParaFiltro` exige ADMIN e retorna apenas valor e rótulo, com origem e cliente para distinguir pessoas envolvidas. Opções consideram os demais filtros e o toggle, incluem responsáveis inativos ainda vinculados a registros elegíveis e não expõem dados de contato. A agenda continua sem esse filtro.
+- **Agregação de progresso (RF-008/RF-039, RN-007/RN-009):** a página solicita a contagem
+  pelo terceiro argumento de `listarPrazos`. Uma agregação `groupBy` no servidor, por
+  tarefa e status, conta apenas filhos ativos/não cancelados dos ids da seleção.
+  Retorna somente números adicionais, preserva o aviso de atribuição e não realiza
+  agregação extra na agenda ou nas chamadas que não solicitam progresso. A nova
+  contagem não muda o detalhe da tarefa, que continua incluindo canceladas ativas no total.
+- **Testes do progresso:** `progresso-subtarefas.integration.test.ts` cobre contagens,
+  mistura de responsáveis, filtros/isolamento, inativas/canceladas, mudanças de status,
+  retorno mínimo, agenda e perfis negados; `filtro-responsavel.unit.test.ts` cobre
+  exibição condicional e texto acessível na tabela e nos cartões.
 - **Testes do filtro:** `filtro-responsavel.integration.test.ts` (origens, homônimos, nulos, composição, inativos, indicador, agenda e perfis negados) e `filtro-responsavel.unit.test.ts` (parâmetros, URL, seleção sem resultado e nome da equipe na tabela/cartão).
 - **Rota:** `/tarefas` (e `/tarefa`, que redireciona para ela).
 - **Funções:** `listarPrazos` (com `pendentes: false`), `listarTarefasParaFiltro` e o
@@ -255,6 +270,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-20 | este commit | Coluna de subtarefas concluídas/total nas tarefas filtradas por responsável, excluindo canceladas/desativadas ([análise](../analises/progresso-subtarefas-tarefas-filtradas.md)) |
 | 2026-10-19 | este commit | Filtro por responsável, combinado com os filtros existentes, com opção sem responsável e nome da equipe em tarefas ([análise](../analises/filtro-responsavel-tarefas-subtarefas.md)) |
 | 2026-10-16 | este commit | Menus de status (tarefa e subtarefa) fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |
 | 2026-10-16 | `348405d` | Responsável ganha coluna própria na tabela de `/tarefas` (antes vinha ao lado do nome); no celular, linha "Responsável:" no cartão |
