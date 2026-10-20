@@ -1,3 +1,4 @@
+import { formatarDataHoraBrasilia } from "@/lib/datas";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusSubtarefa } from "@prisma/client";
@@ -14,7 +15,7 @@ import { EtiquetasSubtarefa } from "@/ui/etiquetas-subtarefa";
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 const statusTarefa: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "Sem prazo";
-const dataHora = (v: Date) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(v);
+const dataHora = (v: Date) => formatarDataHoraBrasilia(v);
 
 export default async function MinhaTarefaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await exigirAcessoARota("/minhas-tarefas");

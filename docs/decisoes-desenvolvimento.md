@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-20 | [Agenda](funcionalidades/agenda.md), [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md), [Portal](funcionalidades/area-exclusiva-cliente.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Padronizar horários e dia de referência em Brasília, preservando datas civis e gravação UTC ([análise](analises/padronizacao-horarios-brasilia.md)) | este commit |
 | 2026-10-20 | [Agenda](funcionalidades/agenda.md) | Mostrar nome completo ao passar o mouse sobre os itens, incluindo recorrências e lista "+N mais" | este commit |
 | 2026-10-20 | [Tarefas](funcionalidades/tarefas.md) | Exibir subtarefas concluídas/total ao filtrar responsável, incluindo sem responsável e excluindo canceladas/desativadas ([análise](analises/progresso-subtarefas-tarefas-filtradas.md)) | este commit |
 | 2026-10-19 | [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Filtrar por responsável direto (pessoa envolvida ou equipe), incluindo sem responsável, combinado com os filtros existentes ([análise](analises/filtro-responsavel-tarefas-subtarefas.md)) | este commit |

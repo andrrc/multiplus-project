@@ -168,7 +168,7 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
       data: { projetoId, nome: "Tarefa cancelada RF022", prazo, status: "CANCELADO" },
     });
 
-    const resultado = await dispararPrazoProximo(7, new Date("2026-10-01T00:00:00.000Z"));
+    const resultado = await dispararPrazoProximo(7, new Date("2026-10-01T12:00:00.000Z"));
 
     expect(resultado.encontradas).toBe(1);
     expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "PRAZO_PROXIMO", entidadeId: tarefaElegivel.id } })).toBe(1);
@@ -185,8 +185,8 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     const fallback = await ownerDb.tarefa.create({ data: { projetoId, nome: "Fallback global", prazo: prazo(5) } });
     const fora = await ownerDb.tarefa.create({ data: { projetoId, nome: "Antecedência individual", prazo: prazo(8), diasAntecedencia: 10 } });
 
-    const primeira = await dispararPrazoProximo(undefined, new Date("2026-10-01T00:00:00.000Z"));
-    const segunda = await dispararPrazoProximo(undefined, new Date("2026-10-01T00:00:00.000Z"));
+    const primeira = await dispararPrazoProximo(undefined, new Date("2026-10-01T12:00:00.000Z"));
+    const segunda = await dispararPrazoProximo(undefined, new Date("2026-10-01T12:00:00.000Z"));
 
     expect(primeira.encontradas).toBe(3);
     expect(primeira.emailsEnviados).toBe(3);
@@ -201,7 +201,7 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
   });
 
   it("persiste sucesso e falha sem perder as métricas da última execução válida", async () => {
-    const primeiro = await executarJobPrazo(new Date("2026-10-01T00:00:00.000Z"));
+    const primeiro = await executarJobPrazo(new Date("2026-10-01T12:00:00.000Z"));
     expect(primeiro.status).toBe("SUCESSO");
     const statusSucesso = await buscarStatusJobPrazo();
     expect(statusSucesso).toMatchObject({ ultimaExecucaoPrazoStatus: "SUCESSO", ultimoSucessoPrazoTarefas: 0, ultimoSucessoPrazoEmailsEnviados: 0, ultimoSucessoPrazoInAppCriados: 0 });
@@ -209,7 +209,7 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     await preferencia("ADMIN", "PRAZO_PROXIMO", true, false);
     await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: new Date("2026-10-02T00:00:00.000Z"), status: "EM_ANDAMENTO" } });
     vi.mocked(enviarEmail).mockRejectedValueOnce(new Error("Falha simulada do provedor"));
-    const resultado = await executarJobPrazo(new Date("2026-10-01T00:00:00.000Z"));
+    const resultado = await executarJobPrazo(new Date("2026-10-01T12:00:00.000Z"));
     expect(resultado.status).toBe("FALHA");
     const statusFalha = await buscarStatusJobPrazo();
     expect(statusFalha?.ultimaExecucaoPrazoStatus).toBe("FALHA");
@@ -268,7 +268,7 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     const tarefa = await criarTarefa(contexto, {
       projetoId: (await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { projetoId: true } })).projetoId,
       nome: "Tarefa atribuída",
-      prazo: new Date("2026-10-01T00:00:00.000Z"),
+      prazo: new Date("2026-10-01T12:00:00.000Z"),
       responsavelUsuarioId: externoId,
     });
     const subtarefa = await criarSubtarefa(contexto, {
@@ -291,5 +291,29 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     await dispararNotificacaoAtribuicaoRecebida(externoId, "TAREFA", tarefaId);
     expect(enviarEmail).toHaveBeenCalledTimes(1);
     expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId, evento: "ATRIBUICAO_RECEBIDA" } })).toBe(0);
+  });
+});
+
+// RF-007/RF-022 — janela de prazo e deduplicação seguem o dia de Brasília.
+describe("avisos na virada do dia de Brasília", () => {
+  it("preserva o prazo de hoje após 21h e deduplica até a meia-noite de Brasília", async () => {
+    await preferencia("ADMIN", "PRAZO_PROXIMO", false, true);
+    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: new Date("2026-12-31T00:00:00Z") } });
+    expect((await dispararPrazoProximo(0, new Date("2026-12-31T23:59:00Z"))).inAppCriadas).toBe(1);
+    expect((await dispararPrazoProximo(0, new Date("2027-01-01T02:59:59Z"))).encontradas).toBe(1);
+    const avisos = await ownerDb.notificacao.findMany({ where: { evento: "PRAZO_PROXIMO" } });
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0].mensagem).toBe("A tarefa vence em 31/12/2026.");
+    expect((await dispararPrazoProximo(0, new Date("2027-01-01T03:00:00Z"))).encontradas).toBe(0);
+  });
+
+  it("não antecipa amanhã às 21h e permite novo aviso só no próximo dia de Brasília", async () => {
+    await preferencia("ADMIN", "PRAZO_PROXIMO", false, true);
+    await ownerDb.tarefa.update({ where: { id: tarefaId }, data: { prazo: new Date("2027-01-01T00:00:00Z") } });
+    expect((await dispararPrazoProximo(0, new Date("2027-01-01T00:00:00Z"))).encontradas).toBe(0);
+    expect((await dispararPrazoProximo(1, new Date("2026-12-31T23:59:00Z"))).inAppCriadas).toBe(1);
+    expect((await dispararPrazoProximo(1, new Date("2027-01-01T02:59:59Z"))).inAppCriadas).toBe(0);
+    expect((await dispararPrazoProximo(1, new Date("2027-01-01T03:00:00Z"))).inAppCriadas).toBe(1);
+    expect(await ownerDb.notificacao.count({ where: { evento: "PRAZO_PROXIMO" } })).toBe(2);
   });
 });

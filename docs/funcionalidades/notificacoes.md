@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Última revisão:** 2026-10-20.
 - **Requisitos:** RF-007, RF-022, RF-023, RF-050.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -100,6 +100,12 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 ---
 
+### N6. Horários e dia dos avisos em Brasília
+
+**Como funciona.** Avisos recentes e últimas execuções mostram data e hora de Brasília. A janela dos avisos e a contagem de um envio por dia só viram à meia-noite de Brasília.
+
+**Detalhes técnicos.** `formatarDataHoraBrasilia` formata os instantes; `dispararPrazoProximo` usa `dataDeHojeEmSaoPaulo` para a janela e a chave de deduplicação. Não altera destinatários, preferências, datas dos vencimentos ou agenda de execução. Cobertura em `datas.unit.test.ts` e `notificacoes-rf022.integration.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -107,7 +113,6 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
 | L2 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
 | L3 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
-| L4 | O aviso de prazo próximo (`dispararPrazoProximo`) ainda calcula "hoje" em UTC, diferente do semáforo e da regra de atraso, que usam o horário de Brasília. | Se o cron rodar entre 21h e meia-noite de Brasília, a janela de aviso começa um dia depois. Depende do horário do cron na VPS. |
 
 ## Histórico de alterações
 
@@ -127,3 +132,4 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | 2026-09-17 | `5827166` | Healthcheck e CI (base para o job) |
 | 2026-09-17 | `022fec0`, `d6ed6d1`, `dc16183` | Disparo de notificações, templates de e-mail e central de notificações (Sprint 4B) |
 | 2026-09-18 | `a567583` | Correção do modelo de preferências |
+| 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

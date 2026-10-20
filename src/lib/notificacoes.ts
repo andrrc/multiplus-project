@@ -1,6 +1,7 @@
 import { EventoNotificacao, Perfil, Prisma } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
 import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
+import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 
@@ -215,7 +216,7 @@ export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, e
 export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
   const configuracao = await prisma.configuracaoNotificacao.findUnique({ where: { id: 1 } });
   const antecedencia = dias ?? configuracao?.diasAntecedenciaPadrao ?? 7;
-  const inicio = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), hoje.getUTCDate()));
+  const inicio = new Date(dataDeHojeEmSaoPaulo(hoje));
   const whereBase: Prisma.TarefaWhereInput = { ativo: true, prazo: { gte: inicio }, status: { notIn: ["CONCLUIDO", "CANCELADO"] }, projeto: { ativo: true, cliente: { ativo: true } } };
   const maiorAntecedencia = await prisma.tarefa.aggregate({ where: whereBase, _max: { diasAntecedencia: true } });
   const fim = new Date(inicio);

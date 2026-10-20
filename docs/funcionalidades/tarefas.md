@@ -1,6 +1,6 @@
 # Tarefas
 
-- **Última revisão:** 2026-09-29, no commit `d731f79` do `staging`.
+- **Última revisão:** 2026-10-20.
 - **Requisitos:** RF-005, RF-006, RF-007, RF-009, RF-015, RF-018, RF-019, RF-024, RF-039;
   RN-001, RN-006, RN-007, RN-008.
 - **Módulos relacionados:** Projetos, Subtarefas, Agenda, Notificações, Comentários.
@@ -256,6 +256,12 @@ registro de quem criou e quando.
 
 **Detalhes técnicos.** `IndicadorSemaforoProjeto` recebe `LimitesSemaforo` carregados por `buscarLimitesSemaforo`; configuração singleton em `configuracoes_semaforo`, editável pelo ADMIN na página de notificações. Testes: `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
 
+### T12. Horários de criação e avisos em Brasília
+
+**Como funciona.** A identificação de criação das tarefas e subtarefas continua mostrando Brasília, agora pelo padrão compartilhado. Avisos de prazo usam o dia de Brasília, inclusive entre 21h e meia-noite.
+
+**Detalhes técnicos.** `/tarefas/[id]` e `/minhas-tarefas/[id]` usam `formatarDataHoraBrasilia`; `dispararPrazoProximo` ancora janela e deduplicação em `dataDeHojeEmSaoPaulo`. Cobertura em `datas.unit.test.ts` e `notificacoes-rf022.integration.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -295,3 +301,4 @@ registro de quem criou e quando.
 | 2026-09-28 | `57942e8` | Conclusão recusa corretamente quando a checagem de permissão envolve `NULL` |
 | 2026-09-28 | `9969bff` | Escolha do dia da semana na recorrência semanal |
 | 2026-09-29 | `d731f79` | O botão de desativação e as tarefas atrasadas na agenda voltam a aparecer em vermelho terra (correção de cores inexistentes) |
+| 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

@@ -58,6 +58,12 @@ hora, para a Administradora planejar o mês.
 
 ---
 
+### G3. Referência de hoje em Brasília
+
+**Como funciona.** O dia destacado e o mês inicial acompanham Brasília, inclusive após 21h, nas viradas de mês e de ano. Os prazos continuam no dia cadastrado.
+
+**Detalhes técnicos.** `dataDeHojeEmSaoPaulo` determina o dia civil usado por `/agenda`, com o mesmo instante usado para avaliar atrasos. Cobertura em `agenda.unit.test.ts` e `datas.unit.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -76,3 +82,4 @@ hora, para a Administradora planejar o mês.
 | 2026-10-14 | `48dd05d` | Renomear na interface a ocorrência projetada para "Tarefa recorrente" |
 | 2026-10-15 | `75498a1` | Atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-20 | este commit | Exibir o nome completo dos itens ao passar o mouse na agenda |
+| 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

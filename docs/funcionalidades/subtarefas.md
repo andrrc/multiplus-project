@@ -1,6 +1,6 @@
 # Subtarefas e etiquetas
 
-- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Última revisão:** 2026-10-20.
 - **Requisitos:** RF-008, RF-009, RF-021, RF-025, RF-037, RF-039; RN-001, RN-004.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -164,6 +164,12 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 **Detalhes técnicos.** Reutiliza `IndicadorSemaforoProjeto` e `buscarLimitesSemaforo`. A lista respeita os filtros e o acesso já existentes. Testes unitários e de integração em `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
 
+### S9. Horários de criação e comentários em Brasília
+
+**Como funciona.** A identificação de criação e o horário dos comentários usam Brasília nas visões da equipe. O prazo da subtarefa continua na data cadastrada.
+
+**Detalhes técnicos.** As telas de detalhe de tarefa e o componente `Comentarios` usam `formatarDataHoraBrasilia`. Sem alteração de schema, prazo ou acesso. Cobertura da formatação e dos fusos em `datas.unit.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -203,3 +209,4 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 | 2026-09-30 | `8aa5ba1` | RF-037 formalizado no SRS v2.5 para o Painel de Subtarefas |
 | 2026-09-29 | `d731f79` | Subtarefas atrasadas voltam a aparecer em vermelho terra |
 | 2026-10-02 | `b81feaf` | CLIENTE não consulta diretamente conteúdo de subtarefas; o portal recebe apenas contagem agregada protegida por RLS ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
+| 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

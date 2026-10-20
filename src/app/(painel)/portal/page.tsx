@@ -1,3 +1,4 @@
+import { formatarDataHoraBrasilia } from "@/lib/datas";
 import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarProjetosPortal } from "@/lib/portal-cliente";
@@ -7,7 +8,7 @@ const data = (valor: Date | null) => valor
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
   : "Não informada";
 const atualizacao = (valor: Date | null) => valor
-  ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "UTC" }).format(valor)
+  ? formatarDataHoraBrasilia(valor)
   : "Sem movimentação";
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 

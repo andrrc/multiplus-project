@@ -1,6 +1,6 @@
 # Área Exclusiva do Cliente
 
-- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Última revisão:** 2026-10-20.
 - **Requisitos:** RF-011, RF-012, RF-022, RF-048, RF-049, RF-050; RN-009, RN-014, RN-015, RN-016.
 - **Módulos relacionados:** Projetos, Tarefas, Subtarefas, Documentos, Notificações, Autenticação.
 
@@ -59,6 +59,12 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 - O envio seleciona `/portal/[id]` para CLIENTE e mantém as rotas internas dos demais perfis.
 - **Teste:** integração valida preferência desligada por padrão e que o envio habilitado inclui somente o cliente dono do projeto.
 
+### C4. Horário da última movimentação
+
+**Como funciona.** A última atualização dos projetos, no painel e no detalhe do portal, aparece na data e hora de Brasília. Sem movimentação, a mensagem existente é preservada.
+
+**Detalhes técnicos.** As duas rotas `/portal` usam `formatarDataHoraBrasilia`; a função SQL e a agregação de atividade permanecem iguais. Datas de início e vencimento continuam como datas civis. Cobertura do formato e das viradas em `datas.unit.test.ts`; acesso continua coberto em `portal-cliente-sprint6.integration.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -70,3 +76,4 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 | Data | Commit | Alteração |
 |---|---|---|
 | 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
+| 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

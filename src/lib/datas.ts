@@ -15,3 +15,13 @@ export function dataDeHojeEmSaoPaulo(agora: Date = new Date()): number {
   const parte = (tipo: string) => Number(partes.find((item) => item.type === tipo)?.value);
   return Date.UTC(parte("year"), parte("month") - 1, parte("day"));
 }
+
+/** Instantes de criação, alteração e execução; não usar para datas civis de prazo. */
+export function formatarDataHoraBrasilia(instante: Date): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: FUSO_HORARIO,
+    hourCycle: "h23",
+  }).format(instante);
+}

@@ -1,3 +1,4 @@
+import { formatarDataHoraBrasilia } from "@/lib/datas";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
@@ -34,7 +35,7 @@ const statuses: Record<string, string> = {
 const data = (v: Date | null) => v
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v)
   : "—";
-const dataHora = (v: Date) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(v);
+const dataHora = (v: Date) => formatarDataHoraBrasilia(v);
 const statusSubtarefa: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
 export default async function TarefaDetalhePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ subtarefa?: string }> }) {

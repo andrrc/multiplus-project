@@ -1,6 +1,6 @@
 # Comentários e menções
 
-- **Última revisão:** 2026-09-30, no commit ce3b73f do `staging`.
+- **Última revisão:** 2026-10-20.
 - **Requisitos:** RF-016, RF-017, RF-047.
 - **Módulos relacionados:** Projetos, Tarefas, Subtarefas, Notificações.
 
@@ -60,6 +60,12 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 ---
 
+### M3. Horário dos comentários
+
+**Como funciona.** A data e a hora dos comentários de projetos, tarefas e subtarefas aparecem em Brasília para todos os usuários com acesso, independentemente do fuso do servidor.
+
+**Detalhes técnicos.** O componente compartilhado `Comentarios` utiliza `formatarDataHoraBrasilia`, em `src/lib/datas.ts`. A gravação UTC e as permissões permanecem iguais. Cobertura da conversão e independência de fuso em `datas.unit.test.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -78,3 +84,4 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 | 2026-09-18 | `d57f65d`, `ac9eb34`, `92eaf1f` | Prévia, ampliação e download da imagem |
 | 2026-09-18 | `76587cf` | Links destacados |
 | 2026-09-28 | `5c69415`, `bf5f696`, `38c36e5` | Menções com `@`, sugestões e e-mail, com destaque em azul |
+| 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

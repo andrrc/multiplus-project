@@ -1,3 +1,4 @@
+import { formatarDataHoraBrasilia } from "@/lib/datas";
 import type { ReactNode } from "react";
 import { listarComentarios, listarUsuariosMencionaveis, type AlvoComentario } from "@/lib/comentarios";
 import { FormularioComentario } from "./formulario-comentario";
@@ -51,7 +52,7 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
           <li key={comentario.id} className="border-l-[3px] border-l-azul bg-branco px-5 py-4">
             <div className="flex flex-wrap justify-between gap-2 font-[family-name:var(--font-interface)] text-[12px] text-cinza">
               <strong className="font-semibold text-tinta">{comentario.autor.nome}</strong>
-              <time>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(comentario.criadoEm)}</time>
+              <time>{formatarDataHoraBrasilia(comentario.criadoEm)}</time>
             </div>
             <p className="mt-2 whitespace-pre-wrap text-[14px] leading-6 text-tinta">{textoComMencoes(comentario.texto, comentario.nomesMencionados)}</p>
             {comentario.imagemChave && <ImagemComentario comentarioId={comentario.id} />}
