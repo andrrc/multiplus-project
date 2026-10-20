@@ -1,6 +1,6 @@
 # Agenda
 
-- **Última revisão:** 2026-10-14.
+- **Última revisão:** 2026-10-20.
 - **Requisitos:** RF-036; ADR-009.
 - **Módulos relacionados:** Tarefas.
 
@@ -31,7 +31,12 @@ hora, para a Administradora planejar o mês.
 - **Filtros:** por cliente, por projeto e "Só visitas/reuniões".
 - **Mês vazio:** a tela avisa que não há prazos no mês.
 
+- **Nome completo:** ao passar o mouse sobre um item, a dica do navegador mostra o nome
+  completo da tarefa, inclusive nas recorrências e na lista "+N mais".
+
 **Detalhes técnicos.**
+- **Exibição:** atributo HTML `title` nos itens, usando o nome já carregado; recorrências
+  mantêm também a identificação "Tarefa recorrente" na dica.
 - **Rota:** `/agenda?mes=&cliente=&projeto=&visitas=1`.
 - **Função:** `listarItensAgenda` (`src/lib/projetos-tarefas.ts`), que reaproveita
   `listarPrazos`: tarefas ativas de projetos ativos, em todos os status.
@@ -70,3 +75,4 @@ hora, para a Administradora planejar o mês.
 | 2026-09-30 | `8aa5ba1` | RF-036 formalizado no SRS v2.5; escopo atual mantém a Agenda limitada a tarefas |
 | 2026-10-14 | `48dd05d` | Renomear na interface a ocorrência projetada para "Tarefa recorrente" |
 | 2026-10-15 | `75498a1` | Atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
+| 2026-10-20 | este commit | Exibir o nome completo dos itens ao passar o mouse na agenda |
