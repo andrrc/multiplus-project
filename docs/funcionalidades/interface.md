@@ -14,7 +14,7 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 ### I1. Textos maiores em todo o sistema
 
-**Como funciona.** Os textos ficam 10% maiores para facilitar a leitura, conforme
+**Como funciona.** Os textos ficam 20% maiores em relação à escala original para facilitar a leitura, conforme
 relato da Talita. Inclui menus, títulos, campos, botões, tabelas, legendas e mensagens.
 As fontes e a hierarquia visual são preservadas.
 
@@ -22,7 +22,7 @@ As fontes e a hierarquia visual são preservadas.
 A escala em `src/app/globals.css` cobre os tamanhos explícitos usados em `src/app`
 e `src/ui`, incluindo títulos com variante `sm:`. Os valores usam `rem`, respeitando
 a preferência de fonte do navegador. O texto herdado do body passa de 17 para
-18,7 px na configuração padrão. Espaçamentos e breakpoints são preservados.
+20,4 px na configuração padrão. Espaçamentos e breakpoints são preservados.
 Referência: [identidade visual](../Identidade_Visual_Multiplus.md).
 Verificação: suíte existente e inspeção do login no navegador em desktop e
 em uma área de renderização de 375 px. Nenhum teste automatizado foi criado
@@ -38,4 +38,5 @@ ou alterado para esta mudança de estilo.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-21 | este commit | Ampliar textos em 10% após relato da Talita; análise dispensada por ser exclusivamente visual |
+| 2026-10-21 | este commit | Ampliar novamente os textos, de 10% para 20% sobre a escala original, a pedido do usuário |
+| 2026-10-21 | b7bb72e | Ampliar textos em 10% após relato da Talita; análise dispensada por ser exclusivamente visual |

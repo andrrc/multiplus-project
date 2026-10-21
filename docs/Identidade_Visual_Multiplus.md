@@ -114,9 +114,9 @@ Pesos usados: 400, 600
 
 ### Escala de leitura no sistema web
 
-Desde 21/10/2026, a interface web aplica um aumento de 10% sobre os tamanhos
-anteriores: 11 → 12,1 px; 12 → 13,2 px; 13 → 14,3 px; 14 → 15,4 px;
-15 → 16,5 px; 17 → 18,7 px; títulos de 28 → 30,8 px (valores com a fonte
+Desde 21/10/2026, a interface web aplica um aumento de 20% sobre os tamanhos
+anteriores: 11 → 13,2 px; 12 → 14,4 px; 13 → 15,6 px; 14 → 16,8 px;
+15 → 18 px; 17 → 20,4 px; títulos de 28 → 33,6 px (valores com a fonte
 padrão de 16 px do navegador). As famílias, pesos e hierarquia são preservados.
 A escala usa rem em src/app/globals.css, inclusive nos títulos responsivos.
 Ao acrescentar outro tamanho ou variante responsiva, inclua-o nessa escala.
