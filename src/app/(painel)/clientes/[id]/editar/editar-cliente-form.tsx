@@ -1,5 +1,7 @@
 "use client";
 
+import { CamposLaudo } from "@/ui/campos-laudo";
+import type { DadosLaudoInput, OpcaoResponsavelLaudo } from "@/lib/validacao-laudo";
 import { useState, useTransition } from "react";
 import type { TipoCliente } from "@prisma/client";
 import { heredarDadosPontoContato, type DadosPessoa } from "@/lib/heranca-pessoa";
@@ -131,10 +133,15 @@ type ValoresIniciaisPF = {
 export function EditarClienteForm({
   clienteId,
   valoresIniciais,
+  laudoInicial,
+  responsaveisLaudo,
 }: {
   clienteId: string;
+  laudoInicial: DadosLaudoInput;
+  responsaveisLaudo: OpcaoResponsavelLaudo[];
   valoresIniciais: ValoresIniciaisPJ | ValoresIniciaisPF;
 }) {
+  const [laudoTecnico, setLaudoTecnico] = useState(laudoInicial);
   const tipo = valoresIniciais.tipo;
 
   const [endereco, setEndereco] = useState(valoresIniciais.endereco);
@@ -195,6 +202,7 @@ export function EditarClienteForm({
     setErro(null);
     startEnvio(async () => {
       const comuns = {
+        laudoTecnico,
         segmento,
         segmentoCustomizado: segmentoCustomizado || undefined,
         origemContato,
@@ -332,6 +340,8 @@ export function EditarClienteForm({
           </SecaoNumerada>
         </>
       )}
+
+      <CamposLaudo valor={laudoTecnico} onChange={setLaudoTecnico} responsaveis={responsaveisLaudo} disabled={enviando} />
 
       {erro && (
         <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-4 py-3 text-[15px] text-critico">{erro}</p>

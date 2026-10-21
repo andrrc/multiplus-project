@@ -2,7 +2,7 @@
 
 - **Última revisão:** 2026-09-29, no commit `fe1b5b4` do `staging`.
 - **Requisitos:** RF-001, RF-002 (a–d), RF-003, RF-013, RF-020, RF-026, RF-027, RF-028,
-  RF-029, RF-031, RF-033, RF-034, RF-035, RF-039, RF-046; ADR-006, ADR-007, ADR-008.
+  RF-029, RF-031, RF-033, RF-034, RF-035, RF-039, RF-046, RF-051; ADR-006, ADR-007, ADR-008.
 - **Módulos relacionados:** Projetos, Usuários, Autenticação e acesso.
 
 ## Visão geral
@@ -27,6 +27,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 | Ver o **telefone** do Responsável Legal e do Ponto de Contato | Sim | **Não** (mascarado no banco) | **Não** | Não |
 | Ver dados financeiros (valor contratado) | Sim | Não | Não | Não |
 | Criar e bloquear o acesso do cliente ao portal | Sim | Não | Não | Não |
+| Consultar/gerir laudo, anotações, links e filtro de laudo | Sim | Não | Não | Não |
 
 ---
 
@@ -84,7 +85,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 **Como funciona.**
 - **Blocos da tela:** Cadastro, Responsável Legal, Ponto de Contato, Pessoas Envolvidas,
-  **Drive** (documentos), **Projetos** e Acesso ao portal.
+  **Laudo técnico** (somente ADMIN), **Drive** (documentos), **Projetos** e Acesso ao portal.
 - **Projetos:** o bloco mostra o total contratado em projetos ativos e tem o atalho para
   criar um projeto já com o cliente selecionado.
 
@@ -185,6 +186,41 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 ---
 
+### C9. Laudo técnico por cliente (RF-051)
+
+**Como funciona.** Cada cliente PF ou PJ pode ter um único laudo técnico. No cadastro ou
+na edição, marcar "Possui laudo técnico" exige nome, tipo (Ambiental, Rural ou
+Agroambiental) e responsável. O responsável é a Talita ou um usuário interno ativo;
+ser responsável não concede acesso. Somente a Administradora visualiza e altera o laudo.
+
+Na ficha, a seção fica antes do Drive. Seu histórico aceita texto, vários links ou ambos,
+com autor e data. As anotações podem ser editadas, desativadas e reativadas; o histórico
+guarda o texto atual e a última atualização, sem guardar todas as versões anteriores.
+Há busca no texto/URLs, paginação de 20 e opção de mostrar desativados. Os links privados
+não entram nos documentos compartilhados do cliente. Não há upload nem envio de notificações.
+
+Desmarcar desativa e preserva o laudo; remarcar recupera o mesmo registro. Cliente ou
+laudo desativado é somente leitura, e reativar não reativa anotações desativadas
+individualmente. Responsável que saiu da equipe permanece identificado; novas escolhas
+exigem integrante ativo. Edições concorrentes geram erro sem sobrescrever outra sessão.
+
+A lista de clientes permite filtrar Todos / Com laudo ativo / Sem laudo ativo junto de
+busca, cidade e clientes desativados. Sem laudo ativo inclui laudo desativado e ausência
+de cadastro. A situação do cliente continua controlada pelo filtro de clientes desativados.
+
+**Detalhes técnicos.**
+- Entidades privadas `LaudoTecnico`, `AnotacaoLaudoTecnico` e `LinkAnotacaoLaudoTecnico`;
+  clienteId único no banco, RLS ADMIN-only e triggers para vínculos, inatividade e versão.
+- Serviço: `src/lib/laudos-tecnicos.ts`; validação: `src/lib/validacao-laudo.ts`.
+- Rotas: `/clientes`, `/clientes/novo`, `/clientes/[id]` e `/clientes/[id]/editar`.
+- Inputs de cliente aceitam `laudoTecnico` opcional; omissão preserva o existente.
+  Cliente e laudo são gravados na mesma transação. Links aceitam HTTP/HTTPS.
+- Filtro de URL: `laudo=com|sem`; histórico: `laudoBusca`, `laudoDesativados=1`, `laudoPagina`.
+- Controle otimista por versão; instantes em UTC, apresentação em Brasília.
+- Testes: `laudos-tecnicos.unit.test.ts`, `laudos-tecnicos.integration.test.ts` e
+  `laudos-tecnicos.smoke.test.ts` (validação, RLS, atomicidade, concorrência e ciclo PF/PJ).
+- Análise: [laudo técnico](../analises/laudo-tecnico.md).
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -197,6 +233,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-21 | este commit | Laudo técnico privado por cliente, histórico editável, links, filtro e desativação preservada; ver [análise](../analises/laudo-tecnico.md). |
 | 2026-10-08 | `ee7db52` | Reenviar convite de acesso para cliente pendente, com link copiável e invalidação do anterior ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-10-08 | `a5191c8` | Reposicionar e esclarecer o filtro de registros desativados na ficha |
 | 2026-10-08 | `aeb2288` | Manter um único botão de desativar/reativar cliente no topo da ficha |

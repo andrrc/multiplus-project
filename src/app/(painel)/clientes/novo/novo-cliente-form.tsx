@@ -1,5 +1,7 @@
 "use client";
 
+import { CamposLaudo } from "@/ui/campos-laudo";
+import type { DadosLaudoInput, OpcaoResponsavelLaudo } from "@/lib/validacao-laudo";
 import { useState, useTransition } from "react";
 import type { TipoCliente } from "@prisma/client";
 import { heredarDadosPontoContato, PESSOA_VAZIA, type DadosPessoa } from "@/lib/heranca-pessoa";
@@ -158,7 +160,8 @@ function SeletorOrigem({ value, onChange }: { value: string; onChange: (valor: s
   );
 }
 
-export function NovoClienteForm() {
+export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?: OpcaoResponsavelLaudo[] }) {
+  const [laudoTecnico, setLaudoTecnico] = useState<DadosLaudoInput>({ possui: false });
   // RF-034 — o cadastro começa pela escolha do tipo.
   const [tipo, setTipo] = useState<TipoCliente | null>(null);
 
@@ -256,6 +259,7 @@ export function NovoClienteForm() {
         }));
 
       const comuns = {
+        laudoTecnico,
         segmento,
         segmentoCustomizado: segmentoCustomizado || undefined,
         origemContato,
@@ -583,6 +587,8 @@ export function NovoClienteForm() {
           </div>
         </SecaoNumerada>
       )}
+
+      {tipo && <CamposLaudo valor={laudoTecnico} onChange={setLaudoTecnico} responsaveis={responsaveisLaudo} disabled={enviando} />}
 
       {erro && (
         <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-4 py-3 text-[15px] text-critico">

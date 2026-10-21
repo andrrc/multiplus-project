@@ -36,6 +36,7 @@ export async function criarClienteAction(dados: NovoClienteInput): Promise<Estad
             : "Já existe um cliente cadastrado com esse CPF.",
       };
     }
+    if (error instanceof Error) return { erro: error.message };
     throw error;
   }
 

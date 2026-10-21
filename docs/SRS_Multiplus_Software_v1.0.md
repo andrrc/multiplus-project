@@ -2396,3 +2396,36 @@ natural após este SRS.
 | 1.6     | 02/09/2026 | André | Correção estrutural: Cliente agora suporta Pessoa Física (RF-034, RF-035) além de Pessoa Jurídica. RF-001 e RF-002 atualizados para deixar claro o que é específico de PJ; RF-026/027 marcados como exclusivos de PJ; RF-028 confirmado como aplicável aos dois tipos; RF-031 atualizado. Resolve pendência histórica de valores de segmento/origem (agora definidos em RF-002). Identificado durante a Sprint 2, antes da aprovação com a Talita — ver ADR-006 no ADD. |
 | 1.7     | 25/09/2026 | André | Corrigida a definição de escopo: subtarefa deixa de ser item de checklist e passa a ser registro completo com descrição, prazo opcional, responsável, etiquetas e status próprio. Formulário de criação dedicado, detalhes e comentários na subtarefa; Painel de Subtarefas dedicado a subtarefas pendentes. Mantidas as permissões RN-004 e RN-007. |
 | 1.8     | 05/10/2026 | André | RF-031 atualizado: ADMIN recebe link copiável e temporário de definição de senha na ficha do cliente, com envio manual disponível e token não persistido em texto puro. |
+
+### RF-051 — Laudo técnico por cliente
+
+**Prioridade:** Must. **Decisão:** aprovada em 21/10/2026.
+
+O sistema deve permitir à Administradora cadastrar um único laudo técnico por cliente
+PF ou PJ, no cadastro inicial ou na edição. Quando habilitado, nome, tipo (Ambiental,
+Rural, Agroambiental) e responsável da equipe interna ativa são obrigatórios.
+Somente ADMIN consulta e altera o laudo, suas anotações e links, inclusive no banco.
+A indicação de responsável não concede acesso nem cria atribuições ou notificações.
+
+O sistema deve oferecer histórico com texto e/ou múltiplos links HTTP/HTTPS, autor,
+criação e última edição; edição, desativação e reativação sem exclusão definitiva;
+busca em texto/URLs, paginação de 20 e exibição opcional de desativados. Deve haver filtro
+Com/Sem laudo ativo na listagem de clientes. Dados privados não entram no Drive compartilhado.
+Desativar cliente/laudo bloqueia escrita por herança, sem alterar o estado individual dos filhos.
+A reativação recupera o mesmo laudo. Operações devem recusar versões obsoletas e gravar
+cliente/laudo atomicamente, sem cadastro parcial.
+
+**Critérios de aceite:**
+- Dado um cliente novo PF/PJ ou existente, quando ADMIN habilitar o laudo e preencher os
+  três campos, então os dados devem ser salvos e aparecer na seção anterior ao Drive.
+- Dado qualquer outro perfil, inclusive responsável interno, quando consultar ou tentar
+  alterar o laudo, então o sistema deve negar acesso e não enviar dados privados na resposta.
+- Dado o histórico, quando ADMIN salvar texto, links ou ambos, então deve registrar autor/data;
+  conteúdo vazio e links fora de HTTP/HTTPS devem ser recusados.
+- Dado um laudo desativado, quando reativado, então deve preservar dados e histórico,
+  mantendo anotações individualmente desativadas nessa condição.
+- Dada uma edição obsoleta ou falha no laudo, quando salvar, então deve recusar sobrescrita
+  ou cadastro parcial e preservar o texto digitado na interface.
+
+Detalhamento e decisões: [análise](analises/laudo-tecnico.md) e
+[comportamento do módulo](funcionalidades/clientes.md#c9-laudo-técnico-por-cliente-rf-051).

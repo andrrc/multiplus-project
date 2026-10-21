@@ -9,17 +9,18 @@ import { BotaoDesativarCliente } from "./[id]/acoes-cliente";
 export default async function ClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ busca?: string; cidade?: string; desativados?: string }>;
+  searchParams: Promise<{ busca?: string; cidade?: string; desativados?: string; laudo?: string }>;
 }) {
-  const { busca, cidade, desativados } = await searchParams;
+  const { busca, cidade, desativados, laudo } = await searchParams;
   const ctx = await obterContexto();
 
   // RF-039 — só o Administrador reativa, então só ele tem o toggle; para os demais a RLS
   // já não devolve cliente desativado, e o parâmetro na URL não muda nada.
+  const filtroLaudo = ctx.perfil === "ADMIN" && (laudo === "com" || laudo === "sem") ? laudo : undefined;
   const mostrarDesativados = desativados === "1" && ctx.perfil === "ADMIN";
 
   const [clientes, cidades] = await Promise.all([
-    listarClientes(ctx, busca, cidade, mostrarDesativados),
+    listarClientes(ctx, busca, cidade, mostrarDesativados, filtroLaudo),
     listarCidadesComCliente(ctx),
   ]);
 
@@ -45,7 +46,8 @@ export default async function ClientesPage({
       </div>
 
       <FiltrosClientes
-        key={`${busca ?? ""}|${cidade ?? ""}|${mostrarDesativados ? "1" : ""}`}
+        key={`${busca ?? ""}|${cidade ?? ""}|${mostrarDesativados ? "1" : ""}|${filtroLaudo ?? ""}`}
+        laudoInicial={filtroLaudo}
         buscaInicial={busca}
         cidadeInicial={cidade}
         mostrarDesativadosInicial={mostrarDesativados}
@@ -56,7 +58,7 @@ export default async function ClientesPage({
       {clientes.length === 0 ? (
         <div className="mt-8 rounded-[3px] border border-linha bg-branco px-8 py-14 text-center">
           <p className="max-w-[46ch] mx-auto text-[16px] text-cinza">
-            {busca || cidade
+            {busca || cidade || filtroLaudo
               ? "Nenhum cliente encontrado para esse filtro."
               : "Nenhum cliente cadastrado ainda. Cadastre o primeiro para começar a acompanhar prazos e projetos ambientais."}
           </p>

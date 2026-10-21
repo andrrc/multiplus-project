@@ -691,3 +691,24 @@ detalhamento de dois bugs reais encontrados e corrigidos: view de mascaramento s
 | 2.0     | 02/09/2026 | André                   | Expandido para Sprint 2: Responsável Legal, Ponto de Contato com herança, pessoas do operacional, documentos, criação/bloqueio de acesso do cliente, e mascaramento de dados sensíveis por perfil (RF-013, RF-020, RF-026 a RF-031). Nova tela de Detalhe do Cliente. |
 | 2.1     | 09/09/2026 | André (via Claude Code) | Sprint 2 implementada e entregue — pontos em aberto da Seção 6 resolvidos e documentados; Seção 7 atualizada.                                                                                                                                                         |
 | 2.2     | 09/09/2026 | André (via Claude Code) | Adicionado "+ Adicionar pessoa" na tela de Detalhe do Cliente (RF-028 não ficava só na criação). Registrado ADR-005 (sobreposição Administrador Externo / Pessoa do Operacional) como bloqueio a resolver antes do módulo de Projetos e Tarefas.                    |
+
+## Complemento aprovado em 21/10/2026 — Laudo técnico (RF-051)
+
+No cadastro/edição de cliente PF/PJ, acrescentar o bloco condicional "Possui laudo técnico".
+Ao marcar: nome livre, tipo Ambiental/Rural/Agroambiental e responsável ADMIN/ADMIN_INTERNO
+ativo, todos obrigatórios. Desmarcar e salvar desativa preservando os dados; remarcar
+recupera os valores. Responsável indisponível permanece identificado para consulta.
+
+Na ficha exclusiva de ADMIN, antes do Drive: dados do laudo, atalho para editar, busca e
+"Mostrar desativados", formulário de anotação com texto e linhas de links adicionáveis,
+histórico (autor, criação e última atualização, editar/desativar/reativar) e paginação de 20.
+Aceitar só texto, só links ou ambos. Links abrem em nova aba com proteção; sem upload.
+Cliente/laudo inativo é somente leitura. Conflito de versão/erro preserva o conteúdo digitado.
+
+Em `/clientes`, adicionar seletor Todos / Com laudo ativo / Sem laudo ativo, preservando
+busca, cidade e exibição de clientes desativados. Não criar menu ou tela própria de laudos.
+Não mostrar laudos nas visões de colaboradores/portal, nem quando forem responsáveis.
+
+Seguir tokens e componentes da identidade visual; uma coluna em 375 px, controles de 44 px,
+URLs/textos longos sem transbordamento. Prever vazio, erro, pendência de envio e inativos.
+Ver [análise aprovada](analises/laudo-tecnico.md) e [módulo](funcionalidades/clientes.md).

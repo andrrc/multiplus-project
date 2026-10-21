@@ -1,3 +1,5 @@
+import { salvarLaudoNaTransacao } from "@/lib/laudos-tecnicos";
+import { validarDadosLaudo, type DadosLaudoInput } from "@/lib/validacao-laudo";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { normalizarCnpj } from "@/lib/cnpj";
 import { normalizarCpf } from "@/lib/cpf";
@@ -25,6 +27,7 @@ export type PessoaEnvolvidaInput = {
 };
 
 type DadosComunsCliente = {
+  laudoTecnico?: DadosLaudoInput;
   segmento: string;
   /** RF-002 — só usado quando `segmento` é a opção "Outro"/"Outros"; resolvido antes de chegar aqui. */
   segmentoCustomizado?: string;
@@ -96,7 +99,8 @@ function normalizarPessoaEnvolvida(pessoa: PessoaEnvolvidaInput) {
  * no cadastro inicial (só funcionaria via "criar acesso depois", RF-033).
  */
 export async function criarCliente(ctx: ContextoUsuario, dados: NovoClienteInput) {
-  const cliente = await comContextoDeUsuario(ctx, (tx) => {
+  validarDadosLaudo(dados.laudoTecnico);
+  const cliente = await comContextoDeUsuario(ctx, async (tx) => {
     const comuns = {
       segmento: dados.segmento,
       origemContato: dados.origemContato,
@@ -107,7 +111,7 @@ export async function criarCliente(ctx: ContextoUsuario, dados: NovoClienteInput
     };
 
     if (dados.tipo === "PESSOA_JURIDICA") {
-      return tx.cliente.create({
+      const criado = await tx.cliente.create({
         data: {
           ...comuns,
           tipo: "PESSOA_JURIDICA",
@@ -127,9 +131,11 @@ export async function criarCliente(ctx: ContextoUsuario, dados: NovoClienteInput
         },
         include: INCLUDE_CLIENTE_COMPLETO,
       });
+      await salvarLaudoNaTransacao(tx, ctx, criado.id, dados.laudoTecnico);
+      return criado;
     }
 
-    return tx.cliente.create({
+    const criado = await tx.cliente.create({
       data: {
         ...comuns,
         tipo: "PESSOA_FISICA",
@@ -142,6 +148,8 @@ export async function criarCliente(ctx: ContextoUsuario, dados: NovoClienteInput
       },
       include: INCLUDE_CLIENTE_COMPLETO,
     });
+    await salvarLaudoNaTransacao(tx, ctx, criado.id, dados.laudoTecnico);
+    return criado;
   });
 
   // A ordem de `cliente.pessoasEnvolvidas` corresponde à ordem de `dados.pessoasEnvolvidas`
@@ -170,7 +178,9 @@ export async function listarClientes(
   busca?: string,
   cidade?: string,
   incluirDesativados = false,
+  laudo?: "com" | "sem",
 ) {
+  if (laudo && ctx.perfil !== "ADMIN") throw new Error("RF-051: filtro de laudos restrito ao Administrador.");
   return comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
       where: {
@@ -187,6 +197,7 @@ export async function listarClientes(
               }
             : {},
           cidade ? { municipio: cidade } : {},
+          laudo === "com" ? { laudoTecnico: { is: { ativo: true } } } : laudo === "sem" ? { OR: [{ laudoTecnico: { is: null } }, { laudoTecnico: { is: { ativo: false } } }] } : {},
         ],
       },
       orderBy: { razaoSocial: "asc" },
@@ -352,6 +363,7 @@ export async function buscarClienteContextual(ctx: ContextoUsuario, clienteId: s
 }
 
 export type AtualizarClientePJInput = {
+  laudoTecnico?: DadosLaudoInput;
   tipo: "PESSOA_JURIDICA";
   razaoSocial: string;
   endereco?: string;
@@ -367,6 +379,7 @@ export type AtualizarClientePJInput = {
 };
 
 export type AtualizarClientePFInput = {
+  laudoTecnico?: DadosLaudoInput;
   tipo: "PESSOA_FISICA";
   nome: string;
   rg?: string;
@@ -397,8 +410,10 @@ export async function atualizarCliente(
   // `clientes_write` precisa aceitar UPDATE em cliente desativado, senão não haveria como
   // reativá-lo.
   await exigirClienteAtivo(ctx, clienteId);
+  validarDadosLaudo(dados.laudoTecnico);
 
-  return comContextoDeUsuario(ctx, (tx) => {
+  return comContextoDeUsuario(ctx, async (tx) => {
+    await salvarLaudoNaTransacao(tx, ctx, clienteId, dados.laudoTecnico);
     if (dados.tipo === "PESSOA_JURIDICA") {
       const responsavelLegal = limparDadosPessoa(dados.responsavelLegal, normalizarCpf);
       const pontoContato = {

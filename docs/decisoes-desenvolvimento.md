@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-21 | [Clientes](funcionalidades/clientes.md) | Laudo técnico único e privado do ADMIN, responsável interno sem acesso automático, histórico com links e edição concorrente, filtro e desativação preservada ([análise](analises/laudo-tecnico.md)) | este commit |
 | 2026-10-20 | [Agenda](funcionalidades/agenda.md), [Notificações](funcionalidades/notificacoes.md), [Comentários](funcionalidades/comentarios-mencoes.md), [Portal](funcionalidades/area-exclusiva-cliente.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Padronizar horários e dia de referência em Brasília, preservando datas civis e gravação UTC ([análise](analises/padronizacao-horarios-brasilia.md)) | este commit |
 | 2026-10-20 | [Agenda](funcionalidades/agenda.md) | Mostrar nome completo ao passar o mouse sobre os itens, incluindo recorrências e lista "+N mais" | este commit |
 | 2026-10-20 | [Tarefas](funcionalidades/tarefas.md) | Exibir subtarefas concluídas/total ao filtrar responsável, incluindo sem responsável e excluindo canceladas/desativadas ([análise](analises/progresso-subtarefas-tarefas-filtradas.md)) | este commit |

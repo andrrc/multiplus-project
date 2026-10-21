@@ -1,3 +1,4 @@
+import { SecaoLaudo } from "./laudo/secao";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
@@ -74,10 +75,11 @@ export default async function DetalheClientePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ desativados?: string }>;
+  searchParams: Promise<{ desativados?: string; laudoBusca?: string; laudoDesativados?: string; laudoPagina?: string }>;
 }) {
   const { id } = await params;
-  const { desativados } = await searchParams;
+  const filtrosLaudo = await searchParams;
+  const { desativados } = filtrosLaudo;
   const ctx = await obterContexto();
 
   // RF-039 — o toggle só faz sentido para quem pode reativar; para os demais perfis a RLS
@@ -362,6 +364,8 @@ export default async function DetalheClientePage({
           </ul>
         )}
       </Bloco>
+
+      <SecaoLaudo ctx={ctx} clienteId={id} clienteAtivo={cliente.ativo} busca={filtrosLaudo.laudoBusca} desativados={filtrosLaudo.laudoDesativados} pagina={filtrosLaudo.laudoPagina} desativadosCliente={desativados} />
 
       <Bloco
         titulo="Drive"

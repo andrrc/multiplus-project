@@ -36,6 +36,9 @@ export function comoUsuario<T>(
 
 /** Apaga, em ordem segura de FK, todas as linhas criadas pelos testes. */
 export async function limparFixtures(): Promise<void> {
+  await ownerDb.linkAnotacaoLaudoTecnico.deleteMany();
+  await ownerDb.anotacaoLaudoTecnico.deleteMany();
+  await ownerDb.laudoTecnico.deleteMany();
   await ownerDb.tokenAcesso.deleteMany();
   await ownerDb.atribuicao.deleteMany();
   await ownerDb.subtarefa.deleteMany();

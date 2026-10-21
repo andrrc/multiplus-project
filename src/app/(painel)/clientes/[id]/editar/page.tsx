@@ -1,3 +1,4 @@
+import { buscarLaudoTecnico, listarResponsaveisLaudo } from "@/lib/laudos-tecnicos";
 import { notFound, redirect } from "next/navigation";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarClienteParaEdicao } from "@/lib/clientes";
@@ -11,7 +12,11 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
 
   const dados = await buscarClienteParaEdicao(ctx, id);
   if (!dados) notFound();
+  if (!dados.cliente.ativo) redirect(`/clientes/${id}`);
 
+  const [laudo, responsaveis] = await Promise.all([buscarLaudoTecnico(ctx, id), listarResponsaveisLaudo(ctx)]);
+  const responsaveisLaudo = laudo && !responsaveis.some((p) => p.id === laudo.responsavelId) ? [...responsaveis, laudo.responsavel] : responsaveis;
+  const laudoInicial = laudo ? { possui: laudo.ativo, nome: laudo.nome, tipo: laudo.tipo, responsavelId: laudo.responsavelId, versao: laudo.versao } : { possui: false };
   const { cliente } = dados;
 
   if (cliente.tipo === "PESSOA_JURIDICA") {
@@ -22,6 +27,8 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
         <h1 className="text-[28px]">Editar cliente</h1>
         <div className="mt-8">
           <EditarClienteForm
+            laudoInicial={laudoInicial}
+            responsaveisLaudo={responsaveisLaudo}
             clienteId={id}
             valoresIniciais={{
               tipo: "PESSOA_JURIDICA",
@@ -63,6 +70,8 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
       <h1 className="text-[28px]">Editar cliente</h1>
       <div className="mt-8">
         <EditarClienteForm
+          laudoInicial={laudoInicial}
+          responsaveisLaudo={responsaveisLaudo}
           clienteId={id}
           valoresIniciais={{
             tipo: "PESSOA_FISICA",

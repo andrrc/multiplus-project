@@ -126,6 +126,8 @@ model Usuario {
   subtarefasResponsavel Subtarefa[]   @relation("SubtarefaResponsavelUsuario")
   tarefasCriadas        Tarefa[]      @relation("TarefaCriadaPor")
   subtarefasCriadas     Subtarefa[]   @relation("SubtarefaCriadaPor")
+  laudosResponsavel      LaudoTecnico[]
+  anotacoesLaudo         AnotacaoLaudoTecnico[]
   comentarios           Comentario[]
   notificacoes          Notificacao[]
   tokensAcesso          TokenAcesso[]
@@ -182,6 +184,7 @@ model Cliente {
   pontoContato      PontoContato?
   pessoasEnvolvidas PessoaEnvolvida[]
   documentos        Documento[]
+  laudoTecnico      LaudoTecnico?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -579,4 +582,58 @@ model TokenAcesso {
   criadoEm DateTime @default(now())
 
   @@map("tokens_acesso")
+}
+
+
+/// RF-051 — um laudo por cliente, privado do ADMIN.
+enum TipoLaudoTecnico {
+  AMBIENTAL
+  RURAL
+  AGROAMBIENTAL
+}
+
+model LaudoTecnico {
+  id String @id @default(cuid())
+  clienteId String @unique
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+  nome String
+  tipo TipoLaudoTecnico
+  responsavelId String
+  responsavel Usuario @relation(fields: [responsavelId], references: [id])
+  ativo Boolean @default(true)
+  versao Int @default(1)
+  criadoEm DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  desativadoEm DateTime?
+  desativadoPor String?
+  anotacoes AnotacaoLaudoTecnico[]
+  @@map("laudos_tecnicos")
+}
+
+model AnotacaoLaudoTecnico {
+  id String @id @default(cuid())
+  laudoId String
+  laudo LaudoTecnico @relation(fields: [laudoId], references: [id])
+  texto String @default("")
+  autorId String
+  autor Usuario @relation(fields: [autorId], references: [id])
+  ativo Boolean @default(true)
+  versao Int @default(1)
+  criadoEm DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  desativadoEm DateTime?
+  desativadoPor String?
+  links LinkAnotacaoLaudoTecnico[]
+  @@index([laudoId, criadoEm, id])
+  @@map("anotacoes_laudo_tecnico")
+}
+
+model LinkAnotacaoLaudoTecnico {
+  id String @id @default(cuid())
+  anotacaoId String
+  anotacao AnotacaoLaudoTecnico @relation(fields: [anotacaoId], references: [id])
+  url String
+  ordem Int
+  @@index([anotacaoId, ordem])
+  @@map("links_anotacao_laudo_tecnico")
 }

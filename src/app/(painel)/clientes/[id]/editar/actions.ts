@@ -23,6 +23,7 @@ export async function atualizarClienteAction(
     segmento: resolverSegmento(dados.tipo, dados.segmento, dados.segmentoCustomizado),
   };
 
-  await atualizarCliente(ctx, clienteId, dadosResolvidos);
+  try { await atualizarCliente(ctx, clienteId, dadosResolvidos); }
+  catch (error) { if (error instanceof Error) return { erro: error.message }; throw error; }
   redirect(`/clientes/${clienteId}`);
 }
