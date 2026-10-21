@@ -17,6 +17,7 @@ mesmo commit da alteração.
 
 | Módulo | Arquivo | Situação |
 |---|---|---|
+| Interface e legibilidade | [interface.md](interface.md) | Documentado |
 | Clientes e pessoas envolvidas | [`clientes.md`](clientes.md) | Documentado |
 | Projetos | [`projetos.md`](projetos.md) | Documentado |
 | Tarefas | [`tarefas.md`](tarefas.md) | Documentado (modelo de referência) |

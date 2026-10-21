@@ -112,6 +112,16 @@ Pesos usados: 400, 600
 | Rótulo de seção | Archivo | 12 px | 600 | — | 0,06 em |
 | Etiqueta e legenda | Archivo | 11–12,5 px | 500–600 | — | 0,03 em |
 
+### Escala de leitura no sistema web
+
+Desde 21/10/2026, a interface web aplica um aumento de 10% sobre os tamanhos
+anteriores: 11 → 12,1 px; 12 → 13,2 px; 13 → 14,3 px; 14 → 15,4 px;
+15 → 16,5 px; 17 → 18,7 px; títulos de 28 → 30,8 px (valores com a fonte
+padrão de 16 px do navegador). As famílias, pesos e hierarquia são preservados.
+A escala usa rem em src/app/globals.css, inclusive nos títulos responsivos.
+Ao acrescentar outro tamanho ou variante responsiva, inclua-o nessa escala.
+Materiais impressos e e-mails mantêm os tamanhos próprios.
+
 ### Regras tipográficas
 
 - Títulos sempre com espaçamento negativo de −0,021 em. Sem isso, a Archivo fica solta em corpo grande.
