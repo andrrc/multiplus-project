@@ -712,3 +712,12 @@ Não mostrar laudos nas visões de colaboradores/portal, nem quando forem respon
 Seguir tokens e componentes da identidade visual; uma coluna em 375 px, controles de 44 px,
 URLs/textos longos sem transbordamento. Prever vazio, erro, pendência de envio e inativos.
 Ver [análise aprovada](analises/laudo-tecnico.md) e [módulo](funcionalidades/clientes.md).
+
+### Revisão visual aprovada em 21/10/2026
+
+Aplicar a primeira proposta visual escolhida pelo usuário: nome do laudo em destaque,
+tipo e responsável no resumo e histórico em linha do tempo com data/autor à esquerda
+no desktop (empilhados no celular). **Nova anotação** abre um diálogo com campos de
+texto e links; Esc/Cancelar fecham e retornam o foco. Edição e desativação ficam no
+menu de ações de cada registro. Documentos têm ícone, URL e ação de abrir em nova aba.
+Busca e Filtros ficam acima dos registros. Preservar identidade, permissões e paginação.

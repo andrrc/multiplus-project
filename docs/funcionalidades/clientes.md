@@ -193,7 +193,11 @@ na edição, marcar "Possui laudo técnico" exige nome, tipo (Ambiental, Rural o
 Agroambiental) e responsável. O responsável é a Talita ou um usuário interno ativo;
 ser responsável não concede acesso. Somente a Administradora visualiza e altera o laudo.
 
-Na ficha, a seção fica antes do Drive. Seu histórico aceita texto, vários links ou ambos,
+Na ficha, a seção fica antes do Drive. O nome do laudo aparece em destaque, seguido do tipo
+e do responsável. O histórico é uma linha do tempo; **Nova anotação** abre um diálogo
+com texto e links. Cada registro reúne data, autor e documentos, com edição/desativação
+no botão **Ações da anotação**. A busca fica junto de **Filtros**, que contém **Mostrar
+desativados**. Seu histórico aceita texto, vários links ou ambos,
 com autor e data. As anotações podem ser editadas, desativadas e reativadas; o histórico
 guarda o texto atual e a última atualização, sem guardar todas as versões anteriores.
 Há busca no texto/URLs, paginação de 20 e opção de mostrar desativados. Os links privados
@@ -216,6 +220,9 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 - Inputs de cliente aceitam `laudoTecnico` opcional; omissão preserva o existente.
   Cliente e laudo são gravados na mesma transação. Links aceitam HTTP/HTTPS.
 - Filtro de URL: `laudo=com|sem`; histórico: `laudoBusca`, `laudoDesativados=1`, `laudoPagina`.
+- Interface: `laudo/secao.tsx` e `laudo/anotacoes.tsx`; diálogo nativo com foco contido,
+  fechamento por Esc e retorno de foco. Ícones Tabler, tokens existentes e layout em
+  coluna no celular. Conferência visual registrada em [design-qa](../../design-qa.md).
 - Controle otimista por versão; instantes em UTC, apresentação em Brasília.
 - Testes: `laudos-tecnicos.unit.test.ts`, `laudos-tecnicos.integration.test.ts` e
   `laudos-tecnicos.smoke.test.ts` (validação, RLS, atomicidade, concorrência e ciclo PF/PJ).
@@ -233,6 +240,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-21 | este commit | Visual do laudo aprovado: resumo em destaque, histórico em linha do tempo, documentos com ação de abrir e formulário em diálogo. |
 | 2026-10-21 | este commit | Laudo técnico privado por cliente, histórico editável, links, filtro e desativação preservada; ver [análise](../analises/laudo-tecnico.md). |
 | 2026-10-08 | `ee7db52` | Reenviar convite de acesso para cliente pendente, com link copiável e invalidação do anterior ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-10-08 | `a5191c8` | Reposicionar e esclarecer o filtro de registros desativados na ficha |
