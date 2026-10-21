@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-21 | [Interface](funcionalidades/interface.md) | Aplicar Raleway na interface, Montserrat na leitura e Droid Serif nos algarismos, mantendo a escala ampliada | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aumentar novamente os textos para 20% sobre a escala original | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aumentar em 10% os textos do sistema após relato da Talita sobre legibilidade | este commit |
 | 2026-10-21 | [Clientes](funcionalidades/clientes.md) | Visual do laudo escolhido pelo usuário: resumo, linha do tempo e formulário em diálogo | este commit |

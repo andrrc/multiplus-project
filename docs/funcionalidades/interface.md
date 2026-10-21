@@ -28,6 +28,30 @@ Verificação: suíte existente e inspeção do login no navegador em desktop e
 em uma área de renderização de 375 px. Nenhum teste automatizado foi criado
 ou alterado para esta mudança de estilo.
 
+### I2. Fontes por papel visual
+
+**Como funciona.** Raleway nos títulos, menus, botões, tabelas, campos e etiquetas;
+Montserrat nos parágrafos, descrições e textos de apoio; Droid Serif nos dígitos
+de 0 a 9. Isso também vale para números dentro de textos, identificadores,
+telefones, datas, valores monetários e percentuais. Letras e pontuação mantêm
+a família do contexto. Os tamanhos ampliados em 20% continuam valendo.
+
+**Detalhes técnicos.** Configuração compartilhada em src/app/layout.tsx e
+src/app/globals.css. Os tokens de interface e leitura combinam Droid Serif
+antes de Raleway ou Montserrat. A faixa unicode-range U+0030-0039 restringe
+Droid Serif aos algarismos, sem alterar textos, dados ou elementos do DOM.
+Raleway e Montserrat usam next/font/google; Droid Serif usa next/font/local,
+com arquivos originais e licença em src/app/fonts/droid-serif. A fonte numérica
+não cria fallback próprio que possa capturar letras. Controles, rótulos e tabelas
+usam a fonte de interface na camada base do CSS; componentes preservam seus
+papéis explícitos. Não há mudança de permissão, dados, máscara ou regra.
+
+Verificação: login em desktop e 375 px; amostra em 375 px com título, parágrafo,
+valor, percentual, data, campo e botão, usando o CSS real do sistema. Metadados
+das fontes confirmam largura igual para os dez dígitos em ambos os pesos.
+O build de produção confirma a faixa Unicode numérica nos pesos 400 e 700.
+Nenhum teste automatizado foi criado ou alterado para esta mudança visual.
+
 ## Limitações e pendências conhecidas
 
 - Telas internas precisam de conferência visual com sessão autenticada.
@@ -38,5 +62,6 @@ ou alterado para esta mudança de estilo.
 
 | Data | Commit | Alteração |
 |---|---|---|
-| 2026-10-21 | este commit | Ampliar novamente os textos, de 10% para 20% sobre a escala original, a pedido do usuário |
+| 2026-10-21 | este commit | Aplicar Raleway, Montserrat e Droid Serif por papel visual, mantendo os tamanhos atuais |
+| 2026-10-21 | 0df5f7d | Ampliar novamente os textos, de 10% para 20% sobre a escala original, a pedido do usuário |
 | 2026-10-21 | b7bb72e | Ampliar textos em 10% após relato da Talita; análise dispensada por ser exclusivamente visual |

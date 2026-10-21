@@ -1,18 +1,33 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Archivo, Source_Serif_4 } from "next/font/google";
+import { Montserrat, Raleway } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const archivo = Archivo({
-  variable: "--font-archivo",
+const raleway = Raleway({
+  variable: "--font-raleway",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const sourceSerif4 = Source_Serif_4({
-  variable: "--font-source-serif",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// A faixa Unicode restringe Droid Serif aos algarismos, inclusive em textos mistos.
+const droidSerif = localFont({
+  src: [
+    { path: "./fonts/droid-serif/DroidSerif-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/droid-serif/DroidSerif-Bold.ttf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-droid-serif",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  fallback: [],
+  declarations: [{ prop: "unicode-range", value: "U+0030-0039" }],
 });
 
 export const metadata: Metadata = {
@@ -57,7 +72,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="pt-BR"
-      className={`${archivo.variable} ${sourceSerif4.variable} h-full antialiased`}
+      className={`${raleway.variable} ${montserrat.variable} ${droidSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

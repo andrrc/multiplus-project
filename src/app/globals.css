@@ -53,14 +53,14 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-interface: var(--font-archivo);
-  --font-leitura: var(--font-source-serif);
+  --font-interface: var(--font-droid-serif), var(--font-raleway);
+  --font-leitura: var(--font-droid-serif), var(--font-montserrat);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-leitura), Georgia, serif;
+  font-family: var(--font-leitura), Arial, sans-serif;
   font-size: 1.275rem;
   line-height: 1.62;
 }
@@ -74,6 +74,18 @@ h4 {
   line-height: 1.14;
   letter-spacing: -0.021em;
   margin: 0;
+}
+
+@layer base {
+  button,
+  input,
+  select,
+  textarea,
+  table,
+  label,
+  legend {
+    font-family: var(--font-interface), Arial, sans-serif;
+  }
 }
 
 :focus-visible {

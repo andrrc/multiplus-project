@@ -71,6 +71,32 @@ background: linear-gradient(118deg, #0B2530, #134C61);
 
 ## 2 · Tipografia
 
+### Sistema web — tipografia vigente desde 21/10/2026
+
+| Aplicação | Fonte | Pesos |
+|---|---|---|
+| Títulos, menus, botões, tabelas, campos e etiquetas | Raleway | 400, 500, 600, 700 |
+| Parágrafos, descrições e textos de apoio | Montserrat | 400, 500, 600, 700 |
+| Algarismos de 0 a 9, inclusive em textos mistos | Droid Serif | 400, 700 |
+
+Esta combinação foi escolhida pelo usuário. O aumento de 20% sobre a escala
+original continua valendo. Letras e pontuação seguem a fonte do contexto;
+somente os dígitos usam Droid Serif. Os dois pesos da Droid Serif têm dígitos
+de largura igual, preservando o alinhamento das colunas numéricas.
+
+Raleway e Montserrat são carregadas por next/font/google; Droid Serif usa
+next/font/local com unicode-range U+0030-0039 e os arquivos originais do Android
+Open Source Project em src/app/fonts/droid-serif, com a licença Apache 2.0.
+As fontes são servidas pela própria aplicação. Controles de formulário, rótulos
+e tabelas usam explicitamente a família de interface; os demais textos herdam
+a família de leitura, salvo quando um componente define o papel de interface.
+
+### Referência dos materiais comerciais
+
+As famílias Archivo e Source Serif 4 descritas a seguir pertencem à referência
+original de propostas e materiais. No sistema web prevalece a combinação acima.
+Os modelos de e-mail têm sua própria configuração tipográfica.
+
 Duas famílias, ambas do Google Fonts, com papéis bem separados.
 
 ### Archivo — títulos, dados e interface
