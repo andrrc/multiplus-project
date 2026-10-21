@@ -200,7 +200,7 @@ export async function listarClientes(
           laudo === "com" ? { laudoTecnico: { is: { ativo: true } } } : laudo === "sem" ? { OR: [{ laudoTecnico: { is: null } }, { laudoTecnico: { is: { ativo: false } } }] } : {},
         ],
       },
-      orderBy: { razaoSocial: "asc" },
+      orderBy: { numeroIdentificacao: "asc" },
     }),
   );
 }

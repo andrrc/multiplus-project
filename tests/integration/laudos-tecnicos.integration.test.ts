@@ -1,4 +1,4 @@
-/** RF-051 / RF-039 — privacidade, vínculo, transação, concorrência e histórico real no Postgres. */
+/** RF-003 / RF-039 / RF-051 — ordenação da lista, filtros, privacidade, vínculo e histórico real no Postgres. */
 import { beforeEach, afterAll, describe, it, expect } from "vitest";
 import { ownerDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
 import { criarCliente, atualizarCliente, listarClientes, buscarClienteContextual } from "@/lib/clientes";
@@ -145,5 +145,32 @@ describe("RF-051 — segurança e persistência", () => {
     await ownerDb.cliente.update({ where: { id: clienteId }, data: { ativo: false, municipio: "Cuiabá" } });
     expect(await listarClientes(admin, "Maria", "Cuiabá", false, "com")).toEqual([]);
     expect((await listarClientes(admin, "Maria", "Cuiabá", true, "com")).map((c) => c.id)).toEqual([clienteId]);
+  });
+  it("ordena a lista central pelo número de identificação crescente, inclusive com filtros", async () => {
+    const zeta = await ownerDb.cliente.create({
+      data: { razaoSocial: "Zeta", cnpj: "00000000000101", segmento: "", origemContato: "", municipio: "Maringá" },
+    });
+    const alfa = await ownerDb.cliente.create({
+      data: { razaoSocial: "Alfa", cnpj: "00000000000102", segmento: "", origemContato: "", municipio: "Maringá" },
+    });
+    for (const cliente of [zeta, alfa]) {
+      await ownerDb.laudoTecnico.create({
+        data: { clienteId: cliente.id, nome: `Laudo ${cliente.razaoSocial}`, tipo: "RURAL", responsavelId: admin.usuarioId },
+      });
+    }
+    const inativo = await ownerDb.cliente.create({
+      data: { razaoSocial: "Inativo", cnpj: "00000000000103", segmento: "", origemContato: "", municipio: "Maringá", ativo: false },
+    });
+
+    const lista = await listarClientes(admin);
+    expect(lista.map((cliente) => cliente.numeroIdentificacao)).toEqual(
+      [...lista].map((cliente) => cliente.numeroIdentificacao).sort((a, b) => a - b),
+    );
+    expect((await listarClientes(admin, undefined, "Maringá", false, "com")).map((cliente) => cliente.id)).toEqual([
+      zeta.id,
+      alfa.id,
+    ]);
+    expect((await listarClientes(admin, undefined, "Maringá")).map((cliente) => cliente.id)).not.toContain(inativo.id);
+    expect((await listarClientes(admin, undefined, "Maringá", true)).map((cliente) => cliente.id)).toContain(inativo.id);
   });
 });

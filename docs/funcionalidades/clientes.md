@@ -71,6 +71,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 **Como funciona.**
 - **Colunas:** número, nome ou razão social, CNPJ/CPF, cidade e segmento.
+- **Ordem:** número de identificação crescente, igual nos cartões de celular e na tabela desktop.
 - **Filtros:** busca por texto e filtro por cidade. Só aparecem cidades que já têm
   cliente. Os filtros se aplicam automaticamente.
 - **Desativados:** "Mostrar desativados" inclui os clientes desativados.
@@ -79,7 +80,8 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 - **Rota:** `/clientes`.
 - **Funções:** `listarClientes` e `listarCidadesComCliente`, com o componente
   `filtros-clientes.tsx`.
-- **Teste:** `cadastro-clientes-cidade.integration.test.ts`.
+- **Teste:** `cadastro-clientes-cidade.integration.test.ts` e cobertura da ordenação/filtros em
+  `laudos-tecnicos.integration.test.ts`.
 
 ### C3. Ficha do cliente (Administradora)
 
@@ -242,6 +244,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 |---|---|---|
 | 2026-10-21 | este commit | Visual do laudo aprovado: resumo em destaque, histórico em linha do tempo, documentos com ação de abrir e formulário em diálogo. |
 | 2026-10-21 | este commit | Laudo técnico privado por cliente, histórico editável, links, filtro e desativação preservada; ver [análise](../analises/laudo-tecnico.md). |
+| 2026-10-21 | este commit | Ordenar a lista central de clientes pelo número de identificação crescente, mantendo filtros e visão contextual de colaboradores ([análise](../analises/ordenacao-lista-clientes-id.md)). |
 | 2026-10-08 | `ee7db52` | Reenviar convite de acesso para cliente pendente, com link copiável e invalidação do anterior ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-10-08 | `a5191c8` | Reposicionar e esclarecer o filtro de registros desativados na ficha |
 | 2026-10-08 | `aeb2288` | Manter um único botão de desativar/reativar cliente no topo da ficha |
