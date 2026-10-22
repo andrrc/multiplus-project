@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-22 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Colorir os status de projetos e tarefas no portal com a identidade visual | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aplicar Raleway na interface, Montserrat na leitura e Droid Serif nos algarismos, mantendo a escala ampliada | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aumentar novamente os textos para 20% sobre a escala original | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aumentar em 10% os textos do sistema após relato da Talita sobre legibilidade | este commit |

@@ -16,6 +16,7 @@ Extraídas do gradiente da logomarca.
 | Verde Múltiplus | `#1EBD1F` | 30, 189, 31 | Cor institucional secundária. Indicador de seção ativa, círculos numerados, selos. |
 | Verde escuro | `#0E7A3C` | 14, 122, 60 | Verde para texto sobre fundo claro, onde o verde puro perde legibilidade. Rótulos de seção, valores em destaque. |
 | Azul escuro | `#0B6FB0` | 11, 111, 176 | Azul para links e texto sobre fundo claro. |
+| Lilás | `#7C5CBF` | 124, 92, 191 | Status de projeto ou tarefa a iniciar na Área Exclusiva do Cliente. |
 
 ### Cores de base
 
@@ -36,6 +37,7 @@ Extraídas do gradiente da logomarca.
 | Vermelho terra | `#9A2A1E` | 154, 42, 30 | Criticidade alta. Tarja lateral de prazos vencidos. |
 | Vermelho terra claro (fundo) | `#F8ECEA` | 248, 236, 234 | Fundo de linhas e cartões com prazo vencido e de ações destrutivas, sempre junto com tarja ou texto em vermelho terra. Token `critico-cl`. |
 | Azul claro (fundo) | `#E8F4FC` | 232, 244, 252 | Fundo de destaque informativo, como as ocorrências projetadas de tarefas recorrentes na agenda. Token `azul-cl`. |
+| Lilás claro (fundo) | `#F2ECFA` | 242, 236, 250 | Fundo do status de projeto ou tarefa a iniciar na Área Exclusiva do Cliente. Token `lilas-cl`. |
 | Verde claro (fundo) | `#EEF7F0` | 238, 247, 240 | Fundo das caixas de solução e das linhas de destaque em tabelas. |
 | Verde borda | `#BFE3C6` | 191, 227, 198 | Borda de etiquetas de segmento em destaque. |
 
@@ -210,6 +212,7 @@ Fundo branco, borda em `#DCE6E9`, raio de 2 px, texto em Archivo 13,5 px. Varian
   /* marca */
   --azul:      #0499F3;
   --azul-esc:  #0B6FB0;
+  --lilas:     #7C5CBF;
   --verde:     #1EBD1F;
   --verde-esc: #0E7A3C;
 
@@ -226,6 +229,7 @@ Fundo branco, borda em `#DCE6E9`, raio de 2 px, texto em Archivo 13,5 px. Varian
   --critico: #9A2A1E;
   --critico-cl: #F8ECEA;
   --azul-cl: #E8F4FC;
+  --lilas-cl:#F2ECFA;
   --verde-cl:#EEF7F0;
 
   /* estrutura */

@@ -29,10 +29,12 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 - Após login, CLIENTE chega ao painel `/portal`; o menu contém Acompanhamento e Meu Perfil.
 - O painel lista os projetos ativos próprios, ordenados pela atividade mais recente. Sem projetos, informa “Nenhum projeto cadastrado ainda”.
 - O detalhe mostra status, datas, atualização, conclusão, tarefas, responsável, progresso e documentos vinculados ao projeto ou ao cadastro.
+- Os status de projeto e tarefa usam etiquetas coloridas: lilás para A iniciar, azul para Em andamento, verde para Concluído e vermelho para Cancelado. Outros status de tarefa mantêm a etiqueta neutra.
 - Links externos são validados no servidor como HTTP/HTTPS e abrem com proteção `noreferrer`.
 
 **Detalhes técnicos.**
 - **Rotas:** `/portal` e `/portal/[id]`, protegidas por `exigirAcessoARota`.
+- **Etiquetas de status:** `src/ui/etiqueta-status-portal.tsx` mapeia os quatro status principais para os tokens de cor da identidade visual.
 - **Consultas:** `listarProjetosPortal` e `buscarProjetoPortal` em `src/lib/portal-cliente.ts`; selects explícitos não retornam descrição, subtarefas, comentários ou valor contratado.
 - **Acesso:** RLS filtra projetos/tarefas/documentos por `clienteId`, inclui herança de desativação e nega IDs de outras contas.
 - **Teste:** `portal-cliente-sprint6.integration.test.ts` cobre vínculo, IDOR, documentos e payload minimizado.
@@ -75,5 +77,6 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-22 | este commit | Colorir etiquetas de status de projetos e tarefas no portal conforme a identidade visual |
 | 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |

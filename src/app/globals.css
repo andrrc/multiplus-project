@@ -4,6 +4,7 @@
 :root {
   --azul: #0499f3;
   --azul-esc: #0b6fb0;
+  --lilas: #7c5cbf;
   --verde: #1ebd1f;
   --verde-esc: #0e7a3c;
 
@@ -18,6 +19,7 @@
   --critico: #9a2a1e;
   --critico-cl: #f8ecea;
   --azul-cl: #e8f4fc;
+  --lilas-cl: #f2ecfa;
   --verde-cl: #eef7f0;
   --verde-borda: #bfe3c6;
 
@@ -32,6 +34,8 @@
 @theme inline {
   --color-azul: var(--azul);
   --color-azul-esc: var(--azul-esc);
+  --color-lilas: var(--lilas);
+  --color-lilas-cl: var(--lilas-cl);
   --color-verde: var(--verde);
   --color-verde-esc: var(--verde-esc);
   --color-tinta: var(--tinta);
