@@ -1,6 +1,6 @@
 # Autenticação e acesso
 
-- **Última revisão:** 2026-10-08, hardening do login e cabeçalhos de segurança.
+- **Última revisão:** 2026-10-23, nome do remetente compartilhado de e-mail e ordem do botão do convite (hardening do login e cabeçalhos em 2026-10-08).
 - **Requisitos:** RF-011, RF-014, RF-031, RF-032, RF-043, RF-050.
 - **Módulos relacionados:** Usuários, Clientes.
 
@@ -55,7 +55,8 @@ acessar.
   recuperação de senha; conta bloqueada ou cliente desativado não permite reenvio.
 - **Apresentação:** o convite enviado por e-mail usa a estrutura institucional compartilhada
   pelos e-mails do sistema: logo da Múltiplus, cartão, botão principal e link em texto para
-  os casos em que o botão não funcione.
+  os casos em que o botão não funcione. O botão aparece antes do link alternativo; links
+  relativos dos e-mails são resolvidos com `AUTH_URL`.
 - **Política de senha:** no mínimo 8 caracteres, com pelo menos uma letra e um número.
 
 **Detalhes técnicos.**
@@ -112,6 +113,16 @@ acessar.
   rota desconhecida, e `revalidacao-sessao.integration.test.ts`, que cobre desativação,
   remoção e mudança de perfil durante uma sessão existente.
 
+### A5. Identificação do remetente de e-mail
+
+**Como funciona.** Os e-mails enviados pelo sistema aparecem com o nome **SGA Múltiplus
+Ambiental**. O endereço de envio permanece o configurado no ambiente.
+
+**Detalhes técnicos.** `enviarEmail` (`src/lib/email.ts`) centraliza o remetente para
+convites, recuperação de senha, notificações e menções. `EMAIL_FROM` pode definir o nome e
+o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cobertura em
+`email-remetente.unit.test.ts`.
+
 ---
 
 ## Limitações e pendências conhecidas
@@ -125,6 +136,8 @@ acessar.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Posicionar o botão de definição de senha antes do link alternativo |
+| 2026-10-22 | este commit | Identificar e-mails como “SGA Múltiplus Ambiental”, preservando o endereço configurado ([análise](../analises/nome-remetente-email.md)) |
 | 2026-10-08 | `900b406` | Limite de falhas no login, origem confiável do IP, CSP e grants das funções SECURITY DEFINER ([análise](../analises/remediacao-auditoria-seguranca.md)) |
 | 2026-10-08 | `fd8d21f` | Unificar o layout visual dos convites, notificações e menções |
 | 2026-10-08 | `ee7db52` | Reenvio de convite para acesso CLIENTE pendente; substitui o token anterior e retorna link copiável transitório ([análise](../analises/reenviar-convite-cliente-pendente.md)) |

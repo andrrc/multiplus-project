@@ -23,7 +23,7 @@ export async function enviarEmail({ to, subject, html }: EnviarEmailParams): Pro
   }
 
   await resend.emails.send({
-    from: process.env.EMAIL_FROM ?? "Múltiplus <nao-responda@multiplusambiental.com.br>",
+    from: process.env.EMAIL_FROM ?? "SGA Múltiplus Ambiental <nao-responda@multiplusambiental.com.br>",
     to,
     subject,
     html,
