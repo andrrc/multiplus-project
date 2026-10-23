@@ -1,6 +1,6 @@
 # Subtarefas e etiquetas
 
-- **Última revisão:** 2026-10-22.
+- **Última revisão:** 2026-10-23.
 - **Requisitos:** RF-008, RF-009, RF-021, RF-025, RF-037, RF-039; RN-001, RN-004.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -43,7 +43,8 @@ pessoa (RN-004).
 - **Responsável:** alguém da "Equipe Múltiplus" ou uma das "Pessoas envolvidas" do
   cliente.
 - **Criação pelo colaborador:** quando o colaborador cria a subtarefa (ver T10 em
-  `tarefas.md`), ele próprio fica como responsável.
+  `tarefas.md`), ele próprio fica como responsável e o status inicial é Em andamento;
+  o formulário não permite escolher responsável ou status.
 - **Auditoria:** fica registrado quem criou e quando.
 
 **Detalhes técnicos.**
@@ -53,10 +54,15 @@ pessoa (RN-004).
 - **Funções:** `criarSubtarefa` e `atualizarSubtarefa`, em `src/lib/projetos-tarefas.ts`.
 - **Responsável:** `validarResponsavelSubtarefa` exige **exatamente um** responsável. Ele
   pode ser uma pessoa ativa do cliente da tarefa ou um usuário ativo da equipe.
+- A rota administrativa `/tarefas/[id]/subtarefas/nova` é exclusiva do `ADMIN`; o
+  colaborador autorizado usa `/minhas-tarefas/[id]/subtarefas/nova`. A função
+  `criarSubtarefa` define servidor-side o colaborador como responsável e inicia a
+  subtarefa em `EM_ANDAMENTO`, mesmo se a requisição tentar enviar outros valores.
 - **Testes:**
   - `projetos-tarefas-a4.integration.test.ts`: "Administrador cria subtarefa…" e
     "recusa responsável de subtarefa ausente ou que não pertence ao cliente";
-  - `colaborador-cria-subtarefas.integration.test.ts`.
+  - `colaborador-cria-subtarefas.integration.test.ts`: permissão de criação, auditoria,
+    responsável/status forjados e negação a colaborador sem acesso.
 
 ### S2. Responsável da subtarefa
 

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { StatusSubtarefa } from "@prisma/client";
 import { criarSubtarefa, criarTarefa } from "@/lib/projetos-tarefas";
 import { ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
 
@@ -67,6 +68,18 @@ describe("permissão e auditoria de subtarefas criadas por colaboradores", () =>
     expect(salva.criadoPorId).toBe(responsavel.usuarioId);
     expect(salva.criadoPorNome).toBe("Colaborador responsável");
     expect(salva.criadoEm.getTime()).toBeGreaterThanOrEqual(criadaEmAntes.getTime() - 1000);
+  });
+
+  it("ignora responsável e status enviados pelo colaborador e inicia em andamento", async () => {
+    const subtarefa = await criarSubtarefa(responsavel, {
+      tarefaId: tarefaPermitidaId,
+      titulo: "Subtarefa com dados forjados",
+      atribuidoAUsuarioId: outroColaborador.usuarioId,
+      status: StatusSubtarefa.CANCELADO,
+    });
+    const salva = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
+    expect(salva.atribuidoAUsuarioId).toBe(responsavel.usuarioId);
+    expect(salva.status).toBe(StatusSubtarefa.EM_ANDAMENTO);
   });
 
   it("nega a criação quando a administradora não habilitou a permissão", async () => {
