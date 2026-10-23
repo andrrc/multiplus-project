@@ -63,6 +63,11 @@ describe("RF-043 — menu e tela inicial por perfil", () => {
     expect(hrefsExterno).not.toContain("/usuarios");
     expect(hrefsInterno).not.toContain("/etiquetas");
     expect(hrefsExterno).not.toContain("/etiquetas");
+    expect(hrefsInterno).toContain("/minhas-notificacoes");
+    expect(hrefsExterno).toContain("/minhas-notificacoes");
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/minhas-notificacoes")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/minhas-notificacoes")).toBe(true);
+    expect(perfilPodeAcessar("CLIENTE", "/minhas-notificacoes")).toBe(false);
   });
 
   it("o catálogo de etiquetas é exclusivo do Administrador", () => {
@@ -155,6 +160,8 @@ describe("RF-043 — guarda de rota", () => {
     expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-projetos")).toBe(true);
     expect(perfilPodeAcessar("ADMIN_INTERNO", "/meus-clientes")).toBe(true);
     expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-clientes")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/minhas-tarefas/tarefa-1/subtarefas/nova")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/tarefas/tarefa-1/subtarefas/nova")).toBe(false);
   });
 });
 

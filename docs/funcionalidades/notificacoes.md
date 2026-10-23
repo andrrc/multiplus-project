@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-10-22.
+- **Última revisão:** 2026-10-23.
 - **Requisitos:** RF-007, RF-022, RF-023, RF-050.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -40,7 +40,8 @@ avisado.
   "Marcar como lida" e "Marcar todas como lidas".
 
 **Detalhes técnicos.**
-- **Rota:** `/notificacoes`.
+- **Rotas:** `/notificacoes` para ADMIN e `/minhas-notificacoes` para ADMIN_INTERNO e
+  ADMIN_EXTERNO. Cada rota aparece no menu do perfil correspondente.
 - **Funções:** `listarNotificacoes` (últimas 50), `marcarNotificacaoLida` e
   `marcarTodasNotificacoesLidas`.
 
