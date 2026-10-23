@@ -21,7 +21,7 @@ export default async function PortalPage() {
     <p className="mt-1.5 text-[15px] text-cinza">Veja o andamento atualizado dos seus projetos.</p>
     {projetos.length === 0 ? <div className="mt-8 border border-dashed border-linha bg-branco px-6 py-12 text-center text-[15px] text-cinza">Nenhum projeto cadastrado ainda.</div> : <div className="mt-7 grid gap-4 md:grid-cols-2">
       {projetos.map((projeto) => <article key={projeto.id} className="min-w-0 border border-linha border-l-[3px] border-l-azul bg-branco p-5">
-        <div className="flex items-start justify-between gap-3"><h2 className="break-words font-[family-name:var(--font-interface)] text-[18px] font-semibold">{projeto.nome}</h2><EtiquetaStatusPortal status={projeto.status}>{status[projeto.status]}</EtiquetaStatusPortal></div>
+        <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-[12px] text-cinza">Nome do projeto</p><h2 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[18px] font-semibold">{projeto.nome}</h2></div><EtiquetaStatusPortal status={projeto.status}>{status[projeto.status]}</EtiquetaStatusPortal></div>
         <dl className="mt-5 grid gap-3 text-[14px] sm:grid-cols-2">
           <div><dt className="text-[12px] text-cinza">Conclusão</dt><dd className="mt-1 font-[family-name:var(--font-interface)] font-semibold">{projeto.conclusao.percentual === null ? "Sem tarefas ativas" : `${projeto.conclusao.percentual}% (${projeto.conclusao.concluidas} de ${projeto.conclusao.total})`}</dd></div>
           <div><dt className="text-[12px] text-cinza">Conclusão prevista</dt><dd className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataPrevistaConclusao)}</dd></div>

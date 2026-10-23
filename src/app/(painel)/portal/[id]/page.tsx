@@ -22,7 +22,7 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
   return <div className="w-full max-w-[1120px]">
     <Link href="/portal" className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Meus projetos</Link>
     <div className="mt-3 flex flex-wrap items-start justify-between gap-4 border-b border-linha pb-6">
-      <div className="min-w-0"><p className="text-[14px] text-cinza">Projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1></div>
+      <div className="min-w-0"><p className="text-[14px] text-cinza">Nome do projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1></div>
       <EtiquetaStatusPortal status={projeto.status}>{projetoStatus[projeto.status]}</EtiquetaStatusPortal>
     </div>
     <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -35,7 +35,7 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
       <h2 className="text-[21px]">Tarefas</h2>
       {projeto.tarefas.length === 0 ? <p className="mt-3 border border-dashed border-linha bg-branco px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa ativa neste projeto.</p> : <ul className="mt-4 divide-y divide-linha border border-linha bg-branco">
         {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 p-4 sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="min-w-0 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>
+          <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3></div><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>
           <dl className="mt-3 grid gap-3 text-[13px] sm:grid-cols-3"><div><dt className="text-cinza">Prazo</dt><dd className="mt-0.5 font-[family-name:var(--font-interface)] tabular-nums">{data(tarefa.prazo)}</dd></div><div><dt className="text-cinza">Responsável</dt><dd className="mt-0.5 break-words font-[family-name:var(--font-interface)]">{tarefa.responsavel ?? "Não definido"}</dd></div><div><dt className="text-cinza">Progresso</dt><dd className="mt-0.5 font-[family-name:var(--font-interface)]">{tarefa.progresso.percentual === null ? "—" : tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total} concluídas`}</dd></div></dl>
         </li>)}
       </ul>}

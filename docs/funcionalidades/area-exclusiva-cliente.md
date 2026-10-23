@@ -1,6 +1,6 @@
 # Área Exclusiva do Cliente
 
-- **Última revisão:** 2026-10-20.
+- **Última revisão:** 2026-10-23.
 - **Requisitos:** RF-011, RF-012, RF-022, RF-048, RF-049, RF-050; RN-009, RN-014, RN-015, RN-016.
 - **Módulos relacionados:** Projetos, Tarefas, Subtarefas, Documentos, Notificações, Autenticação.
 
@@ -29,6 +29,7 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 - Após login, CLIENTE chega ao painel `/portal`; o menu contém Acompanhamento e Meu Perfil.
 - O painel lista os projetos ativos próprios, ordenados pela atividade mais recente. Sem projetos, informa “Nenhum projeto cadastrado ainda”.
 - O detalhe mostra status, datas, atualização, conclusão, tarefas, responsável, progresso e documentos vinculados ao projeto ou ao cadastro.
+- Os nomes são identificados por rótulos explícitos: “Nome do projeto” nos cartões e no detalhe, e “Nome da tarefa” em cada item de tarefa.
 - Os status de projeto e tarefa usam etiquetas coloridas: lilás para A iniciar, azul para Em andamento, verde para Concluído e vermelho para Cancelado. Outros status de tarefa mantêm a etiqueta neutra.
 - Links externos são validados no servidor como HTTP/HTTPS e abrem com proteção `noreferrer`.
 
@@ -77,6 +78,7 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Identificar explicitamente os nomes de projeto e tarefa no portal |
 | 2026-10-22 | este commit | Colorir etiquetas de status de projetos e tarefas no portal conforme a identidade visual |
 | 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
