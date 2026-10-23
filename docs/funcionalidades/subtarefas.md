@@ -1,6 +1,6 @@
 # Subtarefas e etiquetas
 
-- **Última revisão:** 2026-10-20.
+- **Última revisão:** 2026-10-22.
 - **Requisitos:** RF-008, RF-009, RF-021, RF-025, RF-037, RF-039; RN-001, RN-004.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -19,7 +19,8 @@ inicial dela ao entrar no sistema.
 |---|---|---|---|---|
 | Criar subtarefa | Sim | Só na tarefa em que é responsável, se a Administradora permitiu | Idem | Não |
 | Editar, trocar o responsável, cancelar ou reabrir | Sim | Não | Não | Não |
-| Concluir | Qualquer uma | Só as próprias | Só as próprias | Não |
+| Solicitar conclusão | Qualquer uma (confirma diretamente) | Só as próprias | Só as próprias | Não |
+| Confirmar ou rejeitar pedido | Sim | Não | Não | Não |
 | Ver o painel `/subtarefas` | Sim | Não | Não | Não |
 | Gerenciar o catálogo de etiquetas | Sim | Não | Não | Não |
 
@@ -46,7 +47,8 @@ pessoa (RN-004).
 - **Auditoria:** fica registrado quem criou e quando.
 
 **Detalhes técnicos.**
-- **Rotas:** `/tarefas/[id]/subtarefas/nova` e
+- **Rotas:** ADMIN usa `/tarefas/[id]/subtarefas/nova`; colaborador autorizado usa
+  `/minhas-tarefas/[id]/subtarefas/nova`. Edição fica em
   `/tarefas/[id]/subtarefas/[subtarefaId]/editar`.
 - **Funções:** `criarSubtarefa` e `atualizarSubtarefa`, em `src/lib/projetos-tarefas.ts`.
 - **Responsável:** `validarResponsavelSubtarefa` exige **exatamente um** responsável. Ele
@@ -74,17 +76,25 @@ pessoa (RN-004).
 ### S3. Concluir subtarefa (RF-021, RN-004)
 
 **Como funciona.**
-- **Quem conclui:** o responsável conclui a própria subtarefa, e a Administradora conclui
-  qualquer uma.
-- **O que o colaborador não pode:** editar, reabrir ou cancelar.
+- **Pedido:** o responsável solicita a conclusão da própria subtarefa. O status permanece
+  “Em andamento” até a confirmação. O solicitante pode retirar o pedido enquanto estiver
+  pendente.
+- **Decisão:** somente ADMIN confirma ou rejeita; a rejeição preserva o status anterior e
+  pode incluir comentário. A confirmação muda para “Concluída” e bloqueia edições do
+  colaborador. ADMIN continua podendo editar ou reabrir.
+- **O que o colaborador não pode:** editar, reabrir ou cancelar a subtarefa.
 
 **Detalhes técnicos.**
-- **Funções:** `concluirSubtarefa` e `atualizarStatusSubtarefa`. Status diferente de
-  concluído é exclusivo do `ADMIN`.
-- **Banco:** uma trigger confere o responsável, de modo que o acesso ao projeto ou à
-  tarefa não basta.
-- **Teste:** `subtarefas-rn004.integration.test.ts`, com 10 casos, incluindo o
-  colaborador interno dono do projeto sendo barrado.
+- **Funções:** `solicitarConclusao`, `cancelarSolicitacaoConclusao` e
+  `decidirSolicitacaoConclusao` em `src/lib/projetos-tarefas.ts`.
+- **Banco:** função SQL valida vínculo/responsável, status ativo e perfil; RLS e trigger
+  impedem conclusão ou edição direta pelo colaborador. Há no máximo um pedido pendente por
+  item e o histórico é preservado.
+- **Fila:** ADMIN revisa todos os pedidos pendentes no topo do painel `/subtarefas`; os
+  links das notificações também abrem a fila.
+- **Testes:** `aprovacao-conclusao.integration.test.ts` e
+  `subtarefas-rn004.integration.test.ts`, incluindo o colaborador interno dono do projeto
+  sendo barrado.
 
 ### S4. Painel de subtarefas (RF-037)
 
@@ -183,6 +193,8 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Separar a rota de criação de subtarefa do colaborador e manter a rota administrativa exclusiva do ADMIN ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
+| 2026-10-22 | este commit | Solicitação de conclusão pelo responsável, fila ADMIN, retirada, rejeição e bloqueio após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |
 | 2026-10-19 | este commit | Filtro por responsável, combinado com os filtros existentes, com opção sem responsável e nome da equipe em tarefas ([análise](../analises/filtro-responsavel-tarefas-subtarefas.md)) |
 | 2026-10-16 | este commit | Painel "Adicionar etiqueta" fecha ao clicar fora ou ao apertar Esc |
 | 2026-10-16 | `fc53ae2` | Status da subtarefa nos detalhes vira menu suspenso, que fecha ao escolher, ao clicar fora ou ao apertar Esc |

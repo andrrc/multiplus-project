@@ -1,6 +1,6 @@
 /**
- * RF-021 / RN-004 — "Apenas a pessoa atribuída a uma subtarefa específica,
- * ou o Administrador (Talita), pode marcá-la como concluída — mesmo que
+ * RF-021 / RN-004 — "Apenas a pessoa atribuída a uma subtarefa específica
+ * pode solicitar a conclusão; apenas o Administrador confirma — mesmo que
  * outra pessoa tenha acesso à tarefa/projeto".
  * Módulo SRS: Projetos e Tarefas (extensão) — Seção 3.9.
  *
@@ -111,55 +111,54 @@ afterAll(async () => {
   await fecharConexoes();
 });
 
-it("a pessoa atribuída à subtarefa (via PessoaEnvolvida) consegue marcar concluida=true", async () => {
+it("a pessoa atribuída à subtarefa não consegue concluir diretamente", async () => {
   const subtarefa = await criarSubtarefaAtribuida();
 
-  const atualizada = await comoUsuario(
+  const resultado = await comoUsuario(
     { usuarioId: usuarioResponsavel.id, perfil: "ADMIN_EXTERNO" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
+    (tx) => tx.subtarefa.updateMany({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );
 
-  expect(atualizada.status).toBe(StatusSubtarefa.CONCLUIDO);
+  expect(resultado.count).toBe(0);
+  expect((await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } })).status).toBe(StatusSubtarefa.EM_ANDAMENTO);
 });
 
-it("integrante da equipe atribuído diretamente também consegue concluir a própria subtarefa", async () => {
+it("integrante da equipe atribuído diretamente também não consegue concluir sem aprovação", async () => {
   const subtarefa = await criarSubtarefaAtribuidaAEquipe();
 
-  const atualizada = await comoUsuario(
+  const resultado = await comoUsuario(
     { usuarioId: usuarioEquipeResponsavel.id, perfil: "ADMIN_INTERNO" },
-    (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
+    (tx) => tx.subtarefa.updateMany({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );
 
-  expect(atualizada.status).toBe(StatusSubtarefa.CONCLUIDO);
+  expect(resultado.count).toBe(0);
+  expect((await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } })).status).toBe(StatusSubtarefa.EM_ANDAMENTO);
 });
 
 it("integrante da equipe responsável não consegue editar a subtarefa nem reabri-la", async () => {
   const subtarefa = await criarSubtarefaAtribuidaAEquipe();
   const ctx = { usuarioId: usuarioEquipeResponsavel.id, perfil: "ADMIN_INTERNO" as const };
 
-  await expect(
-    comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Alteração indevida" } })),
-  ).rejects.toThrow(/RN-004/);
+  const edicaoDireta = await comoUsuario(ctx, (tx) => tx.subtarefa.updateMany({ where: { id: subtarefa.id }, data: { titulo: "Alteração indevida" } }));
+  expect(edicaoDireta.count).toBe(0);
 
-  await comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }));
-  await expect(
-    comoUsuario(ctx, (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.EM_ANDAMENTO } })),
-  ).rejects.toThrow(/RN-004/);
+  const conclusaoDireta = await comoUsuario(ctx, (tx) => tx.subtarefa.updateMany({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }));
+  expect(conclusaoDireta.count).toBe(0);
 });
 
 it("colaboradores só podem concluir a tarefa dentro do próprio escopo, sem alterar o prazo", async () => {
-  await expect(
-    comoUsuario(
-      { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
-      (tx) => tx.tarefa.update({ where: { id: tarefaX.id }, data: { prazo: new Date("2030-01-01") } }),
-    ),
-  ).rejects.toThrow(/RN-007/);
-
-  const concluida = await comoUsuario(
+  const edicaoDireta = await comoUsuario(
     { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
-    (tx) => tx.tarefa.update({ where: { id: tarefaX.id }, data: { status: StatusTarefa.CONCLUIDO } }),
+    (tx) => tx.tarefa.updateMany({ where: { id: tarefaX.id }, data: { prazo: new Date("2030-01-01") } }),
   );
-  expect(concluida.status).toBe(StatusTarefa.CONCLUIDO);
+  expect(edicaoDireta.count).toBe(0);
+
+  const resultado = await comoUsuario(
+    { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
+    (tx) => tx.tarefa.updateMany({ where: { id: tarefaX.id }, data: { status: StatusTarefa.CONCLUIDO } }),
+  );
+  expect(resultado.count).toBe(0);
+  expect((await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefaX.id } })).status).toBe(StatusTarefa.A_INICIAR);
 });
 
 it("Colaborador Interno e Externo não criam nem removem entidades do núcleo", async () => {

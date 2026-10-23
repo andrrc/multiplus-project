@@ -9,7 +9,10 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-23 | [Clientes](funcionalidades/clientes.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Restringir rotas administrativas, separar criação de subtarefa por perfil e corrigir links de e-mail; notificações antigas ficam sem migration ([análise](analises/guarda-clientes-subtarefa-colaborador-links-email.md)) | este commit |
 | 2026-10-22 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Colorir os status de projetos e tarefas no portal com a identidade visual | este commit |
+| 2026-10-22 | [Autenticação](funcionalidades/autenticacao-acesso.md), [Notificações](funcionalidades/notificacoes.md) | Identificar e-mails como “SGA Múltiplus Ambiental”, mantendo o endereço configurado ([análise](analises/nome-remetente-email.md)) | este commit |
+| 2026-10-22 | [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Colaboradores solicitam conclusão; ADMIN confirma ou rejeita, com fila, histórico e recorrência somente após aprovação ([análise](analises/aprovacao-conclusao-tarefas-subtarefas.md)) | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aplicar Raleway na interface, Montserrat na leitura e Droid Serif nos algarismos, mantendo a escala ampliada | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aumentar novamente os textos para 20% sobre a escala original | este commit |
 | 2026-10-21 | [Interface](funcionalidades/interface.md) | Aumentar em 10% os textos do sistema após relato da Talita sobre legibilidade | este commit |

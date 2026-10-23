@@ -53,10 +53,12 @@ afterEach(async () => {
   await ownerDb.notificacao.deleteMany();
   await Promise.all([
     preferencia("ADMIN", "NOVO_COMENTARIO", true, true),
+    preferencia("ADMIN", "CONCLUSAO_SOLICITADA", true, true),
     preferencia("ADMIN", "PRAZO_PROXIMO", true, true),
     preferencia("ADMIN_EXTERNO", "PRAZO_PROXIMO", true, true),
     preferencia("ADMIN_EXTERNO", "NOVO_COMENTARIO", true, true),
     preferencia("ADMIN_EXTERNO", "ATRIBUICAO_RECEBIDA", true, true),
+    preferencia("ADMIN_EXTERNO", "CONCLUSAO_SOLICITADA", true, true),
   ]);
   vi.clearAllMocks();
 });
@@ -94,6 +96,27 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
     await dispararEventoNotificacao(EventoNotificacao.PRAZO_PROXIMO, { titulo: "Prazo", mensagem: "Aviso", usuarioIds: [externoId] });
     expect(enviarEmail).not.toHaveBeenCalled();
     expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId } })).toBe(1);
+  });
+
+  it("aplica preferências independentes ao evento de solicitação de conclusão", async () => {
+    await preferencia("ADMIN", EventoNotificacao.CONCLUSAO_SOLICITADA, false, true);
+    await dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+      titulo: "Conclusão aguardando confirmação",
+      mensagem: "Pedido para Talita",
+      usuarioIds: [adminId],
+    });
+    expect(enviarEmail).not.toHaveBeenCalled();
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: EventoNotificacao.CONCLUSAO_SOLICITADA } })).toBe(1);
+
+    vi.clearAllMocks();
+    await preferencia("ADMIN_EXTERNO", EventoNotificacao.CONCLUSAO_SOLICITADA, true, false);
+    await dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+      titulo: "Conclusão confirmada",
+      mensagem: "Resultado para colaborador",
+      usuarioIds: [externoId],
+    });
+    expect(enviarEmail).toHaveBeenCalledTimes(1);
+    expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId, evento: EventoNotificacao.CONCLUSAO_SOLICITADA } })).toBe(0);
   });
 
   it("limita e-mail e in-app à lista explícita de destinatários", async () => {
@@ -248,8 +271,11 @@ describe("RF-022 — canais independentes por perfil e evento", () => {
 
     expect(enviarEmail).toHaveBeenCalledTimes(1);
     expect(enviarEmail).toHaveBeenCalledWith(expect.objectContaining({ to: "externo.rf022@teste.local" }));
+    expect(vi.mocked(enviarEmail).mock.calls[0][0].html).toMatch(new RegExp(`href=\"https?://[^\"]+/minhas-tarefas/${tarefaId}\"`));
     expect(await ownerDb.notificacao.count({ where: { usuarioId: adminId, evento: "NOVO_COMENTARIO" } })).toBe(1);
     expect(await ownerDb.notificacao.count({ where: { usuarioId: externoId, evento: "NOVO_COMENTARIO" } })).toBe(0);
+    const confirmacaoAdmin = await ownerDb.notificacao.findFirstOrThrow({ where: { usuarioId: adminId, evento: "NOVO_COMENTARIO" } });
+    expect(confirmacaoAdmin.url).toBe(`/tarefas/${tarefaId}`);
   });
 
   it("dispara ATRIBUICAO_RECEBIDA quando o ADMIN atribui uma tarefa", async () => {

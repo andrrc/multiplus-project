@@ -4,6 +4,7 @@ import {
   StatusProjeto,
   StatusSubtarefa,
   StatusTarefa,
+  StatusSolicitacaoConclusao,
   type Prisma,
   type Periodicidade,
 } from "@prisma/client";
@@ -183,6 +184,132 @@ export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: Filt
     },
     orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { titulo: "asc" }],
   }));
+}
+
+export async function listarSolicitacoesConclusaoPendentes(ctx: ContextoUsuario) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.solicitacaoConclusao.findMany({
+    where: { status: StatusSolicitacaoConclusao.PENDENTE },
+    include: {
+      solicitadoPor: { select: { id: true, nome: true } },
+      tarefa: {
+        include: {
+          projeto: { include: { cliente: { select: { id: true, razaoSocial: true, ativo: true } } } },
+        },
+      },
+      subtarefa: {
+        include: {
+          tarefa: {
+            include: {
+              projeto: { include: { cliente: { select: { id: true, razaoSocial: true, ativo: true } } } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { solicitadoEm: "asc" },
+  }));
+}
+
+export async function buscarSolicitacaoConclusaoPendente(ctx: ContextoUsuario, tipo: "TAREFA" | "SUBTAREFA", itemId: string) {
+  exigirAdministrador(ctx);
+  return comContextoDeUsuario(ctx, (tx) => tx.solicitacaoConclusao.findFirst({
+    where: { status: StatusSolicitacaoConclusao.PENDENTE, ...(tipo === "TAREFA" ? { tarefaId: itemId } : { subtarefaId: itemId }) },
+  }));
+}
+
+export async function solicitarConclusao(ctx: ContextoUsuario, tipo: "TAREFA" | "SUBTAREFA", itemId: string) {
+  if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Ação disponível somente para colaboradores.");
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const linhas = await tx.$queryRaw<{ id: string }[]>`SELECT solicitar_conclusao(${tipo}, ${itemId}) AS id`;
+    const solicitacao = await tx.solicitacaoConclusao.findUniqueOrThrow({ where: { id: linhas[0].id } });
+    const item = tipo === "TAREFA"
+      ? await tx.tarefa.findUniqueOrThrow({ where: { id: itemId }, select: { id: true, nome: true, projetoId: true } })
+      : await tx.subtarefa.findUniqueOrThrow({ where: { id: itemId }, select: { id: true, titulo: true, tarefaId: true } });
+    return {
+      solicitacao,
+      tipo,
+      itemId,
+      titulo: tipo === "TAREFA" ? (item as { nome: string }).nome : (item as { titulo: string }).titulo,
+      tarefaId: tipo === "TAREFA" ? itemId : (item as { tarefaId: string }).tarefaId,
+    };
+  });
+}
+
+export async function cancelarSolicitacaoConclusao(ctx: ContextoUsuario, solicitacaoId: string) {
+  exigirColaboradorOuAdministrador(ctx);
+  return comContextoDeUsuario(ctx, async (tx) => {
+    await tx.$queryRaw`SELECT cancelar_solicitacao_conclusao(${solicitacaoId})`;
+    const solicitacao = await tx.solicitacaoConclusao.findUniqueOrThrow({ where: { id: solicitacaoId } });
+    const tarefaId = solicitacao.tarefaId ?? (solicitacao.subtarefaId
+      ? (await tx.subtarefa.findUniqueOrThrow({ where: { id: solicitacao.subtarefaId }, select: { tarefaId: true } })).tarefaId
+      : null);
+    return { ...solicitacao, tarefaId };
+  });
+}
+
+export async function decidirSolicitacaoConclusao(
+  ctx: ContextoUsuario,
+  solicitacaoId: string,
+  aprovar: boolean,
+  comentario?: string | null,
+) {
+  exigirAdministrador(ctx);
+  const observacao = comentario?.trim() || null;
+  if (observacao && observacao.length > 2000) throw new Error("O comentário deve ter no máximo 2000 caracteres.");
+
+  return comContextoDeUsuario(ctx, async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "solicitacoes_conclusao" WHERE "id" = ${solicitacaoId} FOR UPDATE`;
+    const atual = await tx.solicitacaoConclusao.findUnique({
+      where: { id: solicitacaoId },
+      include: {
+        tarefa: { select: { id: true, nome: true, projetoId: true, prazo: true, periodicidade: true, prazoOriginal: true, diaSemana: true, status: true, ativo: true, projeto: { select: { ativo: true, cliente: { select: { ativo: true } } } } } },
+        subtarefa: { select: { id: true, titulo: true, tarefaId: true, status: true, ativo: true, tarefa: { select: { nome: true, projetoId: true, ativo: true, projeto: { select: { ativo: true, cliente: { select: { ativo: true } } } } } } } },
+      },
+    });
+    if (!atual || atual.status !== StatusSolicitacaoConclusao.PENDENTE) throw new Error("RN-007: esta solicitação já foi decidida ou não existe.");
+
+    let proximaId: string | null = null;
+    if (aprovar && atual.tarefa) {
+      if (atual.tarefa.status === StatusTarefa.CANCELADO || !atual.tarefa.ativo || !atual.tarefa.projeto.ativo || !atual.tarefa.projeto.cliente.ativo) throw new Error("RN-007: tarefa, projeto ou cliente inativo/cancelado não pode ser aprovado.");
+      const proximoPrazo = atual.tarefa.periodicidade && atual.tarefa.prazo
+        ? calcularProximaOcorrencia(atual.tarefa.prazo, atual.tarefa.periodicidade, atual.tarefa.prazoOriginal ?? atual.tarefa.prazo, atual.tarefa.diaSemana)
+        : null;
+      const resultado = await tx.$queryRaw<{ tarefa_id: string; proxima_id: string | null }[]>`
+        SELECT * FROM concluir_tarefa(${atual.tarefa.id}, CAST(${proximoPrazo} AS timestamp))
+      `;
+      proximaId = resultado[0]?.proxima_id ?? null;
+    } else if (aprovar && atual.subtarefa) {
+      if (!atual.subtarefa.ativo || atual.subtarefa.status !== StatusSubtarefa.EM_ANDAMENTO || !atual.subtarefa.tarefa.ativo || !atual.subtarefa.tarefa.projeto.ativo || !atual.subtarefa.tarefa.projeto.cliente.ativo) throw new Error("RN-004: subtarefa, tarefa, projeto ou cliente inativo/cancelado não pode ser aprovada.");
+      await tx.subtarefa.update({ where: { id: atual.subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } });
+    } else if (atual.tarefa) {
+      await tx.tarefa.update({ where: { id: atual.tarefa.id }, data: { status: atual.statusAnterior as StatusTarefa } });
+    } else if (atual.subtarefa) {
+      await tx.subtarefa.update({ where: { id: atual.subtarefa.id }, data: { status: atual.statusAnterior as StatusSubtarefa } });
+    }
+
+    const solicitacao = await tx.solicitacaoConclusao.update({
+      where: { id: solicitacaoId },
+      data: {
+        status: aprovar ? StatusSolicitacaoConclusao.APROVADA : StatusSolicitacaoConclusao.REJEITADA,
+        decididoPorId: ctx.usuarioId,
+        decididoPorNome: (await tx.usuario.findUniqueOrThrow({ where: { id: ctx.usuarioId }, select: { nome: true } })).nome,
+        decididoEm: new Date(),
+        comentarioDecisao: aprovar ? null : observacao,
+      },
+    });
+    return {
+      solicitacao,
+      tipo: atual.tarefa ? "TAREFA" as const : "SUBTAREFA" as const,
+      itemId: atual.tarefa?.id ?? atual.subtarefa!.id,
+      tarefaId: atual.tarefa?.id ?? atual.subtarefa!.tarefaId,
+      projetoId: atual.tarefa?.projetoId ?? atual.subtarefa!.tarefa.projetoId,
+      titulo: atual.tarefa?.nome ?? atual.subtarefa!.titulo,
+      solicitanteId: atual.solicitadoPorId,
+      aprovada: aprovar,
+      proximaId,
+    };
+  });
 }
 
 export async function listarResponsaveisParaFiltro(ctx: ContextoUsuario, entidade: "tarefas" | "subtarefas", filtros: FiltrosPrazos = {}): Promise<OpcaoResponsavel[]> {
@@ -397,12 +524,27 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       ? atribuicoes.some((a) => a.entidadeTipo === "PROJETO")
       : atribuicoes.some((a) => a.entidadeTipo === "TAREFA"));
 
+    const solicitacoesPendentes = await tx.solicitacaoConclusao.findMany({
+      where: {
+        status: StatusSolicitacaoConclusao.PENDENTE,
+        OR: [
+          { tarefaId: tarefa.id },
+          { subtarefaId: { in: tarefa.subtarefas.map((subtarefa) => subtarefa.id) } },
+        ],
+      },
+      select: { id: true, tarefaId: true, subtarefaId: true, solicitadoPorId: true, solicitadoPorNome: true, solicitadoEm: true },
+    });
+    const solicitacaoTarefa = solicitacoesPendentes.find((pedido) => pedido.tarefaId === tarefa.id) ?? null;
+    const solicitacoesPorSubtarefa = new Map(solicitacoesPendentes.filter((pedido) => pedido.subtarefaId).map((pedido) => [pedido.subtarefaId!, pedido]));
+
     return {
       ...tarefa,
       podeConcluirTarefa,
       podeCriarSubtarefas: tarefa.colaboradorPodeCriarSubtarefas && responsavelDiretoDaTarefa,
+      solicitacaoConclusao: solicitacaoTarefa,
       subtarefas: tarefa.subtarefas.map((subtarefa) => ({
         ...subtarefa,
+        solicitacaoConclusao: solicitacoesPorSubtarefa.get(subtarefa.id) ?? null,
         responsavelDaSessao: subtarefa.atribuidoAUsuarioId === ctx.usuarioId
           || (usuario?.pessoaEnvolvidaId != null && subtarefa.atribuidoAId === usuario.pessoaEnvolvidaId),
       })),
@@ -733,7 +875,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         titulo: validarNome(dados.titulo, "da subtarefa"),
         descricao: dados.descricao?.trim() || null,
         prazo: dados.prazo ?? null,
-        status: dados.status ?? undefined,
+        status: ehAdministrador ? dados.status ?? undefined : StatusSubtarefa.EM_ANDAMENTO,
         etiquetas,
         atribuidoAId: responsavelId ?? null,
         atribuidoAUsuarioId: responsavelUsuarioId ?? null,
@@ -825,7 +967,7 @@ export async function desativarOuReativar(
 }
 
 export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
-  exigirColaboradorOuAdministrador(ctx);
+  exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
     const atual = await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId } });
     if (atual.status === StatusTarefa.CONCLUIDO) return { tarefa: atual, proxima: null };
@@ -845,7 +987,7 @@ export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
 }
 
 export async function concluirSubtarefa(ctx: ContextoUsuario, subtarefaId: string) {
-  exigirColaboradorOuAdministrador(ctx);
+  exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) =>
     tx.subtarefa.update({ where: { id: subtarefaId }, data: { status: StatusSubtarefa.CONCLUIDO } }),
   );

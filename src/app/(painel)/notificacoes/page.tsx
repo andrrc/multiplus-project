@@ -10,6 +10,7 @@ import { atualizarSemaforoAction, atualizarPreferenciaAction, marcarNotificacaoL
 const eventoLabel: Record<EventoNotificacao, string> = {
   PRAZO_PROXIMO: "Prazo próximo",
   TAREFA_CONCLUIDA: "Tarefa concluída",
+  CONCLUSAO_SOLICITADA: "Solicitação de conclusão",
   PROJETO_CONCLUIDO: "Projeto concluído",
   NOVO_COMENTARIO: "Novo comentário",
   ATRIBUICAO_RECEBIDA: "Atribuição recebida",

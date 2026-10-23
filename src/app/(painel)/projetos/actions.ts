@@ -12,13 +12,16 @@ import {
   atualizarResponsavelSubtarefa,
   atualizarStatusSubtarefa,
   atualizarTarefa,
-  concluirSubtarefa,
+  buscarSolicitacaoConclusaoPendente,
+  cancelarSolicitacaoConclusao,
   concluirTarefa,
   criarDocumentoProjeto,
   criarProjeto,
   criarSubtarefa,
   criarTarefa,
   desativarOuReativar,
+  decidirSolicitacaoConclusao,
+  solicitarConclusao,
 } from "@/lib/projetos-tarefas";
 import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
 import { buscarProjetoAtivoDaTarefa, dispararNotificacoesMencaoComentario, dispararEventoNotificacao, listarAdministradoresAtivos, listarClientesAtivosDoProjeto } from "@/lib/notificacoes";
@@ -181,6 +184,10 @@ export async function criarTarefaERedirecionarAction(formData: FormData) {
 export async function atualizarTarefaAction(tarefaId: string, formData: FormData) {
   const ctx = await obterContexto();
   const dadosResponsavel = responsavel(texto(formData, "responsavelId"));
+  const statusSolicitado = statusTarefa(texto(formData, "status"));
+  const pedidoPendente = statusSolicitado === StatusTarefa.CONCLUIDO
+    ? await buscarSolicitacaoConclusaoPendente(ctx, "TAREFA", tarefaId)
+    : null;
   const tarefa = await atualizarTarefa(ctx, tarefaId, {
     nome: texto(formData, "nome"),
     descricao: texto(formData, "descricao") || null,
@@ -189,8 +196,14 @@ export async function atualizarTarefaAction(tarefaId: string, formData: FormData
       periodicidade: periodicidade(texto(formData, "periodicidade")),
       diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
-    status: statusTarefa(texto(formData, "status")),
+    status: pedidoPendente ? undefined : statusSolicitado,
   });
+  if (pedidoPendente) {
+    const decisao = await decidirSolicitacaoConclusao(ctx, pedidoPendente.id, true);
+    await avisarResultadoConclusao(decisao, true);
+    revalidatePath("/subtarefas");
+    revalidatePath("/notificacoes");
+  }
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/projetos/${tarefa.projetoId}`);
   return tarefa;
@@ -200,8 +213,22 @@ export async function alterarStatusTarefaAction(tarefaId: string, formData: Form
   const ctx = await obterContexto();
   const status = statusTarefa(texto(formData, "status"));
   if (!status) throw new Error("Status de tarefa inválido.");
-  const tarefa = await atualizarStatusTarefa(ctx, tarefaId, status);
-  if (tarefa.status === "CONCLUIDO") void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
+  let tarefa;
+  let aprovouPedidoPendente = false;
+  if (status === StatusTarefa.CONCLUIDO) {
+    const pendente = await buscarSolicitacaoConclusaoPendente(ctx, "TAREFA", tarefaId);
+    if (pendente) {
+      const decisao = await decidirSolicitacaoConclusao(ctx, pendente.id, true);
+      tarefa = { id: tarefaId, nome: decisao.titulo, projetoId: decisao.projetoId, status: StatusTarefa.CONCLUIDO, atualizadoEm: decisao.solicitacao.decididoEm ?? new Date() };
+      aprovouPedidoPendente = true;
+      await avisarResultadoConclusao(decisao, true);
+    } else {
+      tarefa = (await concluirTarefa(ctx, tarefaId)).tarefa;
+    }
+  } else {
+    tarefa = await atualizarStatusTarefa(ctx, tarefaId, status);
+  }
+  if (tarefa.status === "CONCLUIDO" && !aprovouPedidoPendente) void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
     titulo: `Tarefa concluída: ${tarefa.nome}`,
     mensagem: `A tarefa ${tarefa.nome} foi marcada como concluída.`,
     url: `/tarefas/${tarefa.id}`,
@@ -294,16 +321,26 @@ export async function criarComentarioAction(formData: FormData): Promise<void> {
 export async function atualizarSubtarefaAction(subtarefaId: string, formData: FormData) {
   const ctx = await obterContexto();
   const dadosResponsavel = responsavelSubtarefa(texto(formData, "responsavelId"));
+  const statusSolicitado = statusSubtarefa(texto(formData, "status"));
+  const pedidoPendente = statusSolicitado === StatusSubtarefa.CONCLUIDO
+    ? await buscarSolicitacaoConclusaoPendente(ctx, "SUBTAREFA", subtarefaId)
+    : null;
   const subtarefa = await atualizarSubtarefa(ctx, subtarefaId, {
     titulo: texto(formData, "titulo"),
     descricao: texto(formData, "descricao") || null,
     prazo: dataOpcional(texto(formData, "prazo")),
-    status: statusSubtarefa(texto(formData, "status")),
+    status: pedidoPendente ? undefined : statusSolicitado,
     etiquetas: formData.getAll("etiquetaNome").map(String),
     novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
   });
+  if (pedidoPendente) {
+    const decisao = await decidirSolicitacaoConclusao(ctx, pedidoPendente.id, true);
+    await avisarResultadoConclusao(decisao, true);
+  }
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
+  revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
+  revalidatePath("/subtarefas");
   return subtarefa;
 }
 
@@ -341,19 +378,37 @@ export async function criarDocumentoProjetoFormAction(formData: FormData): Promi
 
 export async function concluirTarefaAction(tarefaId: string) {
   const ctx = await obterContexto();
-  const resultado = await concluirTarefa(ctx, tarefaId);
-  void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
-    titulo: `Tarefa concluída: ${resultado.tarefa.nome}`,
-    mensagem: `A tarefa ${resultado.tarefa.nome} foi marcada como concluída.`,
-    url: `/tarefas/${tarefaId}`,
-    entidadeId: tarefaId,
-    dedupeKey: `tarefa-concluida:${tarefaId}:${resultado.tarefa.atualizadoEm.toISOString()}`,
-    usuarioIds: (await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== ctx.usuarioId),
+  if (ctx.perfil === "ADMIN") {
+    const resultado = await concluirTarefa(ctx, tarefaId);
+    void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
+      titulo: `Tarefa concluída: ${resultado.tarefa.nome}`,
+      mensagem: `A tarefa ${resultado.tarefa.nome} foi marcada como concluída.`,
+      url: `/tarefas/${tarefaId}`,
+      entidadeId: tarefaId,
+      dedupeKey: `tarefa-concluida:${tarefaId}:${resultado.tarefa.atualizadoEm.toISOString()}`,
+      usuarioIds: [...(await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== ctx.usuarioId), ...await listarClientesAtivosDoProjeto(resultado.tarefa.projetoId)],
+      urlCliente: `/portal/${resultado.tarefa.projetoId}`,
+    });
+    revalidatePath(`/tarefas/${tarefaId}`);
+    revalidatePath(`/minhas-tarefas/${tarefaId}`);
+    revalidatePath(`/projetos/${resultado.tarefa.projetoId}`);
+    revalidatePath("/subtarefas");
+    return;
+  }
+
+  const resultado = await solicitarConclusao(ctx, "TAREFA", tarefaId);
+  void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+    titulo: "Conclusão aguardando confirmação",
+    mensagem: `Um colaborador solicitou a conclusão da tarefa ${resultado.titulo}.`,
+    url: `/subtarefas?conclusao=${resultado.solicitacao.id}#solicitacao-${resultado.solicitacao.id}`,
+    entidadeId: resultado.solicitacao.id,
+    dedupeKey: `solicitacao-conclusao:${resultado.solicitacao.id}:pendente`,
+    usuarioIds: await listarAdministradoresAtivos(),
   });
   revalidatePath(`/tarefas/${tarefaId}`);
-  revalidatePath(`/projetos/${resultado.tarefa.projetoId}`);
+  revalidatePath(`/minhas-tarefas/${tarefaId}`);
+  revalidatePath("/notificacoes");
   revalidatePath("/subtarefas");
-  void resultado;
 }
 
 export async function concluirTarefaFormAction(tarefaId: string): Promise<void> {
@@ -362,20 +417,92 @@ export async function concluirTarefaFormAction(tarefaId: string): Promise<void> 
 
 export async function concluirSubtarefaAction(subtarefaId: string) {
   const ctx = await obterContexto();
-  const subtarefa = await concluirSubtarefa(ctx, subtarefaId);
-  revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
-  revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
+  const resultado = await solicitarConclusao(ctx, "SUBTAREFA", subtarefaId);
+  void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+    titulo: "Conclusão aguardando confirmação",
+    mensagem: `Um colaborador solicitou a conclusão da subtarefa ${resultado.titulo}.`,
+    url: `/subtarefas?conclusao=${resultado.solicitacao.id}#solicitacao-${resultado.solicitacao.id}`,
+    entidadeId: resultado.solicitacao.id,
+    dedupeKey: `solicitacao-conclusao:${resultado.solicitacao.id}:pendente`,
+    usuarioIds: await listarAdministradoresAtivos(),
+  });
+  revalidatePath(`/tarefas/${resultado.tarefaId}`);
+  revalidatePath(`/minhas-tarefas/${resultado.tarefaId}`);
+  revalidatePath("/notificacoes");
   revalidatePath("/subtarefas");
-  void subtarefa;
 }
 
 export async function atualizarStatusSubtarefaAction(subtarefaId: string, formData: FormData) {
   const ctx = await obterContexto();
   const status = statusSubtarefa(texto(formData, "status"));
   if (!status) throw new Error("Status de subtarefa inválido.");
-  const subtarefa = await atualizarStatusSubtarefa(ctx, subtarefaId, status);
+  let subtarefa;
+  if (status === StatusSubtarefa.CONCLUIDO) {
+    const pendente = await buscarSolicitacaoConclusaoPendente(ctx, "SUBTAREFA", subtarefaId);
+    if (pendente) {
+      const decisao = await decidirSolicitacaoConclusao(ctx, pendente.id, true);
+      subtarefa = { tarefaId: decisao.tarefaId };
+      await avisarResultadoConclusao(decisao, true);
+    } else {
+      subtarefa = await atualizarStatusSubtarefa(ctx, subtarefaId, status);
+    }
+  } else {
+    subtarefa = await atualizarStatusSubtarefa(ctx, subtarefaId, status);
+  }
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
+  revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
+  revalidatePath("/notificacoes");
   revalidatePath("/subtarefas");
+}
+
+async function avisarResultadoConclusao(
+  decisao: Awaited<ReturnType<typeof decidirSolicitacaoConclusao>>,
+  aprovada: boolean,
+) {
+  if (decisao.solicitanteId) void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+    titulo: aprovada ? "Conclusão confirmada" : "Conclusão não confirmada",
+    mensagem: aprovada
+      ? `A conclusão de ${decisao.tipo === "TAREFA" ? "tarefa" : "subtarefa"} ${decisao.titulo} foi confirmada pela Talita.`
+      : `A solicitação de conclusão de ${decisao.tipo === "TAREFA" ? "tarefa" : "subtarefa"} ${decisao.titulo} foi rejeitada.${decisao.solicitacao.comentarioDecisao ? ` Comentário: ${decisao.solicitacao.comentarioDecisao}` : ""}`,
+    url: `/minhas-tarefas/${decisao.tarefaId}`,
+    entidadeId: decisao.solicitacao.id,
+    dedupeKey: `solicitacao-conclusao:${decisao.solicitacao.id}:${aprovada ? "aprovada" : "rejeitada"}`,
+    usuarioIds: [decisao.solicitanteId],
+  });
+  if (aprovada && decisao.tipo === "TAREFA") void dispararEventoNotificacao(EventoNotificacao.TAREFA_CONCLUIDA, {
+    titulo: `Tarefa concluída: ${decisao.titulo}`,
+    mensagem: `A tarefa ${decisao.titulo} foi confirmada como concluída.`,
+    url: `/tarefas/${decisao.itemId}`,
+    entidadeId: decisao.itemId,
+    dedupeKey: `tarefa-concluida:${decisao.itemId}:${decisao.solicitacao.decididoEm?.toISOString() ?? "aprovada"}`,
+    usuarioIds: [...(await listarAdministradoresAtivos()).filter((usuarioId) => usuarioId !== decisao.solicitacao.decididoPorId), ...await listarClientesAtivosDoProjeto(decisao.projetoId)],
+    urlCliente: `/portal/${decisao.projetoId}`,
+  });
+}
+
+export async function decidirSolicitacaoConclusaoFormAction(solicitacaoId: string, formData: FormData): Promise<void> {
+  const ctx = await obterContexto();
+  const decisaoForm = texto(formData, "decisao");
+  if (decisaoForm !== "APROVAR" && decisaoForm !== "REJEITAR") throw new Error("Decisão de conclusão inválida.");
+  const decisao = await decidirSolicitacaoConclusao(ctx, solicitacaoId, decisaoForm === "APROVAR", texto(formData, "comentario") || null);
+  await avisarResultadoConclusao(decisao, decisaoForm === "APROVAR");
+  revalidatePath("/subtarefas");
+  revalidatePath("/notificacoes");
+  revalidatePath(`/tarefas/${decisao.tarefaId}`);
+  revalidatePath(`/minhas-tarefas/${decisao.tarefaId}`);
+  revalidatePath("/tarefas");
+  revalidatePath(`/projetos/${decisao.projetoId}`);
+}
+
+export async function cancelarSolicitacaoConclusaoFormAction(solicitacaoId: string): Promise<void> {
+  const ctx = await obterContexto();
+  const solicitacao = await cancelarSolicitacaoConclusao(ctx, solicitacaoId);
+  revalidatePath("/subtarefas");
+  revalidatePath("/notificacoes");
+  if (solicitacao.tarefaId) {
+    revalidatePath(`/minhas-tarefas/${solicitacao.tarefaId}`);
+    revalidatePath(`/tarefas/${solicitacao.tarefaId}`);
+  }
 }
 
 export async function concluirSubtarefaFormAction(subtarefaId: string): Promise<void> {

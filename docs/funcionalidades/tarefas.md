@@ -1,6 +1,6 @@
 # Tarefas
 
-- **Última revisão:** 2026-10-20.
+- **Última revisão:** 2026-10-22.
 - **Requisitos:** RF-005, RF-006, RF-007, RF-009, RF-015, RF-018, RF-019, RF-024, RF-039;
   RN-001, RN-006, RN-007, RN-008.
 - **Módulos relacionados:** Projetos, Subtarefas, Agenda, Notificações, Comentários.
@@ -25,7 +25,8 @@ as tarefas ligadas a eles.
 | Criar, editar e mudar o status | Sim | Não | Não | Não |
 | Ver a lista de todas as tarefas (`/tarefas`) | Sim | Não | Não | Não |
 | Ver as próprias tarefas (`/minhas-tarefas`) | — | Sim | Sim | Não |
-| Concluir a tarefa | Sim | Se for responsável ou estiver atribuído ao **projeto** | Se for responsável ou estiver atribuído à **tarefa** | Não |
+| Solicitar conclusão da tarefa | Sim (conclui diretamente) | Se for responsável ou estiver atribuído ao **projeto** | Se for responsável ou estiver atribuído à **tarefa** | Não |
+| Confirmar ou rejeitar pedido | Sim | Não | Não | Não |
 | Criar subtarefa na tarefa | Sim | Se for o responsável **e** a Administradora tiver permitido | Idem | Não |
 | Desativar e reativar | Sim | Não | Não | Não |
 
@@ -167,17 +168,31 @@ Administradora continua vendo tudo.
 ### T6. Concluir tarefa
 
 **Como funciona.**
-- **Quem conclui:** a Administradora conclui qualquer tarefa. O colaborador conclui as
-  tarefas pelas quais responde, conforme a tabela de permissões.
-- **Tarefa já concluída:** concluir de novo não faz nada.
+- **Pedido:** ADMIN_INTERNO e ADMIN_EXTERNO solicitam a conclusão das tarefas pelas quais
+  já tinham permissão para concluir. A tarefa mantém o status atual enquanto Talita decide.
+- **Decisão:** somente ADMIN pode confirmar ou rejeitar. Rejeitar mantém o status anterior
+  e aceita comentário opcional; o solicitante pode retirar seu próprio pedido pendente.
+- **Após confirmar:** o status passa a concluído e o colaborador não pode mais editar a
+  tarefa. ADMIN continua podendo editar e reabrir.
+- **Recorrência:** a próxima ocorrência só é criada depois da confirmação, na mesma
+  operação que conclui a tarefa. Pedidos retirados ou rejeitados não criam ocorrências.
+- **Histórico:** pedidos, retiradas e decisões ficam registrados; existe no máximo um
+  pedido pendente por tarefa. Conclusões existentes antes desta mudança continuam válidas.
 
 **Detalhes técnicos.**
-- **Funções:** `concluirTarefa` → SQL `concluir_tarefa`, que é `SECURITY DEFINER` e
-  refaz a checagem de permissão dentro do banco. Colaboradores são recusados se a tarefa ou
-  o cliente estiverem desativados.
+- **Funções:** `solicitarConclusao`, `cancelarSolicitacaoConclusao` e
+  `decidirSolicitacaoConclusao` em `src/lib/projetos-tarefas.ts`; `concluir_tarefa` é
+  chamada na aprovação e preserva a criação atômica da próxima ocorrência.
+- **Permissão:** solicitação e decisão são validadas no servidor e no RLS/SQL; o status da
+  tarefa só pode ser alterado diretamente por ADMIN. Solicitações exigem item ativo,
+  cliente ativo e vínculo/responsável permitido.
+- **Interface:** `/minhas-tarefas/[id]` permite pedir ou retirar; a fila ADMIN fica em
+  `/subtarefas`, com atalhos pelas notificações.
 - **Testes:**
-  - `projetos-tarefas-a4.integration.test.ts`: "colaborador conclui tarefa e a próxima
-    ocorrência é materializada na mesma operação";
+  - `aprovacao-conclusao.integration.test.ts`: permissões, retirada, rejeição,
+    comentário, aprovação e bloqueio pós-aprovação;
+  - `projetos-tarefas-a4.integration.test.ts`: recorrência somente após aprovação;
+  - `conclusao-actions.unit.test.ts`: ADMIN conclui diretamente e colaboradores solicitam confirmação;
   - migration `fix_concluir_tarefa_nulo`: garante a recusa quando a comparação de
     permissão envolve `NULL`.
 
@@ -246,7 +261,8 @@ registro de quem criou e quando.
 - **Campo:** `colaboradorPodeCriarSubtarefas`.
 - **Regra:** está em `criarSubtarefa`.
 - **Teste:** `colaborador-cria-subtarefas.integration.test.ts`, que cobre a permissão
-  concedida, a permissão negada e outro colaborador.
+  concedida, a permissão negada e outro colaborador. O colaborador cria pela rota
+  `/minhas-tarefas/[id]/subtarefas/nova`.
 
 ---
 
@@ -276,6 +292,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-22 | este commit | Solicitação de conclusão por colaboradores e confirmação/rejeição ADMIN; recorrência somente após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |
 | 2026-10-20 | este commit | Coluna de subtarefas concluídas/total nas tarefas filtradas por responsável, excluindo canceladas/desativadas ([análise](../analises/progresso-subtarefas-tarefas-filtradas.md)) |
 | 2026-10-19 | este commit | Filtro por responsável, combinado com os filtros existentes, com opção sem responsável e nome da equipe em tarefas ([análise](../analises/filtro-responsavel-tarefas-subtarefas.md)) |
 | 2026-10-16 | este commit | Menus de status (tarefa e subtarefa) fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |

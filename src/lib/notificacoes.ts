@@ -1,6 +1,7 @@
 import { EventoNotificacao, Perfil, Prisma } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
 import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
+import { rotaDoRegistroParaPerfil } from "@/lib/notificacoes-rotas";
 import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
@@ -56,6 +57,10 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
     await Promise.all(destinatarios.map(async (destinatario: Destinatario) => {
       const preferencia = destinatario.preferenciasNotificacao[0];
       if (!preferencia) return;
+      const url = rotaDoRegistroParaPerfil(
+        destinatario.perfil === "CLIENTE" ? dados.urlCliente ?? null : dados.url,
+        destinatario.perfil,
+      );
 
       if (dados.dedupeKey && evento === EventoNotificacao.PRAZO_PROXIMO) {
         try {
@@ -73,7 +78,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
             evento,
             titulo: dados.titulo,
             mensagem: dados.mensagem,
-            url: destinatario.perfil === "CLIENTE" ? dados.urlCliente ?? null : dados.url ?? null,
+            url,
             entidadeId: dados.entidadeId ?? null,
             dedupeKey: dados.dedupeKey ? `${dados.dedupeKey}:${destinatario.id}` : null,
           },
@@ -90,7 +95,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
             nome: destinatario.nome,
             titulo: dados.titulo,
             mensagem: dados.mensagem,
-            url: destinatario.perfil === "CLIENTE" ? dados.urlCliente ?? null : dados.url,
+            url,
           }),
         }).then(() => { metricas.emailsEnviados += 1; }).catch((erro: unknown) => {
           metricas.falhas += 1;
@@ -119,6 +124,7 @@ export async function dispararNotificacoesMencaoComentario(dados: { destinatario
       const eAutor = usuario.id === dados.autorId;
       const titulo = eAutor ? "Menção enviada em comentário" : "Você foi mencionado em um comentário";
       const mensagem = eAutor ? "Esta confirmação registra a publicação da menção no comentário." : `${autor?.nome ?? "Alguém"} mencionou você em um comentário.`;
+      const url = rotaDoRegistroParaPerfil(dados.url, usuario.perfil);
       if (preferencia.inApp) {
         await prisma.notificacao.create({
           data: {
@@ -126,7 +132,7 @@ export async function dispararNotificacoesMencaoComentario(dados: { destinatario
             evento: EventoNotificacao.NOVO_COMENTARIO,
             titulo,
             mensagem,
-            url: dados.url,
+            url,
             entidadeId: dados.entidadeId,
             dedupeKey: `mencao:${dados.entidadeId}:${usuario.id}`,
           },
@@ -138,7 +144,7 @@ export async function dispararNotificacoesMencaoComentario(dados: { destinatario
         await enviarEmail({
           to: usuario.email,
           subject: titulo,
-          html: renderTemplateMencaoComentario({ nome: usuario.nome, titulo, mensagem, autor: autor?.nome ?? "Usuário", comentario: dados.comentario, url: dados.url }),
+          html: renderTemplateMencaoComentario({ nome: usuario.nome, titulo, mensagem, autor: autor?.nome ?? "Usuário", comentario: dados.comentario, url }),
         }).catch((erro: unknown) => console.error(`[mencao] falha ao enviar para ${usuario.email}:`, erro));
       }
     }));

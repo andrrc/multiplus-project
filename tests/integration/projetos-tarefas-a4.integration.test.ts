@@ -5,6 +5,8 @@ import {
   atualizarProjeto,
   concluirSubtarefa,
   concluirTarefa,
+  solicitarConclusao,
+  decidirSolicitacaoConclusao,
   criarDocumentoProjeto,
   criarProjeto,
   criarSubtarefa,
@@ -225,7 +227,7 @@ describe("CRUD protegido no servidor", () => {
     expect(clienteContextual).not.toHaveProperty("email");
     expect(await ownerDb.usuario.findUnique({ where: { id: interno.id }, select: { pessoaEnvolvidaId: true } })).toEqual({ pessoaEnvolvidaId: null });
     expect(await ownerDb.atribuicao.findMany({ where: { usuarioId: interno.id } })).toEqual([]);
-    await expect(concluirSubtarefa(ctxInterno(), minha.id)).resolves.toMatchObject({ status: StatusSubtarefa.CONCLUIDO });
+    await expect(concluirSubtarefa(ctxInterno(), minha.id)).rejects.toThrow(/Administrador/);
     await expect(concluirTarefa(ctxInterno(), tarefa.id)).rejects.toThrow();
   });
 
@@ -243,7 +245,7 @@ describe("CRUD protegido no servidor", () => {
     expect(detalhe?.cliente.razaoSocial).toBe(cliente.razaoSocial);
     expect(detalhe?.tarefas.map((item) => item.id)).toEqual([minhaTarefa.id]);
     expect((await buscarTarefaParaColaborador(ctxInterno(), minhaTarefa.id))?.podeConcluirTarefa).toBe(true);
-    await expect(concluirTarefa(ctxInterno(), minhaTarefa.id)).resolves.toMatchObject({ tarefa: { id: minhaTarefa.id } });
+    await expect(concluirTarefa(ctxInterno(), minhaTarefa.id)).rejects.toThrow(/Administrador/);
   });
 
   it("colaborador externo responsável só por subtarefa vê o mesmo contexto restrito", async () => {
@@ -289,18 +291,25 @@ describe("CRUD protegido no servidor", () => {
 });
 
 describe("conclusão transacional", () => {
-  it("colaborador conclui tarefa e a próxima ocorrência é materializada na mesma operação", async () => {
-    const resultado = await concluirTarefa(ctxExterno(), tarefa.id);
+  it("colaborador solicita conclusão e a próxima ocorrência só é materializada após aprovação", async () => {
+    const pedido = await solicitarConclusao(ctxExterno(), "TAREFA", tarefa.id);
+    expect((await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefa.id } })).status).toBe(StatusTarefa.A_INICIAR);
+    const antesDaAprovacao = await ownerDb.tarefa.count({ where: { serieId: tarefa.serieId } });
+    await expect(solicitarConclusao(ctxExterno(), "TAREFA", tarefa.id)).rejects.toThrow(/pendente/);
+    const resultado = await decidirSolicitacaoConclusao(ctxAdmin(), pedido.solicitacao.id, true);
 
-    expect(resultado.tarefa.status).toBe(StatusTarefa.CONCLUIDO);
-    expect(resultado.proxima?.prazo).toEqual(data("2026-02-28"));
-    expect(resultado.proxima?.status).toBe(StatusTarefa.A_INICIAR);
-    expect(resultado.proxima?.prazoOriginal).toEqual(data("2026-01-31"));
+    expect(resultado.aprovada).toBe(true);
+    expect(resultado.proximaId).not.toBeNull();
+    expect(await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefa.id } })).toMatchObject({ status: StatusTarefa.CONCLUIDO });
+    const proxima = await ownerDb.tarefa.findUniqueOrThrow({ where: { id: resultado.proximaId! } });
+    expect(proxima.prazo).toEqual(data("2026-02-28"));
+    expect(proxima.status).toBe(StatusTarefa.A_INICIAR);
+    expect(proxima.prazoOriginal).toEqual(data("2026-01-31"));
 
     const quantidadeAntes = await ownerDb.tarefa.count({ where: { serieId: tarefa.serieId } });
-    const segundaConclusao = await concluirTarefa(ctxExterno(), tarefa.id);
+    await expect(decidirSolicitacaoConclusao(ctxAdmin(), pedido.solicitacao.id, true)).rejects.toThrow(/já foi decidida/);
     const quantidadeDepois = await ownerDb.tarefa.count({ where: { serieId: tarefa.serieId } });
-    expect(segundaConclusao.proxima).toBeNull();
+    expect(quantidadeAntes).toBe(antesDaAprovacao + 1);
     expect(quantidadeDepois).toBe(quantidadeAntes);
   });
 
@@ -315,14 +324,19 @@ describe("conclusão transacional", () => {
     });
 
     expect(semanal.diaSemana).toBe(2);
-    const resultado = await concluirTarefa(ctxExterno(), semanal.id);
-    expect(resultado.proxima?.prazo).toEqual(data("2026-09-15"));
-    expect(resultado.proxima?.diaSemana).toBe(2);
+    const pedido = await solicitarConclusao(ctxExterno(), "TAREFA", semanal.id);
+    const resultado = await decidirSolicitacaoConclusao(ctxAdmin(), pedido.solicitacao.id, true);
+    const proxima = await ownerDb.tarefa.findUniqueOrThrow({ where: { id: resultado.proximaId! } });
+    expect(proxima.prazo).toEqual(data("2026-09-15"));
+    expect(proxima.diaSemana).toBe(2);
   });
 
   it("responsável conclui subtarefa, mas colaborador sem atribuição específica não consegue", async () => {
     const atribuida = await ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: tarefa.id, atribuidoAId: pessoa.id } });
-    await expect(concluirSubtarefa(ctxExterno(), atribuida.id)).resolves.toMatchObject({ status: StatusSubtarefa.CONCLUIDO });
+    const pedido = await solicitarConclusao(ctxExterno(), "SUBTAREFA", atribuida.id);
+    expect((await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: atribuida.id } })).status).toBe(StatusSubtarefa.EM_ANDAMENTO);
+    await decidirSolicitacaoConclusao(ctxAdmin(), pedido.solicitacao.id, true);
+    expect((await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: atribuida.id } })).status).toBe(StatusSubtarefa.CONCLUIDO);
 
     const outra = await criarSubtarefa(ctxAdmin(), { tarefaId: tarefa.id, titulo: "Outra subtarefa", atribuidoAId: pessoa.id });
     const colega = await ownerDb.usuario.create({

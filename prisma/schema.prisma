@@ -40,9 +40,17 @@ enum TipoPessoaEnvolvida {
 enum EventoNotificacao {
   PRAZO_PROXIMO
   TAREFA_CONCLUIDA
+  CONCLUSAO_SOLICITADA
   PROJETO_CONCLUIDO
   NOVO_COMENTARIO
   ATRIBUICAO_RECEBIDA
+}
+
+enum StatusSolicitacaoConclusao {
+  PENDENTE
+  APROVADA
+  REJEITADA
+  CANCELADA
 }
 
 enum StatusProjeto {
@@ -129,6 +137,8 @@ model Usuario {
   laudosResponsavel      LaudoTecnico[]
   anotacoesLaudo         AnotacaoLaudoTecnico[]
   comentarios           Comentario[]
+  solicitacoesConclusao SolicitacaoConclusao[] @relation("SolicitacaoConclusaoSolicitante")
+  decisoesConclusao     SolicitacaoConclusao[] @relation("SolicitacaoConclusaoDecisor")
   notificacoes          Notificacao[]
   tokensAcesso          TokenAcesso[]
 
@@ -407,8 +417,9 @@ model Tarefa {
   criadoPor            Usuario?         @relation("TarefaCriadaPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
   criadoPorNome        String?
 
-  subtarefas  Subtarefa[]
-  comentarios Comentario[]
+  subtarefas            Subtarefa[]
+  comentarios           Comentario[]
+  solicitacoesConclusao SolicitacaoConclusao[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -441,7 +452,8 @@ model Subtarefa {
   criadoPorId         String?
   criadoPor           Usuario?         @relation("SubtarefaCriadaPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
   criadoPorNome       String?
-  comentarios         Comentario[]
+  comentarios           Comentario[]
+  solicitacoesConclusao SolicitacaoConclusao[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -485,7 +497,32 @@ model Comentario {
   @@map("comentarios")
 }
 
-/// RF-022 — cada perfil configura os cinco eventos independentemente por e-mail e in-app.
+/// Solicitação e decisão auditável de conclusão de tarefa ou subtarefa.
+model SolicitacaoConclusao {
+  id                String                     @id @default(cuid())
+  tarefaId          String?
+  tarefa            Tarefa?                    @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  subtarefaId       String?
+  subtarefa         Subtarefa?                 @relation(fields: [subtarefaId], references: [id], onDelete: Cascade)
+  solicitadoPorId   String?
+  solicitadoPor     Usuario?                   @relation("SolicitacaoConclusaoSolicitante", fields: [solicitadoPorId], references: [id], onDelete: SetNull)
+  solicitadoPorNome String
+  solicitadoEm      DateTime                   @default(now())
+  statusAnterior    String
+  status            StatusSolicitacaoConclusao @default(PENDENTE)
+  decididoPorId     String?
+  decididoPor       Usuario?                   @relation("SolicitacaoConclusaoDecisor", fields: [decididoPorId], references: [id], onDelete: SetNull)
+  decididoPorNome   String?
+  decididoEm        DateTime?
+  comentarioDecisao String?
+
+  @@index([status, solicitadoEm])
+  @@index([tarefaId, solicitadoEm])
+  @@index([subtarefaId, solicitadoEm])
+  @@map("solicitacoes_conclusao")
+}
+
+/// RF-022 — cada perfil configura os eventos independentemente por e-mail e in-app.
 model PreferenciaNotificacao {
   id           String            @id @default(cuid())
   perfil       Perfil

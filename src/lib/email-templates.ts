@@ -19,6 +19,7 @@ function renderLayoutEmail({
   titulo,
   conteudo,
   acao,
+  conteudoDepoisAcao,
   nota,
   rodape,
 }: {
@@ -26,13 +27,15 @@ function renderLayoutEmail({
   titulo: string;
   conteudo: string;
   acao?: AcaoEmail;
+  conteudoDepoisAcao?: string;
   nota?: string;
   rodape: string;
 }): string {
   const base = process.env.AUTH_URL ?? "http://localhost:3000";
   const logo = `${base.replace(/\/+$/, "")}/logo-multiplus.png`;
+  const acaoUrl = acao ? new URL(acao.url, `${base.replace(/\/+$/, "")}/`).toString() : null;
   const botao = acao
-    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#0e7a3c" style="border-radius:3px"><a href="${escapar(acao.url)}" style="display:inline-block;padding:14px 22px;font-size:16px;line-height:22px;font-weight:600;color:#ffffff;text-decoration:none">${escapar(acao.texto)}</a></td></tr></table>`
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#0e7a3c" style="border-radius:3px"><a href="${escapar(acaoUrl!)}" style="display:inline-block;padding:14px 22px;font-size:16px;line-height:22px;font-weight:600;color:#ffffff;text-decoration:none">${escapar(acao.texto)}</a></td></tr></table>`
     : "";
   const blocoNota = nota
     ? `<p style="margin:24px 0 0;font-size:14px;line-height:22px;color:#52666f">${escapar(nota)}</p>`
@@ -59,6 +62,7 @@ function renderLayoutEmail({
               <h1 style="margin:0 0 16px;font-size:26px;line-height:32px;font-weight:600;color:#18313c">${escapar(titulo)}</h1>
               ${conteudo}
               ${botao}
+              ${conteudoDepoisAcao ?? ""}
               ${blocoNota}
             </td>
           </tr>
@@ -80,8 +84,9 @@ export function renderTemplateConvite(nome: string, apresentacao: string, link: 
   return renderLayoutEmail({
     nome,
     titulo: "Seu acesso está pronto",
-    conteudo: `<p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52666f">${escapar(apresentacao)} Para começar, defina sua senha de acesso.</p><p style="margin:24px 0 8px;font-size:13px;line-height:20px;color:#52666f">Se o botão não funcionar, use este link:</p><p style="margin:0;font-size:13px;line-height:20px"><a href="${linkSeguro}" style="color:#0b6fb0;text-decoration:underline">Definir senha no Múltiplus</a></p>`,
+    conteudo: `<p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52666f">${escapar(apresentacao)} Para começar, defina sua senha de acesso.</p>`,
     acao: { url: link, texto: "Definir minha senha" },
+    conteudoDepoisAcao: `<p style="margin:24px 0 8px;font-size:13px;line-height:20px;color:#52666f">Se o botão não funcionar, use este link:</p><p style="margin:0;font-size:13px;line-height:20px"><a href="${linkSeguro}" style="color:#0b6fb0;text-decoration:underline">Definir senha no Múltiplus</a></p>`,
     nota: "Este link pode ser usado uma única vez e expira em 7 dias.",
     rodape: "Mensagem automática da Múltiplus Ambiental. Se você não esperava receber este acesso, ignore este e-mail.",
   });
@@ -90,6 +95,7 @@ export function renderTemplateConvite(nome: string, apresentacao: string, link: 
 const chamadaPorEvento: Record<EventoNotificacao, string> = {
   PRAZO_PROXIMO: "Há uma tarefa chegando ao prazo.",
   TAREFA_CONCLUIDA: "Uma tarefa foi concluída.",
+  CONCLUSAO_SOLICITADA: "Há uma solicitação de conclusão aguardando decisão ou um resultado para consultar.",
   PROJETO_CONCLUIDO: "Um projeto foi concluído.",
   NOVO_COMENTARIO: "Há um novo comentário para você.",
   ATRIBUICAO_RECEBIDA: "Uma nova atribuição foi recebida.",
@@ -101,19 +107,17 @@ export function renderTemplateNotificacao(evento: EventoNotificacao, dados: Dado
     nome: dados.nome,
     titulo: dados.titulo,
     conteudo: `<p style="margin:0 0 12px;font-size:16px;line-height:25px;color:#52666f">${escapar(chamadaPorEvento[evento])}</p><p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52666f;white-space:pre-wrap">${escapar(dados.mensagem)}</p>`,
-    acao: dados.url ? { url: dados.url, texto: "Abrir no Múltiplus" } : undefined,
+    acao: dados.url ? { url: dados.url, texto: "Abrir no sistema" } : undefined,
     rodape: "Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.",
   });
 }
 
 export function renderTemplateMencaoComentario(dados: DadosTemplateNotificacao & { autor: string; comentario: string }) {
-  const base = process.env.AUTH_URL ?? "http://localhost:3000";
-  const url = dados.url ? new URL(dados.url, base).toString() : base;
   return renderLayoutEmail({
     nome: dados.nome,
     titulo: dados.titulo,
     conteudo: `<p style="margin:0 0 20px;font-size:16px;line-height:25px;color:#52666f">${escapar(dados.mensagem)}</p><p style="margin:0 0 10px;font-size:14px;line-height:22px;color:#52666f"><strong style="color:#18313c">${escapar(dados.autor)}</strong> escreveu:</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;background-color:#f8fafb;border-left:3px solid #0e7a3c"><tr><td style="padding:14px 16px;font-size:15px;line-height:24px;color:#52666f;white-space:pre-wrap">${escapar(dados.comentario)}</td></tr></table>`,
-    acao: { url, texto: "Abrir comentário" },
+    acao: dados.url ? { url: dados.url, texto: "Abrir comentário" } : undefined,
     rodape: "Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.",
   });
 }

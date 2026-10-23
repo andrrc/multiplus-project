@@ -11,11 +11,13 @@ const perfis = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", "CLIENTE"] as const;
 export async function marcarNotificacaoLidaAction(id: string) {
   await marcarNotificacaoLida(await obterContexto(), id);
   revalidatePath("/notificacoes");
+  revalidatePath("/minhas-notificacoes");
 }
 
 export async function marcarTodasNotificacoesLidasAction() {
   await marcarTodasNotificacoesLidas(await obterContexto());
   revalidatePath("/notificacoes");
+  revalidatePath("/minhas-notificacoes");
 }
 
 export async function atualizarPreferenciaAction(formData: FormData) {

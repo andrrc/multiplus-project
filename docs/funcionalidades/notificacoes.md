@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-10-20.
+- **Última revisão:** 2026-10-22.
 - **Requisitos:** RF-007, RF-022, RF-023, RF-050.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -16,7 +16,8 @@ avisado.
 | Evento | Quando acontece | ADMIN | ADMIN_INTERNO e ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
 | Prazo próximo | A tarefa vence dentro da antecedência | Sim | Sim | Não |
-| Tarefa concluída | Uma tarefa é concluída | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Cliente vinculado, se a preferência CLIENTE estiver habilitada |
+| Solicitação de conclusão | Colaborador pede conclusão ou recebe a decisão de Talita | Pedido recebido, se habilitado | Resultado do próprio pedido, se habilitado | Não |
+| Tarefa concluída | Uma tarefa é confirmada como concluída | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Cliente vinculado, se a preferência CLIENTE estiver habilitada |
 | Projeto concluído | O projeto é marcado como concluído | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Cliente vinculado, se a preferência CLIENTE estiver habilitada |
 | Novo comentário | Alguém comenta em registro acessível | Conforme acesso e preferência | Conforme acesso e preferência | Cliente vinculado recebe aviso sem conteúdo, se habilitado |
 | Atribuição recebida | Nova atribuição de projeto, tarefa ou subtarefa | Sim | Sim | Não |
@@ -25,7 +26,7 @@ avisado.
 
 | Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
-| Ver a central de notificações | Sim | Não (sem menu) | Não (sem menu) | Não |
+| Ver a central de notificações | Sim | Sim, em `/minhas-notificacoes` | Sim, em `/minhas-notificacoes` | Não |
 | Configurar preferências por perfil e limites do semáforo | Sim | Não | Não | Não |
 
 ---
@@ -59,7 +60,10 @@ A configuração visual é independente do prazo de antecedência dos e-mails. `
 aviso no sistema e o e-mail. A escolha vale para todas as pessoas ativas daquele perfil.
 Menções e confirmações em comentários seguem as mesmas opções de canal de “Novo comentário”.
 Quando alguém recebe uma atribuição de projeto, tarefa ou subtarefa, o evento “Atribuição
-recebida” é enviado pelos canais configurados para o perfil da pessoa.
+recebida” é enviado pelos canais configurados para o perfil da pessoa. O evento
+“Solicitação de conclusão” avisa ADMIN sobre pedidos novos e o solicitante sobre a decisão.
+Os pedidos usam a fila em `/subtarefas`; somente a aprovação gera também o aviso de tarefa
+concluída.
 
 **Detalhes técnicos.**
 - **Tabela:** `PreferenciaNotificacao`, com uma linha por perfil e evento.
@@ -69,8 +73,14 @@ recebida” é enviado pelos canais configurados para o perfil da pessoa.
   atribuição recebida e falha de envio no endpoint com fixture de prazo futuro.
 - **Falhas:** erro de e-mail não bloqueia a ação que gerou o aviso.
 - **Audiência:** `dispararEventoNotificacao` exige `usuarioIds`; lista vazia não envia. Comentários usam usuários ativos com acesso ao alvo. Eventos de conclusão direcionam somente à conta ADMIN da Talita e não notificam o executor. Preferências por perfil/canal continuam valendo.
+- **Aprovação:** `CONCLUSAO_SOLICITADA` usa preferências independentes para os canais; pedidos são enviados aos ADMIN ativos, e decisões ao solicitante. `TAREFA_CONCLUIDA` só é disparado depois da aprovação.
 - **Apresentação do e-mail:** notificações e menções usam o mesmo cartão institucional dos
   convites de acesso, com logo pública, conteúdo alinhado à esquerda, botão verde e rodapé.
+  O botão de ação usa o texto “Abrir no sistema”.
+  O remetente é identificado como “SGA Múltiplus Ambiental”; o endereço vem de
+  `EMAIL_FROM` ou do padrão em `src/lib/email.ts`.
+  Links de e-mail são absolutos com base em `AUTH_URL` e ajustados à rota que cada perfil
+  pode abrir. Notificações in-app antigas conservam a rota que já tinham gravada.
   O evento de atribuição também cobre atribuições de subtarefas. Concluir uma subtarefa não
   dispara e-mail atualmente; não existe evento `SUBTAREFA_CONCLUIDA`.
 
@@ -111,13 +121,15 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | # | Situação | Efeito |
 |---|---|---|
 | L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
-| L2 | Colaboradores não têm a central de notificações no menu. | Os avisos no sistema gravados para eles não aparecem em nenhuma tela. Só o e-mail chega. |
-| L3 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
+| L2 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Ajustar o texto do botão para “Abrir no sistema” e direcionar links de e-mail para a rota autorizada de cada perfil; notificações in-app antigas permanecem como estavam ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
+| 2026-10-22 | este commit | Atualizar o nome do remetente compartilhado para “SGA Múltiplus Ambiental”, preservando o endereço ([análise](../analises/nome-remetente-email.md)) |
+| 2026-10-22 | este commit | Evento configurável de solicitação/decisão de conclusão, caixa de notificações para colaboradores e aviso de tarefa concluída somente após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |
 | 2026-10-15 | `75498a1` | Registrar a limitação L4: o aviso de prazo próximo ainda usa "hoje" em UTC, enquanto semáforo e atraso passaram ao horário de Brasília ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-15 | `9f3a725` | Semáforo: vermelho só para prazo vencido, âmbar até o limite configurável (padrão 5 dias) e cancelado em cinza ([análise](../analises/semaforo-vermelho-so-atrasado.md)) |
 | 2026-10-15 | `035aa9a` | Limites do semáforo passam a valer em dias corridos ([análise](../analises/semaforo-dias-corridos.md)) |
