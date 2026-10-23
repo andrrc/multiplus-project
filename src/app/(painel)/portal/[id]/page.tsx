@@ -33,10 +33,25 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
     </section>
     <section className="mt-8">
       <h2 className="text-[21px]">Tarefas</h2>
-      {projeto.tarefas.length === 0 ? <p className="mt-3 border border-dashed border-linha bg-branco px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa ativa neste projeto.</p> : <ul className="mt-4 divide-y divide-linha border border-linha bg-branco">
-        {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 p-4 sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3></div><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>
-          <dl className="mt-3 grid gap-3 text-[13px] sm:grid-cols-3"><div><dt className="text-cinza">Prazo</dt><dd className="mt-0.5 font-[family-name:var(--font-interface)] tabular-nums">{data(tarefa.prazo)}</dd></div><div><dt className="text-cinza">Responsável</dt><dd className="mt-0.5 break-words font-[family-name:var(--font-interface)]">{tarefa.responsavel ?? "Não definido"}</dd></div><div><dt className="text-cinza">Progresso</dt><dd className="mt-0.5 font-[family-name:var(--font-interface)]">{tarefa.progresso.percentual === null ? "—" : tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total} concluídas`}</dd></div></dl>
+      {projeto.tarefas.length === 0 ? <p className="mt-3 border border-dashed border-linha bg-branco px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa ativa neste projeto.</p> : <ul className="mt-4 grid gap-3">
+        {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 rounded-[3px] border border-linha border-l-[3px] border-l-azul bg-branco p-4 sm:p-5">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3></div>
+            <div className="justify-self-start sm:justify-self-end"><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>
+          </div>
+          <dl className="mt-4 grid min-w-0 grid-cols-1 gap-x-6 gap-y-4 text-[13px] sm:grid-cols-2 lg:grid-cols-3">
+            <div className="min-w-0"><dt className="text-cinza">Prazo</dt><dd className="mt-1 break-words font-[family-name:var(--font-interface)] tabular-nums">{data(tarefa.prazo)}</dd></div>
+            <div className="min-w-0"><dt className="text-cinza">Responsável</dt><dd className="mt-1 break-words font-[family-name:var(--font-interface)]">{tarefa.responsavel ?? "Não definido"}</dd></div>
+            <div className="min-w-0">
+              <dt className="text-cinza">{tarefa.progresso.total === 0 ? "Conclusão da tarefa" : "Subtarefas concluídas"}</dt>
+              <dd className="mt-1 font-[family-name:var(--font-interface)]">
+                {tarefa.progresso.percentual === null ? "—" : tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total}`}
+              </dd>
+              {tarefa.progresso.percentual !== null && <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-papel" role="progressbar" aria-label={tarefa.progresso.total === 0 ? "Conclusão da tarefa" : "Subtarefas concluídas"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={tarefa.progresso.percentual} aria-valuetext={tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total} subtarefas`}>
+                <div className="h-full rounded-full bg-verde-esc" style={{ width: `${tarefa.progresso.percentual}%` }} />
+              </div>}
+            </div>
+          </dl>
         </li>)}
       </ul>}
     </section>

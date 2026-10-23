@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-23 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Separar e alinhar os cartões de tarefa no portal; identificar o tipo de progresso visualizado | este commit |
 | 2026-10-23 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Identificar explicitamente os nomes de projeto e tarefa no portal | este commit |
 | 2026-10-23 | [Clientes](funcionalidades/clientes.md), [Subtarefas](funcionalidades/subtarefas.md), [Notificações](funcionalidades/notificacoes.md) | Restringir rotas administrativas, separar criação de subtarefa por perfil e corrigir links de e-mail; notificações antigas ficam sem migration ([análise](analises/guarda-clientes-subtarefa-colaborador-links-email.md)) | este commit |
 | 2026-10-22 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Colorir os status de projetos e tarefas no portal com a identidade visual | este commit |

@@ -30,6 +30,7 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 - O painel lista os projetos ativos próprios, ordenados pela atividade mais recente. Sem projetos, informa “Nenhum projeto cadastrado ainda”.
 - O detalhe mostra status, datas, atualização, conclusão, tarefas, responsável, progresso e documentos vinculados ao projeto ou ao cadastro.
 - Os nomes são identificados por rótulos explícitos: “Nome do projeto” nos cartões e no detalhe, e “Nome da tarefa” em cada item de tarefa.
+- Cada tarefa aparece em seu próprio cartão; o nome e o status ocupam posições estáveis, enquanto prazo, responsável e progresso se alinham em colunas que se empilham no celular. O progresso distingue “Subtarefas concluídas” da conclusão da própria tarefa e inclui uma barra visual.
 - Os status de projeto e tarefa usam etiquetas coloridas: lilás para A iniciar, azul para Em andamento, verde para Concluído e vermelho para Cancelado. Outros status de tarefa mantêm a etiqueta neutra.
 - Links externos são validados no servidor como HTTP/HTTPS e abrem com proteção `noreferrer`.
 
@@ -78,6 +79,7 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Separar os cartões de tarefa, alinhar os dados em grade responsiva e mostrar progresso visual |
 | 2026-10-23 | este commit | Identificar explicitamente os nomes de projeto e tarefa no portal |
 | 2026-10-22 | este commit | Colorir etiquetas de status de projetos e tarefas no portal conforme a identidade visual |
 | 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
