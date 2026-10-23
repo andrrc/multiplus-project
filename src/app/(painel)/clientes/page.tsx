@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { obterContexto } from "@/server/auth/contexto";
+import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarClientes, listarCidadesComCliente } from "@/lib/clientes";
 import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
@@ -12,7 +12,7 @@ export default async function ClientesPage({
   searchParams: Promise<{ busca?: string; cidade?: string; desativados?: string; laudo?: string }>;
 }) {
   const { busca, cidade, desativados, laudo } = await searchParams;
-  const ctx = await obterContexto();
+  const ctx = await exigirAcessoARota("/clientes");
 
   // RF-039 — só o Administrador reativa, então só ele tem o toggle; para os demais a RLS
   // já não devolve cliente desativado, e o parâmetro na URL não muda nada.

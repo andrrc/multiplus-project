@@ -1,7 +1,7 @@
 import { SecaoLaudo } from "./laudo/secao";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { obterContexto } from "@/server/auth/contexto";
+import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
 import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
@@ -80,7 +80,7 @@ export default async function DetalheClientePage({
   const { id } = await params;
   const filtrosLaudo = await searchParams;
   const { desativados } = filtrosLaudo;
-  const ctx = await obterContexto();
+  const ctx = await exigirAcessoARota("/clientes");
 
   // RF-039 — o toggle só faz sentido para quem pode reativar; para os demais perfis a RLS
   // já não devolve registro desativado, então pedir por ele não muda nada.

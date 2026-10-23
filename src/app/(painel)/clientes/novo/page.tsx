@@ -1,11 +1,9 @@
 import { listarResponsaveisLaudo } from "@/lib/laudos-tecnicos";
-import { redirect } from "next/navigation";
-import { obterContexto } from "@/server/auth/contexto";
+import { exigirAcessoARota } from "@/server/auth/contexto";
 import { NovoClienteForm } from "./novo-cliente-form";
 
 export default async function NovoClientePage() {
-  const ctx = await obterContexto();
-  if (ctx.perfil !== "ADMIN") redirect("/clientes");
+  const ctx = await exigirAcessoARota("/clientes");
 
   const responsaveisLaudo = await listarResponsaveisLaudo(ctx);
   return (

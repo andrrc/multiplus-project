@@ -11,6 +11,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ownerDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
+import { buscarClienteDetalheSeguro, buscarClienteParaEdicao, listarCidadesComCliente, listarClientes } from "@/lib/clientes";
 
 let clienteA: { id: string };
 let clienteB: { id: string };
@@ -81,6 +82,17 @@ beforeAll(async () => {
 afterAll(async () => {
   await limparFixtures();
   await fecharConexoes();
+});
+
+describe("RF-043 — leituras administrativas de cliente", () => {
+  it.each(["ADMIN_INTERNO", "ADMIN_EXTERNO"] as const)("nega a %s todas as leituras da ficha administrativa", async (perfil) => {
+    const usuarioId = perfil === "ADMIN_INTERNO" ? usuarioAdminInterno.id : usuarioAdminExterno.id;
+    const ctx = { usuarioId, perfil };
+    await expect(listarClientes(ctx)).rejects.toThrow("Ação restrita ao Administrador.");
+    await expect(listarCidadesComCliente(ctx)).rejects.toThrow("Ação restrita ao Administrador.");
+    await expect(buscarClienteDetalheSeguro(ctx, clienteA.id)).rejects.toThrow("Ação restrita ao Administrador.");
+    await expect(buscarClienteParaEdicao(ctx, clienteA.id)).rejects.toThrow("Ação restrita ao Administrador.");
+  });
 });
 
 describe("RF-020 — mascaramento de telefone via responsavelLegalSeguro/pontoContatoSeguro", () => {

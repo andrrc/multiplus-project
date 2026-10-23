@@ -1,14 +1,13 @@
 import { buscarLaudoTecnico, listarResponsaveisLaudo } from "@/lib/laudos-tecnicos";
 import { notFound, redirect } from "next/navigation";
-import { obterContexto } from "@/server/auth/contexto";
+import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarClienteParaEdicao } from "@/lib/clientes";
 import { formatarCnpj, formatarCpf } from "@/lib/formatacao";
 import { EditarClienteForm } from "./editar-cliente-form";
 
 export default async function EditarClientePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const ctx = await obterContexto();
-  if (ctx.perfil !== "ADMIN") redirect(`/clientes/${id}`);
+  const ctx = await exigirAcessoARota("/clientes");
 
   const dados = await buscarClienteParaEdicao(ctx, id);
   if (!dados) notFound();

@@ -22,6 +22,7 @@ import { criarUsuarioInterno, gerarLinkConvite, listarUsuarios, reenviarConvite 
 import { definirAtivo } from "@/lib/desativacao";
 import {
   listarClientes,
+  listarClientesContextuais,
   buscarClienteDetalheSeguro,
   criarCliente,
   criarAcessoCliente,
@@ -129,7 +130,7 @@ describe("criar usuário interno → convite → definir senha → login → tel
     expect(telaInicial(autenticada!.perfil)).toBe("/minhas-tarefas");
 
     const ctxJoana = { usuarioId: autenticada!.id, perfil: autenticada!.perfil };
-    const clientesQueEnxerga = await listarClientes(ctxJoana);
+    const clientesQueEnxerga = await listarClientesContextuais(ctxJoana);
     expect(clientesQueEnxerga.map((c) => c.id)).toEqual([cliente.id]);
 
     // 6. E a listagem de usuários agora a mostra como ativa.
@@ -161,7 +162,7 @@ describe("criar usuário interno → convite → definir senha → login → tel
     if (!criacao.sucesso) return;
 
     const ctx = { usuarioId: criacao.usuarioId, perfil: "ADMIN_INTERNO" as const };
-    expect(await listarClientes(ctx)).toEqual([]);
+    expect(await listarClientesContextuais(ctx)).toEqual([]);
 
     // E a listagem sinaliza isso para a Talita resolver (RF-040).
     const naListagem = (await listarUsuarios(ctxAdmin)).find((u) => u.id === criacao.usuarioId);

@@ -36,7 +36,7 @@ describe("RF-051 — segurança e persistência", () => {
     for (const ctx of [interno, ...externos]) {
       await expect(buscarLaudoTecnico(ctx, clienteId)).rejects.toThrow(/RF-051/);
       await expect(salvarAnotacaoLaudo(ctx, clienteId, laudoId, { texto: "X", links: [] })).rejects.toThrow(/RF-051/);
-      await expect(listarClientes(ctx, undefined, undefined, false, "sem")).rejects.toThrow(/RF-051/);
+      await expect(listarClientes(ctx, undefined, undefined, false, "sem")).rejects.toThrow("Ação restrita ao Administrador.");
       expect(await comoUsuario(ctx, (tx) => tx.laudoTecnico.findMany())).toEqual([]);
       expect(await comoUsuario(ctx, (tx) => tx.anotacaoLaudoTecnico.findMany())).toEqual([]);
       expect(await comoUsuario(ctx, (tx) => tx.linkAnotacaoLaudoTecnico.findMany())).toEqual([]);

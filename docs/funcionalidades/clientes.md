@@ -238,12 +238,14 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 |---|---|---|
 | L1 | O painel do cliente (RF-012) e o controle de licenças (RF-010) ainda não existem. | O cliente com acesso ao portal só vê Meu Perfil. |
 | L2 | A migração assistida de dados (RF-044) e a exclusão por solicitação LGPD (RF-045) não foram implementadas. | — |
+| L5 | A policy RLS de `pessoas_envolvidas` ainda permite consulta contextual por colaboradores vinculados, embora as telas atuais não leiam essa tabela. | Uma consulta direta por função do servidor pode expor os campos permitidos pela policy; rever a policy em análise própria. |
 | L4 | Pasta vazia ``src/app/(painel)/meus-clientes/`[id`]``, resíduo de um comando do PowerShell. | Fora do git e sem efeito. Pode ser apagada. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Restringir as páginas administrativas de `/clientes` ao ADMIN e manter a visão contextual de colaboradores; policy de `pessoas_envolvidas` fica registrada para revisão própria ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)). |
 | 2026-10-21 | este commit | Visual do laudo aprovado: resumo em destaque, histórico em linha do tempo, documentos com ação de abrir e formulário em diálogo. |
 | 2026-10-21 | este commit | Laudo técnico privado por cliente, histórico editável, links, filtro e desativação preservada; ver [análise](../analises/laudo-tecnico.md). |
 | 2026-10-21 | este commit | Ordenar a lista central de clientes pelo número de identificação crescente, mantendo filtros e visão contextual de colaboradores ([análise](../analises/ordenacao-lista-clientes-id.md)). |

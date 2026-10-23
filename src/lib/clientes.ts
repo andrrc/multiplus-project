@@ -180,6 +180,7 @@ export async function listarClientes(
   incluirDesativados = false,
   laudo?: "com" | "sem",
 ) {
+  exigirAdministradorClientes(ctx);
   if (laudo && ctx.perfil !== "ADMIN") throw new Error("RF-051: filtro de laudos restrito ao Administrador.");
   return comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
@@ -207,6 +208,7 @@ export async function listarClientes(
 
 /** RF-003 — cidades pra popular o dropdown do painel; só as que já têm cliente cadastrado. */
 export async function listarCidadesComCliente(ctx: ContextoUsuario): Promise<string[]> {
+  exigirAdministradorClientes(ctx);
   const clientes = await comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
       // RF-039 — cidade cujo único cliente foi desativado sai do dropdown junto.
@@ -230,6 +232,7 @@ export async function buscarClienteDetalheSeguro(
   clienteId: string,
   incluirDesativados = false,
 ) {
+  exigirAdministradorClientes(ctx);
   const soAtivos = incluirDesativados ? {} : { ativo: true };
 
   return comContextoDeUsuario(ctx, async (tx) => {
@@ -255,16 +258,12 @@ export async function buscarClienteDetalheSeguro(
         }),
         tx.usuario.findFirst({
           where: { clienteId, perfil: "CLIENTE" },
-          select: ctx.perfil === "ADMIN"
-            ? { id: true, ativo: true, senhaHash: true, email: true }
-            : { id: true, ativo: true, senhaHash: true },
+          select: { id: true, ativo: true, senhaHash: true, email: true },
         }),
-        ctx.perfil === "ADMIN"
-          ? tx.valorProjeto.aggregate({
-              where: { projeto: { clienteId, ativo: true } },
-              _sum: { valorContratado: true },
-            })
-          : Promise.resolve(null),
+        tx.valorProjeto.aggregate({
+          where: { projeto: { clienteId, ativo: true } },
+          _sum: { valorContratado: true },
+        }),
       ]);
 
     return {
@@ -463,6 +462,7 @@ export async function atualizarCliente(
  * pela view — mascarar aqui impediria editar o próprio campo).
  */
 export async function buscarClienteParaEdicao(ctx: ContextoUsuario, clienteId: string) {
+  exigirAdministradorClientes(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
     const cliente = await tx.cliente.findUnique({ where: { id: clienteId } });
     if (!cliente) return null;
@@ -474,6 +474,10 @@ export async function buscarClienteParaEdicao(ctx: ContextoUsuario, clienteId: s
 
     return { cliente, responsavelLegal, pontoContato };
   });
+}
+
+function exigirAdministradorClientes(ctx: ContextoUsuario): void {
+  if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
 }
 
 /** RF-013 — vincula um link de documento (Google Drive) ao cliente. */
