@@ -52,6 +52,19 @@ das fontes confirmam largura igual para os dez dígitos em ambos os pesos.
 O build de produção confirma a faixa Unicode numérica nos pesos 400 e 700.
 Nenhum teste automatizado foi criado ou alterado para esta mudança visual.
 
+### I3. Dependência do framework atualizada por segurança
+
+**Como funciona.** A aplicação usa uma versão corrigida do Next.js para atender a uma
+recomendação de segurança do framework. Esta atualização não altera as telas nem as
+permissões dos perfis.
+
+**Detalhes técnicos.** `next` e `eslint-config-next` estão fixados em `16.4.1` em
+`package.json`, com as dependências resolvidas em `package-lock.json`. A atualização
+corrige o alerta [GHSA-673q-mjm6-r5xr](https://github.com/vercel/next.js/security/advisories/GHSA-673q-mjm6-r5xr).
+Verificação: Prisma Client, typecheck, lint e suíte completa. A auditoria de produção
+continua apontando vulnerabilidades transitivas em MinIO e Prisma; a correção automática
+exige mudanças incompatíveis e deve ser avaliada separadamente.
+
 ## Limitações e pendências conhecidas
 
 - Telas internas precisam de conferência visual com sessão autenticada.
@@ -62,6 +75,7 @@ Nenhum teste automatizado foi criado ou alterado para esta mudança visual.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Atualizar Next.js e eslint-config-next para 16.4.1 por segurança ([análise](../analises/atualizacao-seguranca-nextjs.md)) |
 | 2026-10-21 | este commit | Aplicar Raleway, Montserrat e Droid Serif por papel visual, mantendo os tamanhos atuais |
 | 2026-10-21 | 0df5f7d | Ampliar novamente os textos, de 10% para 20% sobre a escala original, a pedido do usuário |
 | 2026-10-21 | b7bb72e | Ampliar textos em 10% após relato da Talita; análise dispensada por ser exclusivamente visual |
