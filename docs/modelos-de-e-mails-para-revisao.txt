@@ -1,0 +1,185 @@
+MODELOS DE E-MAIL — REVISÃO DE TEXTO
+
+Este arquivo reúne o texto visível dos 10 e-mails enviados para revisão.
+Edite a redação e os assuntos. Os itens entre colchetes são indicações de link
+ou conteúdo variável do sistema; não são texto literal do e-mail.
+
+============================================================
+01 — CONVITE DE ACESSO: USUÁRIO INTERNO
+============================================================
+Assunto: [TESTE VISUAL] Convite de acesso — USUARIO_INTERNO
+
+Olá, Talita.
+
+Seu acesso está pronto
+
+Você recebeu acesso ao SGA Múltiplus Ambiental. Para começar, defina sua senha de acesso.
+
+[Botão: Definir minha senha]
+
+Se o botão não funcionar, use este link:
+Definir senha no Múltiplus
+[Link fictício de definição de senha — não editar]
+
+Este link pode ser usado uma única vez e expira em 7 dias.
+
+Mensagem automática da Múltiplus Ambiental. Se você não esperava receber este acesso, ignore este e-mail.
+
+============================================================
+02 — CONVITE DE ACESSO: COLABORADOR EXTERNO
+============================================================
+Assunto: [TESTE VISUAL] Convite de acesso — COLABORADOR_EXTERNO
+
+Olá, Talita.
+
+Seu acesso está pronto
+
+Você foi cadastrado como Colaborador Externo no Múltiplus. Para começar, defina sua senha de acesso.
+
+[Botão: Definir minha senha]
+
+Se o botão não funcionar, use este link:
+Definir senha no Múltiplus
+[Link fictício de definição de senha — não editar]
+
+Este link pode ser usado uma única vez e expira em 7 dias.
+
+Mensagem automática da Múltiplus Ambiental. Se você não esperava receber este acesso, ignore este e-mail.
+
+============================================================
+03 — CONVITE DE ACESSO: CLIENTE
+============================================================
+Assunto: [TESTE VISUAL] Convite de acesso — CLIENTE
+
+Olá, Talita.
+
+Seu acesso está pronto
+
+Seu acesso à área de cliente do Múltiplus foi liberado. Para começar, defina sua senha de acesso.
+
+[Botão: Definir minha senha]
+
+Se o botão não funcionar, use este link:
+Definir senha no Múltiplus
+[Link fictício de definição de senha — não editar]
+
+Este link pode ser usado uma única vez e expira em 7 dias.
+
+Mensagem automática da Múltiplus Ambiental. Se você não esperava receber este acesso, ignore este e-mail.
+
+============================================================
+04 — REDEFINIÇÃO DE SENHA
+============================================================
+Assunto: [TESTE VISUAL] Redefinição de senha — SGA Múltiplus Ambiental
+
+Olá, Talita.
+
+Clique no link abaixo para redefinir sua senha (válido por 1 hora):
+[Link fictício de redefinição de senha — não editar]
+
+============================================================
+05 — AVISO DE PRAZO PRÓXIMO
+============================================================
+Assunto: [TESTE VISUAL] Prazo próximo: Renovação da licença ambiental
+
+Olá, Talita.
+
+Prazo próximo: Renovação da licença ambiental
+
+Há uma tarefa chegando ao prazo.
+
+A tarefa vence em 30/10/2026.
+
+[Botão: Abrir no Múltiplus]
+[Link para a tela correspondente — não editar]
+
+Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.
+
+============================================================
+06 — AVISO DE TAREFA CONCLUÍDA
+============================================================
+Assunto: [TESTE VISUAL] Tarefa concluída: Revisar relatório de monitoramento
+
+Olá, Talita.
+
+Tarefa concluída: Revisar relatório de monitoramento
+
+Uma tarefa foi concluída.
+
+A tarefa foi concluída por João Silva.
+
+[Botão: Abrir no Múltiplus]
+[Link para a tela correspondente — não editar]
+
+Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.
+
+============================================================
+07 — AVISO DE PROJETO CONCLUÍDO
+============================================================
+Assunto: [TESTE VISUAL] Projeto concluído: Relatório de impacto ambiental
+
+Olá, Talita.
+
+Projeto concluído: Relatório de impacto ambiental
+
+Um projeto foi concluído.
+
+O projeto foi concluído e está disponível para consulta.
+
+[Botão: Abrir no Múltiplus]
+[Link para a tela correspondente — não editar]
+
+Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.
+
+============================================================
+08 — AVISO DE NOVO COMENTÁRIO
+============================================================
+Assunto: [TESTE VISUAL] Novo comentário em: Relatório de impacto ambiental
+
+Olá, Talita.
+
+Novo comentário em: Relatório de impacto ambiental
+
+Há um novo comentário para você.
+
+[Botão: Abrir no Múltiplus]
+[Link para a tela correspondente — não editar]
+
+Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.
+
+============================================================
+09 — AVISO DE NOVA ATRIBUIÇÃO
+============================================================
+Assunto: [TESTE VISUAL] Nova atribuição: Análise de condicionantes
+
+Olá, Talita.
+
+Nova atribuição: Análise de condicionantes
+
+Uma nova atribuição foi recebida.
+
+Você recebeu uma nova atribuição para esta tarefa.
+
+[Botão: Abrir no Múltiplus]
+[Link para a tela correspondente — não editar]
+
+Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.
+
+============================================================
+10 — MENÇÃO EM COMENTÁRIO
+============================================================
+Assunto: [TESTE VISUAL] Você foi mencionado em um comentário
+
+Olá, Talita.
+
+Você foi mencionado em um comentário
+
+Mariana Costa mencionou você em um comentário.
+
+Mariana Costa escreveu:
+“Talita, você pode revisar a versão final do relatório até sexta-feira? Incluí os ajustes que combinamos.”
+
+[Botão: Abrir comentário]
+[Link para a tela correspondente — não editar]
+
+Mensagem automática da Múltiplus Ambiental. Você recebeu este aviso conforme as preferências de notificações do seu perfil.

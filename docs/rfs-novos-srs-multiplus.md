@@ -1,4 +1,4 @@
-# RFs Novos e Revisões — SRS Múltiplus Software
+# RFs Novos e Revisões — SRS SGA Múltiplus Ambiental
 
 **Para aplicar na versão:** SRS v2.1
 **Data:** 14/09/2026

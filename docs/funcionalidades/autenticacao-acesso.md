@@ -34,6 +34,7 @@ acessar.
 
 **Detalhes técnicos.**
 - **Rota:** `/login`.
+- **Identificação:** a tela apresenta o nome “SGA Múltiplus Ambiental”.
 - **Funções:** `autenticarComCredenciais` (`src/server/auth/credentials.ts`) e Auth.js,
   com sessão JWT (`src/server/auth/config.ts`).
 - **Senha:** hash com bcrypt (`src/lib/senha.ts`).
@@ -136,6 +137,7 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-23 | este commit | Padronizar como “SGA Múltiplus Ambiental” o nome da tela de login, dos convites e dos fluxos de senha |
 | 2026-10-23 | este commit | Posicionar o botão de definição de senha antes do link alternativo |
 | 2026-10-22 | este commit | Identificar e-mails como “SGA Múltiplus Ambiental”, preservando o endereço configurado ([análise](../analises/nome-remetente-email.md)) |
 | 2026-10-08 | `900b406` | Limite de falhas no login, origem confiável do IP, CSP e grants das funções SECURITY DEFINER ([análise](../analises/remediacao-auditoria-seguranca.md)) |

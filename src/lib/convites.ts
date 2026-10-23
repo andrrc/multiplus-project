@@ -23,7 +23,7 @@ export type ResultadoConvite = "enviado" | "nao_configurado" | "falha_no_envio";
 export type ResultadoConviteComLink = { convite: ResultadoConvite; link: string };
 
 const APRESENTACAO: Record<OrigemConvite, string> = {
-  USUARIO_INTERNO: "Você recebeu acesso ao Múltiplus Software.",
+  USUARIO_INTERNO: "Você recebeu acesso ao SGA Múltiplus Ambiental.",
   COLABORADOR_EXTERNO: "Você foi cadastrado como Colaborador Externo no Múltiplus.",
   CLIENTE: "Seu acesso à área de cliente do Múltiplus foi liberado.",
 };

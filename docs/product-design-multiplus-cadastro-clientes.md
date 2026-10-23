@@ -1,4 +1,4 @@
-# Product Design Document — Múltiplus Software
+# Product Design Document — SGA Múltiplus Ambiental
 
 **Módulo:** Cadastro de Clientes
 **Versão:** 2.2
@@ -375,7 +375,7 @@ detalhamento de dois bugs reais encontrados e corrigidos: view de mascaramento s
 
 ## Histórico de Revisõe
 
-# Product Design Document — Múltiplus Software
+# Product Design Document — SGA Múltiplus Ambiental
 
 **Módulo:** Cadastro de Clientes
 **Versão:** 2.0

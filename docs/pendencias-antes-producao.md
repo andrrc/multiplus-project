@@ -1,4 +1,4 @@
-# Pendências antes da produção — Múltiplus Software
+# Pendências antes da produção — SGA Múltiplus Ambiental
 
 **Data da revisão:** 18/09/2026  
 **Responsável:** André  

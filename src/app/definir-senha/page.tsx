@@ -70,7 +70,7 @@ export default async function DefinirSenhaPage({
   return (
     <AuthShell
       titulo={primeiroNome ? `Olá, ${primeiroNome}` : "Definir sua senha"}
-      subtitulo="Crie uma senha para acessar o Múltiplus Software."
+      subtitulo="Crie uma senha para acessar o SGA Múltiplus Ambiental."
     >
       <DefinirSenhaForm token={token} />
     </AuthShell>

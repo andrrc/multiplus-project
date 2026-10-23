@@ -65,7 +65,7 @@ export async function esqueciSenhaAction(
       const token = await criarTokenAcesso(usuario.id, "RECUPERAR_SENHA");
       await enviarEmail({
         to: usuario.email,
-        subject: "Redefinição de senha — Múltiplus Software",
+        subject: "Redefinição de senha — SGA Múltiplus Ambiental",
         html: `<p>Olá, ${usuario.nome}.</p><p>Clique no link abaixo para redefinir sua senha (válido por 1 hora):</p><p><a href="${linkDefinirSenha(token)}">${linkDefinirSenha(token)}</a></p>`,
       });
     });

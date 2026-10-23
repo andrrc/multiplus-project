@@ -1,4 +1,4 @@
-# Múltiplus Software
+# SGA Múltiplus Ambiental
 
 Sistema de controle de clientes, projetos e prazos ambientais da Múltiplus Ambiental.
 Ver `docs/SRS_Multiplus_Software_v1.0.md` (requisitos) e

@@ -1,4 +1,4 @@
-# Architecture Design Document — Múltiplus Software
+# Architecture Design Document — SGA Múltiplus Ambiental
 
 **Versão:** 1.13
 **Data:** 02/10/2026
@@ -293,7 +293,7 @@ sequenceDiagram
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Solo dev via Claude Code, precisa decidir entre monolito e serviços separados
 antes de iniciar a Sprint 1 (infra).
@@ -326,7 +326,7 @@ complexidade adicional de serviços separados.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Definição inicial era Vercel + Supabase (gerenciado). André optou por Contabo
 por preferência de controle total do servidor.
@@ -363,7 +363,7 @@ controle total, aceitando conscientemente o trade-off de responsabilidade operac
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-017 (adição de escopo, fora da proposta fechada) exige anexar imagem a
 comentários de subtarefa. Era necessário decidir onde/como armazenar essas imagens.
@@ -400,7 +400,7 @@ o arquivo em si fica no MinIO, com sync periódico pro Cloudflare R2 como backup
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-018 a RF-021 (adição de escopo) exigem 3 granularidades de atribuição
 (projeto, tarefa, subtarefa) para 4 perfis. Era necessário decidir como modelar isso no banco.
@@ -440,7 +440,7 @@ escala do projeto (4 perfis, poucos usuários) não justifica uma camada de auto
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante teste manual da Sprint 2 — Colaborador Externo (RF-019,
 acesso escopado por tarefa) e Pessoa do Operacional (RF-028, contato do time do cliente, sem
@@ -491,7 +491,7 @@ vínculo no schema, levando a cadastro duplicado sem rastreabilidade.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante a Sprint 2 — o modelo de `Cliente` foi construído assumindo
 apenas Pessoa Jurídica, mas a Múltiplus atende também Pessoa Física. Correção necessária
@@ -538,7 +538,7 @@ certo) fica na camada de aplicação, não no banco.
 
 **Data:** 10/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Na reunião de aprovação da Sprint 2, a Talita pediu que "Pessoa do Operacional"
 virasse "Pessoa Envolvida", com um tipo (Pessoa/Empresa, mesmo padrão do ADR-006) e um
@@ -848,7 +848,7 @@ confortável mesmo com crescimento moderado de uso.
 
 > As versões anteriores do documento seguem abaixo, na íntegra, em ordem decrescente.
 
-# Architecture Design Document — Múltiplus Software
+# Architecture Design Document — SGA Múltiplus Ambiental
 
 **Versão:** 1.7
 **Data:** 10/09/2026
@@ -1120,7 +1120,7 @@ sequenceDiagram
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Solo dev via Claude Code, precisa decidir entre monolito e serviços separados
 antes de iniciar a Sprint 1 (infra).
@@ -1153,7 +1153,7 @@ complexidade adicional de serviços separados.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Definição inicial era Vercel + Supabase (gerenciado). André optou por Contabo
 por preferência de controle total do servidor.
@@ -1190,7 +1190,7 @@ controle total, aceitando conscientemente o trade-off de responsabilidade operac
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-017 (adição de escopo, fora da proposta fechada) exige anexar imagem a
 comentários de subtarefa. Era necessário decidir onde/como armazenar essas imagens.
@@ -1227,7 +1227,7 @@ o arquivo em si fica no MinIO, com sync periódico pro Cloudflare R2 como backup
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-018 a RF-021 (adição de escopo) exigem 3 granularidades de atribuição
 (projeto, tarefa, subtarefa) para 4 perfis. Era necessário decidir como modelar isso no banco.
@@ -1267,7 +1267,7 @@ escala do projeto (4 perfis, poucos usuários) não justifica uma camada de auto
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante teste manual da Sprint 2 — Colaborador Externo (RF-019,
 acesso escopado por tarefa) e Pessoa do Operacional (RF-028, contato do time do cliente, sem
@@ -1318,7 +1318,7 @@ vínculo no schema, levando a cadastro duplicado sem rastreabilidade.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante a Sprint 2 — o modelo de `Cliente` foi construído assumindo
 apenas Pessoa Jurídica, mas a Múltiplus atende também Pessoa Física. Correção necessária
@@ -1365,7 +1365,7 @@ certo) fica na camada de aplicação, não no banco.
 
 **Data:** 10/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Na reunião de aprovação da Sprint 2, a Talita pediu que "Pessoa do Operacional"
 virasse "Pessoa Envolvida", com um tipo (Pessoa/Empresa, mesmo padrão do ADR-006) e um
@@ -1469,7 +1469,7 @@ confortável mesmo com crescimento moderado de uso.
 
 ## Histórico de Revisõe
 
-# Architecture Design Document — Múltiplus Software
+# Architecture Design Document — SGA Múltiplus Ambiental
 
 **Versão:** 1.6
 **Data:** 10/09/2026
@@ -1741,7 +1741,7 @@ sequenceDiagram
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Solo dev via Claude Code, precisa decidir entre monolito e serviços separados
 antes de iniciar a Sprint 1 (infra).
@@ -1774,7 +1774,7 @@ complexidade adicional de serviços separados.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Definição inicial era Vercel + Supabase (gerenciado). André optou por Contabo
 por preferência de controle total do servidor.
@@ -1811,7 +1811,7 @@ controle total, aceitando conscientemente o trade-off de responsabilidade operac
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-017 (adição de escopo, fora da proposta fechada) exige anexar imagem a
 comentários de subtarefa. Era necessário decidir onde/como armazenar essas imagens.
@@ -1848,7 +1848,7 @@ o arquivo em si fica no MinIO, com sync periódico pro Cloudflare R2 como backup
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-018 a RF-021 (adição de escopo) exigem 3 granularidades de atribuição
 (projeto, tarefa, subtarefa) para 4 perfis. Era necessário decidir como modelar isso no banco.
@@ -1888,7 +1888,7 @@ escala do projeto (4 perfis, poucos usuários) não justifica uma camada de auto
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante teste manual da Sprint 2 — Colaborador Externo (RF-019,
 acesso escopado por tarefa) e Pessoa do Operacional (RF-028, contato do time do cliente, sem
@@ -1939,7 +1939,7 @@ vínculo no schema, levando a cadastro duplicado sem rastreabilidade.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante a Sprint 2 — o modelo de `Cliente` foi construído assumindo
 apenas Pessoa Jurídica, mas a Múltiplus atende também Pessoa Física. Correção necessária
@@ -1986,7 +1986,7 @@ certo) fica na camada de aplicação, não no banco.
 
 **Data:** 10/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Na reunião de aprovação da Sprint 2, a Talita pediu que "Pessoa do Operacional"
 virasse "Pessoa Envolvida", com um tipo (Pessoa/Empresa, mesmo padrão do ADR-006) e um
@@ -2077,7 +2077,7 @@ confortável mesmo com crescimento moderado de uso.
 
 ## Histórico de Revisõe
 
-# Architecture Design Document — Múltiplus Software
+# Architecture Design Document — SGA Múltiplus Ambiental
 
 **Versão:** 1.5
 **Data:** 02/09/2026
@@ -2349,7 +2349,7 @@ sequenceDiagram
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Solo dev via Claude Code, precisa decidir entre monolito e serviços separados
 antes de iniciar a Sprint 1 (infra).
@@ -2382,7 +2382,7 @@ complexidade adicional de serviços separados.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Definição inicial era Vercel + Supabase (gerenciado). André optou por Contabo
 por preferência de controle total do servidor.
@@ -2419,7 +2419,7 @@ controle total, aceitando conscientemente o trade-off de responsabilidade operac
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-017 (adição de escopo, fora da proposta fechada) exige anexar imagem a
 comentários de subtarefa. Era necessário decidir onde/como armazenar essas imagens.
@@ -2456,7 +2456,7 @@ o arquivo em si fica no MinIO, com sync periódico pro Cloudflare R2 como backup
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** RF-018 a RF-021 (adição de escopo) exigem 3 granularidades de atribuição
 (projeto, tarefa, subtarefa) para 4 perfis. Era necessário decidir como modelar isso no banco.
@@ -2496,7 +2496,7 @@ escala do projeto (4 perfis, poucos usuários) não justifica uma camada de auto
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante teste manual da Sprint 2 — Administrador Externo (RF-019,
 acesso escopado por tarefa) e Pessoa do Operacional (RF-028, contato do time do cliente, sem
@@ -2545,7 +2545,7 @@ vínculo no schema, levando a cadastro duplicado sem rastreabilidade.
 
 **Data:** 02/09/2026
 **Status:** Aceita
-**Contexto do projeto:** Múltiplus Software
+**Contexto do projeto:** SGA Múltiplus Ambiental
 
 **Contexto:** Identificado durante a Sprint 2 — o modelo de `Cliente` foi construído assumindo
 apenas Pessoa Jurídica, mas a Múltiplus atende também Pessoa Física. Correção necessária

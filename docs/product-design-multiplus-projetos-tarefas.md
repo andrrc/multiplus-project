@@ -1,4 +1,4 @@
-# Product Design Document — Múltiplus Software
+# Product Design Document — SGA Múltiplus Ambiental
 
 **Módulos:** Administração e Acesso (Sprint 3) + Projetos e Tarefas (Sprint 4)
 **Versão:** 1.0
@@ -261,7 +261,7 @@ ação de remover fica **bloqueada** nesses casos, com explicação.
 ```
 [LOGO/IDENTIDADE]
 [TÍTULO: "Definir sua senha"]
-[TEXTO: "Olá, [nome]. Crie uma senha para acessar o Múltiplus Software."]
+[TEXTO: "Olá, [nome]. Crie uma senha para acessar o SGA Múltiplus Ambiental."]
   senha (obrigatório) — campo protegido, com opção de exibir
   confirmar_senha (obrigatório) — deve coincidir
 [REQUISITOS DE SENHA: lista com marcação do que já foi atendido]

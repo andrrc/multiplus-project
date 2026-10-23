@@ -14,7 +14,7 @@ export default async function LoginPage({
 
   return (
     <AuthShell
-      titulo="Múltiplus Software"
+      titulo="SGA Múltiplus Ambiental"
       subtitulo={sessaoInvalidada
         ? "Sua sessão não é mais válida. Entre novamente com uma conta ativa."
         : "Entre com seu e-mail e senha."}

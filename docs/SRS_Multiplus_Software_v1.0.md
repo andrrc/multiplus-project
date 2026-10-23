@@ -1,4 +1,4 @@
-# Especificação de Requisitos — Múltiplus Software
+# Especificação de Requisitos — SGA Múltiplus Ambiental
 
 **Versão:** 2.10
 **Data:** 15/10/2026
@@ -12,7 +12,7 @@
 
 ### 1.1 Propósito
 
-O Múltiplus Software é um sistema web para centralizar o controle de clientes, projetos e prazos
+O SGA Múltiplus Ambiental é um sistema web para centralizar o controle de clientes, projetos e prazos
 ambientais da Múltiplus Ambiental, hoje espalhados entre planilhas, Trello e Google Drive. O sistema
 substitui esse controle manual por uma ferramenta única, reduz o risco de perda de prazos de
 condicionantes ambientais e oferece um canal direto para o cliente acompanhar o andamento do próprio
@@ -976,7 +976,7 @@ natural após este SRS.
 
 > As versões anteriores do documento seguem abaixo, na íntegra, em ordem decrescente.
 
-# Especificação de Requisitos — Múltiplus Software
+# Especificação de Requisitos — SGA Múltiplus Ambiental
 
 **Versão:** 1.7
 **Data:** 10/09/2026
@@ -990,7 +990,7 @@ natural após este SRS.
 
 ### 1.1 Propósito
 
-O Múltiplus Software é um sistema web para centralizar o controle de clientes, projetos e prazos
+O SGA Múltiplus Ambiental é um sistema web para centralizar o controle de clientes, projetos e prazos
 ambientais da Múltiplus Ambiental, hoje espalhados entre planilhas, Trello e Google Drive. O sistema
 substitui esse controle manual por uma ferramenta única, reduz o risco de perda de prazos de
 condicionantes ambientais e oferece um canal direto para o cliente acompanhar o andamento do próprio
@@ -1709,7 +1709,7 @@ natural após este SRS.
 
 ## Histórico de Revisõe
 
-# Especificação de Requisitos — Múltiplus Software
+# Especificação de Requisitos — SGA Múltiplus Ambiental
 
 **Versão:** 1.6
 **Data:** 02/09/2026
@@ -1723,7 +1723,7 @@ natural após este SRS.
 
 ### 1.1 Propósito
 
-O Múltiplus Software é um sistema web para centralizar o controle de clientes, projetos e prazos
+O SGA Múltiplus Ambiental é um sistema web para centralizar o controle de clientes, projetos e prazos
 ambientais da Múltiplus Ambiental, hoje espalhados entre planilhas, Trello e Google Drive. O sistema
 substitui esse controle manual por uma ferramenta única, reduz o risco de perda de prazos de
 condicionantes ambientais e oferece um canal direto para o cliente acompanhar o andamento do próprio

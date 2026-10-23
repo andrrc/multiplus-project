@@ -1,5 +1,5 @@
 
-# Padrão de Testes por Sprint — Múltiplus Software
+# Padrão de Testes por Sprint — SGA Múltiplus Ambiental
 
 **Versão:** 1.0
 **Data:** 02/09/2026
