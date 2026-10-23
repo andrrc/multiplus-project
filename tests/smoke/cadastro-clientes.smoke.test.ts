@@ -32,7 +32,8 @@ import {
   buscarClienteDetalheSeguro,
   reenviarConviteAcessoCliente,
 } from "@/lib/clientes";
-import { adicionarPessoaEnvolvida, criarAcessoPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
+import { adicionarPessoaEnvolvida, criarAcessoPessoaEnvolvida, validarPessoaEnvolvida } from "@/lib/pessoas-envolvidas";
+import { validarNovoCliente } from "@/lib/validacao-cliente";
 import { enviarEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
@@ -387,5 +388,48 @@ describe("Pessoa Envolvida — colaborador com acesso, e promoção posterior (R
 
     const usuarioColaborador = await prisma.usuario.findUnique({ where: { email: "carlos.add@teste.local" } });
     expect(usuarioColaborador?.perfil).toBe("ADMIN_EXTERNO");
+  });
+});
+
+
+describe("RF-028/RF-033 — cadastro e acesso de pessoa envolvida sem telefone", () => {
+  it.each(["PESSOA", "EMPRESA"] as const)("persiste %s nos dois caminhos e cria acesso por e-mail sem telefone", async (tipo) => {
+    const admin = await ownerDb.usuario.create({
+      data: { nome: "Administrador", email: "admin.telefone-opcional@teste.local", perfil: "ADMIN" },
+    });
+    const ctx = { usuarioId: admin.id, perfil: "ADMIN" as const };
+    const dados = {
+      tipo: "PESSOA_JURIDICA" as const,
+      razaoSocial: "Cliente sem telefone",
+      cnpj: "11.222.333/0001-81",
+      segmento: "Indústria",
+      origemContato: "Google",
+      responsavelLegal: { nome: "", endereco: "", rg: "", cpf: "", telefone: "", email: "" },
+      pontoContato: { nome: "", endereco: "", rg: "", cpf: "", telefone: "", email: "", cargo: "" },
+      pessoasEnvolvidas: [
+        { tipo, nome: "Envolvida inicial", telefone: "", email: "inicial.sem-telefone@teste.local", temAcesso: true },
+        { tipo, nome: "Outra envolvida", telefone: "", email: "outra.sem-telefone@teste.local", temAcesso: false },
+      ],
+    };
+    expect(validarNovoCliente(dados)).toBeNull();
+    const cliente = await criarCliente(ctx, dados);
+    expect(cliente.pessoasEnvolvidas).toHaveLength(2);
+    const iniciais = await prisma.pessoaEnvolvida.findMany({ where: { clienteId: cliente.id }, orderBy: { nome: "asc" } });
+    expect(iniciais.map(({ telefone }) => telefone)).toEqual(["", ""]);
+    expect(iniciais[0]).toMatchObject({ tipo, temAcesso: true });
+    expect(iniciais[1]).toMatchObject({ tipo, temAcesso: false });
+    const posterior = { tipo, nome: "Envolvida posterior", telefone: "", email: "posterior.sem-telefone@teste.local", temAcesso: true };
+    expect(validarPessoaEnvolvida(posterior)).toBeNull();
+    const adicionada = await adicionarPessoaEnvolvida(ctx, cliente.id, posterior);
+    expect(adicionada).toMatchObject({ tipo, telefone: "", clienteId: cliente.id, temAcesso: false });
+    expect(await criarAcessoPessoaEnvolvida(adicionada.id)).toEqual({ sucesso: true, convite: "enviado" });
+    expect(await prisma.pessoaEnvolvida.findUniqueOrThrow({ where: { id: adicionada.id } })).toMatchObject({ telefone: "", temAcesso: true });
+    for (const email of [dados.pessoasEnvolvidas[0].email, posterior.email]) {
+      expect(await prisma.usuario.findUniqueOrThrow({ where: { email } })).toMatchObject({ perfil: "ADMIN_EXTERNO" });
+      const convite = vi.mocked(enviarEmail).mock.calls.find(([mensagem]) => mensagem.to === email)?.[0];
+      expect(convite?.to).toBe(email);
+      expect(await validarTokenAcesso(extrairTokenDoEmail(convite!.html))).toMatchObject({ valido: true });
+    }
+    expect(vi.mocked(enviarEmail).mock.calls.some(([mensagem]) => mensagem.to === dados.pessoasEnvolvidas[1].email)).toBe(false);
   });
 });

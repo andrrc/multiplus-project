@@ -45,7 +45,7 @@ Além dos dados cadastrais, um cliente PJ pode ter:
     mesma pessoa do Responsável Legal, basta marcar e informar o cargo, e os dados são
     copiados (RF-027).
 - **Pessoa Física:** nome, CPF, RG, CEP, endereço, e-mail, segmento e origem.
-- Campos de celular usam máscara `(DD) XXXXX-XXXX`, aceitam colagem com `+55` e verificam no servidor os 11 dígitos quando preenchidos. Essa regra também vale para Responsável Legal, Ponto de Contato e Pessoa Envolvida (pessoa ou empresa); os dois primeiros seguem opcionais.
+- Campos de celular usam máscara `(DD) XXXXX-XXXX`, aceitam colagem com `+55` e verificam no servidor os 11 dígitos quando preenchidos. Essa regra também vale para Responsável Legal, Ponto de Contato e Pessoa Envolvida (pessoa ou empresa); todos esses telefones são opcionais.
 - **Segmento:** vem de uma lista fechada por tipo. "Outros" (PJ) ou "Outro" (PF) abre um
   campo livre.
 - **Duplicidade:** CNPJ e CPF não podem se repetir.
@@ -100,10 +100,12 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 **Como funciona.**
 - **O que são:** pessoas ou empresas ligadas ao cliente que participam do trabalho. Elas
   podem ser responsáveis por tarefas e subtarefas.
+- **Telefone opcional:** pode ficar vazio no cadastro inicial e na inclusão posterior pela ficha do cliente, tanto para Pessoa quanto para Empresa/PJ. Isso também permite adicionar outra pessoa à lista sem preencher telefone da anterior. Quando informado, deve ser um celular com DDD e nove dígitos; nome/razão social e e-mail continuam obrigatórios.
 - **Colaborador externo:** ao marcar "é um colaborador?", no cadastro ou depois, a pessoa
   recebe um usuário **Colaborador Externo** e um e-mail para definir a senha.
 
 **Detalhes técnicos.**
+- **Validação (RF-028):** `validarPessoaEnvolvida` aceita telefone vazio/espaços e valida formato quando preenchido; `validarNovoCliente` reaproveita a regra. A coluna já é opcional, sem migration. Os dois formulários deixam de exigir o campo. Cobertura em `celular.unit.test.ts`, `cadastro-clientes-rf002.unit.test.ts` e `cadastro-clientes.smoke.test.ts`, incluindo persistência e convite por e-mail sem telefone nos dois caminhos e nos dois tipos.
 - **Funções:** `adicionarPessoaEnvolvida` e `criarAcessoPessoaEnvolvida`
   (`src/lib/pessoas-envolvidas.ts`). A criação de acesso é recusada se o cliente estiver
   desativado ou se o e-mail já for de outro usuário.
@@ -245,6 +247,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 | 2026-10-21 | este commit | Visual do laudo aprovado: resumo em destaque, histórico em linha do tempo, documentos com ação de abrir e formulário em diálogo. |
 | 2026-10-21 | este commit | Laudo técnico privado por cliente, histórico editável, links, filtro e desativação preservada; ver [análise](../analises/laudo-tecnico.md). |
 | 2026-10-21 | este commit | Ordenar a lista central de clientes pelo número de identificação crescente, mantendo filtros e visão contextual de colaboradores ([análise](../analises/ordenacao-lista-clientes-id.md)). |
+| 2026-10-20 | este commit | Telefone opcional de Pessoa Envolvida nos dois caminhos e tipos; manter validação se preenchido e acesso por e-mail. Ver [análise](../analises/telefone-opcional-pessoa-envolvida.md). |
 | 2026-10-08 | `ee7db52` | Reenviar convite de acesso para cliente pendente, com link copiável e invalidação do anterior ([análise](../analises/reenviar-convite-cliente-pendente.md)) |
 | 2026-10-08 | `a5191c8` | Reposicionar e esclarecer o filtro de registros desativados na ficha |
 | 2026-10-08 | `aeb2288` | Manter um único botão de desativar/reativar cliente no topo da ficha |

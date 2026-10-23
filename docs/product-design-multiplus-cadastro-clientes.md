@@ -184,8 +184,8 @@ flowchart TD
 [SEÇÃO 4: Pessoas Envolvidas] (opcional, lista dinâmica) — RF-028, revisado
   [ITEM]
     tipo: "Pessoa" ou "Empresa/PJ envolvida"
-    [SE Pessoa] nome (obrigatório), cpf (opcional), telefone (obrigatório), email (obrigatório)
-    [SE Empresa/PJ] razao_social (obrigatório), cnpj (opcional), telefone (obrigatório), email (obrigatório)
+    [SE Pessoa] nome (obrigatório), cpf (opcional), telefone (opcional), email (obrigatório)
+    [SE Empresa/PJ] razao_social (obrigatório), cnpj (opcional), telefone (opcional), email (obrigatório)
     checkbox (fim do formulário): "É um colaborador?" (tem_acesso)
       [SE MARCADO] aviso: "Um e-mail será enviado para definir a senha de acesso"
     [AÇÃO: remover]
@@ -209,8 +209,9 @@ flowchart TD
 - Seção 3: a herança de dados (RF-027) continua igual à v1.0 quando aplicável — os campos
   herdados parecem "preenchidos automaticamente", não editáveis diretamente
 - Seção 4 (Pessoas Envolvidas) é totalmente opcional como seção, mas **se o usuário clicar em
-  "+ Adicionar pessoa envolvida"**, nome/razão social, telefone e e-mail passam a ser exigidos
-  pra confirmar aquele item — não dá pra salvar um item da lista em branco
+  "+ Adicionar pessoa envolvida"**, nome/razão social e e-mail passam a ser exigidos
+  pra confirmar aquele item — não dá pra salvar um item da lista em branco. Telefone é opcional
+  e validado quando preenchido (decisão aprovada em 20/10/2026).
 - Seção 5 é opcional e adiável — não é obrigatório criar o acesso no momento do cadastro
 - **Obrigatoriedade mínima (RF-002d):** a pedido da Talita, quase nada é obrigatório fora do
   essencial pra identificar o cliente — ver tabela abaixo
@@ -230,7 +231,7 @@ flowchart TD
 | responsavel_legal.* (nome, endereço, rg, cpf, telefone, email) | Não                                    | Formato mantido se preenchido —**telefone é campo sensível, oculto para Colaborador Interno/Externo (RF-020)** |
 | ponto_contato.* (mesmo herdado)                                 | Não                                    | `cargo` deixa de ser obrigatório mesmo quando herdado                                                                |
 | pessoas_envolvidas[].nome ou razao_social                       | **Sim, se o item for adicionado** | Trava a criação do item, não o formulário inteiro                                                                   |
-| pessoas_envolvidas[].telefone                                   | **Sim, se o item for adicionado** | Máscara de telefone                                                                                                    |
+| pessoas_envolvidas[].telefone                                   | Não | Máscara de celular; validar DDD e nove dígitos somente se preenchido                                                                                                    |
 | pessoas_envolvidas[].email                                      | **Sim, se o item for adicionado** | Validação de formato                                                                                                  |
 | pessoas_envolvidas[].cpf ou cnpj                                | Não                                    | Validação de formato/dígito verificador se preenchido                                                                |
 

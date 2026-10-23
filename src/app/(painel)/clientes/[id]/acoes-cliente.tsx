@@ -99,7 +99,7 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
           className={inputClass}
         />
       )}
-      <CampoTelefone name="telefone" required className={inputClass} />
+      <CampoTelefone name="telefone" className={inputClass} />
       <input name="email" required type="email" placeholder="E-mail" className={inputClass} />
       <label className="flex items-center gap-2 text-[14px] text-tinta">
         <input type="checkbox" name="temAcesso" className="h-4 w-4 accent-verde" />

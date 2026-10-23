@@ -238,7 +238,6 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
   const podeAdicionarPessoa =
     !ultimaPessoa ||
     (ultimaPessoa.nome.trim().length > 0 &&
-      ultimaPessoa.telefone.trim().length > 0 &&
       ultimaPessoa.email.trim().length > 0);
 
   function handleSubmit(e: React.FormEvent) {

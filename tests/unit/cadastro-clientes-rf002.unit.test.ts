@@ -144,3 +144,17 @@ describe("RF-002c — Estado/Município via API do IBGE, com fallback de indispo
     expect(await listarEstados()).toEqual([{ sigla: "SP", nome: "São Paulo" }]);
   });
 });
+
+
+describe("RF-028 — pessoas envolvidas sem telefone no cadastro inicial", () => {
+  it("aceita várias pessoas e empresas sem telefone e rejeita telefone incompleto quando informado", () => {
+    const pessoasEnvolvidas = (["PESSOA", "EMPRESA"] as const).map((tipo) => ({
+      tipo, nome: `Envolvida ${tipo}`, telefone: "", email: `${tipo.toLowerCase()}@example.com`, temAcesso: false,
+    }));
+    expect(validarNovoCliente({ ...PJ_VALIDO, pessoasEnvolvidas })).toBeNull();
+    expect(validarNovoCliente({ ...PF_VALIDO, pessoasEnvolvidas })).toBeNull();
+    expect(validarNovoCliente({ ...PJ_VALIDO, pessoasEnvolvidas: [{ ...pessoasEnvolvidas[0], telefone: "119" }] })).toBe(
+      "O celular deve ter DDD e 9 dígitos.",
+    );
+  });
+});

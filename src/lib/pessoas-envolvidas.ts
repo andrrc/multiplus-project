@@ -8,16 +8,15 @@ import { prisma } from "@/lib/prisma";
 import type { PessoaEnvolvidaInput } from "@/lib/clientes";
 
 /**
- * RF-028 — a seção "Pessoas Envolvidas" é opcional como um todo, mas nome/razão social,
- * telefone e e-mail são obrigatórios pra confirmar um item já adicionado à lista. CPF/CNPJ
- * são sempre opcionais, com validação de formato só quando preenchidos.
+ * RF-028 — a seção "Pessoas Envolvidas" é opcional como um todo, mas nome/razão social e
+ * e-mail são obrigatórios pra confirmar um item já adicionado à lista. Telefone e CPF/CNPJ
+ * são opcionais, com validação de formato só quando preenchidos.
  */
 export function validarPessoaEnvolvida(pessoa: PessoaEnvolvidaInput): string | null {
   if (!pessoa.nome.trim()) {
     return pessoa.tipo === "EMPRESA" ? "Informe a razão social da pessoa envolvida." : "Informe o nome da pessoa envolvida.";
   }
-  if (!pessoa.telefone.trim()) return "Informe o telefone da pessoa envolvida.";
-  if (!validarTelefoneCelular(pessoa.telefone)) return "O celular deve ter DDD e 9 dígitos.";
+  if (pessoa.telefone.trim() && !validarTelefoneCelular(pessoa.telefone)) return "O celular deve ter DDD e 9 dígitos.";
   if (!pessoa.email.trim()) return "Informe o e-mail da pessoa envolvida.";
   if (!validarEmail(pessoa.email)) return "E-mail da pessoa envolvida inválido.";
   if (pessoa.tipo === "PESSOA" && pessoa.cpf && !validarCpf(pessoa.cpf)) {

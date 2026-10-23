@@ -39,3 +39,19 @@ describe("formatação de celular", () => {
     );
   });
 });
+
+
+describe("RF-028 — telefone opcional de Pessoa Envolvida", () => {
+  it.each(["PESSOA", "EMPRESA"] as const)("aceita telefone vazio ou espaços para %s e mantém os demais campos obrigatórios", (tipo) => {
+    const pessoa = { tipo, nome: "Pessoa envolvida", telefone: "", email: "contato@example.com", temAcesso: false };
+    expect(validarPessoaEnvolvida(pessoa)).toBeNull();
+    expect(validarPessoaEnvolvida({ ...pessoa, telefone: "   " })).toBeNull();
+    expect(validarPessoaEnvolvida({ ...pessoa, nome: "" })).toBe(
+      tipo === "EMPRESA" ? "Informe a razão social da pessoa envolvida." : "Informe o nome da pessoa envolvida.",
+    );
+    expect(validarPessoaEnvolvida({ ...pessoa, email: "" })).toBe("Informe o e-mail da pessoa envolvida.");
+    expect(validarPessoaEnvolvida({ ...pessoa, email: "invalido" })).toBe("E-mail da pessoa envolvida inválido.");
+    expect(validarPessoaEnvolvida({ ...pessoa, telefone: "(11) 98765-4321" })).toBeNull();
+    expect(validarPessoaEnvolvida({ ...pessoa, telefone: "(11) 9" })).toBe("O celular deve ter DDD e 9 dígitos.");
+  });
+});
