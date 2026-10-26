@@ -137,6 +137,7 @@ describe("cadastro de cliente → criar acesso → login do cliente", () => {
     // RF-020: como ADMIN, a leitura segura devolve o telefone normalmente.
     const detalhe = await buscarClienteDetalheSeguro(ctxAdmin, cliente.id);
     expect(detalhe?.responsavelLegal?.telefone).toBe("11988887777");
+    expect(detalhe?.cliente.criadoEm).toBeInstanceOf(Date);
   });
 });
 

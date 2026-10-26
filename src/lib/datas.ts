@@ -1,5 +1,15 @@
 const FUSO_HORARIO = "America/Sao_Paulo";
 
+/** Data de cadastro como data civil UTC, sem horário. */
+export function formatarDataCadastro(instante: Date): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(instante);
+}
+
 /**
  * Data de hoje no horário de Brasília, como meia-noite UTC (o mesmo formato em que os prazos são
  * gravados). Semáforo e regra de atraso usam esta função para virarem o dia juntos, à meia-noite

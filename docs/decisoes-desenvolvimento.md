@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-26 | [Clientes](funcionalidades/clientes.md) | Exibir na ficha administrativa a data original de cadastro, sem incluí-la nas visões contextuais ([análise](analises/data-cadastro-cliente.md)) | este commit |
 | 2026-10-23 | [Interface](funcionalidades/interface.md) | Atualizar Next.js e eslint-config-next para 16.4.1 para corrigir alerta de segurança ([análise](analises/atualizacao-seguranca-nextjs.md)) | este commit |
 | 2026-10-23 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Padronizar como “SGA Múltiplus Ambiental” o nome da tela de login, dos convites e dos fluxos de senha | este commit |
 | 2026-10-23 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Separar e alinhar os cartões de tarefa no portal; identificar o tipo de progresso visualizado | este commit |

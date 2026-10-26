@@ -88,12 +88,20 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 **Como funciona.**
 - **Blocos da tela:** Cadastro, Responsável Legal, Ponto de Contato, Pessoas Envolvidas,
   **Laudo técnico** (somente ADMIN), **Drive** (documentos), **Projetos** e Acesso ao portal.
+- **Data de cadastro:** a ficha administrativa mostra “Cadastrado em” com dia, mês e ano
+  da criação original do cliente. A data permanece a mesma após edições e não aparece nas
+  fichas contextuais de colaboradores nem no portal.
 - **Projetos:** o bloco mostra o total contratado em projetos ativos e tem o atalho para
   criar um projeto já com o cliente selecionado.
 
 **Detalhes técnicos.**
 - **Rotas:** `/clientes/[id]` e `/clientes/[id]/editar`.
 - **Funções:** `buscarClienteDetalheSeguro`, `atualizarCliente` e `adicionarDocumento`.
+- **Data de cadastro:** usa `Cliente.criadoEm`, campo existente preenchido no banco; a
+  ficha administrativa formata somente o dia em UTC por `formatarDataCadastro`.
+- **Testes:** `datas.unit.test.ts` cobre a formatação UTC; `laudos-tecnicos.integration.test.ts`
+  confirma que a consulta contextual não inclui `criadoEm`; `cadastro-clientes.smoke.test.ts`
+  confirma que a leitura administrativa recebe o timestamp.
 
 ### C4. Pessoas envolvidas (RF-028, RF-033, ADR-007)
 
@@ -245,6 +253,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-26 | este commit | Mostrar a data original de cadastro na ficha administrativa do cliente, sem expô-la nas visões contextuais ([análise](../analises/data-cadastro-cliente.md)). |
 | 2026-10-23 | este commit | Restringir as páginas administrativas de `/clientes` ao ADMIN e manter a visão contextual de colaboradores; policy de `pessoas_envolvidas` fica registrada para revisão própria ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)). |
 | 2026-10-21 | este commit | Visual do laudo aprovado: resumo em destaque, histórico em linha do tempo, documentos com ação de abrir e formulário em diálogo. |
 | 2026-10-21 | este commit | Laudo técnico privado por cliente, histórico editável, links, filtro e desativação preservada; ver [análise](../analises/laudo-tecnico.md). |

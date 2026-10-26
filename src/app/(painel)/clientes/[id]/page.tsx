@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarClienteDetalheSeguro } from "@/lib/clientes";
+import { formatarDataCadastro } from "@/lib/datas";
 import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import {
@@ -178,6 +179,14 @@ export default async function DetalheClientePage({
 
       <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Campo
+            label="Cadastrado em"
+            valor={
+              <time dateTime={cliente.criadoEm.toISOString()} className="tabular-nums">
+                {formatarDataCadastro(cliente.criadoEm)}
+              </time>
+            }
+          />
           {ctx.perfil === "ADMIN" && (
             <Campo
               label="Total contratado em projetos ativos"

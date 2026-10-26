@@ -1,4 +1,4 @@
-/** RF-003 / RF-039 / RF-051 — ordenação da lista, filtros, privacidade, vínculo e histórico real no Postgres. */
+/** RF-003 / RF-039 / RF-051 — lista, desativação, privacidade, ficha contextual sem `criadoEm` e histórico no Postgres. */
 import { beforeEach, afterAll, describe, it, expect } from "vitest";
 import { ownerDb, comoUsuario, limparFixtures, fecharConexoes } from "./setup/helpers";
 import { criarCliente, atualizarCliente, listarClientes, buscarClienteContextual } from "@/lib/clientes";
@@ -49,6 +49,7 @@ describe("RF-051 — segurança e persistência", () => {
     await ownerDb.atribuicao.create({ data: { usuarioId: interno.usuarioId, entidadeTipo: "PROJETO", entidadeId: projeto.id } });
     const contextual = await buscarClienteContextual(interno, clienteId);
     expect(contextual?.id).toBe(clienteId);
+    expect(contextual).not.toHaveProperty("criadoEm");
     expect(contextual).not.toHaveProperty("laudoTecnico");
     expect(JSON.stringify(contextual)).not.toContain("segredo");
     const portal = await buscarProjetoPortal(externos[1], projeto.id);
@@ -56,10 +57,12 @@ describe("RF-051 — segurança e persistência", () => {
     expect(JSON.stringify(portal)).not.toContain("segredo");
     expect(JSON.stringify(await listarProjetosPortal(externos[1]))).not.toContain("laudo");
   });
-  it("salva cliente/laudo atomicamente e omissão na edição preserva o laudo", async () => {
+  it("preserva a data original do cliente e o laudo ao editar", async () => {
     await expect(criarCliente(admin, { ...dadosPF, cpf: "11144477735", laudoTecnico: { possui: true, nome: "X", tipo: "RURAL", responsavelId: externos[0].usuarioId } })).rejects.toThrow(/equipe interna/);
     expect(await ownerDb.cliente.count()).toBe(1);
+    const criadoEmOriginal = (await ownerDb.cliente.findUniqueOrThrow({ where: { id: clienteId }, select: { criadoEm: true } })).criadoEm;
     await atualizarCliente(admin, clienteId, { tipo: "PESSOA_FISICA", nome: "Maria editada", segmento: "", origemContato: "" });
+    expect((await ownerDb.cliente.findUniqueOrThrow({ where: { id: clienteId }, select: { criadoEm: true } })).criadoEm).toEqual(criadoEmOriginal);
     expect((await buscarLaudoTecnico(admin, clienteId))?.versao).toBe(1);
     await expect(atualizarCliente(admin, clienteId, { tipo: "PESSOA_FISICA", nome: "Não salvar", segmento: "", origemContato: "", laudoTecnico: { possui: true, nome: "X", tipo: "RURAL", responsavelId: "ausente", versao: 1 } })).rejects.toThrow(/equipe interna/);
     expect((await ownerDb.cliente.findUniqueOrThrow({ where: { id: clienteId } })).razaoSocial).toBe("Maria editada");
