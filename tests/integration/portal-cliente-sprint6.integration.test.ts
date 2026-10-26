@@ -22,7 +22,7 @@ beforeAll(async () => {
   await limparFixtures();
   clienteA = await ownerDb.cliente.create({ data: { razaoSocial: "Cliente Portal A", cnpj: "66777888000108", segmento: "Industrial", origemContato: "Indicação" } });
   clienteB = await ownerDb.cliente.create({ data: { razaoSocial: "Cliente Portal B", cnpj: "66777888000280", segmento: "Industrial", origemContato: "Indicação" } });
-  projetoA = await ownerDb.projeto.create({ data: { clienteId: clienteA.id, nome: "Projeto Portal A", atualizadoEm: dia("2026-09-01") } });
+  projetoA = await ownerDb.projeto.create({ data: { clienteId: clienteA.id, nome: "Projeto Portal A", status: "EM_ANDAMENTO", dataPrevistaConclusao: dia("2026-10-30"), atualizadoEm: dia("2026-09-01") } });
   projetoB = await ownerDb.projeto.create({ data: { clienteId: clienteB.id, nome: "Projeto Portal B" } });
   tarefaA = await ownerDb.tarefa.create({ data: { projetoId: projetoA.id, nome: "Tarefa Portal A", descricao: "Texto interno", atualizadoEm: dia("2026-09-02") } });
   const pessoa = await ownerDb.pessoaEnvolvida.create({ data: { clienteId: clienteA.id, nome: "Responsável Portal", temAcesso: false } });
@@ -55,6 +55,8 @@ describe("RN-016 — leitura limitada do cliente", () => {
     expect((await listarProjetosPortal(ctxB())).map(({ id }) => id)).toEqual([projetoB.id]);
     expect(await buscarProjetoPortal(ctxA(), projetoB.id)).toBeNull();
     const detalhe = await buscarProjetoPortal(ctxA(), projetoA.id);
+    expect(projetos[0]).toMatchObject({ status: "EM_ANDAMENTO", dataPrevistaConclusao: dia("2026-10-30") });
+    expect(detalhe).toMatchObject({ status: "EM_ANDAMENTO", dataPrevistaConclusao: dia("2026-10-30") });
     expect(detalhe?.documentos.map(({ nome }) => nome).sort()).toEqual(["Documento A", "Documento do cadastro"]);
     expect(Object.keys(detalhe ?? {})).not.toContain("valorContratado");
     expect(Object.keys(detalhe?.tarefas[0] ?? {})).not.toContain("descricao");

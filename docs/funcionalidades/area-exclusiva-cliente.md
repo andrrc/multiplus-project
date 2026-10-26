@@ -29,6 +29,7 @@ O portal mostra status, datas, última movimentação, progresso dos projetos, t
 - Após login, CLIENTE chega ao painel `/portal`; o menu contém Acompanhamento e Meu Perfil.
 - O painel lista os projetos ativos próprios, ordenados pela atividade mais recente. Sem projetos, informa “Nenhum projeto cadastrado ainda”.
 - O detalhe mostra status, datas, atualização, progresso, tarefas, responsável e documentos vinculados ao projeto ou ao cadastro. O indicador agregado do projeto usa o rótulo “Progresso” no painel e no detalhe.
+- O painel e o detalhe mostram “Dias restantes” junto à conclusão prevista, com o semáforo existente: dias até o prazo, “Vence hoje”, atraso, “Sem prazo”, “Concluído” ou “Cancelado”. A contagem usa dias corridos e o dia atual em São Paulo.
 - Os nomes são identificados por rótulos explícitos: “Nome do projeto” nos cartões e no detalhe, e “Nome da tarefa” em cada item de tarefa.
 - Cada tarefa aparece em seu próprio cartão; o nome e o status ocupam posições estáveis, enquanto prazo, responsável e progresso se alinham em colunas que se empilham no celular. O progresso distingue “Subtarefas concluídas” da conclusão da própria tarefa e inclui uma barra visual.
 - Os status de projeto e tarefa usam etiquetas coloridas: lilás para A iniciar, azul para Em andamento, verde para Concluído e vermelho para Cancelado. Outros status de tarefa mantêm a etiqueta neutra.
@@ -37,9 +38,10 @@ O portal mostra status, datas, última movimentação, progresso dos projetos, t
 **Detalhes técnicos.**
 - **Rotas:** `/portal` e `/portal/[id]`, protegidas por `exigirAcessoARota`.
 - **Etiquetas de status:** `src/ui/etiqueta-status-portal.tsx` mapeia os quatro status principais para os tokens de cor da identidade visual.
+- **Indicador de prazo:** `IndicadorSemaforoProjeto` em `src/ui/indicador-dias-restantes.tsx`, calculado com `calcularDiasRestantes`; usa somente `dataPrevistaConclusao` e `status` já selecionados pelo portal.
 - **Consultas:** `listarProjetosPortal` e `buscarProjetoPortal` em `src/lib/portal-cliente.ts`; selects explícitos não retornam descrição, subtarefas, comentários ou valor contratado.
 - **Acesso:** RLS filtra projetos/tarefas/documentos por `clienteId`, inclui herança de desativação e nega IDs de outras contas.
-- **Teste:** `portal-cliente-sprint6.integration.test.ts` cobre vínculo, IDOR, documentos e payload minimizado.
+- **Teste:** `portal-cliente-sprint6.integration.test.ts` cobre vínculo, IDOR, documentos, payload minimizado e presença do prazo/status usados pelo indicador.
 
 ### C2. Progresso e última atualização (RF-048/RF-049)
 
@@ -79,6 +81,7 @@ O portal mostra status, datas, última movimentação, progresso dos projetos, t
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-26 | este commit | Mostrar dias restantes para conclusão prevista nos cartões e no detalhe do portal ([análise](../analises/dias-restantes-portal-cliente.md)). |
 | 2026-10-26 | este commit | Trocar o rótulo do indicador do projeto de “Conclusão” para “Progresso” no painel e no detalhe do portal, sem alterar os cálculos. |
 | 2026-10-23 | este commit | Separar os cartões de tarefa, alinhar os dados em grade responsiva e mostrar progresso visual |
 | 2026-10-23 | este commit | Identificar explicitamente os nomes de projeto e tarefa no portal |

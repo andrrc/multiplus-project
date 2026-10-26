@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-26 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Exibir dias restantes para a conclusão prevista nos cartões e no detalhe do portal ([análise](analises/dias-restantes-portal-cliente.md)) | este commit |
 | 2026-10-26 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Trocar o rótulo do indicador agregado do projeto de “Conclusão” para “Progresso” no portal, mantendo os cálculos | este commit |
 | 2026-10-26 | [Clientes](funcionalidades/clientes.md) | Exibir na ficha administrativa a data original de cadastro, sem incluí-la nas visões contextuais ([análise](analises/data-cadastro-cliente.md)) | este commit |
 | 2026-10-23 | [Interface](funcionalidades/interface.md) | Atualizar Next.js e eslint-config-next para 16.4.1 para corrigir alerta de segurança ([análise](analises/atualizacao-seguranca-nextjs.md)) | este commit |

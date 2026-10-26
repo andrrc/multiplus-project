@@ -3,6 +3,7 @@ import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarProjetosPortal } from "@/lib/portal-cliente";
 import { EtiquetaStatusPortal } from "@/ui/etiqueta-status-portal";
+import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 
 const data = (valor: Date | null) => valor
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
@@ -25,6 +26,7 @@ export default async function PortalPage() {
         <dl className="mt-5 grid gap-3 text-[14px] sm:grid-cols-2">
           <div><dt className="text-[12px] text-cinza">Progresso</dt><dd className="mt-1 font-[family-name:var(--font-interface)] font-semibold">{projeto.conclusao.percentual === null ? "Sem tarefas ativas" : `${projeto.conclusao.percentual}% (${projeto.conclusao.concluidas} de ${projeto.conclusao.total})`}</dd></div>
           <div><dt className="text-[12px] text-cinza">Conclusão prevista</dt><dd className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataPrevistaConclusao)}</dd></div>
+          <div><dt className="text-[12px] text-cinza">Dias restantes</dt><dd className="mt-1"><IndicadorSemaforoProjeto prazo={projeto.dataPrevistaConclusao} status={projeto.status} /></dd></div>
           <div className="sm:col-span-2"><dt className="text-[12px] text-cinza">Última atualização</dt><dd className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{atualizacao(projeto.ultimaAtualizacao)}</dd></div>
         </dl>
         <Link href={`/portal/${projeto.id}`} className="mt-5 inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[14px] font-medium text-azul-esc hover:underline">Ver andamento do projeto →</Link>

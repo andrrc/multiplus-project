@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjetoPortal } from "@/lib/portal-cliente";
 import { EtiquetaStatusPortal } from "@/ui/etiqueta-status-portal";
+import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 
 const data = (valor: Date | null) => valor
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
@@ -25,10 +26,11 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
       <div className="min-w-0"><p className="text-[14px] text-cinza">Nome do projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1></div>
       <EtiquetaStatusPortal status={projeto.status}>{projetoStatus[projeto.status]}</EtiquetaStatusPortal>
     </div>
-    <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div className="border border-linha border-l-[3px] border-l-verde bg-branco p-4"><p className="text-[12px] text-cinza">Progresso</p><p className="mt-1 font-[family-name:var(--font-interface)] text-[20px] font-semibold">{projeto.conclusao.percentual === null ? "—" : `${projeto.conclusao.percentual}%`}</p>{projeto.conclusao.percentual !== null && <p className="text-[13px] text-cinza">{projeto.conclusao.concluidas} de {projeto.conclusao.total} tarefas</p>}</div>
       <div className="border border-linha bg-branco p-4"><p className="text-[12px] text-cinza">Início</p><p className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataInicio)}</p></div>
       <div className="border border-linha bg-branco p-4"><p className="text-[12px] text-cinza">Conclusão prevista</p><p className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataPrevistaConclusao)}</p></div>
+      <div className="border border-linha bg-branco p-4"><p className="text-[12px] text-cinza">Dias restantes</p><div className="mt-1"><IndicadorSemaforoProjeto prazo={projeto.dataPrevistaConclusao} status={projeto.status} /></div></div>
       <div className="border border-linha bg-branco p-4"><p className="text-[12px] text-cinza">Última atualização</p><p className="mt-1 break-words font-[family-name:var(--font-interface)] tabular-nums">{atualizacao(projeto.ultimaAtualizacao)}</p></div>
     </section>
     <section className="mt-8">
