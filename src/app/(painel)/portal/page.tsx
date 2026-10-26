@@ -23,7 +23,7 @@ export default async function PortalPage() {
       {projetos.map((projeto) => <article key={projeto.id} className="min-w-0 border border-linha border-l-[3px] border-l-azul bg-branco p-5">
         <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-[12px] text-cinza">Nome do projeto</p><h2 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[18px] font-semibold">{projeto.nome}</h2></div><EtiquetaStatusPortal status={projeto.status}>{status[projeto.status]}</EtiquetaStatusPortal></div>
         <dl className="mt-5 grid gap-3 text-[14px] sm:grid-cols-2">
-          <div><dt className="text-[12px] text-cinza">Conclusão</dt><dd className="mt-1 font-[family-name:var(--font-interface)] font-semibold">{projeto.conclusao.percentual === null ? "Sem tarefas ativas" : `${projeto.conclusao.percentual}% (${projeto.conclusao.concluidas} de ${projeto.conclusao.total})`}</dd></div>
+          <div><dt className="text-[12px] text-cinza">Progresso</dt><dd className="mt-1 font-[family-name:var(--font-interface)] font-semibold">{projeto.conclusao.percentual === null ? "Sem tarefas ativas" : `${projeto.conclusao.percentual}% (${projeto.conclusao.concluidas} de ${projeto.conclusao.total})`}</dd></div>
           <div><dt className="text-[12px] text-cinza">Conclusão prevista</dt><dd className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataPrevistaConclusao)}</dd></div>
           <div className="sm:col-span-2"><dt className="text-[12px] text-cinza">Última atualização</dt><dd className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{atualizacao(projeto.ultimaAtualizacao)}</dd></div>
         </dl>

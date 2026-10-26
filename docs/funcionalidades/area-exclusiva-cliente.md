@@ -8,7 +8,7 @@
 
 O cliente entra com as credenciais já criadas pela equipe e acompanha os projetos do próprio cadastro em `/portal`. A área é somente leitura; documentos do cliente e do projeto abrem no Google Drive.
 
-O portal mostra status, datas, última movimentação, percentual de conclusão, tarefas, prazos, responsáveis e progresso agregado de subtarefas. O cliente não vê comentários, valor contratado nem conteúdo de subtarefa. A equipe continua usando `/meus-projetos` para sua própria visão.
+O portal mostra status, datas, última movimentação, progresso dos projetos, tarefas, prazos, responsáveis e progresso agregado de subtarefas. O cliente não vê comentários, valor contratado nem conteúdo de subtarefa. A equipe continua usando `/meus-projetos` para sua própria visão.
 
 ## Quem pode fazer o quê
 
@@ -28,7 +28,7 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 **Como funciona.**
 - Após login, CLIENTE chega ao painel `/portal`; o menu contém Acompanhamento e Meu Perfil.
 - O painel lista os projetos ativos próprios, ordenados pela atividade mais recente. Sem projetos, informa “Nenhum projeto cadastrado ainda”.
-- O detalhe mostra status, datas, atualização, conclusão, tarefas, responsável, progresso e documentos vinculados ao projeto ou ao cadastro.
+- O detalhe mostra status, datas, atualização, progresso, tarefas, responsável e documentos vinculados ao projeto ou ao cadastro. O indicador agregado do projeto usa o rótulo “Progresso” no painel e no detalhe.
 - Os nomes são identificados por rótulos explícitos: “Nome do projeto” nos cartões e no detalhe, e “Nome da tarefa” em cada item de tarefa.
 - Cada tarefa aparece em seu próprio cartão; o nome e o status ocupam posições estáveis, enquanto prazo, responsável e progresso se alinham em colunas que se empilham no celular. O progresso distingue “Subtarefas concluídas” da conclusão da própria tarefa e inclui uma barra visual.
 - Os status de projeto e tarefa usam etiquetas coloridas: lilás para A iniciar, azul para Em andamento, verde para Concluído e vermelho para Cancelado. Outros status de tarefa mantêm a etiqueta neutra.
@@ -41,10 +41,10 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 - **Acesso:** RLS filtra projetos/tarefas/documentos por `clienteId`, inclui herança de desativação e nega IDs de outras contas.
 - **Teste:** `portal-cliente-sprint6.integration.test.ts` cobre vínculo, IDOR, documentos e payload minimizado.
 
-### C2. Conclusão e última atualização (RF-048/RF-049)
+### C2. Progresso e última atualização (RF-048/RF-049)
 
 **Como funciona.**
-- Projeto: tarefas concluídas sobre tarefas ativas não canceladas. Tarefa: subtarefas concluídas sobre subtarefas ativas não canceladas. Tarefa sem subtarefas ativas usa 0% ou 100% pelo próprio status. Sem itens elegíveis não há percentual.
+- Projeto: tarefas concluídas sobre tarefas ativas não canceladas. Tarefa: subtarefas concluídas sobre subtarefas ativas não canceladas. Tarefa sem subtarefas ativas usa 0% ou 100% pelo próprio status. Sem itens elegíveis não há percentual. No portal, o indicador agregado do projeto é identificado como “Progresso”.
 - A última movimentação agrega projeto, tarefa, subtarefa, comentário e documento ativo. Leitura não altera o horário; atividade em registro desativado fica fora.
 - O percentual de conclusão também aparece nas telas internas de projeto e tarefa.
 
@@ -79,6 +79,7 @@ O portal mostra status, datas, última movimentação, percentual de conclusão,
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-26 | este commit | Trocar o rótulo do indicador do projeto de “Conclusão” para “Progresso” no painel e no detalhe do portal, sem alterar os cálculos. |
 | 2026-10-23 | este commit | Separar os cartões de tarefa, alinhar os dados em grade responsiva e mostrar progresso visual |
 | 2026-10-23 | este commit | Identificar explicitamente os nomes de projeto e tarefa no portal |
 | 2026-10-22 | este commit | Colorir etiquetas de status de projetos e tarefas no portal conforme a identidade visual |
