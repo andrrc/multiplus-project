@@ -11,7 +11,7 @@ import { enviarEmail } from "@/lib/email";
 import { adicionarAtribuicao } from "@/lib/usuarios";
 import { criarSubtarefa, criarTarefa } from "@/lib/projetos-tarefas";
 import { listarUsuariosMencionaveis } from "@/lib/comentarios";
-import { atualizarPreferenciaNotificacao, buscarStatusJobPrazo, dispararEventoNotificacao, dispararNotificacaoAtribuicaoRecebida, dispararNotificacoesMencaoComentario, dispararPrazoProximo, executarJobPrazo, listarAdministradoresAtivos } from "@/lib/notificacoes";
+import { atualizarPreferenciaNotificacao, buscarStatusJobPrazo, contarNotificacoesNaoLidas, dispararEventoNotificacao, dispararNotificacaoAtribuicaoRecebida, dispararNotificacoesMencaoComentario, dispararPrazoProximo, executarJobPrazo, listarAdministradoresAtivos } from "@/lib/notificacoes";
 import { fecharConexoes, limparFixtures, ownerDb, appDb } from "./setup/helpers";
 import { GET } from "@/app/api/jobs/notificacoes-prazo/route";
 
@@ -64,6 +64,17 @@ afterEach(async () => {
 });
 
 describe("RF-022 — canais independentes por perfil e evento", () => {
+  it("conta no sino somente as notificações não lidas da conta autenticada", async () => {
+    await ownerDb.notificacao.createMany({ data: [
+      { usuarioId: externoId, evento: "PRAZO_PROXIMO", titulo: "Aviso externo", mensagem: "Do colaborador" },
+      { usuarioId: externoId, evento: "ATRIBUICAO_RECEBIDA", titulo: "Lido", mensagem: "Já lido", lida: true },
+      { usuarioId: adminId, evento: "PRAZO_PROXIMO", titulo: "Aviso ADMIN", mensagem: "De outra conta" },
+    ] });
+
+    expect(await contarNotificacoesNaoLidas({ usuarioId: externoId, perfil: "ADMIN_EXTERNO" })).toBe(1);
+    expect(await contarNotificacoesNaoLidas({ usuarioId: adminId, perfil: "ADMIN" })).toBe(1);
+  });
+
   it("permite alterar preferências só ao ADMIN", async () => {
     await atualizarPreferenciaNotificacao(
       { usuarioId: adminId, perfil: "ADMIN" },

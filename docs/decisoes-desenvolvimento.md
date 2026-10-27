@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-27 | [Notificações](funcionalidades/notificacoes.md) | Dar destaque à caixa dos colaboradores com sino e contador individual de avisos não lidos ([análise](analises/central-notificacoes-colaboradores.md)) | este commit |
 | 2026-10-27 | [Usuários](funcionalidades/usuarios.md) | Ocultar “Minhas atribuições” do perfil CLIENTE; o acesso do cliente continua pelo portal | este commit |
 | 2026-10-27 | [Código e manutenção](codigo/README.md) | Explicar em português do Brasil os fluxos, regras e decisões do código, preservando migrations publicadas ([análise](analises/documentacao-codigo-portugues.md)) | este commit |
 | 2026-10-26 | [Área Exclusiva do Cliente](funcionalidades/area-exclusiva-cliente.md) | Exibir dias restantes para a conclusão prevista nos cartões e no detalhe do portal ([análise](analises/dias-restantes-portal-cliente.md)) | este commit |

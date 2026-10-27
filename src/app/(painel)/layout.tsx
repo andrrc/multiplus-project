@@ -1,6 +1,7 @@
 import type { Perfil } from "@prisma/client";
 import { auth, signOut } from "@/server/auth";
 import { obterContexto } from "@/server/auth/contexto";
+import { contarNotificacoesNaoLidas } from "@/lib/notificacoes";
 import { MenuMobile } from "./menu-mobile";
 import { NavegacaoPainel } from "./navegacao-painel";
 
@@ -17,8 +18,8 @@ const NOME_PERFIL: Record<string, string> = {
 };
 
 /** RF-043 — o menu mostra só o que o perfil acessa; item inacessível não aparece. */
-function Navegacao({ perfil }: { perfil: Perfil }) {
-  return <NavegacaoPainel perfil={perfil} />;
+function Navegacao({ perfil, naoLidas }: { perfil: Perfil; naoLidas: number }) {
+  return <NavegacaoPainel perfil={perfil} naoLidas={naoLidas} />;
 }
 
 function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }) {
@@ -52,11 +53,14 @@ export default async function PainelLayout({ children }: { children: React.React
   const session = await auth();
   const ctx = await obterContexto();
   const usuario = session!.user;
+  const naoLidas = ctx.perfil === "ADMIN_INTERNO" || ctx.perfil === "ADMIN_EXTERNO"
+    ? await contarNotificacoesNaoLidas(ctx)
+    : 0;
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       <MenuMobile
-        navegacao={<Navegacao perfil={ctx.perfil} />}
+        navegacao={<Navegacao perfil={ctx.perfil} naoLidas={naoLidas} />}
         usuario={<BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />}
       />
 
@@ -72,7 +76,7 @@ export default async function PainelLayout({ children }: { children: React.React
         </div>
 
         <nav className="flex flex-col gap-0.5 px-3">
-          <Navegacao perfil={ctx.perfil} />
+          <Navegacao perfil={ctx.perfil} naoLidas={naoLidas} />
         </nav>
 
         <div className="mt-auto border-t border-[color:var(--tinta2)] px-6 py-5">

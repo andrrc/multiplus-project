@@ -42,8 +42,13 @@ avisado.
 **Detalhes técnicos.**
 - **Rotas:** `/notificacoes` para ADMIN e `/minhas-notificacoes` para ADMIN_INTERNO e
   ADMIN_EXTERNO. Cada rota aparece no menu do perfil correspondente.
-- **Funções:** `listarNotificacoes` (últimas 50), `marcarNotificacaoLida` e
-  `marcarTodasNotificacoesLidas`.
+- **Menu dos colaboradores:** `/minhas-notificacoes` aparece com ícone de sino e contador
+  de não lidas (99+ quando ultrapassa 99); sem pendências, o contador não aparece. O
+  contador é consultado no servidor para o usuário da sessão e é compartilhado entre o
+  menu desktop e o mobile. A caixa continua exibindo as 50 notificações mais recentes.
+- **Funções:** `listarNotificacoes` (últimas 50), `contarNotificacoesNaoLidas`,
+  `marcarNotificacaoLida` e `marcarTodasNotificacoesLidas`. Não há atualização em tempo
+  real; o contador atualiza na renderização do painel e após as ações que revalidam a caixa.
 
 ### N5. Configuração global do semáforo
 
@@ -128,6 +133,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Adicionar sino e contador de não lidas da própria conta ao menu de colaboradores, mantendo a caixa e a audiência existentes ([análise](../analises/central-notificacoes-colaboradores.md)) |
 | 2026-10-27 | este commit | Explicar os fluxos de notificações, mensagens e jobs no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Ajustar o texto do botão para “Abrir no sistema” e direcionar links de e-mail para a rota autorizada de cada perfil; notificações in-app antigas permanecem como estavam ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
 | 2026-10-22 | este commit | Atualizar o nome do remetente compartilhado para “SGA Múltiplus Ambiental”, preservando o endereço ([análise](../analises/nome-remetente-email.md)) |

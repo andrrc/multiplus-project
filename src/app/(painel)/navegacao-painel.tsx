@@ -66,14 +66,28 @@ function GrupoProjetosETarefas({
 }
 
 /** A organização visual não altera o MENU, que também é a fonte das permissões de rota. */
-export function NavegacaoPainel({ perfil }: { perfil: Perfil }) {
+export function NavegacaoPainel({ perfil, naoLidas = 0 }: { perfil: Perfil; naoLidas?: number }) {
   const itens = menuDoPerfil(perfil);
   const pathname = usePathname();
 
   if (perfil !== "ADMIN") {
     return itens.map((item) => (
       <NavLink key={item.href} href={item.href}>
-        {item.rotulo}
+        {item.href === "/minhas-notificacoes" ? (
+          <span className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2.5">
+              <svg aria-hidden="true" viewBox="0 0 20 20" className="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15.5 7.5a5.5 5.5 0 0 0-11 0c0 6-2 6-2 7.5h15c0-1.5-2-1.5-2-7.5ZM8 17h4" />
+              </svg>
+              <span>{item.rotulo}</span>
+            </span>
+            {naoLidas > 0 && (
+              <span aria-label={`${naoLidas} não lida${naoLidas === 1 ? "" : "s"}`} className="inline-flex min-w-6 items-center justify-center rounded-full bg-verde px-1.5 py-0.5 font-[family-name:var(--font-interface)] text-[11px] font-semibold leading-none text-tinta tabular-nums">
+                {naoLidas > 99 ? "99+" : naoLidas}
+              </span>
+            )}
+          </span>
+        ) : item.rotulo}
       </NavLink>
     ));
   }
