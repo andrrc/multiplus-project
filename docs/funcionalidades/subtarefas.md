@@ -199,6 +199,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar regras, acessos e interface de subtarefas e etiquetas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Separar a rota de criação de subtarefa do colaborador e manter a rota administrativa exclusiva do ADMIN ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
 | 2026-10-22 | este commit | Solicitação de conclusão pelo responsável, fila ADMIN, retirada, rejeição e bloqueio após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |
 | 2026-10-19 | este commit | Filtro por responsável, combinado com os filtros existentes, com opção sem responsável e nome da equipe em tarefas ([análise](../analises/filtro-responsavel-tarefas-subtarefas.md)) |

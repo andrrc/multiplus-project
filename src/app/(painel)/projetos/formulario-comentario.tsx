@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `formulario comentario`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { criarComentarioAction } from "./actions";

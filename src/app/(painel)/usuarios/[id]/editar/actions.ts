@@ -1,4 +1,7 @@
 "use server";
+/**
+ * Actions do módulo `src/app/(painel)/usuarios/[id]/editar`. Recebem dados enviados pela interface, obtêm o contexto autenticado, validam as entradas no servidor e encaminham operações às funções de domínio; a interface não é a barreira de autorização.
+ */
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";

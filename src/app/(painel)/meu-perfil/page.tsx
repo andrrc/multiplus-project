@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/meu-perfil/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import type { Perfil } from "@prisma/client";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarUsuario, listarAtribuicoesDetalhadas } from "@/lib/usuarios";

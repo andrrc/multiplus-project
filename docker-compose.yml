@@ -1,6 +1,7 @@
 name: multiplus
 
 services:
+  # Banco principal; portas não são publicadas no host no compose de produção.
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -18,6 +19,7 @@ services:
     networks:
       - internal
 
+  # Armazenamento privado de imagens; o app acessa o serviço apenas pela rede interna.
   minio:
     image: quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     restart: unless-stopped
@@ -35,6 +37,7 @@ services:
     networks:
       - internal
 
+  # Aplicação Next.js; recebe a role proprietária e a role RLS em URLs separadas.
   app:
     build:
       context: .
@@ -62,6 +65,7 @@ services:
       CNPJ_API_BASE_URL: ${CNPJ_API_BASE_URL}
       NODE_ENV: production
     healthcheck:
+      # Healthcheck também confirma conectividade com Postgres pelo endpoint dedicado.
       test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/api/health | grep -q '\"status\":\"ok\"'"]
       interval: 10s
       timeout: 5s
@@ -70,6 +74,7 @@ services:
     networks:
       - internal
 
+  # Proxy TLS padrão da VPS; em modo externo ele é omitido por ops/deploy.sh.
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -100,6 +105,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      # Migration usa a conexão proprietária, necessária para DDL e ownership.
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
     networks:
       - internal
@@ -111,6 +117,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      # Credenciais temporárias alimentam psql; a senha não é interpolada na imagem.
       PGHOST: postgres
       PGPORT: "5432"
       PGUSER: ${POSTGRES_USER}
@@ -135,6 +142,7 @@ services:
       minio:
         condition: service_healthy
     environment:
+      # Inicializador precisa de credencial administrativa apenas durante o provisionamento.
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET}
@@ -152,6 +160,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      # Seed cria a conta ADMIN inicial usando a mesma base do ambiente.
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       AUTH_URL: https://${APP_DOMAIN}
     networks:

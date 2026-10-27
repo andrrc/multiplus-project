@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `campos recorrencia`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { useState } from "react";
 import { Campo, inputClass } from "@/ui/campo";

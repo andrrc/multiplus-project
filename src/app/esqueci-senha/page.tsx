@@ -5,6 +5,7 @@ import { EsqueciSenhaForm } from "./esqueci-senha-form";
 export const metadata: Metadata = { title: "Recuperar acesso" };
 
 export default function EsqueciSenhaPage() {
+  // A página pública delega apenas a apresentação ao shell compartilhado de autenticação.
   return (
     <AuthShell
       titulo="Esqueci minha senha"

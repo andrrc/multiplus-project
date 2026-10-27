@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `formularios`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { useActionState, useState } from "react";
 import { Campo, inputClass } from "@/ui/campo";

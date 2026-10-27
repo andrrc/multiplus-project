@@ -1,3 +1,6 @@
+/**
+ * Biblioteca de domínio `notificacoes`. Reúne funções reutilizáveis desta área; os comentários junto às funções explicam validações, decisões e efeitos específicos de cada operação.
+ */
 import { EventoNotificacao, Perfil, Prisma } from "@prisma/client";
 import { enviarEmail } from "@/lib/email";
 import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
@@ -25,11 +28,14 @@ type Destinatario = {
 };
 
 async function listarDestinatarios(evento: EventoNotificacao, usuarioIds: string[]) {
+  // Evita consultas quando o evento não tem destinatários possíveis.
   if (usuarioIds.length === 0) return [];
+  // Preferências válidas definem quais perfis podem receber este evento por algum canal.
   const preferencias = await prisma.preferenciaNotificacao.findMany({
     where: { evento, OR: [{ email: true }, { inApp: true }] },
   });
   const perfis = preferencias.map((preferencia) => preferencia.perfil);
+  // Deduplica ids e limita a consulta a contas ativas dos perfis com preferência configurada.
   const usuarios = await prisma.usuario.findMany({
     where: {
       ativo: true,
@@ -51,12 +57,15 @@ async function listarDestinatarios(evento: EventoNotificacao, usuarioIds: string
 
 /** B6 — dispara in-app e e-mail sem deixar a integração externa bloquear a ação. */
 export async function dispararEventoNotificacao(evento: EventoNotificacao, dados: DadosEvento) {
+  // Métricas retornadas ao chamador indicam o resultado de cada canal sem interromper a ação original.
   const metricas = { emailsEnviados: 0, inAppCriadas: 0, falhas: 0 };
   try {
+    // Destinatários são derivados no servidor; o formulário não controla canais ou perfis.
     const destinatarios = await listarDestinatarios(evento, dados.usuarioIds);
     await Promise.all(destinatarios.map(async (destinatario: Destinatario) => {
       const preferencia = destinatario.preferenciasNotificacao[0];
       if (!preferencia) return;
+      // Colaboradores e clientes recebem rotas compatíveis com seu escopo de acesso.
       const url = rotaDoRegistroParaPerfil(
         destinatario.perfil === "CLIENTE" ? dados.urlCliente ?? null : dados.url,
         destinatario.perfil,
@@ -64,6 +73,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
 
       if (dados.dedupeKey && evento === EventoNotificacao.PRAZO_PROXIMO) {
         try {
+          // Reserva uma chave por destinatário; a restrição única impede reenvio do mesmo aviso diário.
           await prisma.registroEnvioPrazo.create({ data: { chave: `${dados.dedupeKey}:${destinatario.id}` } });
         } catch (erro) {
           if ((erro as { code?: string }).code === "P2002") return;
@@ -72,6 +82,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
       }
 
       if (preferencia.inApp) {
+        // P2002 indica que uma notificação idempotente já foi criada, não falha de entrega.
         await prisma.notificacao.create({
           data: {
             usuarioId: destinatario.id,
@@ -88,6 +99,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
       }
 
       if (preferencia.email) {
+        // A falha de e-mail é contabilizada, mas não impede a entrega in-app nem outros destinatários.
         await enviarEmail({
           to: destinatario.email,
           subject: dados.titulo,
@@ -113,6 +125,7 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
 /** Menções são direcionadas, mas respeitam os canais de NOVO_COMENTARIO do perfil. */
 export async function dispararNotificacoesMencaoComentario(dados: { destinatarioIds: string[]; autorId: string; comentario: string; url: string; entidadeId: string }) {
   try {
+    // Deduplica menções e descarta usuários já inativos antes de preparar os canais.
     const ids = [...new Set(dados.destinatarioIds)];
     if (!ids.length) return;
     const usuarios = await prisma.usuario.findMany({ where: { id: { in: ids }, ativo: true }, select: { id: true, nome: true, email: true, perfil: true } });
@@ -121,6 +134,7 @@ export async function dispararNotificacoesMencaoComentario(dados: { destinatario
     await Promise.all(usuarios.map(async (usuario) => {
       const preferencia = preferencias.find((item) => item.perfil === usuario.perfil);
       if (!preferencia) return;
+      // A menção também confirma ao autor que o comentário foi publicado.
       const eAutor = usuario.id === dados.autorId;
       const titulo = eAutor ? "Menção enviada em comentário" : "Você foi mencionado em um comentário";
       const mensagem = eAutor ? "Esta confirmação registra a publicação da menção no comentário." : `${autor?.nome ?? "Alguém"} mencionou você em um comentário.`;
@@ -164,10 +178,12 @@ export async function listarAdministradoresAtivos(): Promise<string[]> {
 
 /** RF-022 — resolve clientes ativos vinculados ao projeto sem aceitar IDs de destinatário do formulário. */
 export async function listarClientesAtivosDoProjeto(projetoId: string): Promise<string[]> {
+  // Não aceita destinatários enviados pela tela: resolve cliente a partir do projeto ativo.
   const projeto = await prisma.projeto.findFirst({
     where: { id: projetoId, ativo: true, cliente: { ativo: true } },
     select: { clienteId: true },
   });
+  // Projeto ou cliente inativo não gera notificações para contas do portal.
   if (!projeto) return [];
   const usuarios = await prisma.usuario.findMany({
     where: { perfil: Perfil.CLIENTE, ativo: true, clienteId: projeto.clienteId, cliente: { ativo: true } },
@@ -177,6 +193,7 @@ export async function listarClientesAtivosDoProjeto(projetoId: string): Promise<
 }
 
 export async function buscarProjetoAtivoDaTarefa(tarefaId: string): Promise<string | null> {
+  // A cadeia tarefa → projeto → cliente deve estar ativa para produzir um link/notificação.
   const tarefa = await prisma.tarefa.findFirst({
     where: { id: tarefaId, ativo: true, projeto: { ativo: true, cliente: { ativo: true } } },
     select: { projetoId: true },
@@ -187,6 +204,7 @@ export async function buscarProjetoAtivoDaTarefa(tarefaId: string): Promise<stri
 /** Dispara ATRIBUICAO_RECEBIDA conforme a preferência do usuário atribuído. */
 export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, entidadeTipo: "PROJETO" | "TAREFA" | "SUBTAREFA", entidadeId: string) {
   try {
+    // Busca o rótulo apropriado sem carregar dados que não entram na notificação.
     const registro = entidadeTipo === "PROJETO"
       ? await prisma.projeto.findUnique({ where: { id: entidadeId }, select: { nome: true } })
       : entidadeTipo === "TAREFA"
@@ -195,6 +213,7 @@ export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, e
     if (!registro) return;
     const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { perfil: true } });
     if (!usuario) return;
+    // Projetos/tarefas usam `nome`; subtarefas usam `titulo`.
     const nome = "nome" in registro ? registro.nome : registro.titulo;
     let url: string;
     if (entidadeTipo === "PROJETO") {
@@ -220,10 +239,13 @@ export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, e
 }
 
 export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
+  // Parâmetro explícito facilita execuções controladas; fora delas vale a configuração global.
   const configuracao = await prisma.configuracaoNotificacao.findUnique({ where: { id: 1 } });
   const antecedencia = dias ?? configuracao?.diasAntecedenciaPadrao ?? 7;
+  // Usa o início do dia de São Paulo para que avisos e semáforo mudem de data juntos.
   const inicio = new Date(dataDeHojeEmSaoPaulo(hoje));
   const whereBase: Prisma.TarefaWhereInput = { ativo: true, prazo: { gte: inicio }, status: { notIn: ["CONCLUIDO", "CANCELADO"] }, projeto: { ativo: true, cliente: { ativo: true } } };
+  // A janela ampla precisa cobrir também tarefas com antecedência maior que o padrão.
   const maiorAntecedencia = await prisma.tarefa.aggregate({ where: whereBase, _max: { diasAntecedencia: true } });
   const fim = new Date(inicio);
   fim.setUTCDate(fim.getUTCDate() + Math.max(antecedencia, maiorAntecedencia._max?.diasAntecedencia ?? 0));
@@ -248,6 +270,7 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
   let inAppCriadas = 0;
   let falhas = 0;
   const administradores = await prisma.usuario.findMany({ where: { ativo: true, perfil: "ADMIN" }, select: { id: true } });
+  // Cada tarefa aplica sua antecedência própria, com o parâmetro explícito tendo prioridade.
   const elegiveis = tarefas.filter((tarefa) => {
     const limite = new Date(inicio);
     limite.setUTCDate(limite.getUTCDate() + (dias ?? tarefa.diasAntecedencia ?? antecedencia));
@@ -255,6 +278,7 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
     return tarefa.prazo !== null && tarefa.prazo <= limite;
   });
   for (const tarefa of elegiveis) {
+    // O aviso vai ao responsável ativo; sem responsável elegível, vai à ADMIN.
     const alvo = tarefa.responsavelUsuario?.ativo
       ? [tarefa.responsavelUsuario.id]
       : tarefa.responsavel?.usuario?.ativo
@@ -277,11 +301,14 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
 }
 
 export async function executarJobPrazo(hoje = new Date()) {
+  // Marca o início antes do processamento para que a tela de observabilidade mostre execução atual.
   const inicio = new Date();
   await prisma.configuracaoNotificacao.upsert({ where: { id: 1 }, create: { id: 1, ultimaExecucaoPrazoEm: inicio, ultimaExecucaoPrazoStatus: "EM_EXECUCAO" }, update: { ultimaExecucaoPrazoEm: inicio, ultimaExecucaoPrazoStatus: "EM_EXECUCAO" } });
   try {
+    // `undefined` instrui a rotina a respeitar as antecedências de cada tarefa.
     const resultado = await dispararPrazoProximo(undefined, hoje);
     const sucesso = resultado.falhas === 0;
+    // O último sucesso só é substituído quando todos os envios terminaram sem falhas.
     await prisma.configuracaoNotificacao.update({ where: { id: 1 }, data: {
       ultimaExecucaoPrazoStatus: sucesso ? "SUCESSO" : "FALHA",
       ...(sucesso ? { ultimoSucessoPrazoEm: new Date(), ultimoSucessoPrazoTarefas: resultado.processadas, ultimoSucessoPrazoEmailsEnviados: resultado.emailsEnviados, ultimoSucessoPrazoInAppCriados: resultado.inAppCriadas } : {}),
@@ -296,6 +323,7 @@ export async function executarJobPrazo(hoje = new Date()) {
 }
 
 export async function buscarStatusJobPrazo() {
+  // Retorna somente os campos de execução necessários ao painel de observabilidade.
   return prisma.configuracaoNotificacao.findUnique({ where: { id: 1 }, select: {
     ultimaExecucaoPrazoEm: true, ultimaExecucaoPrazoStatus: true, ultimoSucessoPrazoEm: true,
     ultimoSucessoPrazoTarefas: true, ultimoSucessoPrazoEmailsEnviados: true, ultimoSucessoPrazoInAppCriados: true,
@@ -303,6 +331,7 @@ export async function buscarStatusJobPrazo() {
 }
 
 export async function listarNotificacoes(ctx: ContextoUsuario) {
+  // A lista e o contador são consultados em paralelo e ambos ficam restritos ao usuário da sessão.
   return comContextoDeUsuario(ctx, async (tx) => {
     const [itens, naoLidas] = await Promise.all([
       tx.notificacao.findMany({ where: { usuarioId: ctx.usuarioId }, orderBy: { criadaEm: "desc" }, take: 50 }),
@@ -313,19 +342,23 @@ export async function listarNotificacoes(ctx: ContextoUsuario) {
 }
 
 export async function marcarNotificacaoLida(ctx: ContextoUsuario, id: string) {
+  // O filtro composto impede marcar como lida uma notificação pertencente a outra conta.
   return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { id, usuarioId: ctx.usuarioId }, data: { lida: true } }));
 }
 
 export async function marcarTodasNotificacoesLidas(ctx: ContextoUsuario) {
+  // Atualiza somente notificações não lidas do usuário atual.
   return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { usuarioId: ctx.usuarioId, lida: false }, data: { lida: true } }));
 }
 
 export async function listarPreferenciasNotificacao(ctx: ContextoUsuario) {
+  // A matriz de preferências é administrada centralmente.
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
   return comContextoDeUsuario(ctx, (tx) => tx.preferenciaNotificacao.findMany({ orderBy: [{ perfil: "asc" }, { evento: "asc" }] }));
 }
 
 export async function atualizarPreferenciaNotificacao(ctx: ContextoUsuario, perfil: "ADMIN" | "ADMIN_INTERNO" | "ADMIN_EXTERNO" | "CLIENTE", evento: EventoNotificacao, canais: { email: boolean; inApp: boolean }) {
+  // O servidor repete a checagem de ADMIN e atualiza o par único perfil/evento.
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
   return comContextoDeUsuario(ctx, (tx) => tx.preferenciaNotificacao.update({ where: { perfil_evento: { perfil, evento } }, data: canais }));
 }

@@ -47,12 +47,17 @@ enum EventoNotificacao {
 }
 
 enum StatusSolicitacaoConclusao {
+  // Estado aguardando decisão da ADMIN; a migration impede duas pendências para o mesmo item.
   PENDENTE
+  // A conclusão foi aprovada e o status do item foi atualizado na mesma transação.
   APROVADA
+  // A ADMIN negou o pedido e pode registrar uma observação de decisão.
   REJEITADA
+  // O próprio solicitante ou ADMIN cancelou o pedido antes da decisão.
   CANCELADA
 }
 
+/// Estados de acompanhamento do projeto; os valores persistidos usam rótulos legíveis no banco.
 enum StatusProjeto {
   A_INICIAR    @map("A iniciar")
   EM_ANDAMENTO @map("Em andamento")
@@ -60,6 +65,7 @@ enum StatusProjeto {
   CANCELADO    @map("Cancelado")
 }
 
+/// Etapas possíveis de execução de uma tarefa, incluindo estados operacionais e finais.
 enum StatusTarefa {
   A_INICIAR                    @map("A iniciar")
   EM_ANDAMENTO                 @map("Em andamento")
@@ -72,12 +78,14 @@ enum StatusTarefa {
   CANCELADO                    @map("Cancelado")
 }
 
+/// Status da unidade menor de trabalho; diferente de tarefa, não há estados intermediários adicionais.
 enum StatusSubtarefa {
   EM_ANDAMENTO
   CONCLUIDO
   CANCELADO
 }
 
+/// Intervalos aceitos para recorrência de tarefas e séries.
 enum Periodicidade {
   SEMANAL
   MENSAL
@@ -387,14 +395,17 @@ model ValorProjeto {
   @@map("valores_projeto")
 }
 
+/// Unidade de trabalho vinculada a projeto; guarda também a âncora e os vínculos da recorrência.
 model Tarefa {
   id                             String         @id @default(cuid())
   projetoId                      String
   projeto                        Projeto        @relation(fields: [projetoId], references: [id], onDelete: Cascade)
   nome                           String
   descricao                      String?
+  /// Data desta ocorrência; pode ser nula apenas nos fluxos que não exigem prazo.
   prazo                          DateTime?
   status                         StatusTarefa   @default(A_INICIAR)
+  /// Campos de série: periodicidade define o passo e prazoOriginal conserva o dia-base.
   periodicidade                  Periodicidade?
   diaSemana                      Int?
   serieId                        String?
@@ -429,6 +440,7 @@ model Tarefa {
   @@map("tarefas")
 }
 
+/// Item de checklist vinculado a uma tarefa, com prazo, etiquetas e um responsável.
 model Subtarefa {
   id            String          @id @default(cuid())
   tarefaId      String
@@ -436,6 +448,7 @@ model Subtarefa {
   titulo        String
   descricao     String?
   prazo         DateTime?
+  /// Guarda nomes canônicos do catálogo global de etiquetas.
   etiquetas     String[]        @default([])
   status        StatusSubtarefa @default(EM_ANDAMENTO)
   ativo         Boolean         @default(true)
@@ -480,6 +493,7 @@ model Comentario {
   texto       String
   link        String?
   imagemChave String?
+  /// IDs validados pelo servidor para notificação de menção; não são nomes exibidos.
   mencoesUsuarioIds String[] @default([])
   autorId     String
   autor       Usuario    @relation(fields: [autorId], references: [id], onDelete: Cascade)
@@ -499,6 +513,7 @@ model Comentario {
 
 /// Solicitação e decisão auditável de conclusão de tarefa ou subtarefa.
 model SolicitacaoConclusao {
+  /// Um dos dois vínculos aponta ao item solicitado; a constraint exige um único alvo.
   id                String                     @id @default(cuid())
   tarefaId          String?
   tarefa            Tarefa?                    @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
@@ -552,6 +567,7 @@ model ConfiguracaoNotificacao {
 
 /// Registro interno de idempotência dos envios diários de prazo.
 model RegistroEnvioPrazo {
+  /// Chave composta por tarefa, dia e destinatário; a unicidade torna o envio idempotente.
   id        String   @id @default(cuid())
   chave     String   @unique
   criadoEm  DateTime @default(now())
@@ -630,6 +646,7 @@ enum TipoLaudoTecnico {
 }
 
 model LaudoTecnico {
+  /// O par clienteId único representa o único laudo atual do cadastro.
   id String @id @default(cuid())
   clienteId String @unique
   cliente Cliente @relation(fields: [clienteId], references: [id])

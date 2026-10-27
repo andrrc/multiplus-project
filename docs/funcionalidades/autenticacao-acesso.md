@@ -137,6 +137,7 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar autenticação, sessão, autorização e fluxos de senha no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Padronizar como “SGA Múltiplus Ambiental” o nome da tela de login, dos convites e dos fluxos de senha |
 | 2026-10-23 | este commit | Posicionar o botão de definição de senha antes do link alternativo |
 | 2026-10-22 | este commit | Identificar e-mails como “SGA Múltiplus Ambiental”, preservando o endereço configurado ([análise](../analises/nome-remetente-email.md)) |

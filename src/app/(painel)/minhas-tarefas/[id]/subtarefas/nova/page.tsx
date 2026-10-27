@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/minhas-tarefas/[id]/subtarefas/nova/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarTarefaParaColaborador } from "@/lib/projetos-tarefas";

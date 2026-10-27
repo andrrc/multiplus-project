@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/clientes/[id]/editar/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import { buscarLaudoTecnico, listarResponsaveisLaudo } from "@/lib/laudos-tecnicos";
 import { notFound, redirect } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";

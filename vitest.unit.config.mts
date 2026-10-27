@@ -2,8 +2,8 @@ import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 /**
- * Config separada dos testes unitários (tests/unit) — sem globalSetup nem banco de
- * dados. Ver vitest.config.mts para integration/smoke (que dependem de Postgres).
+ * Configuração separada para os testes unitários em `tests/unit`: não inicia setup global
+ * nem banco de dados. `vitest.config.mts` seleciona integração e smoke, que usam Postgres.
  */
 export default defineConfig({
   resolve: {

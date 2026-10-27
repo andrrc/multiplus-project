@@ -4,19 +4,24 @@ import { auth } from "@/server/auth";
 const ROTAS_PUBLICAS = ["/login", "/esqueci-senha", "/definir-senha"];
 
 export default auth((req) => {
+  // O proxy usa a presença do JWT como verificação rápida para redirecionamentos iniciais.
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
+  // Rotas de entrada e recuperação devem poder ser abertas sem uma sessão.
   const isRotaPublica = ROTAS_PUBLICAS.some((rota) => pathname.startsWith(rota));
+  // Permite exibir a mensagem de sessão invalidada sem redirecionar de volta ao painel.
   const sessaoInvalidada =
     pathname === "/login" && req.nextUrl.searchParams.get("motivo") === "sessao-invalidada";
 
   if (!isLoggedIn && !isRotaPublica) {
+    // Guarda o caminho solicitado para que o login possa continuar o fluxo depois da autenticação.
     const url = new URL("/login", req.nextUrl.origin);
     url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 
   if (isLoggedIn && pathname === "/login" && !sessaoInvalidada) {
+    // Usuários autenticados não precisam permanecer na tela de login.
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 

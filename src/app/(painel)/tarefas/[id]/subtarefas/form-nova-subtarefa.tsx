@@ -1,3 +1,6 @@
+/**
+ * Componente de interface `form nova subtarefa`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 import Link from "next/link";
 import { StatusSubtarefa } from "@prisma/client";
 import { criarSubtarefaERedirecionarAction } from "@/app/(painel)/projetos/actions";

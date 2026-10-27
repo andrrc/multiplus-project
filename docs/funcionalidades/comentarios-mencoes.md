@@ -76,6 +76,7 @@ mencionada recebe aviso pelos canais configurados para o perfil dela.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar validações, armazenamento privado, menções e efeitos de notificação no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-01 | `9e20f9c` | Links de comentário limitados a URLs HTTP/HTTPS no servidor ([análise](../analises/validacao-esquema-links.md)) |
 | 2026-10-01 | 83f7524 | Avisos de comentário limitados a usuários ativos com acesso ao registro ([análise](../analises/notificacao-comentario-com-acesso.md)) |
 | 2026-09-30 | ce3b73f | Menções e confirmação do autor respeitam as preferências de canal ([análise](../analises/controle-total-notificacoes.md)) |

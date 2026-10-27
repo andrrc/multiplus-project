@@ -22,6 +22,7 @@ export async function enviarEmail({ to, subject, html }: EnviarEmailParams): Pro
     throw new EmailNaoConfiguradoError();
   }
 
+  // O remetente pode ser configurado por ambiente; o padrão identifica o serviço e não aceita respostas.
   await resend.emails.send({
     from: process.env.EMAIL_FROM ?? "SGA Múltiplus Ambiental <nao-responda@multiplusambiental.com.br>",
     to,
@@ -31,6 +32,8 @@ export async function enviarEmail({ to, subject, html }: EnviarEmailParams): Pro
 }
 
 export function linkDefinirSenha(token: string): string {
+  // Produção, testes e desenvolvimento apontam para a origem configurada, com fallback local.
   const base = process.env.AUTH_URL ?? "http://localhost:3000";
+  // O token aparece somente no link enviado ao usuário; o banco armazena seu hash.
   return `${base}/definir-senha?token=${token}`;
 }

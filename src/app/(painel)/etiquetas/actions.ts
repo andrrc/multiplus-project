@@ -1,4 +1,7 @@
 "use server";
+/**
+ * Actions do módulo `src/app/(painel)/etiquetas`. Recebem dados enviados pela interface, obtêm o contexto autenticado, validam as entradas no servidor e encaminham operações às funções de domínio; a interface não é a barreira de autorização.
+ */
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

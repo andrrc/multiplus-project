@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/portal/[id]/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import { formatarDataHoraBrasilia } from "@/lib/datas";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,10 +19,13 @@ const projetoStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAM
 const tarefaStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento do cliente", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão ambiental", COM_EXIGENCIA_A_CUMPRIR: "Com exigência a cumprir", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
 export default async function PortalProjetoPage({ params }: { params: Promise<{ id: string }> }) {
+  // A verificação de rota é seguida de busca pelo id e pelo cliente da sessão, evitando IDOR.
   const ctx = await exigirAcessoARota("/portal");
   const { id } = await params;
   const projeto = await buscarProjetoPortal(ctx, id);
+  // A função retorna null tanto para item inexistente quanto fora do escopo do cliente.
   if (!projeto) notFound();
+  // O detalhe renderiza progresso, tarefas, responsáveis e documentos já filtrados no servidor.
   return <div className="w-full max-w-[1120px]">
     <Link href="/portal" className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Meus projetos</Link>
     <div className="mt-3 flex flex-wrap items-start justify-between gap-4 border-b border-linha pb-6">

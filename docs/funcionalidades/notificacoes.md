@@ -128,6 +128,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar os fluxos de notificações, mensagens e jobs no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Ajustar o texto do botão para “Abrir no sistema” e direcionar links de e-mail para a rota autorizada de cada perfil; notificações in-app antigas permanecem como estavam ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
 | 2026-10-22 | este commit | Atualizar o nome do remetente compartilhado para “SGA Múltiplus Ambiental”, preservando o endereço ([análise](../analises/nome-remetente-email.md)) |
 | 2026-10-22 | este commit | Evento configurável de solicitação/decisão de conclusão, caixa de notificações para colaboradores e aviso de tarefa concluída somente após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |

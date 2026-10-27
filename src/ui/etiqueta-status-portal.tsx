@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+// Centraliza as cores do status do portal para manter cartões e detalhes consistentes.
 const ESTILO_POR_STATUS: Record<string, string> = {
   A_INICIAR: "border-lilas/30 bg-lilas-cl text-lilas",
   EM_ANDAMENTO: "border-azul/30 bg-azul-cl text-azul-esc",
@@ -8,6 +9,7 @@ const ESTILO_POR_STATUS: Record<string, string> = {
 };
 
 export function EtiquetaStatusPortal({ status, children }: { status: string; children: ReactNode }) {
+  // Status novos ou desconhecidos recebem um estilo neutro até serem mapeados.
   const estilo = ESTILO_POR_STATUS[status] ?? "border-linha bg-branco text-tinta";
 
   return (

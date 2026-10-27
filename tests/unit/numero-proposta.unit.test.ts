@@ -1,3 +1,4 @@
+/** RF-004 — verifica a montagem do número/ano da proposta e o tratamento de campos vazios. */
 import { describe, expect, it } from "vitest";
 import { montarNumeroProposta } from "@/lib/numero-proposta";
 

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 /* Identidade visual Múltiplus Ambiental — ver docs/Identidade_Visual_Multiplus.md */
+/* Tokens abaixo alimentam tanto o CSS base quanto as classes utilitárias do Tailwind. */
 :root {
   --azul: #0499f3;
   --azul-esc: #0b6fb0;
@@ -32,6 +33,7 @@
 }
 
 @theme inline {
+  /* Expõe as variáveis institucionais como tokens `text-*`, `bg-*` e `border-*`. */
   --color-azul: var(--azul);
   --color-azul-esc: var(--azul-esc);
   --color-lilas: var(--lilas);
@@ -62,6 +64,7 @@
 }
 
 body {
+  /* O corpo usa a fonte de leitura; títulos e controles recebem a fonte de interface abaixo. */
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-leitura), Arial, sans-serif;
@@ -81,6 +84,7 @@ h4 {
 }
 
 @layer base {
+  /* Mantém os controles nativos alinhados à tipografia definida pelo sistema. */
   button,
   input,
   select,
@@ -98,6 +102,7 @@ h4 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Respeita usuários que pedem redução de animações no sistema operacional. */
   *,
   *::before,
   *::after {

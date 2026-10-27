@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/portal/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import { formatarDataHoraBrasilia } from "@/lib/datas";
 import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
@@ -13,9 +16,13 @@ const atualizacao = (valor: Date | null) => valor
   : "Sem movimentação";
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 
+/** Lista apenas os projetos próprios do cliente e resume status, progresso e última atividade. */
 export default async function PortalPage() {
+  // A rota valida o perfil antes de buscar dados pelo vínculo clienteId da sessão.
   const ctx = await exigirAcessoARota("/portal");
+  // A função de domínio devolve somente campos permitidos ao portal.
   const projetos = await listarProjetosPortal(ctx);
+  // O JSX mostra estado vazio ou cartões responsivos com links para os detalhes autorizados.
   return <div className="w-full max-w-[1120px]">
     <p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Área exclusiva</p>
     <h1 className="mt-1 text-[28px]">Acompanhamento dos projetos</h1>

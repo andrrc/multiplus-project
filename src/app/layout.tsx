@@ -4,12 +4,14 @@ import { Montserrat, Raleway } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
+// Carrega as fontes do Google no build e publica cada uma como variável CSS.
 const raleway = Raleway({
   variable: "--font-raleway",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
+// Montserrat é usada nos textos de leitura conforme a identidade visual do sistema.
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
@@ -31,6 +33,7 @@ const droidSerif = localFont({
 });
 
 export const metadata: Metadata = {
+  // Usa a URL pública configurada para compor metadados absolutos.
   metadataBase: new URL(process.env.AUTH_URL ?? "http://localhost:3000"),
   title: {
     default: "Múltiplus Ambiental | Gestão de projetos e prazos",
@@ -44,6 +47,7 @@ export const metadata: Metadata = {
   creator: "Múltiplus Ambiental",
   publisher: "Múltiplus Ambiental",
   alternates: { canonical: "/" },
+  // O conteúdo autenticado não deve ser indexado por buscadores.
   robots: {
     index: false,
     follow: false,
@@ -69,6 +73,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  // O layout raiz define idioma, fontes compartilhadas e a estrutura comum de todas as rotas.
   return (
     <html
       lang="pt-BR"

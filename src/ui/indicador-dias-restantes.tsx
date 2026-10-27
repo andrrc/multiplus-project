@@ -5,7 +5,9 @@ const DIA_MS = 24 * 60 * 60 * 1000;
 
 /** Conta dias corridos entre hoje (no fuso de São Paulo) e o prazo; negativo quando já venceu. */
 export function calcularDiasRestantes(prazo: Date, hoje = new Date()) {
+  // Normaliza o prazo para meia-noite UTC para comparar somente o dia civil.
   const prazoUTC = Date.UTC(prazo.getUTCFullYear(), prazo.getUTCMonth(), prazo.getUTCDate());
+  // O dia atual é obtido no fuso de São Paulo, igual às regras de prazo do servidor.
   return Math.round((prazoUTC - dataDeHojeEmSaoPaulo(hoje)) / DIA_MS);
 }
 
@@ -20,6 +22,7 @@ export function IndicadorSemaforoProjeto({
   ativo?: boolean;
   limites?: LimitesSemaforo;
 }) {
+  // Texto e cor são derivados em conjunto para que o estado tenha sempre um rótulo legível.
   let texto: string;
   let cores: string;
 
@@ -36,6 +39,7 @@ export function IndicadorSemaforoProjeto({
     texto = "Sem prazo";
     cores = "border-linha bg-branco text-cinza";
   } else {
+    // Prazos ativos têm os dias restantes avaliados contra o limite global configurável.
     const dias = calcularDiasRestantes(prazo);
     // Vermelho só para prazo vencido; do dia do prazo até o limite configurado, âmbar.
     cores = dias < 0
@@ -50,6 +54,7 @@ export function IndicadorSemaforoProjeto({
         : `${dias} ${dias === 1 ? "dia" : "dias"}`;
   }
 
+  // Exibe a quantidade com algarismos alinhados e as cores definidas para o semáforo.
   return (
     <span className={`inline-flex items-center rounded-[3px] border px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-semibold tabular-nums ${cores}`}>
       {texto}

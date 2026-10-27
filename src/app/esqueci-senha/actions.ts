@@ -1,4 +1,7 @@
 "use server";
+/**
+ * Actions do módulo `src/app/esqueci-senha`. Recebem dados enviados pela interface, obtêm o contexto autenticado, validam as entradas no servidor e encaminham operações às funções de domínio; a interface não é a barreira de autorização.
+ */
 
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -35,12 +38,14 @@ export async function esqueciSenhaAction(
   _estadoAnterior: { mensagem?: string; erro?: string },
   formData: FormData,
 ): Promise<{ mensagem?: string; erro?: string }> {
+  // A validação ocorre no servidor antes de normalizar e usar o e-mail.
   const parsed = schema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
     return { erro: "Informe um e-mail válido." };
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  // Limita em paralelo por origem e por endereço para reduzir abuso e enumeração.
   const ip = await ipDaRequisicao();
 
   const porIp = registrarTentativa(`recuperacao:ip:${ip}`, LIMITE_POR_IP, JANELA_MS);
@@ -53,6 +58,7 @@ export async function esqueciSenhaAction(
     return { mensagem: MENSAGEM_SUCESSO };
   }
 
+  // A resposta não depende de sessão; esta busca é necessária para iniciar o fluxo de recuperação.
   const usuario = await prisma.usuario.findUnique({ where: { email } });
 
   // RF-032 — a resposta não espera nada que só acontece quando a conta existe. A mensagem já
@@ -61,6 +67,7 @@ export async function esqueciSenhaAction(
   // e-mail inexistente não pagava. Agora as duas saídas fazem o mesmo trabalho antes de
   // responder — parse, limite e um SELECT — e o resto vai para depois da resposta.
   if (usuario && usuario.ativo) {
+    // Geração do token e envio são adiados para não alterar o tempo da resposta pública.
     agendarPosResposta("recuperacao-de-senha", async () => {
       const token = await criarTokenAcesso(usuario.id, "RECUPERAR_SENHA");
       await enviarEmail({

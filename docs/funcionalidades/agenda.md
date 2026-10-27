@@ -83,3 +83,4 @@ hora, para a Administradora planejar o mês.
 | 2026-10-15 | `75498a1` | Atraso passa a virar à meia-noite de Brasília, igual ao semáforo ([análise](../analises/atraso-fuso-e-lista-subtarefas-sem-fundo.md)) |
 | 2026-10-20 | este commit | Exibir o nome completo dos itens ao passar o mouse na agenda |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
+| 2026-10-27 | este commit | Explicar montagem da agenda e projeção de recorrências no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |

@@ -1,3 +1,6 @@
+/**
+ * Biblioteca de domínio `projetos tarefas`. Reúne funções reutilizáveis desta área; os comentários junto às funções explicam validações, decisões e efeitos específicos de cada operação.
+ */
 import { condicaoResponsavel, type OpcaoResponsavel } from "@/lib/filtro-responsavel";
 import { randomUUID } from "node:crypto";
 import {
@@ -60,6 +63,7 @@ export type DadosDocumentoProjeto = {
   link: string;
 };
 
+/** Lista os clientes ativos que podem receber um projeto novo. */
 export async function listarClientesParaProjeto(ctx: ContextoUsuario) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) =>
@@ -67,6 +71,7 @@ export async function listarClientesParaProjeto(ctx: ContextoUsuario) {
   );
 }
 
+/** Carrega pessoas vinculadas ao cliente e usuários internos que podem ser responsáveis. */
 export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: string) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) =>
@@ -77,8 +82,10 @@ export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: 
   );
 }
 
+/** Lista projetos administrativos com busca textual e opção de incluir desativados. */
 export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false, busca?: string) {
   exigirAdministrador(ctx);
+  // Espaços em branco não ativam uma busca que filtraria todos os resultados.
   const termo = busca?.trim();
   return comContextoDeUsuario(ctx, (tx) =>
     tx.projeto.findMany({
@@ -101,6 +108,7 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
   );
 }
 
+/** Retorna tarefas ativas de projetos ativos, usadas para compor filtros de tela. */
 export async function listarTarefasParaFiltro(ctx: ContextoUsuario) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
@@ -115,6 +123,7 @@ export async function listarTarefasParaFiltro(ctx: ContextoUsuario) {
 
 export type FiltrosPrazos = { projetoId?: string; clienteId?: string; tarefaId?: string; pendentes?: boolean; responsavel?: string | string[] };
 
+// Constrói o filtro de tarefa incluindo sempre os vínculos ativos de projeto e cliente.
 function whereTarefas(filtros: FiltrosPrazos): Prisma.TarefaWhereInput {
   return {
     ativo: true,
@@ -126,6 +135,7 @@ function whereTarefas(filtros: FiltrosPrazos): Prisma.TarefaWhereInput {
   };
 }
 
+// Mantém os mesmos filtros para subtarefas e confirma que toda a cadeia de pais está ativa.
 function whereSubtarefas(filtros: FiltrosPrazos): Prisma.SubtarefaWhereInput {
   return {
     ativo: true,
@@ -140,9 +150,11 @@ function whereSubtarefas(filtros: FiltrosPrazos): Prisma.SubtarefaWhereInput {
   };
 }
 
+/** Lista prazos administrativos e, quando solicitado, agrega o progresso das subtarefas. */
 export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}, incluirProgresso = false) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
+    // A consulta traz os vínculos necessários à tela e ordena primeiro pelo prazo mais próximo.
     const tarefas = await tx.tarefa.findMany({
       where: whereTarefas(filtros),
       include: {
@@ -153,12 +165,13 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
-    // Uma agregação para a lista inteira; o filtro de responsável pertence à tarefa.
+    // Uma única agregação serve a lista inteira; o filtro de responsável limita a tarefa-pai.
     const grupos = incluirProgresso && tarefas.length > 0 ? await tx.subtarefa.groupBy({
       by: ["tarefaId", "status"],
       where: { tarefaId: { in: tarefas.map(tarefa => tarefa.id) }, ativo: true, status: { not: StatusSubtarefa.CANCELADO } },
       _count: { _all: true },
     }) : [];
+    // Consolida os grupos de status num total e numa contagem de concluídas por tarefa.
     const progresso = new Map<string, { concluidas: number; total: number }>();
     for (const grupo of grupos) {
       const contagem = progresso.get(grupo.tarefaId) ?? { concluidas: 0, total: 0 };
@@ -166,6 +179,7 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
       if (grupo.status === StatusSubtarefa.CONCLUIDO) contagem.concluidas += grupo._count._all;
       progresso.set(grupo.tarefaId, contagem);
     }
+    // Só inclui o campo agregado quando a chamada pediu progresso, preservando os demais usos.
     return tarefas.map(tarefa => ({
       ...tarefa,
       ...(incluirProgresso ? { progressoSubtarefas: progresso.get(tarefa.id) ?? { concluidas: 0, total: 0 } } : {}),
@@ -173,6 +187,7 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
   });
 }
 
+/** Lista subtarefas com contexto de tarefa, projeto e responsável para a tela de prazos. */
 export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.findMany({
@@ -186,6 +201,7 @@ export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: Filt
   }));
 }
 
+/** Mostra à ADMIN as solicitações pendentes com o item e a hierarquia de contexto. */
 export async function listarSolicitacoesConclusaoPendentes(ctx: ContextoUsuario) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.solicitacaoConclusao.findMany({
@@ -211,6 +227,7 @@ export async function listarSolicitacoesConclusaoPendentes(ctx: ContextoUsuario)
   }));
 }
 
+/** Localiza pedido pendente para um item específico, diferenciando tarefa de subtarefa. */
 export async function buscarSolicitacaoConclusaoPendente(ctx: ContextoUsuario, tipo: "TAREFA" | "SUBTAREFA", itemId: string) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.solicitacaoConclusao.findFirst({
@@ -218,9 +235,11 @@ export async function buscarSolicitacaoConclusaoPendente(ctx: ContextoUsuario, t
   }));
 }
 
+/** Registra o pedido do colaborador via função SQL que valida vínculo e permissão. */
 export async function solicitarConclusao(ctx: ContextoUsuario, tipo: "TAREFA" | "SUBTAREFA", itemId: string) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Ação disponível somente para colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
+    // A função SQL verifica a autorização e grava a solicitação atomicamente.
     const linhas = await tx.$queryRaw<{ id: string }[]>`SELECT solicitar_conclusao(${tipo}, ${itemId}) AS id`;
     const solicitacao = await tx.solicitacaoConclusao.findUniqueOrThrow({ where: { id: linhas[0].id } });
     const item = tipo === "TAREFA"
@@ -236,9 +255,11 @@ export async function solicitarConclusao(ctx: ContextoUsuario, tipo: "TAREFA" | 
   });
 }
 
+/** Cancela um pedido permitido ao próprio colaborador ou à administradora. */
 export async function cancelarSolicitacaoConclusao(ctx: ContextoUsuario, solicitacaoId: string) {
   exigirColaboradorOuAdministrador(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
+    // A função SQL valida quem pode cancelar e atualiza o estado na transação atual.
     await tx.$queryRaw`SELECT cancelar_solicitacao_conclusao(${solicitacaoId})`;
     const solicitacao = await tx.solicitacaoConclusao.findUniqueOrThrow({ where: { id: solicitacaoId } });
     const tarefaId = solicitacao.tarefaId ?? (solicitacao.subtarefaId
@@ -248,6 +269,7 @@ export async function cancelarSolicitacaoConclusao(ctx: ContextoUsuario, solicit
   });
 }
 
+/** Aprova ou rejeita um pedido, validando observação e mantendo as alterações atômicas. */
 export async function decidirSolicitacaoConclusao(
   ctx: ContextoUsuario,
   solicitacaoId: string,
@@ -255,6 +277,7 @@ export async function decidirSolicitacaoConclusao(
   comentario?: string | null,
 ) {
   exigirAdministrador(ctx);
+  // Texto vazio equivale à ausência de comentário; o limite é conferido no servidor.
   const observacao = comentario?.trim() || null;
   if (observacao && observacao.length > 2000) throw new Error("O comentário deve ter no máximo 2000 caracteres.");
 
@@ -312,10 +335,13 @@ export async function decidirSolicitacaoConclusao(
   });
 }
 
+/** Monta as opções de responsável preservando os demais filtros da lista. */
 export async function listarResponsaveisParaFiltro(ctx: ContextoUsuario, entidade: "tarefas" | "subtarefas", filtros: FiltrosPrazos = {}): Promise<OpcaoResponsavel[]> {
   exigirAdministrador(ctx);
+  // O filtro de responsável não pode limitar a própria lista de opções disponíveis.
   const base = { ...filtros, responsavel: undefined };
   return comContextoDeUsuario(ctx, async (tx) => {
+    // Consulta somente ids e nomes necessários; pessoas incluem o cliente para distinguir homônimos.
     const registros = entidade === "tarefas"
       ? (await tx.tarefa.findMany({
           where: whereTarefas(base),
@@ -325,6 +351,7 @@ export async function listarResponsaveisParaFiltro(ctx: ContextoUsuario, entidad
           where: whereSubtarefas(base),
           select: { atribuidoA: { select: { id: true, nome: true } }, atribuidoAUsuario: { select: { id: true, nome: true } }, tarefa: { select: { projeto: { select: { cliente: { select: { razaoSocial: true } } } } } } },
         })).map(r => ({ pessoa: r.atribuidoA, usuario: r.atribuidoAUsuario, cliente: r.tarefa.projeto.cliente.razaoSocial }));
+    // O mapa remove responsáveis repetidos que aparecem em mais de um registro.
     const opcoes = new Map<string, OpcaoResponsavel>();
     for (const r of registros) {
       if (r.pessoa) {
@@ -336,6 +363,7 @@ export async function listarResponsaveisParaFiltro(ctx: ContextoUsuario, entidad
         opcoes.set(valor, { valor, nome: `${r.usuario.nome} · Equipe Múltiplus` });
       }
     }
+    // Ordena em português e usa o valor como desempate para produzir uma lista estável.
     return [...opcoes.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR") || a.valor.localeCompare(b.valor));
   });
 }
@@ -350,34 +378,44 @@ export type ItemAgenda = {
   projetada: boolean;
 };
 
+/** Combina prazos cadastrados e recorrências futuras projetadas para o intervalo da agenda. */
 export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim: Date, filtros: { projetoId?: string; clienteId?: string; visitas?: boolean } = {}): Promise<ItemAgenda[]> {
+  // Reaproveita as mesmas regras de listagem e autorização usadas pelo painel de prazos.
   const tarefas = await listarPrazos(ctx, { projetoId: filtros.projetoId, clienteId: filtros.clienteId, pendentes: false });
+  // O predicado também atua como proteção de tipo para prazos nulos.
   const noPeriodo = (prazo: Date | null): prazo is Date => Boolean(prazo && prazo >= inicio && prazo <= fim);
   const itens: ItemAgenda[] = [];
   const materializadas = tarefas.map((t) => ({ serieId: t.serieId, prazo: t.prazo ?? inicio }));
   for (const tarefa of tarefas) {
+    // Inclui a ocorrência gravada quando está no período e corresponde ao filtro de visita.
     if (noPeriodo(tarefa.prazo) && (!filtros.visitas || tarefa.status === StatusTarefa.VISITA_REUNIAO_AGENDADA)) {
       itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: false });
     }
+    // Tarefas sem recorrência ou prazo não geram ocorrências futuras.
     if (!tarefa.periodicidade || !tarefa.prazo) continue;
+    // Projeta recorrências somente para a janela solicitada e marca-as como virtuais.
     for (const prazo of projetarOcorrenciasFuturas(tarefa, inicio, fim, materializadas)) {
       if (filtros.visitas && tarefa.status !== StatusTarefa.VISITA_REUNIAO_AGENDADA) continue;
       itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: true });
     }
   }
+  // A chave composta evita duplicar a mesma atividade quando séries recorrentes coincidem.
   const unicos = new Map<string, ItemAgenda>();
   for (const item of itens) unicos.set(`${item.projeto.id}:${item.nome}:${item.prazo.toISOString()}`, item);
   return [...unicos.values()].sort((a, b) => a.prazo.getTime() - b.prazo.getTime());
 }
 
+/** Calcula o indicador de prazo das tarefas usando a regra compartilhada do domínio. */
 export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusTarefa }>) {
   return calcularPercentualEmDia(tarefas.map((tarefa) => ({ ativo: tarefa.ativo, prazo: tarefa.prazo, status: tarefa.status })));
 }
 
+/** Subtarefas sem prazo não entram no denominador do indicador de pontualidade. */
 export function indicadorDePrazosSubtarefas(subtarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusSubtarefa }>) {
   return calcularPercentualEmDia(subtarefas.filter((subtarefa) => subtarefa.prazo !== null).map((subtarefa) => ({ ativo: subtarefa.ativo, prazo: subtarefa.prazo, status: subtarefa.status })));
 }
 
+/** Busca projeto e seus itens para detalhe administrativo, com opção de incluir desativados. */
 export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, incluirDesativados = false) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
@@ -394,10 +432,12 @@ export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, inc
         valorContratado: { select: { valorContratado: true } },
       },
     });
+    // Unifica pessoa envolvida e usuário da equipe no campo que a tela apresenta como responsável.
     return projeto ? { ...projeto, tarefas: projeto.tarefas.map((tarefa) => ({ ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario })) } : null;
   });
 }
 
+/** Busca tarefa, subtarefas e responsáveis para o detalhe ou edição administrativa. */
 export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, incluirDesativados = false) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
@@ -417,13 +457,16 @@ export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, inclu
         },
       },
     });
+    // A interface recebe uma única propriedade para os dois tipos de responsável.
     return tarefa ? { ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario } : null;
   });
 }
 
+/** Lista projetos ao alcance do colaborador por atribuição ou por tarefas ativas vinculadas. */
 export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
+    // O acesso pode vir da atribuição explícita ao projeto ou de uma tarefa nele contida.
     const [atribuicoes, tarefas] = await Promise.all([
       tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO" }, select: { entidadeId: true } }),
       tx.tarefa.findMany({ where: { ativo: true }, select: { projetoId: true } }),
@@ -436,6 +479,7 @@ export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
   });
 }
 
+/** Busca o projeto do colaborador somente se houver atribuição ou tarefa ativa no projeto. */
 export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: string) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
@@ -443,11 +487,13 @@ export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: st
       tx.atribuicao.findFirst({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO", entidadeId: projetoId } }),
       tx.tarefa.findMany({ where: { projetoId, ativo: true }, select: { id: true } }),
     ]);
+    // O id da URL não basta: sem um vínculo próprio, o resultado é ocultado.
     if (!acessoAoProjeto && tarefas.length === 0) return null;
     return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } }, documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } }, tarefas: { where: { ativo: true }, select: { id: true, nome: true, prazo: true, status: true, ativo: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } } }, orderBy: { prazo: "asc" } } } });
   });
 }
 
+/** Lista tarefas alcançadas por atribuição direta, responsabilidade ou subtarefa atribuída. */
 export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") {
     throw new Error("Visão exclusiva de colaboradores.");
@@ -457,6 +503,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } }),
       tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "TAREFA" }, select: { entidadeId: true } }),
     ]);
+    // Usuário e pessoa envolvida podem representar a mesma pessoa vinculada à conta.
     const responsavelDaSubtarefa = {
       OR: [
         { atribuidoAUsuarioId: ctx.usuarioId },
@@ -488,6 +535,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
   });
 }
 
+/** Busca detalhe da tarefa e calcula capacidades específicas do colaborador atual. */
 export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId: string) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
@@ -512,14 +560,17 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       },
       }),
     ]);
+    // Retorna null sem distinguir inexistência de falta de acesso ao registro.
     if (!tarefa) return null;
 
     const atribuicoes = await tx.atribuicao.findMany({
       where: { usuarioId: ctx.usuarioId, OR: [{ entidadeTipo: "PROJETO", entidadeId: tarefa.projetoId }, { entidadeTipo: "TAREFA", entidadeId: tarefa.id }] },
       select: { entidadeTipo: true },
     });
+    // Compara o vínculo direto com a conta e com a pessoa envolvida associada a essa conta.
     const responsavelDiretoDaTarefa = tarefa.responsavelUsuarioId === ctx.usuarioId
       || (usuario?.pessoaEnvolvidaId != null && tarefa.responsavelId === usuario.pessoaEnvolvidaId);
+    // ADMIN_INTERNO recebe alcance por projeto; ADMIN_EXTERNO, por tarefa.
     const podeConcluirTarefa = responsavelDiretoDaTarefa || (ctx.perfil === "ADMIN_INTERNO"
       ? atribuicoes.some((a) => a.entidadeTipo === "PROJETO")
       : atribuicoes.some((a) => a.entidadeTipo === "TAREFA"));
@@ -534,6 +585,7 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       },
       select: { id: true, tarefaId: true, subtarefaId: true, solicitadoPorId: true, solicitadoPorNome: true, solicitadoEm: true },
     });
+    // Separa a solicitação da tarefa das solicitações de cada subtarefa para a UI.
     const solicitacaoTarefa = solicitacoesPendentes.find((pedido) => pedido.tarefaId === tarefa.id) ?? null;
     const solicitacoesPorSubtarefa = new Map(solicitacoesPendentes.filter((pedido) => pedido.subtarefaId).map((pedido) => [pedido.subtarefaId!, pedido]));
 
@@ -553,20 +605,24 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
 }
 
 function exigirAdministrador(ctx: ContextoUsuario): void {
+  // As actions de gestão verificam perfil no servidor, mesmo se um botão for acessado diretamente.
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
 }
 
 function exigirColaboradorOuAdministrador(ctx: ContextoUsuario): void {
+  // O cliente não pode alterar estado de tarefa nem de solicitação.
   if (ctx.perfil === "CLIENTE") throw new Error("Ação não disponível para este perfil.");
 }
 
 function validarNome(nome: string, entidade: string): string {
+  // A forma persistida nunca começa nem termina com espaços e não pode ser vazia.
   const valor = nome.trim();
   if (!valor) throw new Error(`Informe o nome ${entidade}.`);
   return valor;
 }
 
 function validarDatasProjeto(dados: DadosProjeto): void {
+  // Compara datas civis já normalizadas pelo formulário e evita uma previsão anterior ao início.
   if (dados.dataInicio && dados.dataPrevistaConclusao && dados.dataPrevistaConclusao < dados.dataInicio) {
     throw new Error("A data prevista de conclusão não pode ser anterior à data de início.");
   }
@@ -577,12 +633,14 @@ async function sincronizarAtribuicaoAutomatica(
   tarefaId: string,
   pessoaEnvolvidaId: string | null | undefined,
 ): Promise<string | null> {
+  // Só pessoas envolvidas com acesso habilitado geram uma atribuição de usuário automaticamente.
   if (!pessoaEnvolvidaId) return null;
   const pessoa = await tx.pessoaEnvolvida.findUnique({
     where: { id: pessoaEnvolvidaId },
     include: { usuario: true },
   });
   if (pessoa?.temAcesso && pessoa.usuario) {
+    // upsert torna a sincronização idempotente se a atribuição já existir.
     await tx.atribuicao.upsert({
       where: {
         usuarioId_entidadeTipo_entidadeId: {
@@ -605,6 +663,7 @@ async function validarResponsavel(
   pessoaEnvolvidaId: string | null | undefined,
   usuarioId: string | null | undefined,
 ): Promise<void> {
+  // Uma tarefa pode ter responsável de cliente ou da equipe, nunca os dois simultaneamente.
   if (pessoaEnvolvidaId && usuarioId) throw new Error("Informe apenas um tipo de responsável.");
   if (pessoaEnvolvidaId) {
     const pessoa = await tx.pessoaEnvolvida.findFirst({
@@ -658,8 +717,10 @@ async function usuarioDaResponsabilidadeSubtarefa(
   pessoaEnvolvidaId: string | null | undefined,
   usuarioId: string | null | undefined,
 ): Promise<string | null> {
+  // Responsável já informado como usuário não exige consulta adicional.
   if (usuarioId) return usuarioId;
   if (!pessoaEnvolvidaId) return null;
+  // Resolve a conta ligada à pessoa apenas quando ela habilitou acesso ao sistema.
   const pessoa = await tx.pessoaEnvolvida.findUnique({
     where: { id: pessoaEnvolvidaId },
     select: { temAcesso: true, usuario: { select: { id: true, ativo: true } } },
@@ -667,10 +728,12 @@ async function usuarioDaResponsabilidadeSubtarefa(
   return pessoa?.temAcesso && pessoa.usuario?.ativo ? pessoa.usuario.id : null;
 }
 
+/** Cria um projeto e, se informado, seu valor contratado na mesma transação. */
 export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
   exigirAdministrador(ctx);
   validarDatasProjeto(dados);
   return comContextoDeUsuario(ctx, async (tx) => {
+    // Persiste explicitamente os campos aceitos pelo formulário, sem confiar em objetos arbitrários.
     const projeto = await tx.projeto.create({
       data: {
         clienteId: dados.clienteId,
@@ -682,6 +745,7 @@ export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
         status: dados.status ?? StatusProjeto.A_INICIAR,
       },
     });
+    // Valor fica em tabela própria e só é criado quando foi fornecido.
     if (dados.valorContratado != null) {
       await tx.valorProjeto.create({
         data: { projetoId: projeto.id, valorContratado: dados.valorContratado },
@@ -691,6 +755,7 @@ export async function criarProjeto(ctx: ContextoUsuario, dados: DadosProjeto) {
   });
 }
 
+/** Atualiza projeto e valor, distinguindo valor omitido de valor removido explicitamente. */
 export async function atualizarProjeto(
   ctx: ContextoUsuario,
   projetoId: string,
@@ -710,6 +775,7 @@ export async function atualizarProjeto(
         status: dados.status ?? StatusSubtarefa.EM_ANDAMENTO,
       },
     });
+    // null apaga o valor existente; undefined preserva; número cria ou atualiza.
     if (dados.valorContratado === null) {
       await tx.valorProjeto.deleteMany({ where: { projetoId } });
     } else if (dados.valorContratado !== undefined) {
@@ -723,11 +789,13 @@ export async function atualizarProjeto(
   });
 }
 
+/** Atualiza somente o status do projeto após conferir o perfil administrativo. */
 export async function atualizarStatusProjeto(ctx: ContextoUsuario, projetoId: string, status: StatusProjeto) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.projeto.update({ where: { id: projetoId }, data: { status } }));
 }
 
+/** Cria tarefa, série recorrente, vínculos de responsável e notificações de atribuição. */
 export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
   exigirAdministrador(ctx);
   if (!dados.prazo || Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido.");
@@ -739,6 +807,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
 
   const resultado = await comContextoDeUsuario(ctx, async (tx) => {
     await validarResponsavel(tx, dados.projetoId, dados.responsavelId, dados.responsavelUsuarioId);
+    // Cada tarefa recorrente recebe um id de série compartilhado pelas ocorrências.
     const serieId = dados.periodicidade ? randomUUID() : null;
     const tarefa = await tx.tarefa.create({
       data: {
@@ -746,8 +815,10 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         nome: validarNome(dados.nome, "da tarefa"),
         descricao: dados.descricao ?? null,
         prazo: dados.prazo,
+        // Guarda a âncora original para a recorrência não acumular deriva entre meses.
         prazoOriginal: dados.prazo,
         periodicidade: dados.periodicidade ?? null,
+        // A recorrência semanal usa o dia escolhido ou o dia da primeira ocorrência em UTC.
         diaSemana: dados.periodicidade === "SEMANAL" ? (dados.diaSemana ?? dados.prazo.getUTCDay()) : null,
         serieId,
         diasAntecedencia: dados.diasAntecedencia ?? null,
@@ -759,6 +830,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
       },
     });
     const usuarioResponsavelId = await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
+    // O conjunto evita enviar notificações duplicadas quando os dois vínculos apontam à mesma conta.
     const usuariosAtribuidos = new Set<string>();
     if (usuarioResponsavelId) usuariosAtribuidos.add(usuarioResponsavelId);
     if (dados.responsavelUsuarioId) {
@@ -771,12 +843,14 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
     }
     return { tarefa, usuariosAtribuidos: [...usuariosAtribuidos] };
   });
+  // Notificações são disparadas após a transação para não atrasar ou desfazer a gravação.
   for (const usuarioId of resultado.usuariosAtribuidos) {
     void dispararNotificacaoAtribuicaoRecebida(usuarioId, "TAREFA", resultado.tarefa.id);
   }
   return resultado.tarefa;
 }
 
+/** Atualiza tarefa e sincroniza atribuições/notificações se o responsável mudar. */
 export async function atualizarTarefa(
   ctx: ContextoUsuario,
   tarefaId: string,
@@ -790,6 +864,7 @@ export async function atualizarTarefa(
   }
 
   const resultado = await comContextoDeUsuario(ctx, async (tx) => {
+    // Guarda vínculos anteriores para remover acessos obsoletos e notificar novos responsáveis.
     const anterior = await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { responsavelId: true, responsavelUsuarioId: true, projetoId: true } });
     await validarResponsavel(tx, anterior.projetoId, dados.responsavelId, dados.responsavelUsuarioId);
     const tarefa = await tx.tarefa.update({
@@ -807,6 +882,7 @@ export async function atualizarTarefa(
       },
     });
 
+    // Ao trocar a pessoa do cliente, remove a atribuição ligada à conta antiga.
     if (anterior.responsavelId && anterior.responsavelId !== dados.responsavelId) {
       const pessoaAnterior = await tx.pessoaEnvolvida.findUnique({
         where: { id: anterior.responsavelId },
@@ -818,9 +894,11 @@ export async function atualizarTarefa(
         });
       }
     }
+    // Ao trocar o responsável interno, remove também a atribuição direta antiga.
     if (anterior.responsavelUsuarioId && anterior.responsavelUsuarioId !== dados.responsavelUsuarioId) {
       await tx.atribuicao.deleteMany({ where: { usuarioId: anterior.responsavelUsuarioId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
     }
+    // Apenas mudanças de responsável geram notificações; uma regravação do mesmo vínculo não.
     const usuariosAtribuidos = new Set<string>();
     if (anterior.responsavelId !== dados.responsavelId) {
       const usuarioResponsavelId = await sincronizarAtribuicaoAutomatica(tx, tarefa.id, dados.responsavelId);
@@ -844,11 +922,13 @@ export async function atualizarTarefa(
   return resultado.tarefa;
 }
 
+/** Atualiza somente o status de uma tarefa administrativa. */
 export async function atualizarStatusTarefa(ctx: ContextoUsuario, tarefaId: string, status: StatusTarefa) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) => tx.tarefa.update({ where: { id: tarefaId }, data: { status } }));
 }
 
+/** Cria subtarefa, aplicando regras diferentes para ADMIN e colaborador responsável. */
 export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa) {
   const ehAdministrador = ctx.perfil === "ADMIN";
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
@@ -856,6 +936,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
     let responsavelId = dados.atribuidoAId;
     let responsavelUsuarioId = dados.atribuidoAUsuarioId;
     if (!ehAdministrador) {
+      // Colaboradores só podem criar subtarefas se a configuração da tarefa e o vínculo permitirem.
       if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Ação não disponível para este perfil.");
       const [usuario, tarefa] = await Promise.all([
         tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } }),
@@ -864,9 +945,11 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
       const ehResponsavel = tarefa?.responsavelUsuarioId === ctx.usuarioId
         || (!!usuario?.pessoaEnvolvidaId && tarefa?.responsavelId === usuario.pessoaEnvolvidaId);
       if (!tarefa?.colaboradorPodeCriarSubtarefas || !ehResponsavel) throw new Error("Você não tem permissão para criar subtarefas nesta tarefa.");
+      // A autoria do colaborador define a responsabilidade; ele não escolhe outra pessoa.
       responsavelId = null;
       responsavelUsuarioId = ctx.usuarioId;
     }
+    // Normaliza e cria etiquetas no mesmo contexto transacional da subtarefa.
     const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, dados.tarefaId, responsavelId, responsavelUsuarioId);
     const subtarefa = await tx.subtarefa.create({
@@ -882,6 +965,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         criadoPorId: ctx.usuarioId,
       },
     });
+    // Resolve a conta destinatária para avisar somente se a atribuição não for do próprio autor.
     const usuarioResponsavelId = await usuarioDaResponsabilidadeSubtarefa(tx, responsavelId, responsavelUsuarioId);
     return { subtarefa, usuarioResponsavelId };
   });
@@ -891,6 +975,7 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
   return subtarefa.subtarefa;
 }
 
+/** Atualiza campos da subtarefa e avisa a conta quando a responsabilidade muda. */
 export async function atualizarSubtarefa(
   ctx: ContextoUsuario,
   subtarefaId: string,
@@ -900,6 +985,7 @@ export async function atualizarSubtarefa(
   if (dados.prazo && Number.isNaN(dados.prazo.getTime())) throw new Error("Informe um prazo válido para a subtarefa.");
   const resultado = await comContextoDeUsuario(ctx, async (tx) => {
     const atual = await tx.subtarefa.findUniqueOrThrow({ where: { id: subtarefaId }, select: { tarefaId: true, atribuidoAId: true, atribuidoAUsuarioId: true } });
+    // Compara as contas resolvidas, mesmo quando um vínculo é pessoa e o outro é usuário.
     const usuarioResponsavelAnterior = await usuarioDaResponsabilidadeSubtarefa(tx, atual.atribuidoAId, atual.atribuidoAUsuarioId);
     const etiquetas = await salvarEtiquetasSubtarefa(tx, dados.etiquetas ?? [], dados.novasEtiquetas ?? []);
     await validarResponsavelSubtarefa(tx, atual.tarefaId, dados.atribuidoAId, dados.atribuidoAUsuarioId);
@@ -924,6 +1010,7 @@ export async function atualizarSubtarefa(
   return resultado.subtarefa;
 }
 
+/** Troca somente o responsável de uma subtarefa e notifica a nova conta associada. */
 export async function atualizarResponsavelSubtarefa(ctx: ContextoUsuario, subtarefaId: string, atribuidoAId: string | null, atribuidoAUsuarioId: string | null) {
   exigirAdministrador(ctx);
   const resultado = await comContextoDeUsuario(ctx, async (tx) => {
@@ -940,6 +1027,7 @@ export async function atualizarResponsavelSubtarefa(ctx: ContextoUsuario, subtar
   return resultado.subtarefa;
 }
 
+/** Cadastra link externo HTTP/HTTPS no cliente ou em um projeto daquele mesmo cliente. */
 export async function criarDocumentoProjeto(ctx: ContextoUsuario, dados: DadosDocumentoProjeto) {
   exigirAdministrador(ctx);
   const nome = validarNome(dados.nome, "do documento");
@@ -949,6 +1037,7 @@ export async function criarDocumentoProjeto(ctx: ContextoUsuario, dados: DadosDo
 
   return comContextoDeUsuario(ctx, async (tx) => {
     if (dados.projetoId) {
+      // Impede associar um projeto pertencente a outro cliente informado no formulário.
       const projeto = await tx.projeto.findUnique({ where: { id: dados.projetoId }, select: { clienteId: true } });
       if (!projeto || projeto.clienteId !== dados.clienteId) throw new Error("Projeto não encontrado para este cliente.");
     }
@@ -956,6 +1045,7 @@ export async function criarDocumentoProjeto(ctx: ContextoUsuario, dados: DadosDo
   });
 }
 
+/** Aplica o soft delete ou a reativação com as regras de cascata compartilhadas. */
 export async function desativarOuReativar(
   ctx: ContextoUsuario,
   entidade: "projeto" | "tarefa" | "subtarefa",
@@ -966,6 +1056,7 @@ export async function desativarOuReativar(
   return definirAtivo(ctx, entidade, id, ativo);
 }
 
+/** Conclui uma tarefa administrativa usando a operação SQL atômica da recorrência. */
 export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, async (tx) => {
@@ -986,6 +1077,7 @@ export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
   });
 }
 
+/** Conclui diretamente uma subtarefa após conferir o perfil administrativo. */
 export async function concluirSubtarefa(ctx: ContextoUsuario, subtarefaId: string) {
   exigirAdministrador(ctx);
   return comContextoDeUsuario(ctx, (tx) =>
@@ -993,6 +1085,7 @@ export async function concluirSubtarefa(ctx: ContextoUsuario, subtarefaId: strin
   );
 }
 
+/** Atualiza somente o status da subtarefa no fluxo administrativo. */
 export async function atualizarStatusSubtarefa(ctx: ContextoUsuario, subtarefaId: string, status: StatusSubtarefa) {
   if (status === StatusSubtarefa.CONCLUIDO) exigirColaboradorOuAdministrador(ctx);
   else exigirAdministrador(ctx);

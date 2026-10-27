@@ -1,3 +1,4 @@
+// Paleta persistível das etiquetas: fundo do chip, cor de texto e amostra do botão de escolha.
 export const CORES_ETIQUETA = [
   { nome: "Azul", fundo: "#BFDBFE", texto: "#1E3A8A", amostra: "#2563EB" },
   { nome: "Ciano", fundo: "#A5F3FC", texto: "#164E63", amostra: "#0891B2" },
@@ -13,5 +14,7 @@ export const CORES_ETIQUETA = [
   { nome: "Cinza", fundo: "#CBD5E1", texto: "#1E293B", amostra: "#475569" },
 ] as const;
 
+// Deriva os tipos dos valores da paleta para impedir cores desconhecidas em código tipado.
 export type CorEtiqueta = (typeof CORES_ETIQUETA)[number]["fundo"];
+// Modelo pequeno usado por formulários, actions e componentes de apresentação.
 export type EtiquetaSelecionada = { nome: string; cor: string };

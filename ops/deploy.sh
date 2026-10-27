@@ -4,6 +4,7 @@ set -Eeuo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 die() {
+  # Centraliza falhas de pré-requisito e sai com código não zero para interromper o deploy.
   echo "ERRO: $*" >&2
   exit 1
 }
@@ -30,14 +31,17 @@ if [[ -z "${CRON_SECRET:-}" ]]; then
 fi
 
 compose_files=(-f docker-compose.yml)
+# Em modo externo, o Caddy já é fornecido por outro stack e não deve ser iniciado aqui.
 if [[ "${PROXY_MODE:-standalone}" == "external" ]]; then
   compose_files+=(-f docker-compose.proxy.yml)
 fi
 
 compose() {
+  # Aplica sempre a lista de arquivos de compose selecionada acima.
   docker compose "${compose_files[@]}" "$@"
 }
 
+# Confere as variáveis essenciais antes de criar ou substituir containers.
 for nome in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB APP_DATABASE_PASSWORD AUTH_SECRET APP_DOMAIN MINIO_ROOT_USER MINIO_ROOT_PASSWORD MINIO_BUCKET CRON_SECRET; do
   [[ -n "${!nome:-}" ]] || die "$nome precisa estar definido em .env"
 done
@@ -51,6 +55,7 @@ done
 [[ "$POSTGRES_PASSWORD" =~ ^[A-Za-z0-9_-]+$ ]] || die "POSTGRES_PASSWORD deve usar somente caracteres URL-safe (gere com openssl rand -hex 32)"
 [[ "$APP_DATABASE_PASSWORD" =~ ^[A-Za-z0-9_-]+$ ]] || die "APP_DATABASE_PASSWORD deve usar somente caracteres URL-safe (gere com openssl rand -hex 32)"
 
+# Valida a configuração final do Compose depois da interpolação do .env.
 compose config --quiet || die "docker-compose.yml inválido ou variáveis ausentes"
 
 if [[ "${PROXY_MODE:-standalone}" == "external" ]]; then
@@ -63,9 +68,11 @@ fi
 getent ahosts "$APP_DOMAIN" >/dev/null || die "APP_DOMAIN não resolve no VPS: $APP_DOMAIN"
 
 echo "Subindo dependências internas..."
+# Banco e storage precisam estar saudáveis antes das operações de preparação.
 compose up -d postgres minio
 
 echo "Aplicando migrations com a role dona..."
+# A role proprietária executa o histórico Prisma; a aplicação usa outra role com RLS.
 compose --profile ops run --build --rm migrate
 
 echo "Garantindo senha da role multiplus_app..."
@@ -75,6 +82,7 @@ echo "Criando ADMIN inicial se necessário..."
 compose --profile ops run --rm seed
 
 echo "Garantindo bucket MinIO privado..."
+# Cria o bucket se necessário e aplica política sem acesso público.
 compose --profile ops run --rm minio-init
 
 IMAGEM_APP="multiplus-app"
@@ -99,6 +107,7 @@ fi
 echo "Aguardando healthcheck da aplicação..."
 sucesso=0
 for tentativa in $(seq 1 30); do
+  # Só considera concluído quando o container está ativo e o endpoint HTTPS retorna sucesso.
   if compose ps --status running app >/dev/null 2>&1 \
     && curl --fail --silent --show-error --max-time 10 "https://${APP_DOMAIN}/api/health" >/dev/null; then
     sucesso=1
@@ -119,6 +128,7 @@ if [[ "$sucesso" == "1" ]]; then
   exit 0
 fi
 
+# Em falha, mostra estado e logs recentes antes de tentar recuperar a imagem anterior.
 compose ps
 compose logs --tail=100 app caddy >&2 || true
 

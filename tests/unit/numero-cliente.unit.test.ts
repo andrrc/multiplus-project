@@ -1,3 +1,4 @@
+/** RF-005 — verifica a apresentação do identificador sequencial do cliente, incluindo zero à esquerda e números com mais de dois dígitos. */
 import { describe, expect, it } from "vitest";
 import { numeroCliente } from "@/lib/formatacao";
 

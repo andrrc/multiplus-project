@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `acoes cliente`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { useActionState, useRef, useState, useTransition } from "react";
 import { inputClass } from "@/ui/campo";

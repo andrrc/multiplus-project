@@ -292,6 +292,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar regras, rotas, testes e operações do código em português do Brasil ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-22 | este commit | Solicitação de conclusão por colaboradores e confirmação/rejeição ADMIN; recorrência somente após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |
 | 2026-10-20 | este commit | Coluna de subtarefas concluídas/total nas tarefas filtradas por responsável, excluindo canceladas/desativadas ([análise](../analises/progresso-subtarefas-tarefas-filtradas.md)) |
 | 2026-10-19 | este commit | Filtro por responsável, combinado com os filtros existentes, com opção sem responsável e nome da equipe em tarefas ([análise](../analises/filtro-responsavel-tarefas-subtarefas.md)) |

@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `campo telefone`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { useState, type InputHTMLAttributes } from "react";
 import { mascararTelefone } from "@/lib/formatacao";
@@ -20,7 +23,9 @@ export function CampoTelefone({
   placeholder = "(11) 99999-9999",
   ...props
 }: CampoTelefoneProps) {
+  // O modo não controlado parte do valor inicial; em modo controlado, a prop externa prevalece.
   const [interno, setInterno] = useState(() => mascararTelefone(defaultValue ?? value ?? ""));
+  // Aplica a máscara também quando o valor chega por atualização do componente pai.
   const valor = value === undefined ? interno : mascararTelefone(value);
 
   return (
@@ -31,7 +36,9 @@ export function CampoTelefone({
       placeholder={placeholder}
       value={valor}
       onChange={(evento) => {
+        // Notifica sempre com o formato nacional exibido no campo.
         const formatado = mascararTelefone(evento.target.value);
+        // Só altera o estado local quando o componente não está sob controle do pai.
         if (value === undefined) setInterno(formatado);
         onValueChange?.(formatado);
       }}

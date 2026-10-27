@@ -5,9 +5,11 @@ import { inputClass } from "@/ui/campo";
 import { esqueciSenhaAction } from "./actions";
 
 export function EsqueciSenhaForm() {
+  // A action retorna estado de sucesso ou erro sem fazer a página depender de navegação.
   const [estado, formAction, pendente] = useActionState(esqueciSenhaAction, {});
 
   if (estado.mensagem) {
+    // Após o envio, mostra apenas confirmação genérica e remove o formulário.
     return (
       <p className="rounded-[3px] border-l-[3px] border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
         {estado.mensagem}

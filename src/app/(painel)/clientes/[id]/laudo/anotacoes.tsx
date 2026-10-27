@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `anotacoes`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { useCallback, useId, useRef, useState, useTransition } from "react";
 import { IconPlus, IconX, IconDotsVertical, IconPencil, IconArchive, IconRestore } from "@tabler/icons-react";

@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `nav link`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";

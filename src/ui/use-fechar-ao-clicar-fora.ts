@@ -11,11 +11,14 @@ export function useFecharAoClicarFora(
   gatilho?: RefObject<HTMLElement | null>,
 ) {
   useEffect(() => {
+    // Enquanto o menu está fechado não há eventos globais para observar.
     if (!aberto) return;
     const aoTocar = (evento: PointerEvent) => {
+      // Ignora cliques internos; cliques em qualquer outro nó fecham o painel.
       if (evento.target instanceof Node && !ref.current?.contains(evento.target)) fechar();
     };
     const aoPressionarTecla = (evento: KeyboardEvent) => {
+      // Esc fecha o menu e devolve o foco ao controle que o abriu.
       if (evento.key !== "Escape") return;
       fechar();
       gatilho?.current?.focus();
@@ -23,6 +26,7 @@ export function useFecharAoClicarFora(
     document.addEventListener("pointerdown", aoTocar);
     document.addEventListener("keydown", aoPressionarTecla);
     return () => {
+      // Remove os listeners ao fechar ou desmontar, evitando callbacks duplicados.
       document.removeEventListener("pointerdown", aoTocar);
       document.removeEventListener("keydown", aoPressionarTecla);
     };

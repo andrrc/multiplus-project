@@ -34,12 +34,14 @@ function Requisitos({ senha }: { senha: string }) {
 }
 
 export function DefinirSenhaForm({ token }: { token: string }) {
+  // A tela mantém senha e preferência de exibição no cliente; política e gravação ficam no servidor.
   const [estado, formAction, pendente] = useActionState(definirSenhaAction, ESTADO_INICIAL);
   const [senha, setSenha] = useState("");
   const [exibirSenha, setExibirSenha] = useState(false);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      {/* O token retorna à action para uma nova validação antes de alterar a conta. */}
       <input type="hidden" name="token" value={token} />
 
       <div className="flex flex-col gap-1.5">
@@ -70,6 +72,7 @@ export function DefinirSenhaForm({ token }: { token: string }) {
         />
       </div>
 
+      {/* A mesma política do servidor dá retorno imediato durante a digitação. */}
       <Requisitos senha={senha} />
 
       <div className="flex flex-col gap-1.5">
@@ -100,6 +103,7 @@ export function DefinirSenhaForm({ token }: { token: string }) {
         disabled={pendente}
         className="mt-2 min-h-11 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
       >
+        {/* O estado pendente evita envios duplicados enquanto a action processa o token. */}
         {pendente ? "Entrando…" : "Definir senha e entrar"}
       </button>
     </form>

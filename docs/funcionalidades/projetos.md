@@ -175,6 +175,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar consultas, regras e fluxos compartilhados de projetos e tarefas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-16 | este commit | Menus de status do projeto e das tarefas fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |
 | 2026-10-15 | `8e1304b` | Botão "Editar" da lista de tarefas com a mesma altura visual da etiqueta de status, mantendo 44 px de área de toque |

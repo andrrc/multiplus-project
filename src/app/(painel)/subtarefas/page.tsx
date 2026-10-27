@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/subtarefas/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import { interpretarResponsavel } from "@/lib/filtro-responsavel";
 import Link from "next/link";
 import { StatusSubtarefa } from "@prisma/client";
@@ -13,11 +16,15 @@ import { decidirSolicitacaoConclusaoFormAction } from "@/app/(painel)/projetos/a
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
 export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; projeto?: string; cliente?: string; tarefa?: string; todos?: string }> }) {
+  // A rota gerencial exige ADMIN; consultas e actions continuam protegidas no servidor.
   const ctx = await exigirAcessoARota("/subtarefas");
   const filtros = await searchParams;
+  // Parâmetro repetido ou malformado é tratado como inválido e não amplia a lista.
   const responsavelInvalido = interpretarResponsavel(filtros.responsavel).tipo === "invalido";
   const responsavelInicial = typeof filtros.responsavel === "string" ? filtros.responsavel : filtros.responsavel ? "invalido" : "";
+  // Por padrão, concluídas e canceladas ficam fora; `todos=1` solicita a lista completa.
   const pendentes = filtros.todos !== "1";
+  // Os dados, contadores, opções de filtro e solicitações pendentes são carregados em paralelo.
   const [subtarefas, projetos, clientes, tarefasFiltro, limites, responsaveis, solicitacoes] = await Promise.all([
     listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, tarefaId: filtros.tarefa, responsavel: filtros.responsavel, pendentes }),
     listarProjetos(ctx),
@@ -27,6 +34,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     listarResponsaveisParaFiltro(ctx, "subtarefas", { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, pendentes }),
     listarSolicitacoesConclusaoPendentes(ctx),
   ]);
+  // O indicador usa a mesma coleção que será exibida após a aplicação dos filtros.
   const indicador = indicadorDePrazosSubtarefas(subtarefas);
   const hoje = new Date();
   const hrefSubtarefa = (tarefaId: string, subtarefaId: string) => `/tarefas/${tarefaId}?subtarefa=${subtarefaId}`;

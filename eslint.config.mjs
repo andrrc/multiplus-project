@@ -2,12 +2,13 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
+// Junta as regras recomendadas pelo Next.js para acessibilidade/desempenho e TypeScript.
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  // Substitui a lista padrão de caminhos ignorados pelo ESLint.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Saídas de build e tipos gerados não são código-fonte para análise.
     ".next/**",
     "out/**",
     "build/**",

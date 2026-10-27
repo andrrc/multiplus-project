@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `navegacao painel`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import type { Perfil } from "@prisma/client";
 import { usePathname } from "next/navigation";

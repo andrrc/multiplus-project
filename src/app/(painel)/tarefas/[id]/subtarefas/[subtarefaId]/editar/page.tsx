@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/tarefas/[id]/subtarefas/[subtarefaId]/editar/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusSubtarefa } from "@prisma/client";

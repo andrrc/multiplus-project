@@ -2,6 +2,7 @@ const FUSO_HORARIO = "America/Sao_Paulo";
 
 /** Data de cadastro como data civil UTC, sem horário. */
 export function formatarDataCadastro(instante: Date): string {
+  // Usa UTC porque este campo representa uma data civil gravada sem horário.
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -16,18 +17,22 @@ export function formatarDataCadastro(instante: Date): string {
  * de Brasília, e não às 21h, quando o UTC já está no dia seguinte.
  */
 export function dataDeHojeEmSaoPaulo(agora: Date = new Date()): number {
+  // Extrai as partes no fuso brasileiro antes de convertê-las em meia-noite UTC.
   const partes = new Intl.DateTimeFormat("en-CA", {
     timeZone: FUSO_HORARIO,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(agora);
+  // Busca cada parte pelo tipo, evitando depender da ordem textual retornada pelo formatador.
   const parte = (tipo: string) => Number(partes.find((item) => item.type === tipo)?.value);
+  // O horário do prazo fica normalizado em UTC, mas o dia é escolhido em São Paulo.
   return Date.UTC(parte("year"), parte("month") - 1, parte("day"));
 }
 
 /** Instantes de criação, alteração e execução; não usar para datas civis de prazo. */
 export function formatarDataHoraBrasilia(instante: Date): string {
+  // Instantes reais são exibidos no fuso da operação, com ciclo de 24 horas.
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",

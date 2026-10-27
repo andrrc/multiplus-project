@@ -33,8 +33,10 @@ export default async function DefinirSenhaPage({
 }: {
   searchParams: Promise<{ token?: string }>;
 }) {
+  // O token chega pela query string e é recebido como dado assíncrono da rota.
   const { token } = await searchParams;
 
+  // Um link incompleto apresenta opção de solicitar um novo, sem consultar o banco.
   if (!token) {
     return (
       <AuthShell titulo="Definir sua senha" subtitulo="Este link não está completo.">
@@ -43,6 +45,7 @@ export default async function DefinirSenhaPage({
     );
   }
 
+  // Esta leitura define a mensagem visível; a Server Action valida novamente antes de gravar.
   const validacao = await validarTokenAcesso(token);
 
   if (!validacao.valido) {
@@ -65,6 +68,7 @@ export default async function DefinirSenhaPage({
     select: { nome: true },
   });
 
+  // Usa só o primeiro nome no cumprimento e tolera usuário ausente sem quebrar a tela.
   const primeiroNome = usuario?.nome.split(" ")[0];
 
   return (

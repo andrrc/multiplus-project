@@ -1,3 +1,6 @@
+/**
+ * Biblioteca de domínio `clientes`. Reúne funções reutilizáveis desta área; os comentários junto às funções explicam validações, decisões e efeitos específicos de cada operação.
+ */
 import { salvarLaudoNaTransacao } from "@/lib/laudos-tecnicos";
 import { validarDadosLaudo, type DadosLaudoInput } from "@/lib/validacao-laudo";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";

@@ -6,16 +6,20 @@ export type PeriodicidadeLike = Periodicidade | "SEMANAL" | "MENSAL" | "TRIMESTR
 type DataLike = Date | string;
 
 function dataUTC(data: DataLike): Date {
+  // Converte texto para Date quando necessário e rejeita datas que não podem ser interpretadas.
   const valor = data instanceof Date ? data : new Date(data);
   if (Number.isNaN(valor.getTime())) throw new Error("Data inválida");
+  // Zera o horário para que comparações usem apenas ano, mês e dia em UTC.
   return new Date(Date.UTC(valor.getUTCFullYear(), valor.getUTCMonth(), valor.getUTCDate()));
 }
 
 function diasNoMes(ano: number, mesZeroBased: number): number {
+  // Dia zero do mês seguinte corresponde ao último dia do mês solicitado.
   return new Date(Date.UTC(ano, mesZeroBased + 1, 0)).getUTCDate();
 }
 
 function dataMensalAncorada(ano: number, mesZeroBased: number, diaOriginal: number): Date {
+  // Usa o dia original quando existe ou o último dia disponível nos meses mais curtos.
   return new Date(Date.UTC(ano, mesZeroBased, Math.min(diaOriginal, diasNoMes(ano, mesZeroBased))));
 }
 
@@ -41,15 +45,18 @@ export function calcularProximaOcorrencia(
   prazoOriginal: DataLike = prazoAtual,
   diaSemana?: number | null,
 ): Date | null {
+  // Tarefa sem periodicidade não pertence a uma série recorrente.
   if (!periodicidade) return null;
 
   const atual = dataUTC(prazoAtual);
   const original = dataUTC(prazoOriginal);
 
   if (periodicidade === "SEMANAL") {
+    // Sem dia semanal válido, mantém o comportamento de intervalo fixo de sete dias.
     if (diaSemana == null || !Number.isInteger(diaSemana) || diaSemana < 0 || diaSemana > 6) {
       return new Date(atual.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
+    // Módulo circular encontra o próximo dia escolhido; zero vira sete para nunca repetir o mesmo dia.
     const diasAteProxima = ((diaSemana - atual.getUTCDay() + 7) % 7) || 7;
     const proxima = new Date(atual);
     proxima.setUTCDate(proxima.getUTCDate() + diasAteProxima);
@@ -59,12 +66,15 @@ export function calcularProximaOcorrencia(
   const passoEmMeses = mesesDaPeriodicidade(periodicidade);
   if (passoEmMeses === null) return null;
 
+  // Calcula quantos meses civis separam a ocorrência atual da âncora original.
   const mesesDecorridos =
     (atual.getUTCFullYear() - original.getUTCFullYear()) * 12 +
     (atual.getUTCMonth() - original.getUTCMonth());
+  // A quantidade inteira de ciclos evita arredondar datas para uma ocorrência futura indevida.
   const ocorrenciasDecorridas = Math.max(0, Math.floor(mesesDecorridos / passoEmMeses));
   const proximoIndice = ocorrenciasDecorridas + 1;
   const mesesDoAlvo = original.getUTCMonth() + proximoIndice * passoEmMeses;
+  // Normaliza o deslocamento de meses em ano e mês, mesmo ao atravessar dezembro.
   const ano = original.getUTCFullYear() + Math.floor(mesesDoAlvo / 12);
   const mes = ((mesesDoAlvo % 12) + 12) % 12;
 
@@ -80,9 +90,11 @@ export function estaAtrasada(
   concluida: boolean,
   agora: DataLike = new Date(),
 ): boolean {
+  // Prazo ausente e item concluído nunca entram como atraso.
   if (!prazo || concluida) return false;
   const instante = agora instanceof Date ? agora : new Date(agora);
   if (Number.isNaN(instante.getTime())) throw new Error("Data inválida");
+  // Igualdade continua em dia; só datas anteriores à meia-noite de hoje estão atrasadas.
   return dataUTC(prazo).getTime() < dataDeHojeEmSaoPaulo(instante);
 }
 
@@ -100,6 +112,7 @@ export type IndicadorEmDia = {
 };
 
 function tarefaConcluida(tarefa: TarefaParaIndicador): boolean {
+  // Aceita o booleano legado e as duas representações de status presentes nos dados.
   return tarefa.concluida === true || tarefa.status === "CONCLUIDO" || tarefa.status === "Concluído";
 }
 
@@ -108,7 +121,9 @@ export function calcularPercentualEmDia(
   tarefas: readonly TarefaParaIndicador[],
   hoje: DataLike = new Date(),
 ): IndicadorEmDia {
+  // O denominador considera apenas registros ativos.
   const ativas = tarefas.filter((tarefa) => tarefa.ativo);
+  // Concluídas não atrasam; tarefas sem prazo também permanecem elegíveis como em dia.
   const emDia = ativas.filter((tarefa) => !estaAtrasada(tarefa.prazo, tarefaConcluida(tarefa), hoje)).length;
 
   return {
@@ -123,6 +138,7 @@ export type IndicadorConclusao = { total: number; concluidas: number; percentual
 
 /** RF-048/RN-014 — conclusão ignora registros desativados e cancelados. */
 export function calcularPercentualConclusao(registros: readonly RegistroParaConclusao[]): IndicadorConclusao {
+  // Cancelados e desativados ficam fora tanto do total quanto da porcentagem concluída.
   const elegiveis = registros.filter((registro) => registro.ativo && registro.status !== "CANCELADO" && registro.status !== "Cancelado");
   const concluidas = elegiveis.filter((registro) => registro.status === "CONCLUIDO" || registro.status === "Concluído").length;
   return {
@@ -143,6 +159,7 @@ export function calcularUltimaAtualizacaoProjeto(dados: {
   documentos: readonly RegistroParaAtualizacao[];
   comentarios: readonly ComentarioParaAtualizacao[];
 }): Date | null {
+  // Reúne datas de gravação de registros ativos e comentários ligados a itens ativos.
   const datas = [
     ...(dados.projeto.ativo && dados.projeto.atualizadoEm ? [dados.projeto.atualizadoEm] : []),
     ...dados.tarefas.filter((item) => item.ativo && item.atualizadoEm).map((item) => item.atualizadoEm!),
@@ -150,10 +167,12 @@ export function calcularUltimaAtualizacaoProjeto(dados: {
     ...dados.documentos.filter((item) => item.ativo && item.atualizadoEm).map((item) => item.atualizadoEm!),
     ...dados.comentarios.filter((item) => item.registroAtivo).map((item) => item.criadoEm),
   ];
+  // O acumulador começa vazio e guarda a maior data encontrada; sem escritas, retorna null.
   return datas.reduce<Date | null>((maisRecente, atual) => !maisRecente || atual > maisRecente ? atual : maisRecente, null);
 }
 
 export function filtrarAtivos<T extends { ativo: boolean }>(registros: readonly T[]): T[] {
+  // Utilitário genérico para listas cujo modelo compartilha o marcador de soft delete.
   return registros.filter((registro) => registro.ativo);
 }
 
@@ -175,6 +194,7 @@ export type OcorrenciaMaterializada = {
 };
 
 function mesmaData(a: DataLike, b: DataLike): boolean {
+  // Compara apenas a data UTC, sem depender do horário presente nos valores.
   return dataUTC(a).getTime() === dataUTC(b).getTime();
 }
 
@@ -185,6 +205,7 @@ export function projetarOcorrenciasFuturas(
   fim: DataLike,
   materializadas: readonly OcorrenciaMaterializada[] = [],
 ): Date[] {
+  // Séries encerradas, canceladas ou inativas não geram itens virtuais na agenda.
   if (!tarefa.ativo || tarefa.status === "CANCELADO" || tarefa.status === "Cancelado") return [];
   if (!tarefa.periodicidade || tarefa.serieEncerradaEm || !tarefa.prazo) return [];
 
@@ -192,6 +213,7 @@ export function projetarOcorrenciasFuturas(
   const fimUTC = dataUTC(fim);
   if (inicioUTC > fimUTC) return [];
 
+  // Usa a âncora original para que ocorrências mensais não acumulem deriva de calendário.
   const ancora = tarefa.prazoOriginal ?? tarefa.prazo;
   let cursor = dataUTC(tarefa.prazo);
   const projetadas: Date[] = [];
@@ -203,6 +225,7 @@ export function projetarOcorrenciasFuturas(
     if (!proxima || proxima > fimUTC) break;
     cursor = proxima;
 
+    // Não duplica uma ocorrência que já foi gravada na série.
     const jaMaterializada = materializadas.some(
       (ocorrencia) => ocorrencia.serieId === tarefa.serieId && mesmaData(ocorrencia.prazo, proxima),
     );

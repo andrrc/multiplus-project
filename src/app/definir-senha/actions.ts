@@ -1,4 +1,7 @@
 "use server";
+/**
+ * Actions do módulo `src/app/definir-senha`. Recebem dados enviados pela interface, obtêm o contexto autenticado, validam as entradas no servidor e encaminham operações às funções de domínio; a interface não é a barreira de autorização.
+ */
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -25,6 +28,7 @@ export async function definirSenhaAction(
   _estadoAnterior: EstadoDefinirSenha,
   formData: FormData,
 ): Promise<EstadoDefinirSenha> {
+  // Extrai os três campos do formulário e valida tipo, preenchimento e igualdade das senhas.
   const parsed = schema.safeParse({
     token: formData.get("token"),
     senha: formData.get("senha"),
@@ -32,6 +36,7 @@ export async function definirSenhaAction(
   });
 
   if (!parsed.success) {
+    // Mostra a primeira falha de validação de forma simples para o formulário.
     return { erro: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
 
@@ -40,6 +45,7 @@ export async function definirSenhaAction(
   const senhaFraca = validarPoliticaSenha(parsed.data.senha);
   if (senhaFraca) return { erro: senhaFraca };
 
+  // Revalida no servidor: abrir a tela não reserva nem consome o token.
   const validacao = await validarTokenAcesso(parsed.data.token);
   if (!validacao.valido) {
     switch (validacao.motivo) {
@@ -52,8 +58,10 @@ export async function definirSenhaAction(
     }
   }
 
+  // Persiste apenas o hash bcrypt, nunca a senha em texto puro.
   const senhaHash = await hashSenha(parsed.data.senha);
 
+  // Atualiza a conta vinculada ao token, e em seguida marca o token como usado.
   const usuario = await prisma.usuario.update({
     where: { id: validacao.usuarioId },
     data: { senhaHash },

@@ -1,3 +1,4 @@
+/** RF-005 — comprova no Postgres que a numeração sequencial do cliente é gerada sem colisões mesmo quando vários cadastros são feitos ao mesmo tempo. */
 import { afterAll, describe, expect, it } from "vitest";
 import { ownerDb, fecharConexoes } from "./setup/helpers";
 

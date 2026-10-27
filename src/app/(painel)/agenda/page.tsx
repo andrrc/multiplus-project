@@ -8,13 +8,18 @@ import { inputClass } from "@/ui/campo";
 const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const semana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const dataCurta = (v: Date) => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" }).format(v);
+// Aceita somente ano-mês válido; parâmetros ausentes ou malformados caem no mês atual.
 const dataMes = (valor: string | undefined, agora: Date) => { if (!valor || !/^\d{4}-\d{2}$/.test(valor)) return { ano: agora.getUTCFullYear(), mes: agora.getUTCMonth() }; const [ano, mes] = valor.split("-").map(Number); return { ano, mes: Math.min(11, Math.max(0, mes - 1)) }; };
 
 export default async function AgendaPage({ searchParams }: { searchParams: Promise<{ mes?: string; projeto?: string; cliente?: string; visitas?: string }> }) {
+  // Usa o dia civil de São Paulo para destacar hoje, ainda que o processo rode em outro fuso.
   const hoje = new Date(); const hojeCivil = new Date(dataDeHojeEmSaoPaulo(hoje));
+  // Constrói o intervalo mensal em UTC e carrega itens, opções de filtro e cliente em paralelo.
   const ctx = await exigirAcessoARota("/agenda"); const filtros = await searchParams; const atual = dataMes(filtros.mes, hojeCivil); const inicio = new Date(Date.UTC(atual.ano, atual.mes, 1)); const fim = new Date(Date.UTC(atual.ano, atual.mes + 1, 0, 23, 59, 59));
   const [itens, projetos, clientes] = await Promise.all([listarItensAgenda(ctx, inicio, fim, { projetoId: filtros.projeto, clienteId: filtros.cliente, visitas: filtros.visitas === "1" }), listarProjetos(ctx), listarClientesParaProjeto(ctx)]);
+  // Gera células suficientes para semanas completas e agrupa compromissos pelo dia do mês.
   const primeiroDia = inicio.getUTCDay(); const quantidadeDias = fim.getUTCDate(); const celulas = Array.from({ length: Math.ceil((primeiroDia + quantidadeDias) / 7) * 7 }, (_, i) => i - primeiroDia + 1); const porDia = new Map<number, typeof itens>(); for (const item of itens) { const dia = item.prazo.getUTCDate(); porDia.set(dia, [...(porDia.get(dia) ?? []), item]); }
+  // Links de navegação preservam os filtros ativos ao trocar de mês.
   const anterior = new Date(Date.UTC(atual.ano, atual.mes - 1, 1)); const proximo = new Date(Date.UTC(atual.ano, atual.mes + 1, 1));
   const hrefMes = (d: Date) => `/agenda?mes=${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}${filtros.cliente ? `&cliente=${filtros.cliente}` : ""}${filtros.projeto ? `&projeto=${filtros.projeto}` : ""}${filtros.visitas ? "&visitas=1" : ""}`;
   return <div className="w-full max-w-[1240px]"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Calendário operacional</p><h1 className="mt-1 text-[28px]">Agenda</h1><p className="mt-1.5 text-[15px] text-cinza">Prazos materializados e próximas ocorrências da série.</p></div><div className="flex items-center gap-2 font-[family-name:var(--font-interface)]"><Link href={hrefMes(anterior)} aria-label="Mês anterior" className="flex h-10 w-10 items-center justify-center rounded-[3px] border border-linha text-[20px] hover:border-azul">‹</Link><span className="min-w-[150px] text-center text-[16px] font-semibold">{nomesMeses[atual.mes]} {atual.ano}</span><Link href={hrefMes(proximo)} aria-label="Próximo mês" className="flex h-10 w-10 items-center justify-center rounded-[3px] border border-linha text-[20px] hover:border-azul">›</Link><Link href="/agenda" className="ml-1 rounded-[3px] border border-linha px-3 py-2 text-[13px] hover:border-azul">Hoje</Link></div></div>

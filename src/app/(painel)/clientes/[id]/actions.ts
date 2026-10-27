@@ -1,4 +1,7 @@
 "use server";
+/**
+ * Actions do módulo `src/app/(painel)/clientes/[id]`. Recebem dados enviados pela interface, obtêm o contexto autenticado, validam as entradas no servidor e encaminham operações às funções de domínio; a interface não é a barreira de autorização.
+ */
 
 import { revalidatePath } from "next/cache";
 import { obterContexto, exigirAdmin } from "@/server/auth/contexto";

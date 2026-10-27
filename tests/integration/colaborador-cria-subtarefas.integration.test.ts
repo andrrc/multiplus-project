@@ -1,3 +1,4 @@
+/** RF-037/RN-004 — comprova que o colaborador responsável só cria subtarefas em tarefa atribuída e que a RLS bloqueia a criação em tarefa sem vínculo. */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { StatusSubtarefa } from "@prisma/client";
 import { criarSubtarefa, criarTarefa } from "@/lib/projetos-tarefas";

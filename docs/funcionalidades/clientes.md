@@ -253,6 +253,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar validação e fluxos de clientes, pessoas envolvidas e laudos no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-26 | este commit | Mostrar a data original de cadastro na ficha administrativa do cliente, sem expô-la nas visões contextuais ([análise](../analises/data-cadastro-cliente.md)). |
 | 2026-10-23 | este commit | Restringir as páginas administrativas de `/clientes` ao ADMIN e manter a visão contextual de colaboradores; policy de `pessoas_envolvidas` fica registrada para revisão própria ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)). |
 | 2026-10-21 | este commit | Visual do laudo aprovado: resumo em destaque, histórico em linha do tempo, documentos com ação de abrir e formulário em diálogo. |

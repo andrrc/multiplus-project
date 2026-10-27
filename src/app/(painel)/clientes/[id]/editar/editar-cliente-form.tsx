@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Componente de interface `editar cliente form`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 
 import { CamposLaudo } from "@/ui/campos-laudo";
 import type { DadosLaudoInput, OpcaoResponsavelLaudo } from "@/lib/validacao-laudo";

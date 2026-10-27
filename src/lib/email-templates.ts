@@ -8,6 +8,7 @@ type DadosTemplateNotificacao = {
 };
 
 function escapar(valor: string) {
+  // Codifica caracteres especiais para que nomes, links e mensagens virem texto HTML, não marcação.
   return valor.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
@@ -31,12 +32,17 @@ function renderLayoutEmail({
   nota?: string;
   rodape: string;
 }): string {
+  // Usa a URL configurada para gerar links absolutos e localizar a imagem da marca.
   const base = process.env.AUTH_URL ?? "http://localhost:3000";
+  // Remove barras finais antes de acrescentar o caminho público da logo.
   const logo = `${base.replace(/\/+$/, "")}/logo-multiplus.png`;
+  // Resolve links relativos contra a origem do sistema antes de inseri-los no e-mail.
   const acaoUrl = acao ? new URL(acao.url, `${base.replace(/\/+$/, "")}/`).toString() : null;
+  // O botão só existe quando o template tem uma ação principal.
   const botao = acao
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#0e7a3c" style="border-radius:3px"><a href="${escapar(acaoUrl!)}" style="display:inline-block;padding:14px 22px;font-size:16px;line-height:22px;font-weight:600;color:#ffffff;text-decoration:none">${escapar(acao.texto)}</a></td></tr></table>`
     : "";
+  // O aviso opcional é escapado separadamente e só entra quando foi fornecido.
   const blocoNota = nota
     ? `<p style="margin:24px 0 0;font-size:14px;line-height:22px;color:#52666f">${escapar(nota)}</p>`
     : "";
@@ -80,6 +86,7 @@ function renderLayoutEmail({
 
 /** RF-030/RF-031 — convite responsivo para definição de senha, com CTA e link alternativo. */
 export function renderTemplateConvite(nome: string, apresentacao: string, link: string): string {
+  // O link alternativo aparece como texto no corpo e também precisa de escape HTML.
   const linkSeguro = escapar(link);
   return renderLayoutEmail({
     nome,
@@ -103,6 +110,7 @@ const chamadaPorEvento: Record<EventoNotificacao, string> = {
 
 /** B7 — template único, compatível com o envio atual e pronto para virar template do Resend. */
 export function renderTemplateNotificacao(evento: EventoNotificacao, dados: DadosTemplateNotificacao) {
+  // Cada categoria recebe uma chamada curta, e o conteúdo detalhado continua separado.
   return renderLayoutEmail({
     nome: dados.nome,
     titulo: dados.titulo,
@@ -113,6 +121,7 @@ export function renderTemplateNotificacao(evento: EventoNotificacao, dados: Dado
 }
 
 export function renderTemplateMencaoComentario(dados: DadosTemplateNotificacao & { autor: string; comentario: string }) {
+  // O nome e o comentário mencionados são tratados como conteúdo não confiável e escapados.
   return renderLayoutEmail({
     nome: dados.nome,
     titulo: dados.titulo,

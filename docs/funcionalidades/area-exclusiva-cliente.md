@@ -81,6 +81,7 @@ O portal mostra status, datas, última movimentação, progresso dos projetos, t
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Explicar autorização e consultas do portal do cliente no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-26 | este commit | Mostrar dias restantes para conclusão prevista nos cartões e no detalhe do portal ([análise](../analises/dias-restantes-portal-cliente.md)). |
 | 2026-10-26 | este commit | Trocar o rótulo do indicador do projeto de “Conclusão” para “Progresso” no painel e no detalhe do portal, sem alterar os cálculos. |
 | 2026-10-23 | este commit | Separar os cartões de tarefa, alinhar os dados em grade responsiva e mostrar progresso visual |

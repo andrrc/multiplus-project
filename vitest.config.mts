@@ -1,6 +1,7 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
 
+// Configura somente integração e smoke, que precisam do Postgres e do setup global.
 export default defineConfig({
   resolve: {
     alias: {

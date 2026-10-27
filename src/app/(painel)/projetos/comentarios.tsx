@@ -1,3 +1,6 @@
+/**
+ * Componente de interface `comentarios`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ */
 import { formatarDataHoraBrasilia } from "@/lib/datas";
 import type { ReactNode } from "react";
 import { listarComentarios, listarUsuariosMencionaveis, type AlvoComentario } from "@/lib/comentarios";

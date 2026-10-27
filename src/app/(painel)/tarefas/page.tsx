@@ -1,3 +1,6 @@
+/**
+ * Página da rota `src/app/(painel)/tarefas/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ */
 import { interpretarResponsavel } from "@/lib/filtro-responsavel";
 import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
@@ -12,17 +15,21 @@ const status: Record<string, string> = {
 };
 
 function ProgressoSubtarefas({ progresso }: { progresso?: { concluidas: number; total: number } }) {
+  // Esta variante de tabela só é renderizada quando a consulta também pediu a agregação.
   if (!progresso) throw new Error("Contagem de subtarefas não disponível.");
   return <span className="font-[family-name:var(--font-interface)] tabular-nums" role="img" aria-label={`${progresso.concluidas} de ${progresso.total} subtarefas concluídas`}>{progresso.concluidas}/{progresso.total}</span>;
 }
 
 export default async function TarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; cliente?: string; projeto?: string; tarefa?: string }> }) {
+  // A página é administrativa; a action de domínio também verifica ADMIN antes de ler dados.
   const ctx = await exigirAcessoARota("/tarefas");
   const filtros = await searchParams;
+  // Determina se a coluna agregada deve ser solicitada ao backend para este filtro.
   const tipoResponsavel = interpretarResponsavel(filtros.responsavel).tipo;
   const responsavelInvalido = tipoResponsavel === "invalido";
   const mostrarProgresso = tipoResponsavel !== "todos" && !responsavelInvalido;
   const responsavelInicial = typeof filtros.responsavel === "string" ? filtros.responsavel : filtros.responsavel ? "invalido" : "";
+  // Busca lista, filtros e limites em paralelo, mantendo a consulta principal restrita no servidor.
   const [tarefas, projetos, clientes, tarefasFiltro, limites, responsaveis] = await Promise.all([
     listarPrazos(ctx, { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, responsavel: filtros.responsavel, pendentes: false }, mostrarProgresso),
     listarProjetos(ctx),

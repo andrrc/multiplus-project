@@ -9,8 +9,10 @@ export function AuthShell({
   subtitulo: string;
   children: ReactNode;
 }) {
+  // Reaproveita a composição das telas públicas de autenticação, recebendo texto e formulário por props.
   return (
     <main className="flex min-h-screen">
+      {/* Marca e explicação institucional aparecem apenas em telas largas. */}
       <div
         className="hidden w-[420px] shrink-0 flex-col justify-between px-12 py-14 lg:flex"
         style={{ background: "linear-gradient(112deg, #0B2530 0%, #14485C 58%, #12703F 130%)" }}
@@ -22,6 +24,7 @@ export function AuthShell({
         </p>
       </div>
 
+      {/* Em celular, o formulário ocupa a tela; em desktop, fica centralizado ao lado da marca. */}
       <div className="flex flex-1 items-center justify-center bg-papel px-5 py-10 sm:px-6">
         <div className="w-full max-w-sm">
           <h1 className="text-[22px]">{titulo}</h1>

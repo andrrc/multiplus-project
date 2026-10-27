@@ -1,3 +1,6 @@
+/**
+ * Biblioteca de domínio `usuarios`. Reúne funções reutilizáveis desta área; os comentários junto às funções explicam validações, decisões e efeitos específicos de cada operação.
+ */
 import type { EntidadeTipo, Perfil } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
