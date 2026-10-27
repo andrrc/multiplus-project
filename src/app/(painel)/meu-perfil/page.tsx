@@ -101,7 +101,7 @@ export default async function MeuPerfilPage() {
         </div>
       </section>
 
-      {!ehAdministrador && (
+      {(ctx.perfil === "ADMIN_INTERNO" || ctx.perfil === "ADMIN_EXTERNO") && (
         <section className="mt-10 border-t border-linha pt-8">
           <h2 className="text-[19px]">Minhas atribuições</h2>
           {atribuicoes.length === 0 ? (

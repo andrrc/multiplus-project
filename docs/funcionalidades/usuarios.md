@@ -106,8 +106,11 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 ### U5. Meu Perfil (RF-042)
 
 **Como funciona.**
-- **Para todos os perfis:** qualquer usuário vê os próprios dados e atribuições, altera o
-  próprio nome e troca a senha, informando a senha atual.
+- **Para todos os perfis:** qualquer usuário vê os próprios dados, altera o próprio nome e
+  troca a senha, informando a senha atual.
+- **Colaboradores internos e externos:** veem, em modo somente leitura, seus projetos ou
+  tarefas atribuídos. O perfil CLIENTE não recebe atribuições; seu acesso a projetos é pelo
+  portal e pelo vínculo com o próprio cadastro de cliente.
 - **Primeira senha:** quem ainda não ativou o acesso define a senha pelo link do convite.
 
 **Detalhes técnicos.**
@@ -128,6 +131,7 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-27 | este commit | Ocultar “Minhas atribuições” do perfil CLIENTE; o acesso do cliente continua pelo portal |
 | 2026-10-27 | este commit | Explicar perfis, atribuições, convites e manutenção de usuários no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-09-16 | `1169d46` | Sprint 3: usuários, atribuições, convites, desativação e Meu Perfil |
 | 2026-09-16 | `363d7c2`, `ccb3962` | Campos extras no cadastro e alinhamento de ações na listagem |
