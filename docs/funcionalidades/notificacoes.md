@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-10-23.
+- **Última revisão:** 2026-10-28.
 - **Requisitos:** RF-007, RF-022, RF-023, RF-050.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -38,6 +38,8 @@ avisado.
 **Como funciona.**
 - **Lista:** avisos recentes, com as não lidas destacadas, o link "Abrir registro",
   "Marcar como lida" e "Marcar todas como lidas".
+- Em telas estreitas, o texto do aviso e a data ocupam linhas próprias quando necessário;
+  preferências e métricas também se reorganizam para evitar corte ou rolagem horizontal.
 
 **Detalhes técnicos.**
 - **Rotas:** `/notificacoes` para ADMIN e `/minhas-notificacoes` para ADMIN_INTERNO e
@@ -133,6 +135,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-28 | este commit | Adaptar a central de notificações a telas estreitas e permitir que mensagens e controles longos quebrem sem estourar o conteúdo |
 | 2026-10-27 | este commit | Adicionar sino e contador de não lidas da própria conta ao menu de colaboradores, mantendo a caixa e a audiência existentes ([análise](../analises/central-notificacoes-colaboradores.md)) |
 | 2026-10-27 | este commit | Explicar os fluxos de notificações, mensagens e jobs no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Ajustar o texto do botão para “Abrir no sistema” e direcionar links de e-mail para a rota autorizada de cada perfil; notificações in-app antigas permanecem como estavam ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
