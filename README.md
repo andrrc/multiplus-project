@@ -13,6 +13,7 @@ Pré-requisitos: Node 20+, Docker Desktop.
 
 ```bash
 cp .env.example .env
+# Use a mesma senha de multiplus_app em APP_DATABASE_URL e APP_DATABASE_PASSWORD
 # gere um AUTH_SECRET: npx auth secret
 # gere senhas reais e um AUTH_SECRET antes de qualquer ambiente compartilhado
 
@@ -21,17 +22,15 @@ npm install
 npm run db:migrate   # aplica as migrations (schema + políticas de RLS)
 ```
 
-Depois de `db:migrate`, defina a senha da role `multiplus_app` (usada pela aplicação
+Depois de `db:migrate`, sincronize a senha da role `multiplus_app` (usada pela aplicação
 para todo acesso já autenticado — as tabelas de domínio têm RLS habilitado e essa role
 não é dona delas, então as políticas se aplicam):
 
 ```bash
-docker exec multiplus-postgres-1 psql -U multiplus -d multiplus \
-  -c "ALTER ROLE multiplus_app WITH PASSWORD 'sua-senha-aqui';"
+docker compose -f docker-compose.yml -f docker-compose.local.yml --profile ops run --rm db-role
 ```
 
-Use a mesma senha em `APP_DATABASE_URL` no `.env`. Essa role não fica em nenhuma
-migration versionada de propósito (senha não vai pro git).
+Essa role não fica em nenhuma migration versionada de propósito (senha não vai pro git).
 
 Crie o usuário ADMIN inicial (Talita) e rode o app:
 

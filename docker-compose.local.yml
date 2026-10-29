@@ -6,6 +6,8 @@ services:
       - "127.0.0.1:5434:5432"
 
   minio:
+    # Usa o mesmo digest da imagem base via Docker Hub para não depender do Quay no ambiente local.
+    image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
