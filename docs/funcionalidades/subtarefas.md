@@ -1,6 +1,6 @@
 # Subtarefas e etiquetas
 
-- **Última revisão:** 2026-10-23.
+- **Última revisão:** 2026-10-29.
 - **Requisitos:** RF-008, RF-009, RF-021, RF-025, RF-037, RF-039; RN-001, RN-004.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -110,6 +110,7 @@ pessoa (RN-004).
   nem quando a subtarefa está atrasada. O atraso aparece no
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
   mostra o percentual no prazo somente dos registros encontrados pelos filtros. No celular, os cartões são brancos com borda esquerda azul.
+- **ID:** a tabela de `/subtarefas` ganha uma coluna **ID** com o caminho completo cliente/projeto/tarefa/subtarefa; o cartão móvel mostra o mesmo código junto ao título.
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
   Brasília, o mesmo horário em que o semáforo muda.
 - **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da subtarefa, independentemente do responsável da tarefa pai. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Por padrão, mostra só as pendentes, e
@@ -127,6 +128,7 @@ pessoa (RN-004).
 - **Testes:**
   - `projetos-tarefas.unit.test.ts`: RN-001 e RF-009;
   - `identidade-visual-tokens.unit.test.ts`: garante que a cor de atraso exista.
+- **Identificador:** `numeroLocal` é atribuído pelo banco em toda criação, inclusive nas subtarefas copiadas para recorrências, e é único dentro da tarefa. O CUID continua como chave técnica. A formatação e alocação estão cobertas por `identificadores-hierarquicos.unit.test.ts` e `identificadores-hierarquicos.integration.test.ts`.
 
 ### S5. Etiquetas nas subtarefas (RF-025)
 
@@ -199,6 +201,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Adicionar coluna ID hierárquica em `/subtarefas`, com sequência local por tarefa e códigos nos detalhes ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar regras, acessos e interface de subtarefas e etiquetas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Separar a rota de criação de subtarefa do colaborador e manter a rota administrativa exclusiva do ADMIN ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |
 | 2026-10-22 | este commit | Solicitação de conclusão pelo responsável, fila ADMIN, retirada, rejeição e bloqueio após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |

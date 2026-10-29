@@ -14,6 +14,7 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { IndicadorConclusao } from "@/ui/indicador-conclusao";
+import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 
 const projetoStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const tarefaStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
@@ -28,6 +29,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
   <div className="min-w-0">
     <p className="text-[14px] text-cinza">{projeto.cliente.razaoSocial}</p>
     <h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1>
+    <p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[13px] tabular-nums text-cinza">ID {codigoProjeto(projeto.cliente.numeroIdentificacao, projeto.numeroLocal)}</p>
     <p className="mt-1 text-[14px] text-cinza">Proposta comercial: <strong className="font-medium text-tinta">{projeto.numeroProposta ?? "Não informada"}</strong></p>
     {projeto.descricao && <p className="mt-2 max-w-[70ch] text-[15px] text-cinza">{projeto.descricao}</p>}
   </div>

@@ -10,6 +10,7 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { IndicadorConclusao } from "@/ui/indicador-conclusao";
+import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const taskStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -28,7 +29,7 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
     <div className="mt-5">
       <p className="text-[14px] text-cinza">{p.cliente.razaoSocial}</p>
       <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[28px]">{p.nome}</h1>
+        <div><h1 className="text-[28px]">{p.nome}</h1><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[13px] tabular-nums text-cinza">ID {codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</p></div>
         <Etiqueta>{status[p.status]}</Etiqueta>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-cinza"><span>Semáforo do prazo:</span><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} limites={limites} /></div>

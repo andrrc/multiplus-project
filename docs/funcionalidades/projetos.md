@@ -1,6 +1,6 @@
 # Projetos
 
-- **Última revisão:** 2026-10-02, implementação da Sprint 6.
+- **Última revisão:** 2026-10-29.
 - **Requisitos:** RF-004, RF-009, RF-013, RF-016, RF-018, RF-020, RF-024, RF-038, RF-039, RF-048, RF-049, RF-050.
 - **Módulos relacionados:** Clientes, Tarefas, Comentários.
 
@@ -67,7 +67,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 ### P2. Listar projetos (Administradora)
 
 **Como funciona.**
-- **Colunas:** projeto, cliente (com link para a ficha), proposta, valor, prazo final,
+- **Colunas:** ID do projeto, projeto, cliente (com link para a ficha), proposta, valor, prazo final,
   **Dias restantes** e status.
 - **Busca:** por projeto ou cliente.
 - **Desativados:** "Mostrar desativados" inclui os projetos desativados.
@@ -77,7 +77,9 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 **Detalhes técnicos.**
 - **Rota:** `/projetos`.
 - **Função:** `listarProjetos(ctx, incluirDesativados, busca)`.
-- **Celular:** a tabela vira lista de cartões.
+- **ID:** código `PROJ-<cliente>-<sequencial>`, com sequência local por cliente; o cartão móvel mostra o mesmo código junto ao projeto.
+- **Celular:** a tabela vira lista de cartões. No detalhe e no portal, o projeto também mostra o código.
+- **Geração:** `numeroLocal` é preenchido pelo banco e tem unicidade dentro do cliente. O CUID permanece como chave técnica e da URL.
 
 ### P3. Dias restantes e semáforo do prazo
 
@@ -175,6 +177,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Identificadores hierárquicos; coluna ID em `/projetos`, sequência por cliente e exibição nos detalhes e no portal ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar consultas, regras e fluxos compartilhados de projetos e tarefas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-16 | este commit | Menus de status do projeto e das tarefas fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |
 | 2026-10-15 | `9b5195d` | Linhas da tabela voltam a ter destaque ao passar o mouse, em cinza-papel sobre fundo branco (sem verde e sem cor de estado) |

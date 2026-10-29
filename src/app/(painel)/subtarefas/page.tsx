@@ -11,6 +11,7 @@ import { Etiqueta } from "@/ui/campo";
 import { FiltrosListagens } from "../filtros-listagens";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
+import { codigoSubtarefa } from "@/lib/identificadores-hierarquicos";
 import { decidirSolicitacaoConclusaoFormAction } from "@/app/(painel)/projetos/actions";
 
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -92,11 +93,12 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     {subtarefas.length === 0 ? <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
       <div className="mt-7 hidden overflow-x-auto md:block">
         <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
-          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Subtarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Tarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Responsável</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo</th><th className="rounded-r-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th></tr></thead>
+          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Subtarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Tarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Responsável</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo</th><th className="rounded-r-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th></tr></thead>
           <tbody>{subtarefas.map(s => {
             const atrasada = estaAtrasada(s.prazo, s.status === StatusSubtarefa.CONCLUIDO || s.status === StatusSubtarefa.CANCELADO, hoje);
             const hrefDetalhe = hrefSubtarefa(s.tarefa.id, s.id);
             return <tr key={s.id} className="border-t border-linha bg-branco hover:bg-papel">
+              <td className="p-0"><Link href={hrefDetalhe} className="block break-all px-5 py-4 tabular-nums text-cinza">{codigoSubtarefa(s.tarefa.projeto.cliente.numeroIdentificacao, s.tarefa.projeto.numeroLocal, s.tarefa.numeroLocal, s.numeroLocal)}</Link></td>
               <td className="p-0 font-medium"><Link href={hrefDetalhe} className="block px-5 py-4 hover:text-azul-esc">{s.titulo}</Link></td>
               <td className="p-0"><Link href={`/tarefas/${s.tarefa.id}`} className="block px-5 py-4 text-tinta hover:text-azul-esc hover:underline">{s.tarefa.nome}</Link></td>
               <td className="p-0"><Link href={`/projetos/${s.tarefa.projeto.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></td>
@@ -113,7 +115,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
           <article className="relative rounded-[3px] border border-linha border-l-[3px] border-l-azul bg-branco px-4 py-4 hover:border-azul">
             <Link href={hrefSubtarefa(s.tarefa.id, s.id)} aria-label={`Abrir subtarefa ${s.titulo}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir subtarefa {s.titulo}</span></Link>
             <div className="pointer-events-none relative z-10">
-              <div className="flex justify-between gap-3"><p className="font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></div>
+              <div className="flex justify-between gap-3"><div className="min-w-0"><p className="break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoSubtarefa(s.tarefa.projeto.cliente.numeroIdentificacao, s.tarefa.projeto.numeroLocal, s.tarefa.numeroLocal, s.numeroLocal)}</p></div><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></div>
               <p className="mt-1 text-[12px] text-cinza">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</p>
               <p className="mt-3 text-[13px]"><span className="text-cinza">Tarefa: </span><Link href={`/tarefas/${s.tarefa.id}`} className="pointer-events-auto relative z-20 text-azul-esc hover:underline">{s.tarefa.nome}</Link></p>
               <p className="mt-1 text-[13px]"><span className="text-cinza">Projeto: </span><Link href={`/projetos/${s.tarefa.projeto.id}`} className="pointer-events-auto relative z-20 text-azul-esc hover:underline">{s.tarefa.projeto.nome}</Link></p>

@@ -10,6 +10,7 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { IndicadorConclusao } from "@/ui/indicador-conclusao";
+import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "—";
@@ -51,6 +52,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-[family-name:var(--font-interface)] font-semibold text-tinta">{p.nome}</p>
+                      <p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</p>
                       <Link href={`/clientes/${p.cliente.id}`} className="pointer-events-auto relative z-20 mt-1 inline-block text-[14px] text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link>
                     </div>
                     <Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta>
@@ -66,11 +68,13 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
           ))}
         </ul>
 
-        <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
-          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Conclusão</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
+        <div className="mt-7 hidden overflow-x-auto md:block">
+        <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
+          <thead><tr className="bg-tinta text-left text-branco"><th className="rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Conclusão</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
           <tbody>
             {projetos.map((p) => (
               <tr key={p.id} className="border-t border-linha bg-branco hover:bg-papel">
+                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block break-all px-5 py-4 tabular-nums text-cinza">{codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 font-medium hover:text-azul-esc">{p.nome}</Link></td>
                 <td className="p-0"><Link href={`/clientes/${p.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.numeroProposta ?? "—"}</Link></td>
@@ -84,6 +88,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
             ))}
           </tbody>
         </table>
+        </div>
       </>}
     </div>
   );

@@ -1,6 +1,6 @@
 # Tarefas
 
-- **Última revisão:** 2026-10-22.
+- **Última revisão:** 2026-10-29.
 - **Requisitos:** RF-005, RF-006, RF-007, RF-009, RF-015, RF-018, RF-019, RF-024, RF-039;
   RN-001, RN-006, RN-007, RN-008.
 - **Módulos relacionados:** Projetos, Subtarefas, Agenda, Notificações, Comentários.
@@ -80,6 +80,7 @@ Administradora continua vendo tudo.
 - **Responsável:** fica em coluna própria, entre Cliente e Prazo, e mostra "—" quando a
   tarefa não tem responsável. O nome é exibido tanto para pessoa envolvida quanto para usuário da equipe. No celular, o cartão traz a linha "Responsável:" (ou "Sem
   responsável").
+- **ID:** a tabela ganha uma coluna **ID** com o código hierárquico do registro; no cartão móvel, o ID aparece junto ao nome. O código tem a forma `TAR-<cliente>-<projeto>-<tarefa>` e usa sequências locais por projeto.
 
 **Detalhes técnicos.**
 - **Filtro por responsável (RF-005/RF-037):** `responsavel=pessoa:<id>`, `usuario:<id>` ou `sem`; validado e aplicado no servidor em `listarPrazos`/`listarSubtarefasPrazos`. Parâmetro inválido mostra aviso e resultado vazio. `listarResponsaveisParaFiltro` exige ADMIN e retorna apenas valor e rótulo, com origem e cliente para distinguir pessoas envolvidas. Opções consideram os demais filtros e o toggle, incluem responsáveis inativos ainda vinculados a registros elegíveis e não expõem dados de contato. A agenda continua sem esse filtro.
@@ -93,6 +94,7 @@ Administradora continua vendo tudo.
   mistura de responsáveis, filtros/isolamento, inativas/canceladas, mudanças de status,
   retorno mínimo, agenda e perfis negados; `filtro-responsavel.unit.test.ts` cobre
   exibição condicional e texto acessível na tabela e nos cartões.
+- **Identificador:** `numeroLocal` é atribuído pelo banco em toda criação de tarefa, inclusive recorrência, e é único dentro do projeto. O CUID continua nas rotas e relações. `identificadores-hierarquicos.unit.test.ts` cobre a formatação; `identificadores-hierarquicos.integration.test.ts` cobre geração concorrente e proteção do contador.
 - **Testes do filtro:** `filtro-responsavel.integration.test.ts` (origens, homônimos, nulos, composição, inativos, indicador, agenda e perfis negados) e `filtro-responsavel.unit.test.ts` (parâmetros, URL, seleção sem resultado e nome da equipe na tabela/cartão).
 - **Rota:** `/tarefas` (e `/tarefa`, que redireciona para ela).
 - **Funções:** `listarPrazos` (com `pendentes: false`), `listarTarefasParaFiltro` e o
@@ -292,6 +294,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Adicionar coluna ID hierárquica em `/tarefas`, sequência local por projeto e exibição no detalhe/portal ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar regras, rotas, testes e operações do código em português do Brasil ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-22 | este commit | Solicitação de conclusão por colaboradores e confirmação/rejeição ADMIN; recorrência somente após aprovação ([análise](../analises/aprovacao-conclusao-tarefas-subtarefas.md)) |
 | 2026-10-20 | este commit | Coluna de subtarefas concluídas/total nas tarefas filtradas por responsável, excluindo canceladas/desativadas ([análise](../analises/progresso-subtarefas-tarefas-filtradas.md)) |

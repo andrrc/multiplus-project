@@ -31,7 +31,8 @@ export async function listarProjetosPortal(ctx: ContextoUsuario) {
     const projetos = await tx.projeto.findMany({
       where: { clienteId: usuario.clienteId, ativo: true, cliente: { ativo: true } },
       select: {
-        id: true, nome: true, status: true, dataInicio: true, dataPrevistaConclusao: true,
+        id: true, numeroLocal: true, nome: true, status: true, dataInicio: true, dataPrevistaConclusao: true,
+        cliente: { select: { numeroIdentificacao: true } },
         tarefas: { where: { ativo: true }, select: { id: true, status: true, ativo: true } },
       },
       orderBy: [{ atualizadoEm: "desc" }, { id: "asc" }],
@@ -57,12 +58,12 @@ export async function buscarProjetoPortal(ctx: ContextoUsuario, projetoId: strin
     const projeto = await tx.projeto.findFirst({
       where: { id: projetoId, clienteId: usuario.clienteId, ativo: true, cliente: { ativo: true } },
       select: {
-        id: true, nome: true, status: true, dataInicio: true, dataPrevistaConclusao: true,
+        id: true, numeroLocal: true, nome: true, status: true, dataInicio: true, dataPrevistaConclusao: true,
         documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } },
-        cliente: { select: { documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } },
+        cliente: { select: { numeroIdentificacao: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } },
         tarefas: {
           where: { ativo: true },
-          select: { id: true, nome: true, prazo: true, status: true, ativo: true },
+          select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true },
           orderBy: [{ prazo: "asc" }, { nome: "asc" }],
         },
       },

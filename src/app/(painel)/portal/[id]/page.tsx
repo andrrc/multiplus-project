@@ -8,6 +8,7 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjetoPortal } from "@/lib/portal-cliente";
 import { EtiquetaStatusPortal } from "@/ui/etiqueta-status-portal";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
+import { codigoProjeto, codigoTarefa } from "@/lib/identificadores-hierarquicos";
 
 const data = (valor: Date | null) => valor
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
@@ -29,7 +30,7 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
   return <div className="w-full max-w-[1120px]">
     <Link href="/portal" className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Meus projetos</Link>
     <div className="mt-3 flex flex-wrap items-start justify-between gap-4 border-b border-linha pb-6">
-      <div className="min-w-0"><p className="text-[14px] text-cinza">Nome do projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1></div>
+      <div className="min-w-0"><p className="text-[14px] text-cinza">Nome do projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[13px] tabular-nums text-cinza">ID {codigoProjeto(projeto.cliente.numeroIdentificacao, projeto.numeroLocal)}</p></div>
       <EtiquetaStatusPortal status={projeto.status}>{projetoStatus[projeto.status]}</EtiquetaStatusPortal>
     </div>
     <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -44,7 +45,7 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
       {projeto.tarefas.length === 0 ? <p className="mt-3 border border-dashed border-linha bg-branco px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa ativa neste projeto.</p> : <ul className="mt-4 grid gap-3">
         {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 rounded-[3px] border border-linha border-l-[3px] border-l-azul bg-branco p-4 sm:p-5">
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-            <div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3></div>
+            <div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoTarefa(projeto.cliente.numeroIdentificacao, projeto.numeroLocal, tarefa.numeroLocal)}</p></div>
             <div className="justify-self-start sm:justify-self-end"><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>
           </div>
           <dl className="mt-4 grid min-w-0 grid-cols-1 gap-x-6 gap-y-4 text-[13px] sm:grid-cols-2 lg:grid-cols-3">

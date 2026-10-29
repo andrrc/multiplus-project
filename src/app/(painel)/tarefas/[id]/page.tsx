@@ -22,6 +22,7 @@ import { listarEtiquetas } from "@/lib/etiquetas";
 import { EtiquetasSubtarefa } from "@/ui/etiquetas-subtarefa";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { codigoSubtarefa, codigoTarefa } from "@/lib/identificadores-hierarquicos";
 
 const statuses: Record<string, string> = {
   A_INICIAR: "A iniciar",
@@ -64,6 +65,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
         <div>
           <p className="text-[14px] text-cinza">{t.projeto.cliente.razaoSocial}</p>
           <h1 className="mt-1 text-[28px]">{t.nome}</h1>
+          <p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[13px] tabular-nums text-cinza">ID {codigoTarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal)}</p>
           <p className="mt-2 text-[15px] text-cinza">Prazo: <strong className="font-medium text-tinta">{data(t.prazo)}</strong>{t.responsavel ? ` · Responsável: ${t.responsavel.nome}` : ""}</p>
           <div className="mt-2"><IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} /></div>
           <p className="mt-1 text-[12px] text-cinza">Criado por: {t.criadoPorNome ?? "Registro anterior"} · {dataHora(t.criadoEm)}</p>
@@ -94,7 +96,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma subtarefa ainda. Cadastre a primeira etapa para esta tarefa.</p> : t.subtarefas.map(s => (
             <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="border-b border-linha px-5 py-4 last:border-b-0">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><span>{s.titulo}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
+                <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><span>{s.titulo}</span><span className="break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoSubtarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal, s.numeroLocal)}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
                 <span className="flex flex-wrap items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta>{t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="group inline-flex min-h-11 items-center"><span className="inline-block rounded-[3px] border border-linha bg-branco px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta group-hover:border-azul group-hover:text-azul-esc">Editar</span></Link>}</span>
               </summary>
               <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
