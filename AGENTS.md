@@ -225,6 +225,24 @@ Em alterações menores, siga os passos que se aplicam, na mesma ordem.
    mostra) e smoke do fluxo completo. Ver seção 5.
 8. **Interface:** as telas por último, seguindo o PDD do módulo e a [seção 6](#6-interface).
 
+### 3.1 Skills técnicas aplicáveis
+
+Antes de implementar ou alterar código, identifique as skills desta tabela que correspondem
+às tecnologias envolvidas e leia seus `SKILL.md`. Aplique apenas as skills pertinentes à
+tarefa; não é necessário carregar skills de tecnologias que não fazem parte da mudança.
+
+| Skill | Quando usar |
+|---|---|
+| `nextjs-app-router-patterns` | Mudanças em aplicações Next.js, especialmente App Router, Server Components, renderização e busca de dados. |
+| `vercel-react-best-practices` | Mudanças em componentes React, páginas ou recursos do Next.js que envolvam padrões de desempenho. |
+| `tailwind-design-system` | Criação ou alteração de estilos, tokens ou componentes com Tailwind CSS. |
+| `postgresql-table-design` | Criação ou revisão de schema, índices, constraints ou recursos específicos do PostgreSQL. |
+| `prisma-client-api` | Escrita ou alteração de queries e operações com Prisma Client. |
+| `multi-stage-dockerfile` | Criação ou alteração de `Dockerfile` multi-stage. |
+| `vitest` | Criação ou alteração de testes, fixtures ou configuração do Vitest. |
+| `tdd` | Correções de bugs ou mudanças desenvolvidas com fluxo test-first, quando aplicável. |
+| `typescript-advanced-types` | Tarefas que envolvam tipos avançados de TypeScript, como generics, tipos condicionais ou utilitários reutilizáveis. |
+
 ## 4. Versionamento
 
 ### 4.1 Uma branch só: `staging`
