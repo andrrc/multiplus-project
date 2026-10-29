@@ -18,6 +18,7 @@ mesmo commit da alteração.
 | Módulo | Arquivo | Situação |
 |---|---|---|
 | Leitura e manutenção do código | [guia técnico](../codigo/README.md) | Documentado; migrations históricas explicadas em [migrations.md](../codigo/migrations.md) |
+| Desenvolvimento local | [`desenvolvimento-local.md`](desenvolvimento-local.md) | Diagnóstico local somente de leitura |
 | Interface e legibilidade | [interface.md](interface.md) | Documentado |
 | Clientes e pessoas envolvidas | [`clientes.md`](clientes.md) | Documentado |
 | Projetos | [`projetos.md`](projetos.md) | Documentado |

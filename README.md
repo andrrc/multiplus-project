@@ -45,11 +45,17 @@ seed pra definir a senha do ADMIN, e faça login. O inicializador escolhe uma po
 e ajusta `AUTH_URL` à mesma porta, mesmo quando `localhost:3000` está sendo usado por
 outro projeto.
 
+Antes de testar, rode `npm run doctor:local` para ver problemas no `.env`, Docker/Compose,
+serviços, portas e conexões locais. A auditoria é somente de leitura: ela não inicia
+contêineres, altera arquivos nem executa migrations ou seed. O relatório indica próximos
+passos manuais e não mostra valores de credenciais.
+
 ## Scripts
 
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Servidor local do Múltiplus numa porta livre, com URL de autenticação alinhada |
+| `npm run doctor:local` | Auditoria local somente de leitura para diagnóstico de acesso e Docker |
 | `npm run build` / `npm run start` | Build e start de produção |
 | `npm run db:migrate` | Aplica migrations do Prisma (`prisma migrate dev`) |
 | `npm run db:seed` | Cria o usuário ADMIN inicial, se ainda não existir |

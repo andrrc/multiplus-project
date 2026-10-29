@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-29 | [Desenvolvimento local](funcionalidades/desenvolvimento-local.md) | Diagnóstico local somente de leitura para acesso ao app, Docker, serviços, portas e banco ([análise](analises/auditoria-acesso-local.md)) | este commit |
 | 2026-10-29 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Manter o aviso de rolagem e remover o degradê sobre os dados | este commit |
 | 2026-10-29 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Aviso no topo e sinais nas bordas das tabelas indicam a rolagem horizontal disponível | este commit |
 | 2026-10-29 | [Interface](funcionalidades/interface.md) | Carregar Raleway e Montserrat por arquivos locais para remover a dependência de fontes remotas no build ([análise](analises/falha-build-fontes-nextjs.md)) | este commit |

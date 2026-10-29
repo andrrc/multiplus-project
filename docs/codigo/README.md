@@ -28,6 +28,10 @@ As migrations SQL publicadas são imutáveis neste repositório. A finalidade de
 | `tests/` | Testes unitários, de integração e smoke | O comentário inicial de cada arquivo deve indicar os RFs/RNs cobertos. |
 | `scripts/` e `ops/` | Ferramentas de desenvolvimento, manutenção e operação | Confira argumentos, variáveis de ambiente e efeitos externos antes de executar. |
 
+Para diagnosticar o ambiente de desenvolvimento sem alterar serviços ou dados, use
+`npm run doctor:local`. A auditoria está em `scripts/auditoria-local.mjs`; ela verifica
+pré-requisitos, Docker Compose, serviços, portas e conexões com consultas de leitura.
+
 ## Convenção dos comentários
 
 - Comentários em português do Brasil explicam propósito, decisões, regras, efeitos colaterais e motivos de uma validação.
