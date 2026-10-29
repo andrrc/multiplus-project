@@ -69,6 +69,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 **Como funciona.**
 - **Colunas:** ID do projeto, projeto, cliente (com link para a ficha), proposta, valor, prazo final,
   **Dias restantes** e status.
+- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas” e uma seta indica que há conteúdo fora da área visível.
 - **Busca:** por projeto ou cliente.
 - **Desativados:** "Mostrar desativados" inclui os projetos desativados.
 - **Linhas:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse. Não há cor de fundo por
@@ -78,6 +79,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 - **Rota:** `/projetos`.
 - **Função:** `listarProjetos(ctx, incluirDesativados, busca)`.
 - **ID:** código `PROJ-<cliente>-<sequencial>`, com sequência local por cliente. Na tabela, aparece inteiro em uma linha dentro do contêiner rolável; o cartão móvel mostra o mesmo código junto ao projeto.
+- **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 - **Celular:** a tabela vira lista de cartões. No detalhe e no portal, o projeto também mostra o código.
 - **Geração:** `numeroLocal` é preenchido pelo banco e tem unicidade dentro do cliente. O CUID permanece como chave técnica e da URL.
 
@@ -177,6 +179,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de projetos |
 | 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e preservar o código completo nos cartões móveis |
 | 2026-10-29 | este commit | Identificadores hierárquicos; coluna ID em `/projetos`, sequência por cliente e exibição nos detalhes e no portal ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar consultas, regras e fluxos compartilhados de projetos e tarefas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |

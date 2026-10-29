@@ -10,6 +10,7 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { IndicadorConclusao } from "@/ui/indicador-conclusao";
+import { RolagemHorizontal } from "@/ui/rolagem-horizontal";
 import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
@@ -68,7 +69,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
           ))}
         </ul>
 
-        <div className="mt-7 hidden overflow-x-auto md:block">
+        <RolagemHorizontal className="mt-7 hidden md:block" rotulo="Tabela de projetos">
         <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
           <thead><tr className="bg-tinta text-left text-branco"><th className="min-w-[180px] whitespace-nowrap rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Conclusão</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
           <tbody>
@@ -88,7 +89,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
             ))}
           </tbody>
         </table>
-        </div>
+        </RolagemHorizontal>
       </>}
     </div>
   );

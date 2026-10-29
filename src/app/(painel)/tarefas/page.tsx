@@ -10,6 +10,7 @@ import { FiltrosListagens } from "../filtros-listagens";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { codigoTarefa } from "@/lib/identificadores-hierarquicos";
+import { RolagemHorizontal } from "@/ui/rolagem-horizontal";
 
 const status: Record<string, string> = {
   A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento do cliente", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência a cumprir", CONCLUIDO: "Concluída", CANCELADO: "Cancelada",
@@ -59,7 +60,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
     />
     {responsavelInvalido && <p role="alert" className="mt-4 text-[14px] text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
     {tarefas.length === 0 ? <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma tarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">Não há tarefas ativas ou os filtros não encontraram tarefas.</p></div> : <div className="mt-7">
-      <div className="hidden overflow-x-auto md:block">
+      <RolagemHorizontal className="hidden md:block" rotulo="Tabela de tarefas">
       <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-left text-[14px]">
         <thead><tr className="bg-tinta text-left text-branco"><th className="min-w-[200px] whitespace-nowrap rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Tarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Responsável</th>{mostrarProgresso && <th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Subtarefas</th>}<th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo</th><th className="rounded-r-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th></tr></thead>
         <tbody>{tarefas.map(tarefa => <tr key={tarefa.id} className="border-t border-linha bg-branco hover:bg-papel">
@@ -73,7 +74,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
           <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4"><Etiqueta tom={tarefa.status === "CONCLUIDO" ? "positivo" : undefined}>{status[tarefa.status]}</Etiqueta></Link></td>
         </tr>)}</tbody>
       </table>
-      </div>
+      </RolagemHorizontal>
       <ul className="flex flex-col gap-3 md:hidden">{tarefas.map(tarefa => <li key={tarefa.id}>
         <article className="relative rounded-[3px] border border-linha bg-branco px-4 py-4 hover:border-azul">
           <Link href={`/tarefas/${tarefa.id}`} aria-label={`Abrir tarefa ${tarefa.nome}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir tarefa {tarefa.nome}</span></Link>

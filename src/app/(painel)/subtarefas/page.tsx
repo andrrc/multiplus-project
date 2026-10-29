@@ -13,6 +13,7 @@ import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { codigoSubtarefa } from "@/lib/identificadores-hierarquicos";
 import { decidirSolicitacaoConclusaoFormAction } from "@/app/(painel)/projetos/actions";
+import { RolagemHorizontal } from "@/ui/rolagem-horizontal";
 
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
@@ -91,7 +92,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     />
     {responsavelInvalido && <p role="alert" className="mt-4 text-[14px] text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
     {subtarefas.length === 0 ? <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
-      <div className="mt-7 hidden overflow-x-auto md:block">
+      <RolagemHorizontal className="mt-7 hidden md:block" rotulo="Tabela de subtarefas">
         <table className="w-full min-w-[1280px] border-collapse font-[family-name:var(--font-interface)] text-[14px]">
           <thead><tr className="bg-tinta text-left text-branco"><th className="min-w-[220px] whitespace-nowrap rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Subtarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Tarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Responsável</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo</th><th className="rounded-r-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th></tr></thead>
           <tbody>{subtarefas.map(s => {
@@ -109,7 +110,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
             </tr>;
           })}</tbody>
         </table>
-      </div>
+      </RolagemHorizontal>
       <ul className="mt-7 flex flex-col gap-3 md:hidden">{subtarefas.map(s => {
         return <li key={s.id}>
           <article className="relative rounded-[3px] border border-linha border-l-[3px] border-l-azul bg-branco px-4 py-4 hover:border-azul">

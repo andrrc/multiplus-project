@@ -81,8 +81,11 @@ Administradora continua vendo tudo.
   tarefa não tem responsável. O nome é exibido tanto para pessoa envolvida quanto para usuário da equipe. No celular, o cartão traz a linha "Responsável:" (ou "Sem
   responsável").
 - **ID:** a tabela ganha uma coluna **ID** com o código hierárquico do registro, mantido inteiro em uma linha dentro do contêiner rolável; no cartão móvel, o ID aparece em uma linha própria junto ao nome. O código tem a forma `TAR-<cliente>-<projeto>-<tarefa>` e usa sequências locais por projeto.
+- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”; setas nas bordas acompanham a direção que ainda pode ser percorrida.
+- **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 
 **Detalhes técnicos.**
+- **Indicador:** componente compartilhado `src/ui/rolagem-horizontal.tsx`, usado pela listagem para medir o excesso de conteúdo e atualizar os sinais conforme a posição.
 - **Filtro por responsável (RF-005/RF-037):** `responsavel=pessoa:<id>`, `usuario:<id>` ou `sem`; validado e aplicado no servidor em `listarPrazos`/`listarSubtarefasPrazos`. Parâmetro inválido mostra aviso e resultado vazio. `listarResponsaveisParaFiltro` exige ADMIN e retorna apenas valor e rótulo, com origem e cliente para distinguir pessoas envolvidas. Opções consideram os demais filtros e o toggle, incluem responsáveis inativos ainda vinculados a registros elegíveis e não expõem dados de contato. A agenda continua sem esse filtro.
 - **Agregação de progresso (RF-008/RF-039, RN-007/RN-009):** a página solicita a contagem
   pelo terceiro argumento de `listarPrazos`. Uma agregação `groupBy` no servidor, por
@@ -294,6 +297,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de tarefas |
 | 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e preservar o código completo nos cartões móveis |
 | 2026-10-29 | este commit | Adicionar coluna ID hierárquica em `/tarefas`, sequência local por projeto e exibição no detalhe/portal ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar regras, rotas, testes e operações do código em português do Brasil ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |

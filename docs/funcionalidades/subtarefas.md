@@ -111,6 +111,8 @@ pessoa (RN-004).
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
   mostra o percentual no prazo somente dos registros encontrados pelos filtros. No celular, os cartões são brancos com borda esquerda azul.
 - **ID:** a tabela de `/subtarefas` ganha uma coluna **ID** com o caminho completo cliente/projeto/tarefa/subtarefa, mantido em uma linha e com a largura reservada dentro do contêiner rolável; no cartão móvel, o código aparece em uma linha própria, sem competir com o indicador de prazo.
+- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”; setas nas bordas acompanham a direção que ainda pode ser percorrida.
+- **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
   Brasília, o mesmo horário em que o semáforo muda.
 - **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da subtarefa, independentemente do responsável da tarefa pai. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Por padrão, mostra só as pendentes, e
@@ -118,6 +120,7 @@ pessoa (RN-004).
 - **Link antigo:** a rota antiga `/prazos` redireciona para cá.
 
 **Detalhes técnicos.**
+- **Indicador:** componente compartilhado `src/ui/rolagem-horizontal.tsx`, usado pelo painel para medir o excesso de conteúdo e atualizar os sinais conforme a posição.
 - **Filtro por responsável (RF-005/RF-037):** `responsavel=pessoa:<id>`, `usuario:<id>` ou `sem`; validado e aplicado no servidor em `listarPrazos`/`listarSubtarefasPrazos`. Parâmetro inválido mostra aviso e resultado vazio. `listarResponsaveisParaFiltro` exige ADMIN e retorna apenas valor e rótulo, com origem e cliente para distinguir pessoas envolvidas. Opções consideram os demais filtros e o toggle, incluem responsáveis inativos ainda vinculados a registros elegíveis e não expõem dados de contato. A agenda continua sem esse filtro.
 - **Testes do filtro:** `filtro-responsavel.integration.test.ts` (origens, homônimos, nulos, composição, inativos, indicador, agenda e perfis negados) e `filtro-responsavel.unit.test.ts` (parâmetros, URL, seleção sem resultado e nome da equipe na tabela/cartão).
 - **Rota:** `/subtarefas`, que é a tela inicial do `ADMIN`.
@@ -201,6 +204,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de subtarefas |
 | 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e ajustar sua apresentação no cartão móvel |
 | 2026-10-29 | este commit | Adicionar coluna ID hierárquica em `/subtarefas`, com sequência local por tarefa e códigos nos detalhes ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar regras, acessos e interface de subtarefas e etiquetas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
