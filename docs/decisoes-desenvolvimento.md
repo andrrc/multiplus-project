@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-29 | [Interface](funcionalidades/interface.md) | Carregar Raleway e Montserrat por arquivos locais para remover a dependência de fontes remotas no build ([análise](analises/falha-build-fontes-nextjs.md)) | este commit |
 | 2026-10-29 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Manter os IDs em uma linha nas tabelas e cartões, reservando largura para a coluna e isolando a rolagem horizontal | este commit |
 | 2026-10-29 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | IDs hierárquicos com coluna própria nas três listagens; CUIDs seguem como chaves técnicas ([análise](analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) | este commit |
 | 2026-10-28 | [Notificações](funcionalidades/notificacoes.md) | Alinhar os controles de cada preferência numa única linha e adaptar a composição à largura disponível no cartão | este commit |

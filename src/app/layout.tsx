@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Montserrat, Raleway } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
-// Carrega as fontes do Google no build e publica cada uma como variável CSS.
-const raleway = Raleway({
+// As fontes locais tornam o build reproduzível e mantêm os pesos usados pela interface.
+const raleway = localFont({
+  src: "./fonts/raleway/Raleway-Latin-Variable.woff2",
+  weight: "400 700",
   variable: "--font-raleway",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 // Montserrat é usada nos textos de leitura conforme a identidade visual do sistema.
-const montserrat = Montserrat({
+const montserrat = localFont({
+  src: "./fonts/montserrat/Montserrat-Latin-Variable.woff2",
+  weight: "400 700",
   variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 // A faixa Unicode restringe Droid Serif aos algarismos, inclusive em textos mistos.

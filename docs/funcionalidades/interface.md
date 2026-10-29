@@ -40,11 +40,13 @@ a família do contexto. Os tamanhos ampliados em 20% continuam valendo.
 src/app/globals.css. Os tokens de interface e leitura combinam Droid Serif
 antes de Raleway ou Montserrat. A faixa unicode-range U+0030-0039 restringe
 Droid Serif aos algarismos, sem alterar textos, dados ou elementos do DOM.
-Raleway e Montserrat usam next/font/google; Droid Serif usa next/font/local,
-com arquivos originais e licença em src/app/fonts/droid-serif. A fonte numérica
-não cria fallback próprio que possa capturar letras. Controles, rótulos e tabelas
-usam a fonte de interface na camada base do CSS; componentes preservam seus
-papéis explícitos. Não há mudança de permissão, dados, máscara ou regra.
+Raleway e Montserrat usam next/font/local com arquivos WOFF2 variáveis Latin e
+licenças SIL Open Font em src/app/fonts; isso evita buscar as fontes no Google
+durante o build, preservando os pesos 400, 500, 600 e 700. Droid Serif usa
+next/font/local, com arquivos originais e licença em src/app/fonts/droid-serif.
+A fonte numérica não cria fallback próprio que possa capturar letras. Controles,
+rótulos e tabelas usam a fonte de interface na camada base do CSS; componentes
+preservam seus papéis explícitos. Não há mudança de permissão, dados, máscara ou regra.
 
 Verificação: login em desktop e 375 px; amostra em 375 px com título, parágrafo,
 valor, percentual, data, campo e botão, usando o CSS real do sistema. Metadados
@@ -75,6 +77,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Carregar Raleway e Montserrat por arquivos locais para remover a dependência de fontes remotas no build ([análise](../analises/falha-build-fontes-nextjs.md)) |
 | 2026-10-27 | este commit | Documentar fluxos e decisões do código em português do Brasil ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Atualizar Next.js e eslint-config-next para 16.4.1 por segurança ([análise](../analises/atualizacao-seguranca-nextjs.md)) |
 | 2026-10-21 | este commit | Aplicar Raleway, Montserrat e Droid Serif por papel visual, mantendo os tamanhos atuais |
