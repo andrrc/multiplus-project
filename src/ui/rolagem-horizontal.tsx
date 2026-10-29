@@ -4,14 +4,10 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 type IndicadoresRolagem = {
   temExcesso: boolean;
-  podeRolarParaEsquerda: boolean;
-  podeRolarParaDireita: boolean;
 };
 
 const SEM_ROLAGEM: IndicadoresRolagem = {
   temExcesso: false,
-  podeRolarParaEsquerda: false,
-  podeRolarParaDireita: false,
 };
 
 function SetaHorizontal({ direcao }: { direcao: "esquerda" | "direita" }) {
@@ -52,14 +48,10 @@ export function RolagemHorizontal({
         const excesso = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
         const proximo: IndicadoresRolagem = {
           temExcesso: excesso > 1,
-          podeRolarParaEsquerda: viewport.scrollLeft > 1,
-          podeRolarParaDireita: excesso - viewport.scrollLeft > 1,
         };
 
         setIndicadores((atual) =>
-          atual.temExcesso === proximo.temExcesso &&
-          atual.podeRolarParaEsquerda === proximo.podeRolarParaEsquerda &&
-          atual.podeRolarParaDireita === proximo.podeRolarParaDireita
+          atual.temExcesso === proximo.temExcesso
             ? atual
             : proximo,
         );
@@ -70,20 +62,18 @@ export function RolagemHorizontal({
     const observador = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(atualizar);
     observador?.observe(viewport);
     if (viewport.firstElementChild) observador?.observe(viewport.firstElementChild);
-    viewport.addEventListener("scroll", atualizar, { passive: true });
     window.addEventListener("resize", atualizar);
 
     return () => {
       if (quadroPendente !== undefined) window.cancelAnimationFrame(quadroPendente);
       observador?.disconnect();
-      viewport.removeEventListener("scroll", atualizar);
       window.removeEventListener("resize", atualizar);
     };
   }, []);
 
   return (
     <div className={`relative ${className}`}>
-      {indicadores.temExcesso && !indicadores.podeRolarParaEsquerda && (
+      {indicadores.temExcesso && (
         <p id={dicaId} className="mb-2 flex justify-end">
           <span className="inline-flex min-h-9 items-center gap-2 rounded-[2px] border border-azul/20 bg-azul-cl px-3 font-[family-name:var(--font-interface)] text-[12px] font-medium text-azul-esc">
             Deslize para ver as demais colunas
@@ -97,31 +87,11 @@ export function RolagemHorizontal({
           className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-azul focus-visible:outline-offset-2"
           role="region"
           aria-label={rotulo}
-          aria-describedby={indicadores.temExcesso && !indicadores.podeRolarParaEsquerda ? dicaId : undefined}
+          aria-describedby={indicadores.temExcesso ? dicaId : undefined}
           tabIndex={indicadores.temExcesso ? 0 : undefined}
         >
           {children}
         </div>
-        {indicadores.podeRolarParaEsquerda && (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 left-0 top-10 z-10 flex w-8 items-center bg-gradient-to-r from-branco via-branco/75 to-transparent pl-1"
-          >
-            <span className="grid size-6 place-items-center rounded-[2px] border border-linha bg-branco text-azul-esc">
-              <SetaHorizontal direcao="esquerda" />
-            </span>
-          </div>
-        )}
-        {indicadores.podeRolarParaDireita && (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 right-0 top-10 z-10 flex w-8 items-center justify-end bg-gradient-to-l from-branco via-branco/75 to-transparent pr-1"
-          >
-            <span className="grid size-6 place-items-center rounded-[2px] border border-linha bg-branco text-azul-esc">
-              <SetaHorizontal direcao="direita" />
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
