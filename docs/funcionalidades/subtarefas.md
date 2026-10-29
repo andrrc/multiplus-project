@@ -110,7 +110,7 @@ pessoa (RN-004).
   nem quando a subtarefa está atrasada. O atraso aparece no
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
   mostra o percentual no prazo somente dos registros encontrados pelos filtros. No celular, os cartões são brancos com borda esquerda azul.
-- **ID:** a tabela de `/subtarefas` ganha uma coluna **ID** com o caminho completo cliente/projeto/tarefa/subtarefa; o cartão móvel mostra o mesmo código junto ao título.
+- **ID:** a tabela de `/subtarefas` ganha uma coluna **ID** com o caminho completo cliente/projeto/tarefa/subtarefa, mantido em uma linha e com a largura reservada dentro do contêiner rolável; no cartão móvel, o código aparece em uma linha própria, sem competir com o indicador de prazo.
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
   Brasília, o mesmo horário em que o semáforo muda.
 - **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da subtarefa, independentemente do responsável da tarefa pai. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Por padrão, mostra só as pendentes, e
@@ -201,6 +201,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e ajustar sua apresentação no cartão móvel |
 | 2026-10-29 | este commit | Adicionar coluna ID hierárquica em `/subtarefas`, com sequência local por tarefa e códigos nos detalhes ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar regras, acessos e interface de subtarefas e etiquetas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Separar a rota de criação de subtarefa do colaborador e manter a rota administrativa exclusiva do ADMIN ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)) |

@@ -77,7 +77,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 **Detalhes técnicos.**
 - **Rota:** `/projetos`.
 - **Função:** `listarProjetos(ctx, incluirDesativados, busca)`.
-- **ID:** código `PROJ-<cliente>-<sequencial>`, com sequência local por cliente; o cartão móvel mostra o mesmo código junto ao projeto.
+- **ID:** código `PROJ-<cliente>-<sequencial>`, com sequência local por cliente. Na tabela, aparece inteiro em uma linha dentro do contêiner rolável; o cartão móvel mostra o mesmo código junto ao projeto.
 - **Celular:** a tabela vira lista de cartões. No detalhe e no portal, o projeto também mostra o código.
 - **Geração:** `numeroLocal` é preenchido pelo banco e tem unicidade dentro do cliente. O CUID permanece como chave técnica e da URL.
 
@@ -177,6 +177,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e preservar o código completo nos cartões móveis |
 | 2026-10-29 | este commit | Identificadores hierárquicos; coluna ID em `/projetos`, sequência por cliente e exibição nos detalhes e no portal ([análise](../analises/ids-hierarquicos-projeto-tarefa-subtarefa.md)) |
 | 2026-10-27 | este commit | Explicar consultas, regras e fluxos compartilhados de projetos e tarefas no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-16 | este commit | Menus de status do projeto e das tarefas fecham ao escolher uma opção, ao clicar fora ou ao apertar Esc |
