@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
+import { validarDestinosDeTeste, validarIdentidadesDeTeste, validarSeparacaoDeBancos } from "./banco-teste-seguro";
 
 /**
  * Roda uma vez antes da suíte inteira (Vitest `globalSetup`). Garante que o
@@ -10,9 +11,11 @@ import { PrismaClient } from "@prisma/client";
  */
 export default async function setup() {
   const dbUrl = process.env.TEST_DATABASE_URL;
+  validarDestinosDeTeste(dbUrl, process.env.TEST_APP_DATABASE_URL);
   if (!dbUrl) {
     throw new Error("TEST_DATABASE_URL não configurada — ver .env.example");
   }
+  validarSeparacaoDeBancos(dbUrl, [process.env.DATABASE_URL, process.env.APP_DATABASE_URL]);
 
   const nomeBanco = new URL(dbUrl).pathname.replace(/^\//, "");
   const urlBancoPadrao = dbUrl.replace(`/${nomeBanco}`, "/postgres");
@@ -36,4 +39,15 @@ export default async function setup() {
     env: { ...process.env, DATABASE_URL: dbUrl },
     stdio: "inherit",
   });
+
+  const owner = new PrismaClient({ datasources: { db: { url: dbUrl } } });
+  const app = new PrismaClient({ datasources: { db: { url: process.env.TEST_APP_DATABASE_URL } } });
+  try {
+    type Identidade = { banco: string; servidor: string | null; porta: number | null; usuario: string };
+    const consulta = (p: PrismaClient) => p.$queryRaw<Identidade[]>`SELECT current_database() AS banco, inet_server_addr()::text AS servidor, inet_server_port() AS porta, current_user AS usuario`;
+    const [ownerIdentidade, appIdentidade] = await Promise.all([consulta(owner), consulta(app)]);
+    validarIdentidadesDeTeste(ownerIdentidade[0], appIdentidade[0], nomeBanco);
+  } finally {
+    await Promise.all([owner.$disconnect(), app.$disconnect()]);
+  }
 }

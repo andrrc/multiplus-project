@@ -153,7 +153,7 @@ describe("CRUD protegido no servidor", () => {
     expect(subtarefasAtualizadas.every((item) => item.etiquetas.includes(nomeAtualizado))).toBe(true);
     expect((await listarEtiquetasGerenciadas(ctxAdmin())).find((item) => item.id === criada.id)).toMatchObject({ nome: nomeAtualizado, cor: "#DCFCE7", quantidadeSubtarefas: 2 });
 
-    await expect(comoUsuario(ctxInterno(), (tx) => tx.etiqueta.update({ where: { id: criada.id }, data: { cor: "#F3E8FF" } }))).rejects.toThrow();
+    await expect(comoUsuario(ctxInterno(), (tx) => tx.etiqueta.update({ where: { id: criada.id }, data: { cor: "#F3E8FF" } }))).rejects.toMatchObject({ code: "P2025" });
     const excluida = await excluirEtiquetaGerenciada(ctxAdmin(), criada.id);
     expect(excluida).toMatchObject({ nome: nomeAtualizado, quantidadeSubtarefas: 2 });
     const subtarefasSemEtiqueta = await ownerDb.subtarefa.findMany({ where: { id: { in: [subtarefa1.id, subtarefa2.id] } }, select: { etiquetas: true } });
@@ -228,7 +228,7 @@ describe("CRUD protegido no servidor", () => {
     expect(await ownerDb.usuario.findUnique({ where: { id: interno.id }, select: { pessoaEnvolvidaId: true } })).toEqual({ pessoaEnvolvidaId: null });
     expect(await ownerDb.atribuicao.findMany({ where: { usuarioId: interno.id } })).toEqual([]);
     await expect(concluirSubtarefa(ctxInterno(), minha.id)).rejects.toThrow(/Administrador/);
-    await expect(concluirTarefa(ctxInterno(), tarefa.id)).rejects.toThrow();
+    await expect(concluirTarefa(ctxInterno(), tarefa.id)).rejects.toThrow(/Ação restrita ao Administrador/);
   });
 
   it("responsável direto da tarefa vê apenas o projeto e a tarefa relacionados", async () => {
@@ -345,7 +345,7 @@ describe("conclusão transacional", () => {
     await ownerDb.atribuicao.create({
       data: { usuarioId: colega.id, entidadeTipo: "TAREFA", entidadeId: tarefa.id },
     });
-    await expect(concluirSubtarefa({ usuarioId: colega.id, perfil: "ADMIN_EXTERNO" }, outra.id)).rejects.toThrow();
+    await expect(concluirSubtarefa({ usuarioId: colega.id, perfil: "ADMIN_EXTERNO" }, outra.id)).rejects.toThrow(/Ação restrita ao Administrador/);
   });
 });
 

@@ -275,7 +275,7 @@ describe("ADR-008 — cascata por herança, sem marcar os filhos", () => {
       comoUsuario(f.ctxAdmin, (tx) =>
         tx.tarefa.create({ data: { projetoId: f.projetoId, nome: "Nova" } }),
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security policy for table.*tarefas/i);
   });
 
   it("cliente_do_projeto_esta_ativo e cliente_da_tarefa_esta_ativo devolvem false, nunca NULL", async () => {
@@ -325,7 +325,7 @@ describe("RF-039 — registro desativado é somente leitura", () => {
           data: { clienteId: f.clienteId, nome: "Novo", link: "https://drive/novo" },
         }),
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security policy for table.*documentos/i);
   });
 
   it("o banco recusa editar pessoa envolvida de cliente desativado", async () => {

@@ -148,7 +148,7 @@ describe("RN-007 — escrita em Usuario e Atribuicao é só do Administrador", (
           data: { usuarioId: f.internoId, entidadeTipo: "PROJETO", entidadeId: f.projetoId },
         }),
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security policy for table.*atribuicoes/i);
   });
 
   it("o serviço recusa atribuição feita por quem não é Administrador", async () => {

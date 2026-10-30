@@ -126,6 +126,12 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 ---
 
+### Acesso no navegador: cobertura automatizada
+
+**Como funciona.** Uma jornada automatizada verifica que um convite fictício permite definir senha e entrar, que uma senha incorreta é recusada e que o acesso válido funciona.
+
+**Detalhes técnicos.** `tests/browser/jornadas.spec.ts` usa o formulário e a action reais, com credenciais fictícias e banco exclusivo; não envia e-mail real.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -137,6 +143,7 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
 | 2026-10-27 | este commit | Explicar autenticação, sessão, autorização e fluxos de senha no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Padronizar como “SGA Múltiplus Ambiental” o nome da tela de login, dos convites e dos fluxos de senha |
 | 2026-10-23 | este commit | Posicionar o botão de definição de senha antes do link alternativo |

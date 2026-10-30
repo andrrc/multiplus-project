@@ -168,16 +168,20 @@ it("Colaborador Interno e Externo não criam nem removem entidades do núcleo", 
   ]) {
     await expect(
       comoUsuario(ctx, (tx) => tx.projeto.create({ data: { clienteId: projetoX.clienteId, nome: "Projeto proibido" } })),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security/i);
     await expect(
       comoUsuario(ctx, (tx) => tx.tarefa.create({ data: { projetoId: projetoX.id, nome: "Tarefa proibida" } })),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security/i);
     await expect(
       comoUsuario(ctx, (tx) => tx.subtarefa.create({ data: { tarefaId: tarefaX.id, titulo: "Subtarefa proibida" } })),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security/i);
     await expect(
       comoUsuario(ctx, (tx) => tx.projeto.delete({ where: { id: projetoX.id } })),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "P2025" });
+    expect(await ownerDb.projeto.findUnique({ where: { id: projetoX.id } })).not.toBeNull();
+    expect(await ownerDb.projeto.count({ where: { clienteId: projetoX.clienteId, nome: "Projeto proibido" } })).toBe(0);
+    expect(await ownerDb.tarefa.count({ where: { projetoId: projetoX.id, nome: "Tarefa proibida" } })).toBe(0);
+    expect(await ownerDb.subtarefa.count({ where: { tarefaId: tarefaX.id, titulo: "Subtarefa proibida" } })).toBe(0);
   }
 });
 
@@ -201,8 +205,7 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
         { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
         (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
       ),
-    ).rejects.toThrow();
-
+    ).rejects.toMatchObject({ code: "P2025" });
     const inalterada = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
     expect(inalterada.status).toBe(StatusSubtarefa.EM_ANDAMENTO);
   });
@@ -215,7 +218,7 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
         { usuarioId: usuarioAdminExternoMesmaTarefa.id, perfil: "ADMIN_EXTERNO" },
         (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
       ),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "P2025" });
 
     const inalterada = await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } });
     expect(inalterada.status).toBe(StatusSubtarefa.EM_ANDAMENTO);
@@ -234,7 +237,8 @@ describe("bloqueado: acesso à tarefa/projeto não é suficiente sem ser o atrib
         { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
         (tx) => tx.subtarefa.update({ where: { id: subtarefaSemAtribuido.id }, data: { status: StatusSubtarefa.CONCLUIDO } }),
       ),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "P2025" });
+    expect((await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefaSemAtribuido.id } })).status).toBe(StatusSubtarefa.EM_ANDAMENTO);
   });
 });
 
@@ -246,5 +250,6 @@ it("mesmo o ADMIN_INTERNO dono do projeto não pode editar o checklist", async (
       { usuarioId: usuarioAdminInternoDono.id, perfil: "ADMIN_INTERNO" },
       (tx) => tx.subtarefa.update({ where: { id: subtarefa.id }, data: { titulo: "Tentativa indevida" } }),
     ),
-  ).rejects.toThrow();
+  ).rejects.toMatchObject({ code: "P2025" });
+  expect((await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: subtarefa.id } })).titulo).not.toBe("Tentativa indevida");
 });

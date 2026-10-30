@@ -1,4 +1,7 @@
 import { Prisma, PrismaClient, type Perfil } from "@prisma/client";
+import { validarDestinosDeTeste } from "./banco-teste-seguro";
+
+validarDestinosDeTeste(process.env.TEST_DATABASE_URL, process.env.TEST_APP_DATABASE_URL);
 
 /**
  * Dois clientes Prisma, os dois apontando pro banco de TESTE (nunca pro de

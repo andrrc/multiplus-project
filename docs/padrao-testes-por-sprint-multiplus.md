@@ -104,6 +104,15 @@ corrige o teste junto, não pula ele.
   (Seção 1), não todas as linhas de código
 - Ajustes visuais/UX (frontend-design) não precisam de teste automatizado — validação é visual
 
+Os fluxos críticos de convite, autenticação e listagem de subtarefas também são exercitados
+no navegador com `npm run test:browser`, incluindo rolagem horizontal e largura de 375 px.
+O navegador usa dados fictícios, banco separado `multiplus_test_e2e` e não envia e-mails.
+Antes de executar pela primeira vez, instale o Chromium com `npx playwright install chromium`.
+O CI instala o navegador, executa essa jornada após `npm test` e bloqueia o deploy se falhar.
+As URLs de teste precisam apontar ambas ao mesmo host e porta locais, bancos explicitamente
+permitidos e roles distintas; a preparação valida a identidade efetiva das conexões antes
+dos testes. O banco de navegador é separado do banco da suíte de integração.
+
 ---
 
 ## 7. Template por Sprint

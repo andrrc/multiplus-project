@@ -187,7 +187,7 @@ describe("RLS em cascata — Responsável Legal, Ponto de Contato, Pessoas do Op
           data: { clienteId: clienteA.id, nome: "Alguém", tipo: "PESSOA" },
         }),
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/row-level security policy for table.*pessoas_envolvidas/i);
   });
 });
 

@@ -191,6 +191,12 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 **Detalhes técnicos.** As telas de detalhe de tarefa e o componente `Comentarios` usam `formatarDataHoraBrasilia`. Sem alteração de schema, prazo ou acesso. Cobertura da formatação e dos fusos em `datas.unit.test.ts`.
 
+### Listagem responsiva: cobertura automatizada
+
+**Como funciona.** Uma jornada automatizada confere a lista em desktop e em 375 px, incluindo a orientação de rolagem e a posição da tabela.
+
+**Detalhes técnicos.** `tests/browser/jornadas.spec.ts` usa dados fictícios no banco `multiplus_test_e2e`, mede a posição antes e depois da rolagem e verifica os cartões e a largura da página no celular.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -204,6 +210,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |
 | 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de subtarefas |
 | 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e ajustar sua apresentação no cartão móvel |

@@ -80,6 +80,12 @@ jobs:
       - name: Suíte completa
         run: npm test
 
+      - name: Instalar navegador para jornadas críticas
+        run: npx playwright install --with-deps chromium
+
+      - name: Jornadas no navegador
+        run: npm run test:browser
+
   deploy:
     name: Deploy de ambiente, com verificação
     needs: verificacao
@@ -132,6 +138,9 @@ jobs:
             --exclude=.git \
             --exclude=node_modules \
             --exclude=.next \
+            --exclude=.next-browser-test \
+            --exclude=test-results \
+            --exclude=playwright-report \
             --exclude='*.tgz' \
             -czf "$arquivo" .
           scp -i ~/.ssh/id_deploy "$arquivo" \

@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-29 | [Desenvolvimento local](funcionalidades/desenvolvimento-local.md), [Autenticação](funcionalidades/autenticacao-acesso.md), [Subtarefas](funcionalidades/subtarefas.md) | Proteger bancos de teste e acrescentar jornadas reais no navegador ([análise](analises/seguranca-e-cobertura-de-testes.md)) | este commit |
 | 2026-10-29 | [Desenvolvimento local](funcionalidades/desenvolvimento-local.md) | Usar no override local o digest MinIO pelo Docker Hub e sincronizar a senha local do Postgres | este commit |
 | 2026-10-29 | [Desenvolvimento local](funcionalidades/desenvolvimento-local.md) | Diagnóstico local somente de leitura para acesso ao app, Docker, serviços, portas e banco ([análise](analises/auditoria-acesso-local.md)) | cecf416 |
 | 2026-10-29 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Manter o aviso de rolagem e remover o degradê sobre os dados | este commit |

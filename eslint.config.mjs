@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Saídas de build e tipos gerados não são código-fonte para análise.
     ".next/**",
+    ".next-browser-test/**",
+    "test-results/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
