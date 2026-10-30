@@ -8,10 +8,10 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { criarTokenAcesso } from "@/lib/tokens";
 import { enviarEmail, linkDefinirSenha } from "@/lib/email";
-import { registrarTentativa } from "@/lib/rate-limit";
+import { reservarLimites } from "@/lib/rate-limit-banco";
 import { agendarPosResposta } from "@/lib/pos-resposta";
 
-const schema = z.object({ email: z.string().email() });
+const schema = z.object({ email: z.string().max(320).email() });
 
 // Sempre retorna a mesma mensagem de sucesso — não revela se o e-mail existe.
 const MENSAGEM_SUCESSO =
@@ -22,7 +22,6 @@ const MENSAGEM_SUCESSO =
 // lista de endereços atrás de quais estão cadastrados.
 const LIMITE_POR_EMAIL = 3;
 const LIMITE_POR_IP = 10;
-const JANELA_MS = 15 * 60 * 1000;
 
 /**
  * O IP vem do Caddy, que roda na frente do app (ver Caddyfile). Sem proxy reverso o header
@@ -48,13 +47,15 @@ export async function esqueciSenhaAction(
   // Limita em paralelo por origem e por endereço para reduzir abuso e enumeração.
   const ip = await ipDaRequisicao();
 
-  const porIp = registrarTentativa(`recuperacao:ip:${ip}`, LIMITE_POR_IP, JANELA_MS);
-  const porEmail = registrarTentativa(`recuperacao:email:${email}`, LIMITE_POR_EMAIL, JANELA_MS);
+  const reserva = await reservarLimites([
+    { chave: `recuperacao:ip:${ip}`, limite: LIMITE_POR_IP },
+    { chave: `recuperacao:email:${email}`, limite: LIMITE_POR_EMAIL },
+  ], false);
 
   // Estourar o limite devolve a MESMA mensagem do caminho feliz, de propósito: uma resposta
   // diferente aqui ("muitas tentativas") mediria quantas vezes um e-mail específico foi
   // pedido, e devolveria pela porta dos fundos a informação que a mensagem neutra protege.
-  if (!porIp.permitido || !porEmail.permitido) {
+  if (!reserva) {
     return { mensagem: MENSAGEM_SUCESSO };
   }
 

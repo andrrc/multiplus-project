@@ -33,6 +33,21 @@ test.afterAll(async () => {
   await db.$disconnect();
 });
 
+test("CSP entrega nonce diferente por requisição e permite hidratação", async ({ page }) => {
+  const erros: string[] = [];
+  page.on("console", (mensagem) => {
+    if (mensagem.type() === "error" && /content security policy/i.test(mensagem.text())) erros.push(mensagem.text());
+  });
+  const primeira = await page.goto("/login");
+  const politica = primeira?.headers()["content-security-policy"] ?? "";
+  expect(politica).toMatch(/script-src[^;]*'nonce-[^']+'/);
+  expect(politica.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'");
+  const segunda = await page.reload();
+  expect(segunda?.headers()["content-security-policy"]).not.toBe(politica);
+  await expect(page.getByLabel("E-mail")).toBeVisible();
+  expect(erros).toEqual([]);
+});
+
 test("convite, login e lista responsiva preservam a orientação", async ({ page }) => {
   await page.goto(`/definir-senha?token=${token}`);
   await page.getByLabel("Nova senha").fill(senha);
@@ -63,4 +78,17 @@ test("convite, login e lista responsiva preservam a orientação", async ({ page
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole("link", { name: "Abrir subtarefa Subtarefa teste do navegador" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  await page.goto("/meu-perfil");
+  await page.getByRole("button", { name: "Alterar senha" }).click();
+  await page.getByLabel("Senha atual").fill(senha);
+  await page.locator('input[name="senhaNova"]').fill("OutraSenha123!");
+  await page.getByLabel("Confirmar nova senha").fill("OutraSenha123!");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.getByRole("button", { name: "Alterar senha", exact: true }).click();
+  await expect(page).toHaveURL(/\/login/);
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill("OutraSenha123!");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Subtarefas", exact: true })).toBeVisible();
 });

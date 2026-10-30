@@ -7,7 +7,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashSenha } from "@/lib/senha";
 import { validarPoliticaSenha } from "@/lib/politica-senha";
-import { validarTokenAcesso, consumirTokenAcesso } from "@/lib/tokens";
+import { validarTokenAcesso } from "@/lib/tokens";
 import { signIn } from "@/server/auth";
 import { telaInicial } from "@/lib/navegacao";
 
@@ -61,13 +61,23 @@ export async function definirSenhaAction(
   // Persiste apenas o hash bcrypt, nunca a senha em texto puro.
   const senhaHash = await hashSenha(parsed.data.senha);
 
-  // Atualiza a conta vinculada ao token, e em seguida marca o token como usado.
-  const usuario = await prisma.usuario.update({
-    where: { id: validacao.usuarioId },
-    data: { senhaHash },
-    select: { email: true, perfil: true },
+  // A mesma transação reserva o token e altera a senha; uma falha desfaz ambos.
+  const usuario = await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "usuarios" WHERE id = ${validacao.usuarioId} FOR UPDATE`;
+    const conta = await tx.usuario.findUnique({ where: { id: validacao.usuarioId }, select: { ativo: true } });
+    if (!conta?.ativo) return null;
+    const consumo = await tx.tokenAcesso.updateMany({
+      where: { id: validacao.tokenId, usuarioId: validacao.usuarioId, usadoEm: null, expiraEm: { gt: new Date() } },
+      data: { usadoEm: new Date() },
+    });
+    if (consumo.count !== 1) return null;
+    return tx.usuario.update({
+      where: { id: validacao.usuarioId },
+      data: { senhaHash, versaoSessao: { increment: 1 } },
+      select: { email: true, perfil: true },
+    });
   });
-  await consumirTokenAcesso(validacao.tokenId);
+  if (!usuario) return { erro: "Este link não está mais disponível. Solicite um novo." };
 
   // RF-043 / Fluxo AB — login automático e queda na tela inicial do perfil. `signIn`
   // redireciona lançando NEXT_REDIRECT, então nada depois disto executa no caminho feliz;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
+import { connection } from "next/server";
 import "./globals.css";
 
 // As fontes locais tornam o build reproduzível e mantêm os pesos usados pela interface.
@@ -73,7 +74,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  await connection(); // O nonce é único por requisição e não pode ser cacheado em HTML estático.
   // O layout raiz define idioma, fontes compartilhadas e a estrutura comum de todas as rotas.
   return (
     <html

@@ -18,8 +18,8 @@ import { ownerDb, limparFixtures, fecharConexoes } from "../integration/setup/he
 import { criarTokenAcesso, validarTokenAcesso, consumirTokenAcesso } from "@/lib/tokens";
 import { hashSenha } from "@/lib/senha";
 import { autenticarComCredenciais } from "@/server/auth/credentials";
-import { limparRateLimit } from "@/lib/rate-limit";
 import { authConfig } from "@/server/auth/config";
+import { reservarLimites } from "@/lib/rate-limit-banco";
 import type { CredentialsConfig } from "next-auth/providers/credentials";
 
 async function definirSenha(usuarioId: string, tokenId: string, senha: string) {
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  limparRateLimit();
+  await ownerDb.limiteAutenticacao.deleteMany();
   await limparFixtures();
 });
 
@@ -98,7 +98,7 @@ describe("onboarding (RF-030/031) → login (RF-014)", () => {
     expect(await provider.authorize({ email: usuario.email, senha: "SenhaForte123" }, request)).toBeNull();
 
     // Um login válido após limpar o estado continua disponível, sem alterar a senha.
-    limparRateLimit();
+    await ownerDb.limiteAutenticacao.deleteMany();
     expect((await autenticarComCredenciais({ email: usuario.email, senha: "SenhaForte123" }, request))?.id)
       .toBe(usuario.id);
   });
@@ -125,6 +125,14 @@ describe("onboarding (RF-030/031) → login (RF-014)", () => {
     }
     expect((await autenticarComCredenciais({ email: usuario.email, senha: "SenhaForte123" }, request))?.id)
       .toBe(usuario.id);
+  });
+
+  it("impede tentativa adicional enquanto cinco tentativas da conta estão em andamento", async () => {
+    const resultados = await Promise.all(Array.from({ length: 6 }, () =>
+      reservarLimites([{ chave: "login:email:login.concorrente@teste.local", limite: 5 }], true),
+    ));
+    expect(resultados.filter((resultado) => resultado !== null)).toHaveLength(5);
+    expect(resultados.filter((resultado) => resultado === null)).toHaveLength(1);
   });
 
   it("bloqueia o IP após 20 falhas distribuídas entre e-mails", async () => {

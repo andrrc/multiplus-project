@@ -4,6 +4,8 @@ Data: 2026-10-30
 
 Escopo: revisão estática direcionada de autenticação, recuperação de senha, sessão, controles de acesso, armazenamento e configuração HTTP. Não é um teste de invasão nem uma verificação completa de todas as regras RLS, dependências ou ambientes implantados. Não foram realizadas tentativas contra contas ou serviços reais.
 
+**Atualização de remediação:** os seis pontos foram tratados conforme a [análise aprovada](docs/analises/correcoes-auditoria-seguranca-autenticacao.md). A CSP por nonce exige renderização dinâmica; a configuração efetiva de eventuais proxies externos e as permissões da role em ambientes implantados continuam dependentes de verificação operacional. Os achados abaixo preservam a evidência da revisão original.
+
 ## Resumo executivo
 
 Há fragilidades no ciclo de recuperação de senha e na proteção contra tentativas de autenticação concorrentes. As duas primeiras prioridades são garantir o uso único e atômico dos tokens e permitir a revogação de sessões após alterações de senha. A aplicação também possui controles úteis, como RLS, revalidação de perfil, limite de upload e cabeçalhos no Caddy; sua eficácia depende da configuração realmente implantada.

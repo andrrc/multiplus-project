@@ -28,6 +28,7 @@ export const authConfig: NextAuthConfig = {
         token.id = user.id as string;
         token.perfil = user.perfil;
         token.clienteId = user.clienteId;
+        token.versaoSessao = user.versaoSessao;
       }
       return token;
     },
@@ -35,6 +36,7 @@ export const authConfig: NextAuthConfig = {
       session.user.id = token.id;
       session.user.perfil = token.perfil;
       session.user.clienteId = token.clienteId;
+      session.user.versaoSessao = token.versaoSessao;
       return session;
     },
   },

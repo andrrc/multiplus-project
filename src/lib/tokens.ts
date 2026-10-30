@@ -28,17 +28,16 @@ export async function criarTokenAcesso(
   // Um link novo substitui qualquer link de acesso ainda aberto para a mesma conta. Assim,
   // quando a Talita gera e compartilha um novo convite, o anterior deixa de funcionar de
   // imediato — inclusive se ele tiver sido enviado por e-mail antes.
-  await prisma.tokenAcesso.updateMany({
-    where: { usuarioId, usadoEm: null },
-    data: { usadoEm },
-  });
-  await prisma.tokenAcesso.create({
-    data: {
-      usuarioId,
-      tokenHash: hashToken(tokenPlano),
-      tipo,
-      expiraEm,
-    },
+  await prisma.$transaction(async (tx) => {
+    // Serializa emissões da mesma conta, inclusive entre processos da aplicação.
+    await tx.$queryRaw`SELECT id FROM "usuarios" WHERE id = ${usuarioId} FOR UPDATE`;
+    await tx.tokenAcesso.updateMany({
+      where: { usuarioId, usadoEm: null },
+      data: { usadoEm },
+    });
+    await tx.tokenAcesso.create({
+      data: { usuarioId, tokenHash: hashToken(tokenPlano), tipo, expiraEm },
+    });
   });
 
   return tokenPlano;

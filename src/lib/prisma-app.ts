@@ -12,10 +12,14 @@ const globalForPrismaApp = globalThis as unknown as {
   prismaApp: PrismaClient | undefined;
 };
 
+if (!process.env.APP_DATABASE_URL) {
+  throw new Error("APP_DATABASE_URL é obrigatória para a conexão com RLS.");
+}
+
 export const prismaApp =
   globalForPrismaApp.prismaApp ??
   new PrismaClient({
-    datasources: { db: { url: process.env.APP_DATABASE_URL ?? process.env.DATABASE_URL } },
+    datasources: { db: { url: process.env.APP_DATABASE_URL } },
   });
 
 if (process.env.NODE_ENV !== "production") {

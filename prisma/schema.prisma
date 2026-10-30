@@ -94,11 +94,22 @@ enum Periodicidade {
   ANUAL
 }
 
+model LimiteAutenticacao {
+  chave String @id
+  falhas Int @default(0)
+  pendentes Int @default(0)
+  expiraEm DateTime
+
+  @@index([expiraEm])
+  @@map("limites_autenticacao")
+}
+
 model Usuario {
   id        String  @id @default(cuid())
   nome      String
   email     String  @unique
   senhaHash String? // null até o usuário definir a senha via link de onboarding (RF-030/031)
+  versaoSessao Int @default(0)
   perfil    Perfil  @default(CLIENTE)
   ativo     Boolean @default(true)
 

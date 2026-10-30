@@ -10,6 +10,7 @@ for (const key of ["TEST_DATABASE_URL", "TEST_APP_DATABASE_URL"] as const) {
 }
 validarDestinosDeTeste(process.env.TEST_DATABASE_URL, process.env.TEST_APP_DATABASE_URL);
 validarSeparacaoDeBancos(process.env.TEST_DATABASE_URL!, [process.env.DATABASE_URL, process.env.APP_DATABASE_URL]);
+const testarBuildProducao = process.env.MULTIPLUS_BROWSER_PRODUCAO === "1";
 
 export default defineConfig({
   testDir: "./tests/browser",
@@ -19,7 +20,7 @@ export default defineConfig({
   globalSetup: "./tests/browser/setup.ts",
   use: { baseURL: "http://localhost:3105", trace: "off", screenshot: "off" },
   webServer: {
-    command: "npx next dev --port 3105",
+    command: testarBuildProducao ? "npx next start --port 3105" : "npx next dev --port 3105",
     url: "http://localhost:3105/login",
     reuseExistingServer: false,
     timeout: 120_000,
@@ -29,7 +30,7 @@ export default defineConfig({
       AUTH_URL: "http://localhost:3105",
       AUTH_SECRET: "segredo-exclusivo-para-testes-de-navegador",
       RESEND_API_KEY: "",
-      MULTIPLUS_TESTE_NAVEGADOR: "1",
+      MULTIPLUS_TESTE_NAVEGADOR: testarBuildProducao ? "0" : "1",
     },
   },
 });

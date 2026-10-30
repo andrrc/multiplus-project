@@ -12,6 +12,7 @@ declare module "next-auth" {
       perfil: Perfil;
       // Vínculo do portal limita CLIENTE ao próprio cadastro.
       clienteId: string | null;
+      versaoSessao: number;
     } & DefaultSession["user"];
   }
 
@@ -19,6 +20,7 @@ declare module "next-auth" {
     // Campos retornados pelo provider de credenciais no primeiro login.
     perfil: Perfil;
     clienteId: string | null;
+    versaoSessao: number;
   }
 }
 
@@ -28,5 +30,6 @@ declare module "@auth/core/jwt" {
     id: string;
     perfil: Perfil;
     clienteId: string | null;
+    versaoSessao: number;
   }
 }

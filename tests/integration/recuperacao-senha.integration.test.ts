@@ -20,18 +20,20 @@ vi.mock("next/headers", () => ({
   headers: async () => new Map([["x-real-ip", ipFalso.valor]]),
 }));
 
+vi.mock("@/server/auth", () => ({ signIn: vi.fn(async () => {}) }));
+
 import { ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
 import { criarTokenAcesso, validarTokenAcesso, consumirTokenAcesso } from "@/lib/tokens";
 import { esqueciSenhaAction } from "@/app/esqueci-senha/actions";
+import { definirSenhaAction } from "@/app/definir-senha/actions";
 import { enviarEmail } from "@/lib/email";
-import { limparRateLimit } from "@/lib/rate-limit";
 import { aguardarPosResposta } from "@/lib/pos-resposta";
 
 const emailMock = vi.mocked(enviarEmail);
 
 beforeEach(async () => {
   await limparFixtures();
-  limparRateLimit();
+  await ownerDb.limiteAutenticacao.deleteMany();
   ipFalso.valor = "203.0.113.10";
 });
 
@@ -96,6 +98,37 @@ describe("RF-030 — token de definição de senha", () => {
     expect(await validarTokenAcesso(novo)).toMatchObject({ valido: true, usuarioId: usuario.id });
   });
 
+  it("emissões simultâneas deixam apenas um link válido para a conta", async () => {
+    const usuario = await criarUsuarioAtivo("token.concorrente@teste.local");
+    const tokens = await Promise.all([
+      criarTokenAcesso(usuario.id, "RECUPERAR_SENHA"),
+      criarTokenAcesso(usuario.id, "RECUPERAR_SENHA"),
+    ]);
+
+    const resultados = await Promise.all(tokens.map(validarTokenAcesso));
+    expect(resultados.filter((resultado) => resultado.valido)).toHaveLength(1);
+  });
+
+  it("permite apenas uma alteração de senha com o mesmo token em paralelo", async () => {
+    const usuario = await criarUsuarioAtivo("token.consumo.concorrente@teste.local");
+    const token = await criarTokenAcesso(usuario.id, "RECUPERAR_SENHA");
+    const formulario = (senha: string) => {
+      const dados = new FormData();
+      dados.set("token", token);
+      dados.set("senha", senha);
+      dados.set("confirmarSenha", senha);
+      return dados;
+    };
+    const resultados = await Promise.all([
+      definirSenhaAction({}, formulario("NovaSenha123")),
+      definirSenhaAction({}, formulario("OutraSenha456")),
+    ]);
+    expect(resultados.filter((resultado) => resultado.sucesso)).toHaveLength(1);
+    expect(resultados.filter((resultado) => resultado.erro)).toHaveLength(1);
+    const atualizado = await ownerDb.usuario.findUniqueOrThrow({ where: { id: usuario.id } });
+    expect(atualizado.versaoSessao).toBe(1);
+  });
+
   it("token inventado é recusado", async () => {
     expect(await validarTokenAcesso("naoexiste")).toEqual({
       valido: false,
@@ -119,7 +152,7 @@ describe("RF-032 — recuperação de senha devolve sempre a mesma resposta", ()
     await criarUsuarioAtivo("existe.recuperacao@teste.local");
 
     const comCadastro = await esqueciSenhaAction({}, formDataCom("existe.recuperacao@teste.local"));
-    limparRateLimit();
+    await ownerDb.limiteAutenticacao.deleteMany();
     const semCadastro = await esqueciSenhaAction({}, formDataCom("naoexiste.recuperacao@teste.local"));
 
     expect(comCadastro).toEqual(semCadastro);
@@ -134,7 +167,7 @@ describe("RF-032 — recuperação de senha devolve sempre a mesma resposta", ()
     expect(emailMock).toHaveBeenCalledTimes(1);
 
     emailMock.mockClear();
-    limparRateLimit();
+    await ownerDb.limiteAutenticacao.deleteMany();
 
     await esqueciSenhaAction({}, formDataCom("naoexiste2.recuperacao@teste.local"));
     await aguardarPosResposta();
@@ -169,7 +202,7 @@ describe("RF-032 — recuperação de senha devolve sempre a mesma resposta", ()
     await esqueciSenhaAction({}, formDataCom("cronometro.recuperacao@teste.local"));
     const comCadastro = Date.now() - inicioComCadastro;
 
-    limparRateLimit();
+    await ownerDb.limiteAutenticacao.deleteMany();
 
     const inicioSemCadastro = Date.now();
     await esqueciSenhaAction({}, formDataCom("naoexiste.cronometro@teste.local"));

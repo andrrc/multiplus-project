@@ -686,9 +686,10 @@ export async function alterarMinhaSenha(
 
   if (validarPoliticaSenha(senhaNova)) return { sucesso: false, motivo: "senha_fraca" };
 
-  await prisma.usuario.update({
-    where: { id: ctx.usuarioId },
-    data: { senhaHash: await hashSenha(senhaNova) },
+  const alterados = await prisma.usuario.updateMany({
+    where: { id: ctx.usuarioId, ativo: true, senhaHash: usuario.senhaHash },
+    data: { senhaHash: await hashSenha(senhaNova), versaoSessao: { increment: 1 } },
   });
+  if (alterados.count !== 1) return { sucesso: false, motivo: "senha_atual_incorreta" };
   return { sucesso: true };
 }

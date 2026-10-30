@@ -38,9 +38,10 @@ acessar.
 - **Funções:** `autenticarComCredenciais` (`src/server/auth/credentials.ts`) e Auth.js,
   com sessão JWT (`src/server/auth/config.ts`).
 - **Senha:** hash com bcrypt (`src/lib/senha.ts`).
-- **Proteção contra tentativa e erro:** 5 falhas por e-mail e 20 por IP em cada janela de 15 minutos. Somente falhas são contadas; credenciais válidas não consomem o limite. O bloqueio é temporário e a recuperação de senha continua disponível.
+- **Proteção contra tentativa e erro:** 5 falhas por e-mail e 20 por IP em cada janela de 15 minutos. Tentativas em andamento reservam uma posição; o sucesso libera a reserva e limpa falhas anteriores quando não há falhas concorrentes. O bloqueio é temporário e a recuperação de senha continua disponível.
+- **Proteção compartilhada:** os limites são persistidos no PostgreSQL, com chaves resumidas por hash e capacidade limitada; valem entre instâncias e sobrevivem ao reinício. Se o banco estiver indisponível ou a capacidade se esgotar, a autenticação é negada por segurança.
 - **Origem do IP:** o Caddy substitui `X-Real-IP` pelo peer da conexão; o app não confia no `X-Forwarded-For` fornecido pelo cliente.
-- **Teste:** `autenticacao.smoke.test.ts`.
+- **Testes:** `autenticacao.smoke.test.ts` e `limites-autenticacao.integration.test.ts` cobrem limites, concorrência e acesso negado à tabela interna.
 
 ### A2. Definir senha pelo convite (RF-031)
 
@@ -65,6 +66,7 @@ acessar.
 - **Funções:** `validarTokenAcesso`, `consumirTokenAcesso` e `validarPoliticaSenha`
   (`src/lib/politica-senha.ts`).
 - **Token:** `DEFINIR_SENHA`, com TTL de 168 h.
+- **Uso único:** emissões da mesma conta são serializadas, e o consumo e a gravação da senha acontecem na mesma transação.
 - **Reenvio de cliente:** `reenviarConviteAcessoCliente` localiza o usuário por `clienteId`
   e perfil `CLIENTE`, exige ADMIN, cadastro e conta ativos e senha ainda não definida.
 - **Escopo do link manual:** criação e reenvio de acesso de cliente; convites de usuários
@@ -83,8 +85,7 @@ acessar.
 **Detalhes técnicos.**
 - **Rota:** `/esqueci-senha`.
 - **Token:** `RECUPERAR_SENHA`, com TTL de 1 h.
-- **Limite de pedidos:** 3 por e-mail e 10 por IP, a cada 15 minutos. O controle fica
-  **em memória** (`src/lib/rate-limit.ts`).
+- **Limite de pedidos:** 3 por e-mail e 10 por IP, a cada 15 minutos. O controle é compartilhado no PostgreSQL (`src/lib/rate-limit-banco.ts`).
 - **Envio do e-mail:** acontece fora do caminho da resposta, para o tempo de resposta não
   revelar se a conta existe.
 - **Testes:** `recuperacao-senha.integration.test.ts` (13 casos) e
@@ -110,6 +111,10 @@ acessar.
   cada request autenticado. Conta inativa ou ausente é redirecionada ao login com uma
   mensagem; mudança de perfil passa a valer no request seguinte. O layout também usa o
   perfil atual para montar o menu.
+- **Troca ou recuperação de senha:** invalida sessões anteriores. Após trocar a senha em Meu Perfil, a pessoa entra novamente; após usar um link, recebe uma sessão nova. A implantação da versão de sessão também encerra as sessões anteriores uma vez.
+- **CSP:** `src/proxy.ts` envia nonce diferente por requisição; scripts inline não autorizados não são liberados em produção. As páginas são renderizadas dinamicamente, com impacto potencial de desempenho e cache.
+- **Conexão RLS:** `APP_DATABASE_URL` é obrigatória; não há fallback para a conexão privilegiada.
+- **Cobertura adicional:** `revalidacao-sessao.integration.test.ts`, `conexao-rls.unit.test.ts`, `politica-csp.unit.test.ts` e `tests/browser/jornadas.spec.ts` cobrem revogação, conexão e CSP no navegador.
 - **Testes:** `administracao-acesso.unit.test.ts`, que cobre negação de rota, sub-rota e
   rota desconhecida, e `revalidacao-sessao.integration.test.ts`, que cobre desativação,
   remoção e mudança de perfil durante uma sessão existente.
@@ -136,13 +141,14 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | # | Situação | Efeito |
 |---|---|---|
-| L3 | Limites de login e recuperação de senha ficam em memória. | Zera a cada reinício do app e não funciona com mais de uma instância. |
+| L3 | A CSP por nonce exige renderização dinâmica e o limitador tem capacidade máxima. | Monitorar tempo de resposta e capacidade; um volume extremo ou falha do banco pode impedir autenticação temporariamente. |
 | L4 | CLIENTE ainda não tem página própria para os avisos in-app. | Notificações com canal in-app habilitado não aparecem numa caixa do cliente; o canal de e-mail funciona. Ver `area-exclusiva-cliente.md`. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-30 | este commit | Corrigir concorrência de tokens, revogar sessões, compartilhar limites e reforçar CSP e conexão RLS ([análise](../analises/correcoes-auditoria-seguranca-autenticacao.md)) |
 | 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
 | 2026-10-27 | este commit | Explicar autenticação, sessão, autorização e fluxos de senha no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Padronizar como “SGA Múltiplus Ambiental” o nome da tela de login, dos convites e dos fluxos de senha |

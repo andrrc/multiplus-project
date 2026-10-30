@@ -16,11 +16,11 @@ export async function obterContexto(): Promise<ContextoUsuario> {
     await tx.$executeRaw`SELECT set_config('app.perfil', ${session.user.perfil}, true)`;
     return tx.usuario.findUnique({
       where: { id: session.user.id },
-      select: { id: true, ativo: true, perfil: true },
+      select: { id: true, ativo: true, perfil: true, versaoSessao: true },
     });
   });
 
-  if (!usuario || !usuario.ativo) {
+  if (!usuario || !usuario.ativo || session.user.versaoSessao !== usuario.versaoSessao) {
     redirect("/login?motivo=sessao-invalidada");
   }
 

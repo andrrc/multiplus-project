@@ -14,6 +14,8 @@ vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 import { obterContexto, exigirAcessoARota } from "@/server/auth/contexto";
 import { prismaApp } from "@/lib/prisma-app";
 import { ownerDb, limparFixtures, fecharConexoes } from "./setup/helpers";
+import { alterarMinhaSenha } from "@/lib/usuarios";
+import { hashSenha } from "@/lib/senha";
 
 let usuarioId: string;
 
@@ -23,7 +25,7 @@ beforeEach(async () => {
     data: { nome: "Pessoa da sessão", email: "sessao.revalidada@teste.local", perfil: "ADMIN" },
   });
   usuarioId = usuario.id;
-  authMock.mockResolvedValue({ user: { id: usuario.id, perfil: "ADMIN", clienteId: null } });
+  authMock.mockResolvedValue({ user: { id: usuario.id, perfil: "ADMIN", clienteId: null, versaoSessao: 0 } });
   redirectMock.mockClear();
 });
 
@@ -59,13 +61,32 @@ describe("RF-039 — revalidação de usuário em sessão existente", () => {
   });
 
   it("aplica permissões recém-concedidas sem exigir uma nova sessão", async () => {
-    authMock.mockResolvedValue({ user: { id: usuarioId, perfil: "ADMIN_INTERNO", clienteId: null } });
+    authMock.mockResolvedValue({ user: { id: usuarioId, perfil: "ADMIN_INTERNO", clienteId: null, versaoSessao: 0 } });
 
     await expect(exigirAcessoARota("/usuarios")).resolves.toEqual({ usuarioId, perfil: "ADMIN" });
   });
 
   it("mantém o acesso normal de usuário ativo sem mudança de perfil", async () => {
     await expect(obterContexto()).resolves.toEqual({ usuarioId, perfil: "ADMIN" });
+  });
+
+  it("recusa sessão com versão de credencial diferente da conta", async () => {
+    authMock.mockResolvedValue({ user: { id: usuarioId, perfil: "ADMIN", clienteId: null, versaoSessao: 99 } });
+    await expect(obterContexto()).rejects.toThrow("REDIRECT:/login?motivo=sessao-invalidada");
+  });
+
+  it("invalida sessão anterior depois da troca de senha e aceita sessão nova", async () => {
+    await ownerDb.usuario.update({ where: { id: usuarioId }, data: { senhaHash: await hashSenha("SenhaAntiga123") } });
+    expect(await alterarMinhaSenha({ usuarioId, perfil: "ADMIN" }, "SenhaAntiga123", "SenhaNova123"))
+      .toEqual({ sucesso: true });
+    await expect(obterContexto()).rejects.toThrow("REDIRECT:/login?motivo=sessao-invalidada");
+    authMock.mockResolvedValue({ user: { id: usuarioId, perfil: "ADMIN", clienteId: null, versaoSessao: 1 } });
+    await expect(obterContexto()).resolves.toEqual({ usuarioId, perfil: "ADMIN" });
+  });
+
+  it("recusa sessão legada sem versão", async () => {
+    authMock.mockResolvedValue({ user: { id: usuarioId, perfil: "ADMIN", clienteId: null } });
+    await expect(obterContexto()).rejects.toThrow("REDIRECT:/login?motivo=sessao-invalidada");
   });
 
   it("falha fechado quando a consulta de revalidação não está disponível", async () => {

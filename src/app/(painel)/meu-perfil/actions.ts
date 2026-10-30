@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { obterContexto } from "@/server/auth/contexto";
 import { alterarMinhaSenha, atualizarMeuNome } from "@/lib/usuarios";
 import { validarPoliticaSenha } from "@/lib/politica-senha";
+import { signOut } from "@/server/auth";
 
 export type EstadoPerfil = { erro?: string; mensagem?: string };
 
@@ -54,5 +55,6 @@ export async function alterarSenhaAction(
     return { erro: mensagens[resultado.motivo] };
   }
 
+  await signOut({ redirectTo: "/login?motivo=sessao-invalidada" });
   return { mensagem: "Senha alterada." };
 }
