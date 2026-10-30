@@ -111,7 +111,7 @@ pessoa (RN-004).
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
   mostra o percentual no prazo somente dos registros encontrados pelos filtros. No celular, os cartões são brancos com borda esquerda azul.
 - **ID:** a tabela de `/subtarefas` ganha uma coluna **ID** com o caminho completo cliente/projeto/tarefa/subtarefa, mantido em uma linha e com a largura reservada dentro do contêiner rolável; no cartão móvel, o código aparece em uma linha própria, sem competir com o indicador de prazo.
-- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem.
+- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem, em texto cinza com uma seta discreta.
 - **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
   Brasília, o mesmo horário em que o semáforo muda.
@@ -210,6 +210,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |
 | 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de subtarefas |

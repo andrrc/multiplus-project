@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-10-30 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Simplificar a aparência do aviso de rolagem nas listagens | este commit |
 | 2026-10-30 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Corrigir concorrência de tokens, revogar sessões, compartilhar limites e reforçar CSP e conexão RLS ([análise](analises/correcoes-auditoria-seguranca-autenticacao.md)) | este commit |
 | 2026-10-29 | [Desenvolvimento local](funcionalidades/desenvolvimento-local.md), [Autenticação](funcionalidades/autenticacao-acesso.md), [Subtarefas](funcionalidades/subtarefas.md) | Proteger bancos de teste e acrescentar jornadas reais no navegador ([análise](analises/seguranca-e-cobertura-de-testes.md)) | este commit |
 | 2026-10-29 | [Desenvolvimento local](funcionalidades/desenvolvimento-local.md) | Usar no override local o digest MinIO pelo Docker Hub e sincronizar a senha local do Postgres | este commit |

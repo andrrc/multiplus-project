@@ -75,7 +75,7 @@ export function RolagemHorizontal({
     <div className={`relative ${className}`}>
       {indicadores.temExcesso && (
         <p id={dicaId} className="mb-2 flex justify-end">
-          <span className="inline-flex min-h-9 items-center gap-2 rounded-[2px] border border-azul/20 bg-azul-cl px-3 font-[family-name:var(--font-interface)] text-[12px] font-medium text-azul-esc">
+          <span className="inline-flex min-h-9 items-center gap-2 font-[family-name:var(--font-interface)] text-[12px] font-medium text-cinza">
             Deslize para ver as demais colunas
             <SetaHorizontal direcao="direita" />
           </span>

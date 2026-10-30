@@ -69,7 +69,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 **Como funciona.**
 - **Colunas:** ID do projeto, projeto, cliente (com link para a ficha), proposta, valor, prazo final,
   **Dias restantes** e status.
-- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem.
+- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem, em texto cinza com uma seta discreta.
 - **Busca:** por projeto ou cliente.
 - **Desativados:** "Mostrar desativados" inclui os projetos desativados.
 - **Linhas:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse. Não há cor de fundo por
@@ -179,6 +179,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |
 | 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de projetos |
 | 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e preservar o código completo nos cartões móveis |

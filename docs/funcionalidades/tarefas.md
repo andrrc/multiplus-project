@@ -81,7 +81,7 @@ Administradora continua vendo tudo.
   tarefa não tem responsável. O nome é exibido tanto para pessoa envolvida quanto para usuário da equipe. No celular, o cartão traz a linha "Responsável:" (ou "Sem
   responsável").
 - **ID:** a tabela ganha uma coluna **ID** com o código hierárquico do registro, mantido inteiro em uma linha dentro do contêiner rolável; no cartão móvel, o ID aparece em uma linha própria junto ao nome. O código tem a forma `TAR-<cliente>-<projeto>-<tarefa>` e usa sequências locais por projeto.
-- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem.
+- **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem, em texto cinza com uma seta discreta.
 - **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 
 **Detalhes técnicos.**
@@ -297,6 +297,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |
 | 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de tarefas |
 | 2026-10-29 | este commit | Corrigir quebra dos IDs na tabela e preservar o código completo nos cartões móveis |
