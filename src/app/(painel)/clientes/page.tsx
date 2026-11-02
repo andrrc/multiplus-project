@@ -137,7 +137,7 @@ export default async function ClientesPage({
                 <td className="px-5 py-4 text-cinza">{cliente.municipio ?? "—"}</td>
                 <td className="px-5 py-4 text-right">
                   <div className="flex flex-col items-end gap-2">
-                    <Link href={`/clientes/${cliente.id}`} className="text-azul-esc hover:underline">
+                    <Link href={`/clientes/${cliente.id}`} className="whitespace-nowrap text-azul-esc hover:underline">
                       Ver detalhe
                     </Link>
                     {ctx.perfil === "ADMIN" && (

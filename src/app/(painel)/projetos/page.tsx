@@ -84,7 +84,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta></Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-cinza">{data(p.dataPrevistaConclusao)}</Link></td>
                 <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></Link></td>
-                <td className="p-0 text-right"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 text-azul-esc hover:underline">Ver detalhe</Link></td>
+                <td className="p-0 text-right"><Link href={`/projetos/${p.id}`} className="block whitespace-nowrap px-5 py-4 text-azul-esc hover:underline">Ver detalhe</Link></td>
               </tr>
             ))}
           </tbody>

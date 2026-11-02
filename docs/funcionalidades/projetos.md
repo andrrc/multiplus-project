@@ -34,6 +34,12 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 
 ## Funcionalidades
 
+### P11. Link de detalhe na listagem
+
+**Como funciona.** Na tabela de projetos, o link “Ver detalhe” permanece em uma linha.
+
+**Detalhes técnicos.** A rota `/projetos` aplica `whitespace-nowrap` ao link.
+
 ### P10. Percentual de conclusão e acompanhamento do cliente (RF-048 a RF-050)
 
 **Como funciona.** Projeto e telas de equipe mostram a conclusão das tarefas ativas; cada tarefa mostra progresso das subtarefas elegíveis. O portal do cliente lista projetos por última movimentação e mostra status, datas, tarefas, responsável, progresso agregado e links de documento. Cancelados e desativados não entram nos indicadores.
@@ -179,6 +185,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |
 | 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de projetos |

@@ -33,6 +33,12 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 ## Funcionalidades
 
+### C2. Link de detalhe na listagem
+
+**Como funciona.** Na tabela de clientes, o link “Ver detalhe” permanece em uma linha.
+
+**Detalhes técnicos.** A rota `/clientes` aplica `whitespace-nowrap` ao link.
+
 ### C1. Cadastrar cliente PJ ou PF (RF-001, RF-034, RF-035)
 
 **Como funciona.**
@@ -253,6 +259,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |
 | 2026-10-27 | este commit | Explicar validação e fluxos de clientes, pessoas envolvidas e laudos no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-26 | este commit | Mostrar a data original de cadastro na ficha administrativa do cliente, sem expô-la nas visões contextuais ([análise](../analises/data-cadastro-cliente.md)). |
 | 2026-10-23 | este commit | Restringir as páginas administrativas de `/clientes` ao ADMIN e manter a visão contextual de colaboradores; policy de `pessoas_envolvidas` fica registrada para revisão própria ([análise](../analises/guarda-clientes-subtarefa-colaborador-links-email.md)). |
