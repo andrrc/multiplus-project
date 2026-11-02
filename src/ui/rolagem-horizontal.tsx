@@ -81,17 +81,15 @@ export function RolagemHorizontal({
           </span>
         </p>
       )}
-      <div className="relative">
-        <div
-          ref={viewportRef}
-          className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-azul focus-visible:outline-offset-2"
-          role="region"
-          aria-label={rotulo}
-          aria-describedby={indicadores.temExcesso ? dicaId : undefined}
-          tabIndex={indicadores.temExcesso ? 0 : undefined}
-        >
-          {children}
-        </div>
+      <div
+        ref={viewportRef}
+        className="max-h-[min(70dvh,calc(100dvh-18rem))] overflow-auto focus-visible:outline-2 focus-visible:outline-azul focus-visible:outline-offset-2 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-20"
+        role="region"
+        aria-label={rotulo}
+        aria-describedby={indicadores.temExcesso ? dicaId : undefined}
+        tabIndex={0}
+      >
+        {children}
       </div>
     </div>
   );

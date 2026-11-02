@@ -85,6 +85,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 - **Rota:** `/projetos`.
 - **Função:** `listarProjetos(ctx, incluirDesativados, busca)`.
 - **ID:** código `PROJ-<cliente>-<sequencial>`, com sequência local por cliente. Na tabela, aparece inteiro em uma linha dentro do contêiner rolável; o cartão móvel mostra o mesmo código junto ao projeto.
+- **Rolagem:** no desktop, a tabela tem altura máxima adaptada à janela, rolagem vertical e cabeçalho fixo; listas curtas ocupam somente a altura necessária.
 - **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 - **Celular:** a tabela vira lista de cartões. No detalhe e no portal, o projeto também mostra o código.
 - **Geração:** `numeroLocal` é preenchido pelo banco e tem unicidade dentro do cliente. O CUID permanece como chave técnica e da URL.
@@ -185,6 +186,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |

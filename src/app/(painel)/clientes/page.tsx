@@ -7,6 +7,7 @@ import { listarClientes, listarCidadesComCliente } from "@/lib/clientes";
 import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import { FiltrosClientes } from "./filtros-clientes";
+import { RolagemHorizontal } from "@/ui/rolagem-horizontal";
 
 export default async function ClientesPage({
   searchParams,
@@ -90,7 +91,8 @@ export default async function ClientesPage({
           ))}
         </ul>
 
-        <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
+        <RolagemHorizontal className="mt-7 hidden md:block" rotulo="Tabela de clientes">
+        <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
           <thead>
             <tr className="bg-tinta text-left text-branco">
               <th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">ID</th>
@@ -140,6 +142,7 @@ export default async function ClientesPage({
             ))}
           </tbody>
         </table>
+        </RolagemHorizontal>
         </>
       )}
     </div>

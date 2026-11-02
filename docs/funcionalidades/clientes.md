@@ -37,6 +37,8 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 **Como funciona.** Na tabela de clientes, o link “Ver detalhe” permanece em uma linha.
 
+- **Tabela longa:** no desktop, a tabela tem altura máxima adaptada à janela, rolagem vertical e cabeçalho fixo; no celular, os cartões seguem a rolagem normal da página.
+
 **Detalhes técnicos.** A rota `/clientes` aplica `whitespace-nowrap` ao link.
 
 ### C1. Cadastrar cliente PJ ou PF (RF-001, RF-034, RF-035)
@@ -259,6 +261,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-11-02 | este commit | Remover desativar/reativar da listagem e manter a ação na ficha ([análise](../analises/remover-desativacao-listagem-clientes.md)) |
 | 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |
 | 2026-10-27 | este commit | Explicar validação e fluxos de clientes, pessoas envolvidas e laudos no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |

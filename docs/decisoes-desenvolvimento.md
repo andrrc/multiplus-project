@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-11-02 | [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Limitar a altura das tabelas, com rolagem interna e cabeçalho fixo ([análise](analises/rolagem-interna-listagens.md)) | este commit |
 | 2026-11-02 | [Clientes](funcionalidades/clientes.md) | Remover a ação de desativar/reativar da listagem ([análise](analises/remover-desativacao-listagem-clientes.md)) | este commit |
 | 2026-10-30 | [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md) | Manter “Ver detalhe” em uma linha nas listagens | este commit |
 | 2026-10-30 | [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Simplificar a aparência do aviso de rolagem nas listagens | este commit |

@@ -82,6 +82,7 @@ Administradora continua vendo tudo.
   responsável").
 - **ID:** a tabela ganha uma coluna **ID** com o código hierárquico do registro, mantido inteiro em uma linha dentro do contêiner rolável; no cartão móvel, o ID aparece em uma linha própria junto ao nome. O código tem a forma `TAR-<cliente>-<projeto>-<tarefa>` e usa sequências locais por projeto.
 - **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem, em texto cinza com uma seta discreta.
+- **Rolagem:** no desktop, a tabela tem altura máxima adaptada à janela, rolagem vertical e cabeçalho fixo; listas curtas ocupam somente a altura necessária.
 - **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
 
 **Detalhes técnicos.**
@@ -297,6 +298,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |
 | 2026-10-29 | este commit | Indicar a rolagem horizontal disponível na tabela de tarefas |
