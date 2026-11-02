@@ -187,8 +187,8 @@ Além dos dados cadastrais, um cliente PJ pode ter:
   reativação; o histórico é preservado. Isso **não bloqueia o login do portal**: para impedir
   a entrada do cliente, é preciso bloquear a conta em C7, “Login do cliente no portal”.
 - **Ação na ficha:** um único botão “Desativar cliente”/“Reativar cliente” fica no topo da
-  página de detalhes. A seção “Cadastro da empresa” foi removida para evitar controles
-  duplicados; o botão de login do portal continua separado.
+  página de detalhes. A listagem não oferece desativação/reativação; o botão de login do
+  portal continua separado.
 - **Filtro de registros vinculados:** antes da seção de projetos, a Administradora pode
   mostrar ou ocultar projetos, pessoas envolvidas e links do Drive desativados. O texto de
   apoio informa o escopo desse filtro.
@@ -259,6 +259,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-02 | este commit | Remover desativar/reativar da listagem e manter a ação na ficha ([análise](../analises/remover-desativacao-listagem-clientes.md)) |
 | 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |
 | 2026-10-27 | este commit | Explicar validação e fluxos de clientes, pessoas envolvidas e laudos no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-26 | este commit | Mostrar a data original de cadastro na ficha administrativa do cliente, sem expô-la nas visões contextuais ([análise](../analises/data-cadastro-cliente.md)). |

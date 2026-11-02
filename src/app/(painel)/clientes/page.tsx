@@ -7,7 +7,6 @@ import { listarClientes, listarCidadesComCliente } from "@/lib/clientes";
 import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
 import { FiltrosClientes } from "./filtros-clientes";
-import { BotaoDesativarCliente } from "./[id]/acoes-cliente";
 
 export default async function ClientesPage({
   searchParams,
@@ -86,11 +85,6 @@ export default async function ClientesPage({
                     <span className="text-[14px] text-cinza">{cliente.municipio ?? "—"}</span>
                   </div>
                 </Link>
-                {ctx.perfil === "ADMIN" && (
-                  <div className="mt-4 border-t border-linha pt-3">
-                    <BotaoDesativarCliente clienteId={cliente.id} nome={cliente.razaoSocial} ativo={cliente.ativo} instancia="lista-movel" />
-                  </div>
-                )}
               </div>
             </li>
           ))}
@@ -140,9 +134,6 @@ export default async function ClientesPage({
                     <Link href={`/clientes/${cliente.id}`} className="whitespace-nowrap text-azul-esc hover:underline">
                       Ver detalhe
                     </Link>
-                    {ctx.perfil === "ADMIN" && (
-                      <BotaoDesativarCliente clienteId={cliente.id} nome={cliente.razaoSocial} ativo={cliente.ativo} instancia="lista-tabela" />
-                    )}
                   </div>
                 </td>
               </tr>
