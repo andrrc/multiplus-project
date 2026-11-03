@@ -48,7 +48,7 @@ test("CSP entrega nonce diferente por requisição e permite hidratação", asyn
   expect(erros).toEqual([]);
 });
 
-test("convite, login e lista responsiva preservam a orientação", async ({ page }) => {
+test("convite, login e lista responsiva mantêm a rolagem da tabela", async ({ page }) => {
   await page.goto(`/definir-senha?token=${token}`);
   await page.getByLabel("Nova senha").fill(senha);
   await page.getByLabel("Confirmar senha").fill(senha);
@@ -67,11 +67,11 @@ test("convite, login e lista responsiva preservam a orientação", async ({ page
   await page.setViewportSize({ width: 1024, height: 800 });
   const tabela = page.getByRole("region", { name: "Tabela de subtarefas" });
   const aviso = page.getByText("Deslize para ver as demais colunas");
-  await expect(aviso).toBeVisible();
+  await expect(aviso).toHaveCount(0);
   const antes = await tabela.boundingBox();
   await tabela.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
   await expect.poll(() => tabela.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
-  await expect(aviso).toBeVisible();
+  await expect(aviso).toHaveCount(0);
   const depois = await tabela.boundingBox();
   expect(depois?.y).toBe(antes?.y);
 
