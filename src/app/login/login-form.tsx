@@ -9,7 +9,18 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const [erro, formAction, pendente] = useActionState(loginAction, undefined);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} onSubmit={() => {
+      // Uma nova autenticação inicia um ciclo novo do resumo de notificações no painel.
+      try {
+        for (const chave of Object.keys(sessionStorage)) {
+          if (chave.startsWith("mplus-toast-resumo:") || chave.startsWith("mplus-central-visit:")) {
+            sessionStorage.removeItem(chave);
+          }
+        }
+      } catch {
+        // O login continua funcional mesmo se o navegador bloquear sessionStorage.
+      }
+    }} className="flex flex-col gap-4">
       {/* Leva o usuário ao recurso que tentou abrir antes de autenticar. */}
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
 

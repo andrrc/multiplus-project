@@ -7,7 +7,9 @@ import { EventoNotificacao } from "@prisma/client";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarStatusJobPrazo, listarNotificacoes, listarPreferenciasNotificacao } from "@/lib/notificacoes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { podeGerarToastsDemonstracao } from "@/lib/notificacoes-toasts";
 import { inputClass } from "@/ui/campo";
+import { BotaoGerarToastsDemonstracao } from "../toast-notifications";
 import { atualizarSemaforoAction, atualizarPreferenciaAction, marcarNotificacaoLidaAction, marcarTodasNotificacoesLidasAction } from "./actions";
 
 const eventoLabel: Record<EventoNotificacao, string> = {
@@ -27,8 +29,9 @@ export default async function NotificacoesPage() {
   const ctx = await exigirAcessoARota("/notificacoes");
   const [{ itens, naoLidas }, preferencias, limites, statusJob] = await Promise.all([listarNotificacoes(ctx), listarPreferenciasNotificacao(ctx), buscarLimitesSemaforo(ctx), buscarStatusJobPrazo()]);
   const mapa = new Map(preferencias.map((preferencia) => [`${preferencia.perfil}:${preferencia.evento}`, preferencia]));
+  const demoDisponivel = podeGerarToastsDemonstracao(ctx.perfil, process.env.NODE_ENV);
   return <div className="w-full max-w-[1180px]">
-    <div className="flex flex-wrap items-end justify-between gap-4"><div className="min-w-0"><p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Caixa de trabalho</p><h1 className="mt-1 text-[28px]">Notificações</h1><p className="mt-1.5 text-[15px] text-cinza">Avisos importantes, sem perder o fio do que precisa de atenção.</p></div>{naoLidas > 0 && <form action={marcarTodasNotificacoesLidasAction}><button className="min-h-11 rounded-[3px] border border-linha px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Marcar todas como lidas</button></form>}</div>
+    <div className="flex flex-wrap items-end justify-between gap-4"><div className="min-w-0"><p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Caixa de trabalho</p><h1 className="mt-1 text-[28px]">Notificações</h1><p className="mt-1.5 text-[15px] text-cinza">Avisos importantes, sem perder o fio do que precisa de atenção.</p></div><div className="flex flex-wrap items-center gap-2"><BotaoGerarToastsDemonstracao habilitado={demoDisponivel} />{naoLidas > 0 && <form action={marcarTodasNotificacoesLidasAction}><button className="min-h-11 rounded-[3px] border border-linha px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Marcar todas como lidas</button></form>}</div></div>
     <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section aria-labelledby="avisos" className="min-w-0"><div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-tinta pb-3"><h2 id="avisos" className="text-[20px]">Avisos recentes</h2>{naoLidas > 0 && <span className="rounded-full bg-verde px-3 py-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold">{naoLidas} não lida{naoLidas === 1 ? "" : "s"}</span>}</div>{itens.length === 0 ? <div className="border-b border-linha bg-branco px-6 py-14 text-center"><p className="text-[17px]">Nenhuma notificação por enquanto.</p><p className="mt-2 text-[14px] text-cinza">Quando houver um prazo, comentário ou atribuição, o aviso aparecerá aqui.</p><Link href="/subtarefas" className="mt-5 inline-block font-[family-name:var(--font-interface)] text-[13px] text-azul-esc hover:underline">Ver subtarefas</Link></div> : <ol className="divide-y divide-linha border-b border-linha">{itens.map((item) => <li key={item.id} className={`relative px-4 py-4 pl-6 ${item.lida ? "bg-papel/50" : "bg-branco"}`}>
         {!item.lida && <span className="absolute inset-y-0 left-0 w-1 bg-verde" aria-label="Não lida" />}

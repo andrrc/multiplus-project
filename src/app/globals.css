@@ -101,6 +101,32 @@ h4 {
   outline-offset: 2px;
 }
 
+@keyframes toast-entrada {
+  from { opacity: 0; transform: translate3d(18px, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes barra-toast {
+  from { width: 100%; }
+  to { width: 0; }
+}
+
+@keyframes toast-saida {
+  to { opacity: 0; transform: translate3d(18px, 0, 0); }
+}
+
+.animate-toast-entrada {
+  animation: toast-entrada 220ms ease-out both;
+}
+
+.animate-toast-saida {
+  animation: toast-saida 180ms ease-in both;
+}
+
+.toast-progresso {
+  animation: barra-toast 6s linear forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Respeita usuários que pedem redução de animações no sistema operacional. */
   *,

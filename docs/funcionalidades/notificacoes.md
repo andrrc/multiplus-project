@@ -1,6 +1,6 @@
 # Notificações
 
-- **Última revisão:** 2026-10-28.
+- **Última revisão:** 2026-11-03.
 - **Requisitos:** RF-007, RF-022, RF-023, RF-050.
 - **Módulos relacionados:** Tarefas, Projetos, Comentários.
 
@@ -38,6 +38,11 @@ avisado.
 **Como funciona.**
 - **Lista:** avisos recentes, com as não lidas destacadas, o link "Abrir registro",
   "Marcar como lida" e "Marcar todas como lidas".
+- **Sino:** ADMIN, ADMIN_INTERNO e ADMIN_EXTERNO acessam a própria caixa pelo menu. Para
+  ADMIN, o sino mostra também o contador de não lidas e abre `/notificacoes`. Não há prévia
+  suspensa. Avisos in-app novos aparecem como toast no canto inferior direito; ao entrar no
+  painel, um toast resume a quantidade de não lidas. Abrir a central marca as não lidas da
+  própria conta como lidas.
 - Em telas estreitas, o texto do aviso e a data ocupam linhas próprias quando necessário.
   Nas preferências, o nome do evento fica acima dos controles quando falta espaço; E-mail,
   App e Salvar permanecem juntos e alinhados. Com largura suficiente, o nome fica à esquerda
@@ -46,13 +51,37 @@ avisado.
 **Detalhes técnicos.**
 - **Rotas:** `/notificacoes` para ADMIN e `/minhas-notificacoes` para ADMIN_INTERNO e
   ADMIN_EXTERNO. Cada rota aparece no menu do perfil correspondente.
-- **Menu dos colaboradores:** `/minhas-notificacoes` aparece com ícone de sino e contador
-  de não lidas (99+ quando ultrapassa 99); sem pendências, o contador não aparece. O
-  contador é consultado no servidor para o usuário da sessão e é compartilhado entre o
-  menu desktop e o mobile. A caixa continua exibindo as 50 notificações mais recentes.
+- **Menu:** o sino e contador de não lidas (99+ quando ultrapassa 99) são compartilhados
+  entre desktop e mobile. O contador é consultado no servidor ao carregar o painel; a caixa
+  completa continua exibindo as 50 notificações mais recentes.
 - **Funções:** `listarNotificacoes` (últimas 50), `contarNotificacoesNaoLidas`,
-  `marcarNotificacaoLida` e `marcarTodasNotificacoesLidas`. Não há atualização em tempo
-  real; o contador atualiza na renderização do painel e após as ações que revalidam a caixa.
+  `marcarNotificacaoLida` e `marcarTodasNotificacoesLidas`.
+
+### N7. Toasts em tempo real
+
+**Como funciona.** Notificações in-app novas aparecem sem recarregar o painel. Cada cartão
+mostra título, mensagem, horário, ícone por tipo, botão de fechar e barra de seis segundos.
+O relógio pausa quando o cartão recebe o mouse ou foco. No máximo três cartões aparecem ao
+mesmo tempo; os seguintes entram na fila. O resumo de entrada abre a central. Clicar num
+aviso individual marca somente aquele aviso como lido e abre seu registro; quando não há
+destino, abre a central. Abrir a central marca todas as não lidas próprias. Em múltiplas
+abas, cada aba ativa recebe os avisos e sincroniza leituras.
+
+**Detalhes técnicos.** O evento `NOTIFY` do PostgreSQL é disparado depois do commit por
+trigger em `notificacoes`, com apenas id, usuário, estado de leitura e horário. A rota
+`/api/notificacoes/stream` mantém SSE autenticado no runtime Node, filtra sinais pela sessão
+e busca somente campos da notificação própria sob RLS. Cursor SSE recupera avisos não lidos
+da janela recente depois de reconexão. A rota fecha a conexão ao desconectar ou invalidar a
+sessão. Estilos derivados: tarefa/projeto concluído (sucesso), prazo e solicitação (aviso),
+comentário e atribuição (informação); o estilo erro fica disponível sem evento atual.
+`ToastNotifications` é compartilhado pelo layout do painel; o resumo é único por sessão e
+reinicia quando uma nova autenticação começa. A central marca as próprias não lidas ao ser
+aberta. Em desenvolvimento, ADMIN pode usar “Gerar toasts de demonstração” na central para
+mostrar os quatro estilos na aba atual. Os exemplos são temporários no navegador, não entram
+no banco e não alteram contador, e-mail ou SSE. Cada clique substitui os exemplos anteriores.
+O controle não aparece em produção e deve ser removido antes do lançamento na VPS.
+Cobertura em `notificacoes-toasts.unit.test.ts`,
+`notificacoes-realtime.integration.test.ts` e `tests/browser/notificacoes.spec.ts`.
 
 ### N5. Configuração global do semáforo
 
@@ -132,11 +161,15 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 |---|---|---|
 | L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
 | L2 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
+| L3 | O botão local de demonstração é temporário e continua no código até a revisão pré-produção. | Não aparece quando `NODE_ENV=production`; remover botão, evento e amostras antes do lançamento da VPS. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Acrescentar botão local de demonstração dos quatro estilos de toast, sem gravar notificações ([análise](../analises/gerador-toasts-teste.md)) |
+| 2026-11-03 | este commit | Exibir toasts de notificações em tempo real por SSE, resumo de entrada e leitura sincronizada ao abrir a central ([análise](../analises/toast-notifications-realtime.md)) |
+| 2026-11-03 | este commit | Exibir sino e contador para ADMIN com acesso à caixa existente; prévia e aviso automático cancelados após revisão ([análise](../analises/caixa-notificacoes-popup.md)) |
 | 2026-10-28 | este commit | Padronizar as preferências: controles em uma linha e disposição orientada pela largura do cartão |
 | 2026-10-28 | este commit | Adaptar a central de notificações a telas estreitas e permitir que mensagens e controles longos quebrem sem estourar o conteúdo |
 | 2026-10-27 | este commit | Adicionar sino e contador de não lidas da própria conta ao menu de colaboradores, mantendo a caixa e a audiência existentes ([análise](../analises/central-notificacoes-colaboradores.md)) |

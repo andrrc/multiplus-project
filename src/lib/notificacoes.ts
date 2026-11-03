@@ -348,6 +348,24 @@ export async function contarNotificacoesNaoLidas(ctx: ContextoUsuario) {
   );
 }
 
+/** Obtém somente os campos usados no toast de uma notificação própria ainda não lida. */
+export async function buscarNotificacaoNaoLidaParaToast(ctx: ContextoUsuario, id: string) {
+  return comContextoDeUsuario(ctx, (tx) => tx.notificacao.findFirst({
+    where: { id, usuarioId: ctx.usuarioId, lida: false },
+    select: { id: true, evento: true, titulo: true, mensagem: true, url: true, criadaEm: true },
+  }));
+}
+
+/** Recupera notificações próprias não lidas criadas desde a última entrega SSE. */
+export async function listarNotificacoesNaoLidasDesde(ctx: ContextoUsuario, desde: Date) {
+  return comContextoDeUsuario(ctx, (tx) => tx.notificacao.findMany({
+    where: { usuarioId: ctx.usuarioId, lida: false, criadaEm: { gte: desde } },
+    orderBy: { criadaEm: "asc" },
+    take: 50,
+    select: { id: true, evento: true, titulo: true, mensagem: true, url: true, criadaEm: true },
+  }));
+}
+
 export async function marcarNotificacaoLida(ctx: ContextoUsuario, id: string) {
   // O filtro composto impede marcar como lida uma notificação pertencente a outra conta.
   return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { id, usuarioId: ctx.usuarioId }, data: { lida: true } }));

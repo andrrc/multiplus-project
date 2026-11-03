@@ -2,8 +2,10 @@ import type { Perfil } from "@prisma/client";
 import { auth, signOut } from "@/server/auth";
 import { obterContexto } from "@/server/auth/contexto";
 import { contarNotificacoesNaoLidas } from "@/lib/notificacoes";
+import { podeGerarToastsDemonstracao } from "@/lib/notificacoes-toasts";
 import { MenuMobile } from "./menu-mobile";
 import { NavegacaoPainel } from "./navegacao-painel";
+import { ToastNotifications } from "./toast-notifications";
 
 /**
  * Rótulos exibidos ao usuário (reunião de aprovação da Sprint 2) — os valores do enum
@@ -53,9 +55,7 @@ export default async function PainelLayout({ children }: { children: React.React
   const session = await auth();
   const ctx = await obterContexto();
   const usuario = session!.user;
-  const naoLidas = ctx.perfil === "ADMIN_INTERNO" || ctx.perfil === "ADMIN_EXTERNO"
-    ? await contarNotificacoesNaoLidas(ctx)
-    : 0;
+  const naoLidas = ctx.perfil === "CLIENTE" ? 0 : await contarNotificacoesNaoLidas(ctx);
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
@@ -87,6 +87,13 @@ export default async function PainelLayout({ children }: { children: React.React
       <main className="flex-1 overflow-x-hidden bg-papel px-5 pt-8 pb-12 sm:px-8 lg:px-16 lg:pt-[52px] lg:pb-16">
         <div className="mx-auto max-w-[1420px]">{children}</div>
       </main>
+      {ctx.perfil !== "CLIENTE" && <ToastNotifications
+        usuarioId={ctx.usuarioId}
+        versaoSessao={session!.user.versaoSessao}
+        perfil={ctx.perfil}
+        naoLidasIniciais={naoLidas}
+        demoDisponivel={podeGerarToastsDemonstracao(ctx.perfil, process.env.NODE_ENV)}
+      />}
     </div>
   );
 }
