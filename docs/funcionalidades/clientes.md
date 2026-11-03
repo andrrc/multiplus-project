@@ -228,7 +228,7 @@ laudo desativado é somente leitura, e reativar não reativa anotações desativ
 individualmente. Responsável que saiu da equipe permanece identificado; novas escolhas
 exigem integrante ativo. Edições concorrentes geram erro sem sobrescrever outra sessão.
 
-A lista de clientes permite filtrar Todos / Com laudo ativo / Sem laudo ativo junto de
+O seletor de laudo mostra seu título dentro do campo, e os filtros usam dimensões compactas. A lista de clientes permite filtrar Todos / Com laudo ativo / Sem laudo ativo junto de
 busca, cidade e clientes desativados. Sem laudo ativo inclui laudo desativado e ausência
 de cadastro. A situação do cliente continua controlada pelo filtro de clientes desativados.
 
@@ -262,6 +262,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 | Data | Commit | Alteração |
 |---|---|---|
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
+| 2026-11-03 | este commit | Compactar os filtros e identificar o seletor de laudo dentro do campo |
 | 2026-11-03 | este commit | Ampliar a largura da listagem e manter CNPJ/CPF em uma linha |
 | 2026-11-02 | este commit | Remover desativar/reativar da listagem e manter a ação na ficha ([análise](../analises/remover-desativacao-listagem-clientes.md)) |
 | 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |

@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { inputClass } from "@/ui/campo";
+const filtroClass = "min-h-11 w-full rounded-[3px] border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-tinta focus:border-azul disabled:bg-papel disabled:text-cinza";
 
 type Filtros = { busca: string; cidade: string; desativados: boolean; laudo?: string };
 
@@ -67,7 +67,7 @@ export function FiltrosClientes({
         value={busca}
         onChange={(event) => setBusca(event.target.value)}
         placeholder="Buscar por razão social, CNPJ, CPF ou cidade"
-        className={`${inputClass} placeholder:text-cinza sm:max-w-md`}
+        className={`${filtroClass} placeholder:text-cinza sm:max-w-sm`}
         aria-label="Buscar clientes"
       />
       <select
@@ -75,13 +75,28 @@ export function FiltrosClientes({
         value={cidade}
         onChange={(event) => alterarCidade(event.target.value)}
         disabled={pendente}
-        className={`${inputClass} sm:w-auto`}
+        className={`${filtroClass} sm:w-auto`}
         aria-label="Filtrar por cidade"
       >
         <option value="">Todas as cidades</option>
         {cidades.map((item) => <option key={item} value={item}>{item}</option>)}
       </select>
-      {podeMostrarDesativados && <label className="min-w-0 font-[family-name:var(--font-interface)] text-[14px]">Laudo técnico<select value={laudo} disabled={pendente} className={inputClass} onChange={(e) => { setLaudo(e.target.value); aplicarFiltros({ busca, cidade, desativados: mostrarDesativados, laudo: e.target.value }); }} aria-label="Filtrar por laudo técnico"><option value="">Todos</option><option value="com">Com laudo ativo</option><option value="sem">Sem laudo ativo</option></select></label>}
+      {podeMostrarDesativados && (
+        <select
+          value={laudo}
+          disabled={pendente}
+          className={`${filtroClass} sm:w-auto`}
+          onChange={(event) => {
+            setLaudo(event.target.value);
+            aplicarFiltros({ busca, cidade, desativados: mostrarDesativados, laudo: event.target.value });
+          }}
+          aria-label="Filtrar por laudo técnico"
+        >
+          <option value="">Laudo técnico: todos</option>
+          <option value="com">Com laudo ativo</option>
+          <option value="sem">Sem laudo ativo</option>
+        </select>
+      )}
       {podeMostrarDesativados && (
         <label className="flex min-h-11 items-center gap-2 text-[14px] text-tinta">
           <input
