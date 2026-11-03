@@ -1,6 +1,12 @@
 /** RF-039/RF-043, RN-007 — sessão existente respeita ativo e perfil atuais do banco. */
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.hoisted(() => {
+  const url = new URL(process.env.APP_DATABASE_URL!);
+  url.searchParams.set("connection_limit", "1");
+  process.env.APP_DATABASE_URL = url.toString();
+});
+
 const { authMock, redirectMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   redirectMock: vi.fn((destino: string): never => {
@@ -87,6 +93,26 @@ describe("RF-039 — revalidação de usuário em sessão existente", () => {
   it("recusa sessão legada sem versão", async () => {
     authMock.mockResolvedValue({ user: { id: usuarioId, perfil: "ADMIN", clienteId: null } });
     await expect(obterContexto()).rejects.toThrow("REDIRECT:/login?motivo=sessao-invalidada");
+  });
+
+  it("revalida a sessão após uma conexão ocupada temporariamente", async () => {
+    let liberar!: () => void;
+    let iniciada!: () => void;
+    const ocupada = new Promise<void>((resolve) => { iniciada = resolve; });
+    const liberacao = new Promise<void>((resolve) => { liberar = resolve; });
+    const transacao = prismaApp.$transaction(async () => {
+      iniciada();
+      await liberacao;
+    }, { timeout: 10_000 });
+    await ocupada;
+    const temporizador = setTimeout(liberar, 2_500);
+    try {
+      await expect(obterContexto()).resolves.toEqual({ usuarioId, perfil: "ADMIN" });
+    } finally {
+      clearTimeout(temporizador);
+      liberar();
+      await transacao;
+    }
   });
 
   it("falha fechado quando a consulta de revalidação não está disponível", async () => {

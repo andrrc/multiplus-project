@@ -11,6 +11,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 |---|---|---|---|
 | 2026-11-03 | [Notificações](funcionalidades/notificacoes.md) | Acrescentar botão local para pré-visualizar os quatro estilos de toast sem gravar no banco; remover antes do lançamento na VPS ([análise](analises/gerador-toasts-teste.md)) | este commit |
 | 2026-11-03 | [Notificações](funcionalidades/notificacoes.md) | Exibir toasts em tempo real por SSE, com resumo ao entrar e leitura sincronizada ao abrir a central ([análise](analises/toast-notifications-realtime.md)) | este commit |
+| 2026-11-03 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Corrigir espera por conexão na revalidação de sessão ([análise](analises/erro-transacao-revalidacao-sessao.md)) | este commit |
 | 2026-11-03 | [Notificações](funcionalidades/notificacoes.md) | Exibir sino e contador para ADMIN, direcionando à central existente; sem prévia ou aviso automático ([análise](analises/caixa-notificacoes-popup.md)) | este commit |
 | 2026-11-03 | [Clientes](funcionalidades/clientes.md) | Ampliar a listagem e manter CNPJ/CPF em uma linha | este commit |
 | 2026-11-02 | [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Limitar a altura das tabelas, com rolagem interna e cabeçalho fixo ([análise](analises/rolagem-interna-listagens.md)) | este commit |

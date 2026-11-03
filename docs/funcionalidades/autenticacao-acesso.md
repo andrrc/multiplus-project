@@ -110,7 +110,7 @@ acessar.
 - **Sessão atualizada:** `obterContexto` consulta a própria linha do usuário no banco em
   cada request autenticado. Conta inativa ou ausente é redirecionada ao login com uma
   mensagem; mudança de perfil passa a valer no request seguinte. O layout também usa o
-  perfil atual para montar o menu.
+  perfil atual para montar o menu. A revalidação aguarda conexão pelo mesmo limite das demais consultas protegidas e continua recusando acesso se o banco falhar.
 - **Troca ou recuperação de senha:** invalida sessões anteriores. Após trocar a senha em Meu Perfil, a pessoa entra novamente; após usar um link, recebe uma sessão nova. A implantação da versão de sessão também encerra as sessões anteriores uma vez.
 - **CSP:** `src/proxy.ts` envia nonce diferente por requisição; scripts inline não autorizados não são liberados em produção. As páginas são renderizadas dinamicamente, com impacto potencial de desempenho e cache.
 - **Conexão RLS:** `APP_DATABASE_URL` é obrigatória; não há fallback para a conexão privilegiada.
@@ -148,6 +148,7 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Corrigir espera por conexão ao revalidar sessão ([análise](../analises/erro-transacao-revalidacao-sessao.md)) |
 | 2026-10-30 | este commit | Corrigir concorrência de tokens, revogar sessões, compartilhar limites e reforçar CSP e conexão RLS ([análise](../analises/correcoes-auditoria-seguranca-autenticacao.md)) |
 | 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
 | 2026-10-27 | este commit | Explicar autenticação, sessão, autorização e fluxos de senha no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
