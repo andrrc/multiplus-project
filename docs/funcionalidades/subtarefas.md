@@ -118,7 +118,7 @@ pessoa (RN-004).
 - **Quando atrasa:** o dia do prazo ainda conta como em dia; o atraso começa à meia-noite de
   Brasília, o mesmo horário em que o semáforo muda.
 - **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da subtarefa, independentemente do responsável da tarefa pai. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Por padrão, mostra só as pendentes, e
-  "Mostrar concluídas e canceladas" inclui o resto.
+  "Mostrar concluídas e canceladas" inclui o resto. Os títulos dos seletores ficam disponíveis para leitores de tela; visualmente, a opção selecionada identifica cada campo.
 - **Link antigo:** a rota antiga `/prazos` redireciona para cá.
 
 **Detalhes técnicos.**
@@ -218,6 +218,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
 | 2026-11-03 | este commit | Exportar a lista filtrada de `/subtarefas` em PDF, sem a fila de pedidos, seguindo a identidade visual aprovada ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |

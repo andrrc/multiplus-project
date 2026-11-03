@@ -89,28 +89,28 @@ export function FiltrosListagens({
   return (
     <div className="mt-7 flex flex-wrap items-end gap-3" aria-label="Filtros da listagem">
       <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[210px]">
-        <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Cliente</span>
+        <span className="sr-only">Cliente</span>
         <select name="cliente" value={cliente} disabled={pendente} onChange={(event) => alterarCliente(event.target.value)} className={inputClass}>
           <option value="">Todos os clientes</option>
           {clientes.map((item) => <option key={item.id} value={item.id}>{item.razaoSocial}</option>)}
         </select>
       </label>
       <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[210px]">
-        <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Projeto</span>
+        <span className="sr-only">Projeto</span>
         <select name="projeto" value={projeto} disabled={pendente} onChange={(event) => alterarProjeto(event.target.value)} className={inputClass}>
           <option value="">Todos os projetos</option>
           {projetosVisiveis.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}
         </select>
       </label>
       <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[240px]">
-        <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Tarefa</span>
+        <span className="sr-only">Tarefa</span>
         <select name="tarefa" value={tarefa} disabled={pendente} onChange={(event) => alterarTarefa(event.target.value)} className={inputClass}>
           <option value="">Todas as tarefas</option>
           {tarefasVisiveis.map((item) => <option key={item.id} value={item.id}>{item.projeto.nome} · {item.nome}</option>)}
         </select>
       </label>
       <label className="flex w-full min-w-0 flex-col gap-1.5 md:w-[260px]">
-        <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium">Responsável</span>
+        <span className="sr-only">Responsável</span>
         <select name="responsavel" value={responsavel} disabled={pendente} onChange={(event) => alterarResponsavel(event.target.value)} className={inputClass}>
           <option value="">Todos os responsáveis</option>
           <option value="sem">Sem responsável</option>

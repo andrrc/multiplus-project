@@ -71,7 +71,7 @@ Administradora continua vendo tudo.
 **Como funciona.**
 - **Conteúdo:** todas as tarefas ativas de projetos ativos, com cliente, projeto, prazo,
   status e responsável.
-- **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da tarefa. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Escolher um cliente limita os projetos oferecidos.
+- **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da tarefa. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Escolher um cliente limita os projetos oferecidos. Os títulos dos seletores ficam disponíveis para leitores de tela; visualmente, a opção selecionada identifica cada campo.
 - **Destaque:** um indicador mostra quantas subtarefas estão sem responsável.
 - **Progresso das subtarefas:** ao filtrar por responsável (inclusive "Sem responsável"),
   a coluna "Subtarefas" mostra concluídas/total, como `2/6`. Considera todas as subtarefas
@@ -305,6 +305,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
 | 2026-11-03 | este commit | Exportar a lista filtrada de `/tarefas` em PDF com a identidade visual aprovada, paginação e data exata dos prazos ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
