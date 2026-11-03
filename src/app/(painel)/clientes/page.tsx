@@ -28,7 +28,7 @@ export default async function ClientesPage({
   ]);
 
   return (
-    <div className="w-full max-w-[1000px]">
+    <div className="w-full">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[24px] sm:text-[28px]">Clientes</h1>
@@ -126,7 +126,7 @@ export default async function ClientesPage({
                     </span>
                   )}
                 </td>
-                <td className="px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td>
+                <td className="whitespace-nowrap px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td>
                 <td className="px-5 py-4">
                   <Etiqueta>{cliente.segmento}</Etiqueta>
                 </td>
