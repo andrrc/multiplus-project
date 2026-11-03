@@ -85,7 +85,7 @@ export default async function PainelLayout({ children }: { children: React.React
       </aside>
 
       <main className="flex-1 overflow-x-hidden bg-papel px-5 pt-8 pb-12 sm:px-8 lg:px-16 lg:pt-[52px] lg:pb-16">
-        <div className="mx-auto max-w-[1420px]">{children}</div>
+        <div className="max-w-[1420px]">{children}</div>
       </main>
       {ctx.perfil !== "CLIENTE" && <ToastNotifications
         usuarioId={ctx.usuarioId}

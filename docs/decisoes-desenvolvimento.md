@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-11-03 | [Interface](funcionalidades/interface.md) | Alinhar o painel em telas largas | este commit |
 | 2026-11-03 | [Clientes](funcionalidades/clientes.md) | Compactar filtros e identificar o seletor de laudo | este commit |
 | 2026-11-03 | [Notificações](funcionalidades/notificacoes.md) | Acrescentar botão local para pré-visualizar os quatro estilos de toast sem gravar no banco; remover antes do lançamento na VPS ([análise](analises/gerador-toasts-teste.md)) | este commit |
 | 2026-11-03 | [Notificações](funcionalidades/notificacoes.md) | Exibir toasts em tempo real por SSE, com resumo ao entrar e leitura sincronizada ao abrir a central ([análise](analises/toast-notifications-realtime.md)) | este commit |

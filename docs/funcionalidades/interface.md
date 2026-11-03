@@ -12,6 +12,12 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 ## Funcionalidades
 
+### Alinhamento do painel em telas largas
+
+**Como funciona.** O conteúdo do painel começa junto à margem interna ao lado do menu, mesmo em monitores largos, mantendo a largura máxima de 1420 px.
+
+**Detalhes técnicos.** O layout compartilhado em `src/app/(painel)/layout.tsx` alinha à esquerda o conteúdo das páginas do painel. Não altera permissões ou dados.
+
 ### I1. Textos maiores em todo o sistema
 
 **Como funciona.** Os textos ficam 20% maiores em relação à escala original para facilitar a leitura, conforme
@@ -77,6 +83,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Alinhar conteúdo do painel à margem interna em telas largas |
 | 2026-10-29 | este commit | Carregar Raleway e Montserrat por arquivos locais para remover a dependência de fontes remotas no build ([análise](../analises/falha-build-fontes-nextjs.md)) |
 | 2026-10-27 | este commit | Documentar fluxos e decisões do código em português do Brasil ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-23 | este commit | Atualizar Next.js e eslint-config-next para 16.4.1 por segurança ([análise](../analises/atualizacao-seguranca-nextjs.md)) |
