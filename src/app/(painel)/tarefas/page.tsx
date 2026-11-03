@@ -1,7 +1,7 @@
 /**
  * Página da rota `src/app/(painel)/tarefas/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
  */
-import { interpretarResponsavel } from "@/lib/filtro-responsavel";
+import { interpretarResponsavel, urlExportacaoPdf } from "@/lib/filtro-responsavel";
 import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarClientesParaProjeto, listarProjetos, listarPrazos, listarTarefasParaFiltro, listarResponsaveisParaFiltro } from "@/lib/projetos-tarefas";
@@ -26,6 +26,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
   // A página é administrativa; a action de domínio também verifica ADMIN antes de ler dados.
   const ctx = await exigirAcessoARota("/tarefas");
   const filtros = await searchParams;
+  const hrefExportacao = urlExportacaoPdf("/api/exportacao-pdf/tarefas", filtros);
   // Determina se a coluna agregada deve ser solicitada ao backend para este filtro.
   const tipoResponsavel = interpretarResponsavel(filtros.responsavel).tipo;
   const responsavelInvalido = tipoResponsavel === "invalido";
@@ -44,7 +45,10 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
   return <div className="w-full max-w-[1120px]">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div><p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Operação</p><h1 className="mt-1 text-[28px]">Tarefas</h1><p className="mt-1.5 text-[15px] text-cinza">Acompanhe todas as tarefas ativas dos projetos.</p></div>
-      <Link href="/projetos" className="flex min-h-11 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">Ver projetos</Link>
+      <div className="flex flex-wrap gap-2">
+        <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-4 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
+        <Link href="/projetos" className="flex min-h-11 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">Ver projetos</Link>
+      </div>
     </div>
     <FiltrosListagens
       key={`${responsavelInicial}|${filtros.cliente ?? ""}|${filtros.projeto ?? ""}|${filtros.tarefa ?? ""}`}

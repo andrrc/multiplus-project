@@ -1,7 +1,7 @@
 /**
  * Página da rota `src/app/(painel)/subtarefas/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
  */
-import { interpretarResponsavel } from "@/lib/filtro-responsavel";
+import { interpretarResponsavel, urlExportacaoPdf } from "@/lib/filtro-responsavel";
 import Link from "next/link";
 import { StatusSubtarefa } from "@prisma/client";
 import { exigirAcessoARota } from "@/server/auth/contexto";
@@ -21,6 +21,13 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
   // A rota gerencial exige ADMIN; consultas e actions continuam protegidas no servidor.
   const ctx = await exigirAcessoARota("/subtarefas");
   const filtros = await searchParams;
+  const hrefExportacao = urlExportacaoPdf("/api/exportacao-pdf/subtarefas", {
+    cliente: filtros.cliente,
+    projeto: filtros.projeto,
+    tarefa: filtros.tarefa,
+    responsavel: filtros.responsavel,
+    todos: filtros.todos,
+  });
   // Parâmetro repetido ou malformado é tratado como inválido e não amplia a lista.
   const responsavelInvalido = interpretarResponsavel(filtros.responsavel).tipo === "invalido";
   const responsavelInicial = typeof filtros.responsavel === "string" ? filtros.responsavel : filtros.responsavel ? "invalido" : "";
@@ -44,7 +51,10 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
   return <div className="w-full max-w-[1120px]">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div><p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Visão gerencial</p><h1 className="mt-1 text-[28px]">Subtarefas</h1><p className="mt-1.5 text-[15px] text-cinza">Acompanhe os prazos das subtarefas dos projetos.</p></div>
-      <div className="border-l-[3px] border-ambar bg-branco px-5 py-3"><p className="text-[11px] uppercase tracking-[0.08em] text-cinza">Em dia</p><p className="font-[family-name:var(--font-interface)] text-[25px] font-semibold text-tinta">{indicador.percentual === null ? "—" : `${indicador.percentual}%`} <span className="text-[13px] font-normal text-cinza">({indicador.emDia}/{indicador.total})</span></p></div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
+        <div className="border-l-[3px] border-ambar bg-branco px-5 py-3"><p className="text-[11px] uppercase tracking-[0.08em] text-cinza">Em dia</p><p className="font-[family-name:var(--font-interface)] text-[25px] font-semibold text-tinta">{indicador.percentual === null ? "—" : `${indicador.percentual}%`} <span className="text-[13px] font-normal text-cinza">({indicador.emDia}/{indicador.total})</span></p></div>
+      </div>
     </div>
     <section className="mt-7 rounded-[3px] border border-linha bg-branco p-4 sm:p-5" aria-labelledby="conclusoes-pendentes">
       <div className="flex flex-wrap items-center justify-between gap-3">

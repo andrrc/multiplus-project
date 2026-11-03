@@ -22,6 +22,7 @@ inicial dela ao entrar no sistema.
 | Solicitar conclusão | Qualquer uma (confirma diretamente) | Só as próprias | Só as próprias | Não |
 | Confirmar ou rejeitar pedido | Sim | Não | Não | Não |
 | Ver o painel `/subtarefas` | Sim | Não | Não | Não |
+| Exportar a lista de `/subtarefas` em PDF | Sim | Não | Não | Não |
 | Gerenciar o catálogo de etiquetas | Sim | Não | Não | Não |
 
 Ter acesso à tarefa ou ao projeto **não** dá direito a concluir a subtarefa de outra
@@ -192,6 +193,12 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 **Detalhes técnicos.** As telas de detalhe de tarefa e o componente `Comentarios` usam `formatarDataHoraBrasilia`. Sem alteração de schema, prazo ou acesso. Cobertura da formatação e dos fusos em `datas.unit.test.ts`.
 
+### S10. Exportar o painel em PDF
+
+**Como funciona.** A Administradora pode exportar todas as subtarefas da lista principal, respeitando filtros e a opção de incluir concluídas e canceladas. A fila “Conclusões aguardando confirmação” não é exportada. O PDF inclui o identificador sequencial do cliente, o semáforo de prazo com a data exata, os filtros ativos e uma mensagem quando não há resultados.
+
+**Detalhes técnicos.** Link `Exportar PDF` em `/subtarefas`; rota `GET /api/exportacao-pdf/subtarefas`; consulta reaproveita `listarSubtarefasPrazos` e `listarResponsaveisParaFiltro`. PDFKit gera A4 paisagem com cabeçalho repetido, paginação, fontes e cabeçalho institucional iguais ao PDF da Agenda; a rota exige `ADMIN` e responde `private, no-store`. A exportação não contém o ID técnico do cliente nem a fila de pedidos. Análise e prévia aprovada: [exportação PDF de tarefas e subtarefas](../analises/exportacao-pdf-tarefas-subtarefas.md).
+
 ### Listagem responsiva: cobertura automatizada
 
 **Como funciona.** Uma jornada automatizada confere a lista em desktop e em 375 px, incluindo a orientação de rolagem e a posição da tabela.
@@ -211,6 +218,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Exportar a lista filtrada de `/subtarefas` em PDF, sem a fila de pedidos, seguindo a identidade visual aprovada ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |

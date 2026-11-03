@@ -24,6 +24,7 @@ as tarefas ligadas a eles.
 |---|---|---|---|---|
 | Criar, editar e mudar o status | Sim | Não | Não | Não |
 | Ver a lista de todas as tarefas (`/tarefas`) | Sim | Não | Não | Não |
+| Exportar a lista de `/tarefas` em PDF | Sim | Não | Não | Não |
 | Ver as próprias tarefas (`/minhas-tarefas`) | — | Sim | Sim | Não |
 | Solicitar conclusão da tarefa | Sim (conclui diretamente) | Se for responsável ou estiver atribuído ao **projeto** | Se for responsável ou estiver atribuído à **tarefa** | Não |
 | Confirmar ou rejeitar pedido | Sim | Não | Não | Não |
@@ -284,6 +285,12 @@ registro de quem criou e quando.
 
 **Detalhes técnicos.** `/tarefas/[id]` e `/minhas-tarefas/[id]` usam `formatarDataHoraBrasilia`; `dispararPrazoProximo` ancora janela e deduplicação em `dataDeHojeEmSaoPaulo`. Cobertura em `datas.unit.test.ts` e `notificacoes-rf022.integration.test.ts`.
 
+### T13. Exportar a listagem em PDF
+
+**Como funciona.** A Administradora pode exportar para PDF todas as tarefas que correspondem aos filtros ativos. O arquivo preserva o ordenamento da lista, inclui o identificador sequencial do cliente, o semáforo de prazo acompanhado da data exata, os filtros aplicados e o progresso de subtarefas quando a lista também o apresenta. Listas vazias geram um arquivo com a mensagem “Nenhum item encontrado”.
+
+**Detalhes técnicos.** Link `Exportar PDF` em `/tarefas`; rota `GET /api/exportacao-pdf/tarefas`; renderização com PDFKit em A4 paisagem, cabeçalho repetido, paginação, fontes Raleway/Montserrat/Droid Serif, logo institucional e resposta `private, no-store`. A rota e `listarPrazos` exigem `ADMIN`; os filtros são validados no servidor. Não exporta o ID técnico do cliente nem dados de contato. Análise e prévia aprovada: [exportação PDF de tarefas e subtarefas](../analises/exportacao-pdf-tarefas-subtarefas.md).
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
@@ -298,6 +305,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Exportar a lista filtrada de `/tarefas` em PDF com a identidade visual aprovada, paginação e data exata dos prazos ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |
 | 2026-10-29 | este commit | Manter o aviso durante a rolagem e remover o degradê sobre a tabela |

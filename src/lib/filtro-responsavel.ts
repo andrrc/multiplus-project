@@ -53,3 +53,20 @@ export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListage
   const query = parametros.toString();
   return query ? `${rota}?${query}` : rota;
 }
+
+/** Preserva os filtros aplicados ao montar o link de exportação da listagem. */
+export function urlExportacaoPdf(
+  rota: "/api/exportacao-pdf/tarefas" | "/api/exportacao-pdf/subtarefas",
+  filtros: Record<string, string | string[] | undefined>,
+) {
+  const parametros = new URLSearchParams();
+  for (const [campo, valor] of Object.entries(filtros)) {
+    if (Array.isArray(valor)) {
+      for (const item of valor) parametros.append(campo, item);
+    } else if (valor) {
+      parametros.set(campo, valor);
+    }
+  }
+  const query = parametros.toString();
+  return query ? `${rota}?${query}` : rota;
+}
