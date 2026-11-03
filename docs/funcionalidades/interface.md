@@ -18,6 +18,12 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 **Detalhes técnicos.** O layout compartilhado em `src/app/(painel)/layout.tsx` alinha à esquerda o conteúdo das páginas do painel. Não altera permissões ou dados.
 
+### Rolagem horizontal das tabelas
+
+**Como funciona.** As tabelas largas mantêm rolagem interna e podem ser acessadas pelo teclado, sem exibir uma mensagem adicional instruindo o usuário a deslizar para ver outras colunas.
+
+**Detalhes técnicos.** `src/ui/rolagem-horizontal.tsx` mantém a região com `overflow-auto`, rótulo acessível e foco por teclado. A medição do excesso de largura e a dica visual foram removidas. A mudança é apenas de interface e não altera dados ou permissões.
+
 ### I1. Textos maiores em todo o sistema
 
 **Como funciona.** Os textos ficam 20% maiores em relação à escala original para facilitar a leitura, conforme
@@ -83,6 +89,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-03 | este commit | Remover a dica “Deslize para ver as demais colunas” das tabelas com rolagem horizontal |
 | 2026-11-03 | este commit | Alinhar conteúdo do painel à margem interna em telas largas |
 | 2026-10-29 | este commit | Carregar Raleway e Montserrat por arquivos locais para remover a dependência de fontes remotas no build ([análise](../analises/falha-build-fontes-nextjs.md)) |
 | 2026-10-27 | este commit | Documentar fluxos e decisões do código em português do Brasil ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |

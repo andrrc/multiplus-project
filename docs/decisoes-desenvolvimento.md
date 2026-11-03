@@ -9,6 +9,7 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 | Data | Módulo | Alteração | Commit |
 |---|---|---|---|
+| 2026-11-03 | [Interface](funcionalidades/interface.md), [Clientes](funcionalidades/clientes.md), [Projetos](funcionalidades/projetos.md), [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Remover a dica “Deslize para ver as demais colunas” das tabelas com rolagem horizontal | este commit |
 | 2026-11-03 | [Tarefas](funcionalidades/tarefas.md), [Subtarefas](funcionalidades/subtarefas.md) | Exportar as listas filtradas em PDF com a identidade visual da Agenda, preservando filtros, semáforos, data exata e paginação ([análise](analises/exportacao-pdf-tarefas-subtarefas.md)) | este commit |
 | 2026-11-03 | [Interface](funcionalidades/interface.md) | Alinhar o painel em telas largas | este commit |
 | 2026-11-03 | [Clientes](funcionalidades/clientes.md) | Compactar filtros e identificar o seletor de laudo | este commit |
