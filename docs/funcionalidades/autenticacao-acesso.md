@@ -34,7 +34,7 @@ acessar.
 
 **Detalhes técnicos.**
 - **Rota:** `/login`.
-- **Identificação:** a tela apresenta o nome “SGA Múltiplus Ambiental”.
+- **Identificação:** a tela apresenta o nome “Sistema de Gestão Múltiplus”, a marca e um painel institucional em telas largas. O formulário permite mostrar ou ocultar a senha e mantém o acesso à recuperação de senha.
 - **Funções:** `autenticarComCredenciais` (`src/server/auth/credentials.ts`) e Auth.js,
   com sessão JWT (`src/server/auth/config.ts`).
 - **Senha:** hash com bcrypt (`src/lib/senha.ts`).
@@ -148,6 +148,7 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Adaptar a tela de login à referência visual recebida |
 | 2026-11-03 | este commit | Corrigir espera por conexão ao revalidar sessão ([análise](../analises/erro-transacao-revalidacao-sessao.md)) |
 | 2026-10-30 | este commit | Corrigir concorrência de tokens, revogar sessões, compartilhar limites e reforçar CSP e conexão RLS ([análise](../analises/correcoes-auditoria-seguranca-autenticacao.md)) |
 | 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
