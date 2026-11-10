@@ -26,7 +26,7 @@ O ambiente local usa Node.js para o servidor Next.js e Docker Compose para Postg
 
 **Como funciona.** Os testes usam bancos locais separados para integração e navegador. Antes de preparar ou limpar dados, a execução recusa configurações inseguras. As jornadas no navegador usam contas fictícias e verificam convite, login e listagem responsiva.
 
-**Detalhes técnicos.** `tests/integration/setup/banco-teste-seguro.ts` valida URLs locais, nomes e roles; o setup confirma banco, servidor e roles efetivos. `npm run test:browser` usa `multiplus_test_e2e`, Chromium e trava no PostgreSQL para impedir execuções simultâneas no mesmo banco. O servidor e a compilação são separados do desenvolvimento. `tests/unit/banco-teste-seguro.unit.test.ts`, `banco-teste-setup.unit.test.ts` e `tests/browser/jornadas.spec.ts` cobrem as proteções e jornadas. Instalar com `npx playwright install chromium`; o CI também executa os testes de navegador.
+**Detalhes técnicos.** `tests/integration/setup/banco-teste-seguro.ts` valida URLs locais, nomes e roles; o setup confirma banco, servidor e roles efetivos. `npm run test:browser` usa `multiplus_test_e2e`, Chromium e trava no PostgreSQL para impedir execuções simultâneas no mesmo banco. O servidor e a compilação são separados do desenvolvimento. O indicador de desenvolvimento do Next.js é ocultado apenas neste servidor, para não interceptar os cliques da jornada; erros continuam visíveis. `tests/unit/banco-teste-seguro.unit.test.ts`, `banco-teste-setup.unit.test.ts` e `tests/browser/jornadas.spec.ts` cobrem as proteções e jornadas. Instalar com `npx playwright install chromium`; o CI também executa os testes de navegador.
 
 ## Limitações e pendências conhecidas
 
@@ -38,6 +38,7 @@ O ambiente local usa Node.js para o servidor Next.js e Docker Compose para Postg
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Evitar interceptação de cliques pelo indicador do Next.js nas jornadas ([análise](../analises/indicador-dev-jornadas-navegador.md)) |
 | 2026-10-29 | este commit | Proteger bancos de teste e ampliar verificações de acesso e navegador ([análise](../analises/seguranca-e-cobertura-de-testes.md)) |
 | 2026-10-29 | este commit | Apontar o MinIO local para o mesmo digest acessível no Docker Hub e documentar sincronização da senha local ([análise](../analises/auditoria-acesso-local.md)) |
 | 2026-10-29 | cecf416 | Adicionar auditoria local de acesso e Docker, somente de leitura ([análise](../analises/auditoria-acesso-local.md)) |

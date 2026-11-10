@@ -118,3 +118,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 | 2026-09-09 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Sprint 1: infraestrutura, login e RLS base | `c016fe4` |
 
 - 2026-11-10: Atualizada a apresentação do login conforme referência visual; veja [Autenticação e acesso](funcionalidades/autenticacao-acesso.md).
+- 2026-11-10: Indicador de desenvolvimento isolado dos testes; veja [Desenvolvimento local](funcionalidades/desenvolvimento-local.md).
