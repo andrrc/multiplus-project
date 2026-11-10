@@ -19,6 +19,7 @@ mesmo commit da alteração.
 |---|---|---|
 | Leitura e manutenção do código | [guia técnico](../codigo/README.md) | Documentado; migrations históricas explicadas em [migrations.md](../codigo/migrations.md) |
 | Desenvolvimento local | [`desenvolvimento-local.md`](desenvolvimento-local.md) | Diagnóstico local somente de leitura |
+| Deploy de ambientes | [deploy.md](deploy.md) | Documentado |
 | Interface e legibilidade | [interface.md](interface.md) | Documentado |
 | Clientes e pessoas envolvidas | [`clientes.md`](clientes.md) | Documentado |
 | Projetos | [`projetos.md`](projetos.md) | Documentado |

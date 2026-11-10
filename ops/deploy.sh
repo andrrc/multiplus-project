@@ -59,7 +59,7 @@ done
 compose config --quiet || die "docker-compose.yml inválido ou variáveis ausentes"
 
 if [[ "${PROXY_MODE:-standalone}" == "external" ]]; then
-  docker network inspect somma_default >/dev/null 2>&1 || die "rede Docker externa somma_default não existe"
+  docker network inspect caddy_proxy >/dev/null 2>&1 || die "rede Docker externa caddy_proxy não existe"
 else
   conflitos="$(docker ps --format '{{.Names}} {{.Ports}}' | grep -E '0\.0\.0\.0:(80|443)->|\[::\]:(80|443)->' | grep -v '^multiplus-' || true)"
   [[ -z "$conflitos" ]] || die "80/443 já estão publicados por outro container:\n$conflitos"

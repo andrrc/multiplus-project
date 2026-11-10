@@ -119,3 +119,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 
 - 2026-11-10: Atualizada a apresentação do login conforme referência visual; veja [Autenticação e acesso](funcionalidades/autenticacao-acesso.md).
 - 2026-11-10: Indicador de desenvolvimento isolado dos testes; veja [Desenvolvimento local](funcionalidades/desenvolvimento-local.md).
+- 2026-11-10: Alinhada a verificação da rede do proxy no deploy; veja [Deploy](funcionalidades/deploy.md).

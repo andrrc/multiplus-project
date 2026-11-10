@@ -6,7 +6,7 @@ Postgres em `127.0.0.1:5434` e MinIO em loopback.
 
 Quando já existir um Caddy compartilhado, defina `PROXY_MODE=external` no `.env`. O
 `docker-compose.proxy.yml` não sobe outro Caddy nem publica portas: conecta somente o
-container `app` à rede externa `somma_default`, onde o proxy deve usar o alias
+container `app` à rede externa `caddy_proxy`, onde o proxy deve usar o alias
 `multiplus-app`.
 
 ## Primeiro deploy
