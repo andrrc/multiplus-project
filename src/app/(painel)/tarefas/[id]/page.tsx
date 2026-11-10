@@ -56,7 +56,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
 
   return (
-    <div className="w-full max-w-[980px]">
+    <div className="w-full max-w-[1280px]">
       <Link href={`/projetos/${t.projetoId}`} className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">
         ← {t.projeto.nome}
       </Link>
@@ -73,9 +73,9 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
         <div className="flex flex-wrap gap-2">
           {t.ativo ? <StatusInline status={t.status} label={statuses[t.status]} opcoes={Object.entries(statuses).map(([valor, label]) => ({ valor, label }))} action={alterarStatusTarefaAction.bind(null, id)} /> : <Etiqueta tom="apagado">Desativada</Etiqueta>}
           {t.ativo ? <>
-            <Link href={`/tarefas/${id}/editar`} className="rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
-            {t.status !== "CONCLUIDO" && <form action={concluirTarefaAction.bind(null, id)}><button className="rounded-[3px] bg-verde px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta">Marcar como concluída</button></form>}
-            <form action={excluirTarefaAction.bind(null, id)}><button className="rounded-[3px] border border-critico px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-critico hover:bg-critico-cl">Excluir tarefa</button></form>
+            <Link href={`/tarefas/${id}/editar`} className="inline-flex min-h-11 items-center rounded-[6px] border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
+            {t.status !== "CONCLUIDO" && <form action={concluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-[6px] bg-tinta px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2">Marcar como concluída</button></form>}
+            <form action={excluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-[6px] border border-critico px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-critico hover:bg-critico-cl">Excluir tarefa</button></form>
           </> : <form action={definirAtivoTarefaFormAction.bind(null, id, true)}><button className="rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-verde">Reativar tarefa</button></form>}
         </div>
       </div>
@@ -103,7 +103,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                 <p className="text-[14px] leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
                 <p className="mt-2 text-[12px] text-cinza">Criado por: {s.criadoPorNome ?? "Registro anterior"} · {dataHora(s.criadoEm)}</p>
                 <EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} />
-                {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="mt-3 inline-flex min-h-9 items-center rounded-[3px] border border-linha bg-branco px-3 text-[13px] font-medium hover:border-azul hover:text-azul-esc">Editar subtarefa</Link>}
+                {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="mt-3 inline-flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-3 text-[13px] font-medium hover:border-azul hover:text-azul-esc">Editar subtarefa</Link>}
                 {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-[12px] font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className="min-h-11 rounded-[3px] border border-linha bg-branco px-3 text-[13px] hover:border-azul">Salvar responsável</button></form>}
                 {t.ativo && s.ativo && <div className="mt-3"><StatusInline status={s.status} label={statusSubtarefa[s.status]} opcoes={Object.values(StatusSubtarefa).map(valor => ({ valor, label: statusSubtarefa[valor] }))} action={atualizarStatusSubtarefaAction.bind(null, s.id)} alinhar="esquerda" /></div>}
                 {t.ativo && s.ativo && <Comentarios alvo={{ subtarefaId: s.id }} nivel="subtarefa" entidadeId={s.id} tarefaId={t.id} />}
@@ -112,7 +112,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           ))}
         </div>
 
-        {t.ativo && <Link href={`/tarefas/${id}/subtarefas/nova`} className="mt-4 inline-flex rounded-[3px] bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">+ Nova subtarefa</Link>}
+        {t.ativo && <Link href={`/tarefas/${id}/subtarefas/nova`} className="mt-4 inline-flex min-h-11 items-center rounded-[6px] bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">+ Nova subtarefa</Link>}
       </section>
 
       <Comentarios alvo={{ tarefaId: t.id }} nivel="tarefa" entidadeId={t.id} />

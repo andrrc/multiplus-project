@@ -118,5 +118,15 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 | 2026-09-09 | [Autenticação](funcionalidades/autenticacao-acesso.md) | Sprint 1: infraestrutura, login e RLS base | `c016fe4` |
 
 - 2026-11-10: Atualizada a apresentação do login conforme referência visual; veja [Autenticação e acesso](funcionalidades/autenticacao-acesso.md).
+- 2026-11-10: Reproduzidos os detalhes da referência visual do login; veja [Autenticação e acesso](funcionalidades/autenticacao-acesso.md).
+- 2026-11-10: Tipografia compartilhada adaptada aos modelos; veja [Interface](funcionalidades/interface.md).
 - 2026-11-10: Indicador de desenvolvimento isolado dos testes; veja [Desenvolvimento local](funcionalidades/desenvolvimento-local.md).
+- 2026-11-10: Iniciada a adaptação visual de subtarefas; veja [Subtarefas](funcionalidades/subtarefas.md).
+- 2026-11-10: Iniciada a adaptação visual da listagem; veja [Projetos](funcionalidades/projetos.md).
+- 2026-11-10: Iniciada a adaptação visual da listagem; veja [Tarefas](funcionalidades/tarefas.md).
+- 2026-11-10: Iniciada a adaptação visual da listagem; veja [Clientes](funcionalidades/clientes.md).
+- 2026-11-10: Iniciada a adaptação visual da listagem; veja [Usuários](funcionalidades/usuarios.md).
 - 2026-11-10: Alinhada a verificação da rede do proxy no deploy; veja [Deploy](funcionalidades/deploy.md).
+- 2026-11-10: Iniciada a adaptação visual da agenda; veja [Agenda](funcionalidades/agenda.md).
+- 2026-11-10: Iniciada a adaptação visual de avisos; veja [Notificações](funcionalidades/notificacoes.md).
+- 2026-11-10: Iniciada a adaptação visual do portal; veja [Área exclusiva](funcionalidades/area-exclusiva-cliente.md).

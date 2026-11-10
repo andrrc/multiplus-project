@@ -1,0 +1,126 @@
+.login-reference {
+
+  &{
+    --navy:#0B2530;
+    --navy-ink:#0E3240;
+    --blue:#0A8FE0;
+    --blue-dark:#0776BA;
+    --green:#14A85A;
+    --bg:#F4F7F8;
+    --surface:#FFFFFF;
+    --line:#D5DEE2;
+    --muted:#5B6F78;
+    --error:#B42318;
+    --error-bg:#FDF0EF;
+    --warn:#8A5A00;
+    --radius:6px;
+  }
+  *, *::before, *::after {box-sizing:border-box;margin:0;padding:0}
+  &{
+    font-family:var(--font-sistema),system-ui,-apple-system,"Segoe UI",sans-serif; font-size:16px; line-height:normal;
+    color:var(--navy-ink);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{display:grid;grid-template-columns:minmax(380px,44%) 1fr;min-height:100vh}
+
+  /* Painel com foto */
+  .panel{
+    position:relative;overflow:hidden;color:#fff;
+    background:var(--navy) url("/login-painel.jpg") center/cover no-repeat;
+    display:flex;flex-direction:column;justify-content:flex-end;gap:56px;
+    padding:48px 52px 44px;
+  }
+  .panel::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(11,37,48,.86) 0%,rgba(11,37,48,.72) 45%,rgba(11,37,48,.94) 100%);
+  }
+  .panel > *{position:relative}
+  .panel-text{max-width:400px}
+  .panel-text .rule{width:40px;height:3px;background:var(--green);margin-bottom:20px}
+  .panel-text h2{font-family:inherit;font-size:26px;line-height:1.3;font-weight:500;letter-spacing:-.01em}
+  .panel-text p{margin-top:14px;font-size:15px;line-height:1.6;color:rgba(255,255,255,.78)}
+
+  .support{border-top:1px solid rgba(255,255,255,.18);padding-top:22px;font-size:14px;line-height:1.55}
+  .support h3{font-family:inherit;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.62);margin-bottom:10px}
+  .support ul{list-style:none;display:grid;gap:6px}
+  .support li{display:flex;gap:10px;align-items:center}
+  .support svg{flex:none;width:16px;height:16px;stroke:rgba(255,255,255,.7)}
+  .support .placeholder{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35)}
+  .support a:hover{border-bottom-color:#fff}
+  .support .hours{color:rgba(255,255,255,.62);margin-top:10px;font-size:13px}
+
+  /* Área do formulário */
+  .main{display:flex;flex-direction:column;min-height:100vh}
+  .form-area{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px}
+  .form-box{width:100%;max-width:440px}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+  .brand{display:block;width:280px;height:auto;margin:0 auto 40px}
+  h1{font-family:inherit;font-size:25px;line-height:1.3;font-weight:600;letter-spacing:.045em;text-transform:uppercase;text-align:center}
+  .lead{margin-top:8px;font-size:15px;color:var(--muted);text-align:center}
+
+  form{margin-top:32px;display:grid;gap:20px}
+  .field label{display:block;font-size:14px;font-weight:500;margin-bottom:6px}
+  .row-label{display:flex;justify-content:space-between;align-items:baseline}
+  .row-label a{font-size:13px}
+  .input-wrap{position:relative}
+  input[type=email],input[type=password],input[type=text]{
+    width:100%;height:46px;padding:0 14px;font:inherit;font-size:15px;color:var(--navy-ink);
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input::placeholder{color:#9AAAB1}
+  input:hover{border-color:#B8C6CC}
+  input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,143,224,.18)}
+  .has-toggle input{padding-right:84px}
+  .toggle{
+    position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    height:34px;padding:0 10px;border:0;background:transparent;border-radius:4px;
+    font:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+  }
+  .toggle:hover{color:var(--navy-ink);background:#EEF3F5}
+  .toggle:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+  .toggle svg{width:18px;height:18px}
+  .caps{display:none;margin-top:6px;font-size:13px;color:var(--warn)}
+  .caps.show{display:block}
+
+  .alert{padding:12px 14px;border-radius:var(--radius);background:var(--error-bg);border:1px solid #F3C9C5;color:var(--error);font-size:14px;line-height:1.45}
+  .alert.show{display:block}
+
+  .btn{
+    height:48px;border:0;border-radius:var(--radius);cursor:pointer;
+    background:var(--navy);color:#fff;font:inherit;font-size:15px;font-weight:600;letter-spacing:.01em;
+    transition:background .15s;
+  }
+  .btn:hover{background:#12384A}
+  .btn:focus-visible{outline:3px solid rgba(10,143,224,.45);outline-offset:2px}
+  .btn[disabled]{opacity:.7;cursor:progress}
+
+  a{color:var(--blue-dark);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .footer{
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:18px 32px;border-top:1px solid #E3E9EC;font-size:13px;color:var(--muted);
+  }
+  .footer nav{display:flex;gap:20px}
+  .footer a{color:var(--muted)}
+  .footer a:hover{color:var(--navy-ink)}
+
+  .mobile-support{display:none;text-align:center;margin-top:36px;padding-top:20px;border-top:1px solid #E3E9EC;font-size:14px;color:var(--muted);line-height:1.6}
+
+  /* Telas estreitas: o painel vira uma faixa no topo e o suporte desce para depois do formulário */
+  @media (max-width:880px){
+    .page{grid-template-columns:1fr}
+    .panel{display:none}
+    .brand{width:220px;margin-bottom:28px}
+    h1{font-family:inherit;font-size:21px}
+    .form-area{padding:36px 20px;align-items:flex-start}
+    .mobile-support{display:block}
+    .footer{padding:16px 20px}
+  }
+  .mobile-support .placeholder{color:var(--blue-dark)}
+  .mobile-support strong{color:var(--navy-ink);font-weight:600}
+
+}

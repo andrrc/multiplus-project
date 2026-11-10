@@ -42,7 +42,7 @@ function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }
       >
         <button
           type="submit"
-          className="font-[family-name:var(--font-interface)] text-[12px] font-medium text-menu-inativo hover:text-branco"
+          className="min-h-11 font-[family-name:var(--font-interface)] text-[12px] font-medium text-menu-inativo hover:text-branco"
         >
           Sair
         </button>
@@ -64,28 +64,23 @@ export default async function PainelLayout({ children }: { children: React.React
         usuario={<BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />}
       />
 
-      <aside className="relative hidden w-[250px] shrink-0 flex-col bg-tinta lg:flex">
-        <div
-          className="absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: "linear-gradient(112deg, #0499f3 0%, #1ebd1f 130%)" }}
-        />
-
-        <div className="px-6 pt-9 pb-8">
+      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col bg-tinta lg:flex">
+        <div className="px-6 pt-[26px] pb-[22px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-multiplus.png" alt="Múltiplus" width={186} height={51} />
+          <img src="/logo-multiplus.png" alt="Múltiplus" width={172} height={47} />
         </div>
 
-        <nav className="flex flex-col gap-0.5 px-3">
+        <nav className="flex flex-1 flex-col overflow-y-auto px-3 pb-4">
           <Navegacao perfil={ctx.perfil} naoLidas={naoLidas} />
         </nav>
 
-        <div className="mt-auto border-t border-[color:var(--tinta2)] px-6 py-5">
+        <div className="border-t border-tinta2 px-4 py-3">
           <BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />
         </div>
       </aside>
 
-      <main className="flex-1 overflow-x-hidden bg-papel px-5 pt-8 pb-12 sm:px-8 lg:px-16 lg:pt-[52px] lg:pb-16">
-        <div className="max-w-[1420px]">{children}</div>
+      <main className="min-w-0 flex-1 overflow-x-hidden bg-papel px-4 pt-5 pb-12 sm:px-8 lg:pt-8 lg:pb-16">
+        <div className="max-w-[1280px]">{children}</div>
       </main>
       {ctx.perfil !== "CLIENTE" && <ToastNotifications
         usuarioId={ctx.usuarioId}

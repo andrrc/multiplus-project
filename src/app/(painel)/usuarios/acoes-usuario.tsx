@@ -14,7 +14,7 @@ import {
 } from "./actions";
 
 const linkAcao =
-  "inline-flex min-h-6 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline disabled:opacity-60";
+  "inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline disabled:opacity-60";
 
 function Retorno({ estado }: { estado: EstadoAcaoUsuario | null }) {
   if (!estado?.erro && !estado?.mensagem) return null;
@@ -213,7 +213,7 @@ export function BotaoGerarLinkConvite({ usuarioId }: { usuarioId: string }) {
                     <button
                       type="button"
                       onClick={copiar}
-                      className="min-h-10 bg-verde px-4 font-[family-name:var(--font-interface)] text-[13.5px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco"
+                      className="min-h-11 bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13.5px] font-semibold text-branco hover:bg-tinta2"
                     >
                       {copiado ? "Link copiado" : "Copiar link"}
                     </button>

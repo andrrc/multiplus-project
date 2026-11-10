@@ -113,7 +113,7 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
         <button
           type="submit"
           disabled={pendente}
-          className="rounded-[3px] bg-verde px-4 py-2 text-[14px] font-medium text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar"}
         </button>
@@ -159,7 +159,7 @@ export function FormularioDocumento({ clienteId }: { clienteId: string }) {
         <button
           type="submit"
           disabled={pendente}
-          className="rounded-[3px] bg-verde px-4 py-2 text-[14px] font-medium text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar"}
         </button>
@@ -316,7 +316,7 @@ export function BotaoReenviarConviteCliente({
               type="button"
               disabled={pendente}
               onClick={reenviar}
-              className="min-h-11 rounded-[3px] bg-verde px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+              className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
             >
               {pendente ? "Reenviando…" : "Confirmar reenvio"}
             </button>

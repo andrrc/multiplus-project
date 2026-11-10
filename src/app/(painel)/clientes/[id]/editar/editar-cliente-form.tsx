@@ -354,7 +354,7 @@ export function EditarClienteForm({
         <button
           type="submit"
           disabled={enviando}
-          className="rounded-[3px] bg-verde px-6 py-3 font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-[6px] bg-tinta px-6 py-3 font-[family-name:var(--font-interface)] text-[15px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {enviando ? "Salvando…" : "Salvar alterações"}
         </button>

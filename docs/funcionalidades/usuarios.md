@@ -29,6 +29,9 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 
 ## Funcionalidades
 
+A listagem administrativa e os formulários de perfil estão em adaptação visual aos modelos da Múltiplus, mantendo dados, filtros e ações existentes.
+
+
 ### U1. Listar usuários (RF-040)
 
 **Como funciona.**
@@ -131,6 +134,7 @@ criados pela ficha do cliente (ver `clientes.md`) e não aparecem aqui.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual da listagem de usuários |
 | 2026-10-27 | este commit | Ocultar “Minhas atribuições” do perfil CLIENTE; o acesso do cliente continua pelo portal |
 | 2026-10-27 | este commit | Explicar perfis, atribuições, convites e manutenção de usuários no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-09-16 | `1169d46` | Sprint 3: usuários, atribuições, convites, desativação e Meu Perfil |

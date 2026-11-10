@@ -38,6 +38,12 @@ Administradora continua vendo tudo.
 
 ## Funcionalidades
 
+As listas de tarefas atribuídas e os detalhes administrativos receberam ajustes de apresentação, sem mudança de consultas ou regras. Na tabela administrativa, o progresso de subtarefas aparece junto à tarefa quando o filtro de responsável está ativo, mantendo a mesma contagem no cartão móvel.
+
+
+A listagem administrativa de tarefas está em adaptação visual aos modelos da Múltiplus, mantendo filtros, dados e links existentes.
+
+
 ### T1. Criar tarefa
 
 **Como funciona.**
@@ -305,6 +311,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual da listagem de tarefas |
 | 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
 | 2026-11-03 | este commit | Exportar a lista filtrada de `/tarefas` em PDF com a identidade visual aprovada, paginação e data exata dos prazos ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |

@@ -43,7 +43,7 @@ export async function SecaoLaudo({ ctx, clienteId, clienteAtivo, busca, desativa
         </div>
         <details className="group relative">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-[3px] border border-linha px-3 text-[14px] hover:bg-papel [&::-webkit-details-marker]:hidden"><IconFilter size={18} aria-hidden="true" />Filtros{mostrar && <span className="h-2 w-2 rounded-full bg-azul-esc" aria-label="Filtro ativo" />}</summary>
-          <div className="absolute right-0 z-10 mt-2 w-60 rounded-[3px] border border-linha bg-branco p-3 shadow-lg"><label className="flex min-h-11 items-center gap-2 text-[14px]"><input type="checkbox" name="laudoDesativados" value="1" defaultChecked={mostrar} className="h-4 w-4 accent-verde" />Mostrar desativados</label><button className="mt-2 min-h-11 w-full rounded-[3px] bg-verde px-3 text-[14px] font-semibold text-tinta">Aplicar filtros</button></div>
+          <div className="absolute right-0 z-10 mt-2 w-60 rounded-[3px] border border-linha bg-branco p-3 shadow-lg"><label className="flex min-h-11 items-center gap-2 text-[14px]"><input type="checkbox" name="laudoDesativados" value="1" defaultChecked={mostrar} className="h-4 w-4 accent-verde" />Mostrar desativados</label><button className="mt-2 min-h-11 w-full rounded-[6px] bg-tinta px-3 text-[14px] font-semibold text-branco">Aplicar filtros</button></div>
         </details>
       </form>}
       {visivel && <>

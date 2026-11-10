@@ -37,7 +37,7 @@ export default async function NovaTarefaPage({ params }: { params: Promise<{ id:
         </div>
         <div className="grid gap-4 sm:grid-cols-2"><CamposRecorrencia /></div>
       </SecaoNumerada>
-      <div className="flex gap-3"><button className="min-h-11 rounded-[3px] bg-verde px-5 text-[14px] font-semibold text-tinta">Criar tarefa</button><a href={`/projetos/${id}`} className="flex min-h-11 items-center rounded-[3px] border border-linha px-5 text-[14px]">Cancelar</a></div>
+      <div className="flex gap-3"><button className="min-h-11 rounded-[6px] bg-tinta px-5 text-[14px] font-semibold text-branco">Criar tarefa</button><a href={`/projetos/${id}`} className="flex min-h-11 items-center rounded-[3px] border border-linha px-5 text-[14px]">Cancelar</a></div>
     </form>
   </div>;
 }

@@ -8,13 +8,25 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 | Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
-| Usar a escala ampliada nas telas acessíveis | Sim | Sim | Sim | Sim |
+| Usar a interface nas telas acessíveis | Sim | Sim | Sim | Sim |
 
 ## Funcionalidades
 
+### Navegação e identidade dos modelos
+
+**Como funciona.** O menu organiza os acessos disponíveis em grupos e usa ícones,
+com a caixa de avisos identificada como Avisos. No celular o menu é aberto pelo
+botão superior; as mesmas opções continuam disponíveis conforme o perfil.
+
+**Detalhes técnicos.** `navegacao-painel.tsx` organiza visualmente os itens retornados
+por `menuDoPerfil`, sem alterar a matriz de permissões ou as rotas. O layout e
+`nav-link.tsx` aplicam a estrutura compartilhada. A paleta de tokens e a tipografia
+são descritas na [identidade visual](../Identidade_Visual_Multiplus.md); a adaptação
+das telas individuais ainda está em andamento.
+
 ### Alinhamento do painel em telas largas
 
-**Como funciona.** O conteúdo do painel começa junto à margem interna ao lado do menu, mesmo em monitores largos, mantendo a largura máxima de 1420 px.
+**Como funciona.** O conteúdo do painel começa junto à margem interna ao lado do menu, mesmo em monitores largos, mantendo a largura máxima de 1280 px.
 
 **Detalhes técnicos.** O layout compartilhado em `src/app/(painel)/layout.tsx` alinha à esquerda o conteúdo das páginas do painel. Não altera permissões ou dados.
 
@@ -24,47 +36,26 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 **Detalhes técnicos.** `src/ui/rolagem-horizontal.tsx` mantém a região com `overflow-auto`, rótulo acessível e foco por teclado. A medição do excesso de largura e a dica visual foram removidas. A mudança é apenas de interface e não altera dados ou permissões.
 
-### I1. Textos maiores em todo o sistema
+### I1. Escala de texto
 
-**Como funciona.** Os textos ficam 20% maiores em relação à escala original para facilitar a leitura, conforme
-relato da Talita. Inclui menus, títulos, campos, botões, tabelas, legendas e mensagens.
-As fontes e a hierarquia visual são preservadas.
+**Como funciona.** A interface usa a escala dos modelos da Múltiplus, com texto-base de
+14 px e controles que mantêm área mínima de toque. O zoom e o tamanho de texto
+configurados no navegador continuam disponíveis.
 
-**Detalhes técnicos.** Ajuste exclusivamente visual, sem novo RF, regra ou permissão.
-A escala em `src/app/globals.css` cobre os tamanhos explícitos usados em `src/app`
-e `src/ui`, incluindo títulos com variante `sm:`. Os valores usam `rem`, respeitando
-a preferência de fonte do navegador. O texto herdado do body passa de 17 para
-20,4 px na configuração padrão. Espaçamentos e breakpoints são preservados.
-Referência: [identidade visual](../Identidade_Visual_Multiplus.md).
-Verificação: suíte existente e inspeção do login no navegador em desktop e
-em uma área de renderização de 375 px. Nenhum teste automatizado foi criado
-ou alterado para esta mudança de estilo.
+**Detalhes técnicos.** `src/app/globals.css` define o texto-base em `rem`; as classes
+utilitárias especificam os demais tamanhos. A escala ampliada anteriormente foi
+substituída para acompanhar as referências aprovadas de 2026-11-10.
 
-### I2. Fontes por papel visual
+### I2. Tipografia compartilhada
 
-**Como funciona.** Raleway nos títulos, menus, botões, tabelas, campos e etiquetas;
-Montserrat nos parágrafos, descrições e textos de apoio; Droid Serif nos dígitos
-de 0 a 9. Isso também vale para números dentro de textos, identificadores,
-telefones, datas, valores monetários e percentuais. Letras e pontuação mantêm
-a família do contexto. Os tamanhos ampliados em 20% continuam valendo.
+**Como funciona.** As telas usam IBM Plex Sans em textos, campos, botões e números,
+conforme os modelos de referência da Múltiplus. A migração visual das telas segue
+por etapas; a escala de tamanhos existente permanece até cada tela ser adaptada.
 
-**Detalhes técnicos.** Configuração compartilhada em src/app/layout.tsx e
-src/app/globals.css. Os tokens de interface e leitura combinam Droid Serif
-antes de Raleway ou Montserrat. A faixa unicode-range U+0030-0039 restringe
-Droid Serif aos algarismos, sem alterar textos, dados ou elementos do DOM.
-Raleway e Montserrat usam next/font/local com arquivos WOFF2 variáveis Latin e
-licenças SIL Open Font em src/app/fonts; isso evita buscar as fontes no Google
-durante o build, preservando os pesos 400, 500, 600 e 700. Droid Serif usa
-next/font/local, com arquivos originais e licença em src/app/fonts/droid-serif.
-A fonte numérica não cria fallback próprio que possa capturar letras. Controles,
-rótulos e tabelas usam a fonte de interface na camada base do CSS; componentes
-preservam seus papéis explícitos. Não há mudança de permissão, dados, máscara ou regra.
-
-Verificação: login em desktop e 375 px; amostra em 375 px com título, parágrafo,
-valor, percentual, data, campo e botão, usando o CSS real do sistema. Metadados
-das fontes confirmam largura igual para os dez dígitos em ambos os pesos.
-O build de produção confirma a faixa Unicode numérica nos pesos 400 e 700.
-Nenhum teste automatizado foi criado ou alterado para esta mudança visual.
+**Detalhes técnicos.** `src/app/layout.tsx` carrega os arquivos locais com
+`next/font/local`; os tokens de interface e leitura em `src/app/globals.css`
+utilizam a mesma família. Arquivos e licença estão em `src/app/fonts/ibm-plex-sans`.
+Não há mudança de dados ou permissões.
 
 ### I3. Dependência do framework atualizada por segurança
 
@@ -82,13 +73,14 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 ## Limitações e pendências conhecidas
 
 - Telas internas precisam de conferência visual com sessão autenticada.
-- Novos tamanhos explícitos ou variantes responsivas precisam entrar na escala global.
+- As telas individuais ainda precisam ser conferidas após a mudança da escala compartilhada.
 - E-mails e materiais impressos usam suas próprias escalas.
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação da identidade visual pela tipografia compartilhada |
 | 2026-11-03 | este commit | Remover a dica “Deslize para ver as demais colunas” das tabelas com rolagem horizontal |
 | 2026-11-03 | este commit | Alinhar conteúdo do painel à margem interna em telas largas |
 | 2026-10-29 | este commit | Carregar Raleway e Montserrat por arquivos locais para remover a dependência de fontes remotas no build ([análise](../analises/falha-build-fontes-nextjs.md)) |

@@ -25,6 +25,7 @@ test.beforeAll(async () => {
   const projeto = await db.projeto.create({ data: { clienteId, nome: "Projeto teste" } });
   const tarefa = await db.tarefa.create({ data: { projetoId: projeto.id, nome: "Tarefa teste" } });
   await db.subtarefa.create({ data: { tarefaId: tarefa.id, titulo: "Subtarefa teste do navegador" } });
+  await db.tarefa.create({ data: { projetoId: projeto.id, nome: "Prazo de exemplo", prazo: new Date("2026-11-10T00:00:00.000Z") } });
 });
 
 test.afterAll(async () => {
@@ -48,7 +49,7 @@ test("CSP entrega nonce diferente por requisição e permite hidratação", asyn
   expect(erros).toEqual([]);
 });
 
-test("convite, login e lista responsiva mantêm a rolagem da tabela", async ({ page }) => {
+test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", async ({ page }) => {
   await page.goto(`/definir-senha?token=${token}`);
   await page.getByLabel("Nova senha").fill(senha);
   await page.getByLabel("Confirmar senha").fill(senha);
@@ -68,15 +69,35 @@ test("convite, login e lista responsiva mantêm a rolagem da tabela", async ({ p
   const tabela = page.getByRole("region", { name: "Tabela de subtarefas" });
   const aviso = page.getByText("Deslize para ver as demais colunas");
   await expect(aviso).toHaveCount(0);
-  const antes = await tabela.boundingBox();
-  await tabela.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
-  await expect.poll(() => tabela.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+  await expect.poll(() => tabela.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expect(tabela.getByRole("columnheader", { name: "Status" })).toBeVisible();
   await expect(aviso).toHaveCount(0);
-  const depois = await tabela.boundingBox();
-  expect(depois?.y).toBe(antes?.y);
 
+  for (const [rota, rotulo] of [["/projetos", "Tabela de projetos"], ["/tarefas", "Tabela de tarefas"]] as const) {
+    await page.goto(rota);
+    const lista = page.getByRole("region", { name: rotulo });
+    await expect(lista).toBeVisible();
+    await expect.poll(() => lista.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await expect(lista.getByRole("columnheader", { name: "Status" }).or(lista.getByRole("columnheader", { name: "Situação" }))).toBeVisible();
+  }
+  await page.goto("/clientes");
+  const clientes = page.getByRole("region", { name: "Tabela de clientes" });
+  await expect(clientes).toBeVisible();
+  await expect.poll(() => clientes.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expect(clientes.getByRole("columnheader", { name: "Cidade" })).toBeVisible();
+
+  await page.goto("/projetos");
+  await page.getByRole("link", { name: "Projeto teste", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Projeto teste", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Tarefa teste", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Tarefa teste", exact: true })).toBeVisible();
+
+  await page.goto("/subtarefas");
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole("link", { name: "Abrir subtarefa Subtarefa teste do navegador" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.goto("/agenda?mes=2026-11");
+  await expect(page.getByRole("link", { name: "Prazo de exemplo" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 
   await page.goto("/meu-perfil");

@@ -1,70 +1,40 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { inputClass } from "@/ui/campo";
+import { useActionState, useRef, useState } from "react";
 import { loginAction } from "./actions";
 
 export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
-  // useActionState integra o resultado da validação do servidor ao estado do formulário.
   const [erro, formAction, pendente] = useActionState(loginAction, undefined);
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+  const senhaRef = useRef<HTMLInputElement>(null);
 
   return (
     <form action={formAction} onSubmit={() => {
-      // Uma nova autenticação inicia um ciclo novo do resumo de notificações no painel.
       try {
         for (const chave of Object.keys(sessionStorage)) {
-          if (chave.startsWith("mplus-toast-resumo:") || chave.startsWith("mplus-central-visit:")) {
-            sessionStorage.removeItem(chave);
-          }
+          if (chave.startsWith("mplus-toast-resumo:") || chave.startsWith("mplus-central-visit:")) sessionStorage.removeItem(chave);
         }
-      } catch {
-        // O login continua funcional mesmo se o navegador bloquear sessionStorage.
-      }
-    }} className="flex flex-col gap-5">
-      {/* Leva o usuário ao recurso que tentou abrir antes de autenticar. */}
+      } catch { /* O login continua funcional sem acesso ao armazenamento. */ }
+    }}>
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">
-          E-mail
-        </label>
-        <input id="email" name="email" type="email" required autoComplete="email" placeholder="nome@empresa.com.br" className={inputClass} />
+      {erro && <div className="alert" role="alert">{erro}</div>}
+      <div className="field">
+        <label htmlFor="email">E-mail</label>
+        <input id="email" name="email" type="email" required autoComplete="username" placeholder="nome@empresa.com.br" />
       </div>
-
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between gap-3"><label htmlFor="senha" className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">
-          Senha
-        </label><a href="/esqueci-senha" className="text-[13px] text-azul-esc hover:underline">Esqueci minha senha</a></div>
-        <div className="relative">
-        <input
-          id="senha"
-          name="senha"
-          type={mostrarSenha ? "text" : "password"}
-          required
-          autoComplete="current-password"
-          className={`${inputClass} pr-24`}
-        />
-        <button type="button" aria-controls="senha" aria-pressed={mostrarSenha} onClick={() => setMostrarSenha(!mostrarSenha)} className="absolute right-1 top-0 min-h-11 px-3 text-[13px] text-cinza hover:text-tinta">{mostrarSenha ? "Ocultar" : "Mostrar"}</button>
+      <div className="field">
+        <div className="row-label"><label htmlFor="senha">Senha</label><a href="/esqueci-senha">Esqueci minha senha</a></div>
+        <div className="input-wrap has-toggle">
+          <input ref={senhaRef} id="senha" name="senha" type={mostrarSenha ? "text" : "password"} required autoComplete="current-password" onKeyDown={(e) => setCapsLock(e.getModifierState("CapsLock"))} onKeyUp={(e) => setCapsLock(e.getModifierState("CapsLock"))} onBlur={() => setCapsLock(false)} />
+          <button type="button" className="toggle" aria-controls="senha" aria-pressed={mostrarSenha} onClick={() => { setMostrarSenha(!mostrarSenha); senhaRef.current?.focus(); }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{mostrarSenha ? <><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.8 0 3.4-.5 4.8-1.3"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></> : <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></>}</svg>
+            <span>{mostrarSenha ? "Ocultar" : "Mostrar"}</span>
+          </button>
         </div>
+        <p className={`caps${capsLock ? " show" : ""}`}>A tecla Caps Lock está ativada.</p>
       </div>
-
-      {/* O servidor retorna uma mensagem genérica para não revelar se o e-mail existe. */}
-      {erro && (
-        <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-3.5 py-2.5 text-[14px] text-critico">
-          {erro}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={pendente}
-        className="mt-2 min-h-11 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
-      >
-        {/* O estado pendente impede envios repetidos durante a autenticação. */}
-        {pendente ? "Entrando…" : "Entrar"}
-      </button>
-
+      <button className="btn" type="submit" disabled={pendente}>{pendente ? "Entrando..." : "Entrar"}</button>
     </form>
   );
 }

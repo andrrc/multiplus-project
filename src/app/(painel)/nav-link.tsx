@@ -22,14 +22,15 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={`block border-l-[3px] pr-4 font-[family-name:var(--font-interface)] font-medium transition-colors ${
+      aria-current={ativo ? "page" : undefined}
+      className={`relative block min-h-11 rounded-[6px] pr-3 font-[family-name:var(--font-interface)] font-medium transition-colors ${
         nivel === "filho"
           ? "py-2 pl-7 text-[13px]"
-          : "py-2.5 pl-[13px] text-[14px]"
+          : "py-3 pl-3 text-[14px]"
       } ${
         ativo
-          ? "border-verde bg-menu-ativo text-branco"
-          : "border-transparent text-menu-inativo hover:bg-menu-hover hover:text-branco"
+          ? "bg-menu-ativo text-branco before:absolute before:inset-y-1.5 before:-left-3 before:w-[3px] before:rounded-r-[3px] before:bg-verde"
+          : "text-menu-inativo hover:bg-menu-hover hover:text-branco"
       }`}
     >
       {children}

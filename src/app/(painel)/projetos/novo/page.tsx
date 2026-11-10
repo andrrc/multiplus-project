@@ -39,7 +39,7 @@ export default async function NovoProjetoPage({
           <Campo label="Descrição"><textarea name="descricao" rows={4} className={inputClass} /></Campo>
         </SecaoNumerada>
         <SecaoNumerada numero="02" titulo="Prazo e status"><div className="grid gap-4 sm:grid-cols-3"><Campo label="Data de início"><input type="date" name="dataInicio" className={inputClass} /></Campo><Campo label="Conclusão prevista"><input type="date" name="dataPrevistaConclusao" className={inputClass} /></Campo><Campo label="Status"><select name="status" defaultValue="A_INICIAR" className={inputClass}><option value="A_INICIAR">A iniciar</option><option value="EM_ANDAMENTO">Em andamento</option><option value="CONCLUIDO">Concluído</option><option value="CANCELADO">Cancelado</option></select></Campo></div></SecaoNumerada>
-        <div className="flex flex-wrap gap-3"><button className="min-h-11 rounded-[3px] bg-verde px-5 text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">Criar projeto</button><a href="/projetos" className="flex min-h-11 items-center rounded-[3px] border border-linha px-5 text-[14px] hover:border-azul">Cancelar</a></div>
+        <div className="flex flex-wrap gap-3"><button className="min-h-11 rounded-[6px] bg-tinta px-5 text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco">Criar projeto</button><a href="/projetos" className="flex min-h-11 items-center rounded-[3px] border border-linha px-5 text-[14px] hover:border-azul">Cancelar</a></div>
       </form>
     </div>
   );

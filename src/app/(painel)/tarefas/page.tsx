@@ -42,12 +42,12 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
     listarResponsaveisParaFiltro(ctx, "tarefas", { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, pendentes: false }),
   ]);
 
-  return <div className="w-full max-w-[1120px]">
+  return <div className="w-full max-w-[1280px]">
     <div className="flex flex-wrap items-end justify-between gap-4">
-      <div><p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Operação</p><h1 className="mt-1 text-[28px]">Tarefas</h1><p className="mt-1.5 text-[15px] text-cinza">Acompanhe todas as tarefas ativas dos projetos.</p></div>
+      <h1 className="text-[24px]">Tarefas</h1>
       <div className="flex flex-wrap gap-2">
         <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-4 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
-        <Link href="/projetos" className="flex min-h-11 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">Ver projetos</Link>
+        <Link href="/projetos" className="flex min-h-11 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2">Ver projetos</Link>
       </div>
     </div>
     <FiltrosListagens
@@ -63,21 +63,18 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
       tarefaInicial={filtros.tarefa}
     />
     {responsavelInvalido && <p role="alert" className="mt-4 text-[14px] text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
-    {tarefas.length === 0 ? <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma tarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">Não há tarefas ativas ou os filtros não encontraram tarefas.</p></div> : <div className="mt-7">
-      <RolagemHorizontal className="hidden md:block" rotulo="Tabela de tarefas">
-      <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-left text-[14px]">
-        <thead><tr className="bg-tinta text-left text-branco"><th className="min-w-[200px] whitespace-nowrap rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Tarefa</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Responsável</th>{mostrarProgresso && <th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Subtarefas</th>}<th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo</th><th className="rounded-r-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th></tr></thead>
-        <tbody>{tarefas.map(tarefa => <tr key={tarefa.id} className="border-t border-linha bg-branco hover:bg-papel">
-          <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block whitespace-nowrap px-5 py-4 tabular-nums text-cinza">{codigoTarefa(tarefa.projeto.cliente.numeroIdentificacao, tarefa.projeto.numeroLocal, tarefa.numeroLocal)}</Link></td>
-          <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4 font-medium hover:text-azul-esc hover:underline">{tarefa.nome}{tarefa._count.subtarefas > 0 && <span className="ml-2 inline-block rounded-[2px] border border-ambar/30 bg-ambar/8 px-2 py-0.5 text-[11px] font-medium text-ambar">{tarefa._count.subtarefas} {tarefa._count.subtarefas === 1 ? "subtarefa aguarda" : "subtarefas aguardam"} atribuição</span>}</Link></td>
-          <td className="p-0"><Link href={`/projetos/${tarefa.projeto.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{tarefa.projeto.nome}</Link></td>
-          <td className="p-0"><Link href={`/clientes/${tarefa.projeto.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{tarefa.projeto.cliente.razaoSocial}</Link></td>
-          <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4 text-cinza">{tarefa.responsavel?.nome ?? tarefa.responsavelUsuario?.nome ?? "—"}</Link></td>
-          {mostrarProgresso && <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4"><ProgressoSubtarefas progresso={tarefa.progressoSubtarefas} /></Link></td>}
-          <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4"><IndicadorSemaforoProjeto prazo={tarefa.prazo} status={tarefa.status} ativo={tarefa.ativo} limites={limites} /></Link></td>
-          <td className="p-0"><Link href={`/tarefas/${tarefa.id}`} className="block px-5 py-4"><Etiqueta tom={tarefa.status === "CONCLUIDO" ? "positivo" : undefined}>{status[tarefa.status]}</Etiqueta></Link></td>
-        </tr>)}</tbody>
-      </table>
+    {tarefas.length === 0 ? <div className="mt-8 rounded-[6px] border border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma tarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">Não há tarefas ativas ou os filtros não encontraram tarefas.</p></div> : <div className="mt-7">
+      <RolagemHorizontal className="hidden rounded-[6px] border border-linha bg-branco md:block" rotulo="Tabela de tarefas">
+        <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
+          <thead><tr className="bg-papel text-cinza"><th className="w-[27%] px-4 py-3 text-[11px] uppercase">Tarefa</th><th className="w-[28%] px-4 py-3 text-[11px] uppercase">Projeto e cliente</th><th className="w-[17%] px-4 py-3 text-[11px] uppercase">Responsável</th><th className="w-[14%] px-4 py-3 text-[11px] uppercase">Prazo</th><th className="w-[14%] px-4 py-3 text-[11px] uppercase">Status</th></tr></thead>
+          <tbody>{tarefas.map(tarefa => <tr key={tarefa.id} className="border-t border-linha bg-branco align-top hover:bg-papel">
+            <td className="break-words px-4 py-4"><Link href={`/tarefas/${tarefa.id}`} className="inline-flex min-h-11 items-center font-semibold text-tinta hover:text-azul-esc hover:underline">{tarefa.nome}</Link><p className="mt-1 break-all text-[12px] tabular-nums text-cinza">{codigoTarefa(tarefa.projeto.cliente.numeroIdentificacao, tarefa.projeto.numeroLocal, tarefa.numeroLocal)}</p>{tarefa._count.subtarefas > 0 && <p className="mt-1 text-[12px] text-ambar">{tarefa._count.subtarefas} {tarefa._count.subtarefas === 1 ? "subtarefa aguarda" : "subtarefas aguardam"} atribuição</p>}{mostrarProgresso && <p className="mt-1 text-[12px] text-cinza">Subtarefas: <ProgressoSubtarefas progresso={tarefa.progressoSubtarefas} /> concluídas</p>}</td>
+            <td className="break-words px-4 py-4"><Link href={`/projetos/${tarefa.projeto.id}`} className="inline-flex min-h-11 items-center text-azul-esc hover:underline">{tarefa.projeto.nome}</Link><p className="mt-1"><Link href={`/clientes/${tarefa.projeto.cliente.id}`} className="inline-flex min-h-11 items-center text-cinza hover:text-azul-esc hover:underline">{tarefa.projeto.cliente.razaoSocial}</Link></p></td>
+            <td className="break-words px-4 py-4 text-cinza">{tarefa.responsavel?.nome ?? tarefa.responsavelUsuario?.nome ?? "Sem responsável"}</td>
+            <td className="break-words px-4 py-4"><div className="[&_span]:max-w-full [&_span]:break-words"><IndicadorSemaforoProjeto prazo={tarefa.prazo} status={tarefa.status} ativo={tarefa.ativo} limites={limites} /></div></td>
+            <td className="break-words px-4 py-4"><div className="[&_span]:max-w-full [&_span]:break-words"><Etiqueta tom={tarefa.status === "CONCLUIDO" ? "positivo" : undefined}>{status[tarefa.status]}</Etiqueta></div></td>
+          </tr>)}</tbody>
+        </table>
       </RolagemHorizontal>
       <ul className="flex flex-col gap-3 md:hidden">{tarefas.map(tarefa => <li key={tarefa.id}>
         <article className="relative rounded-[3px] border border-linha bg-branco px-4 py-4 hover:border-azul">

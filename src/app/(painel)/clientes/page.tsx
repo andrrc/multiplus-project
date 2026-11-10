@@ -41,7 +41,7 @@ export default async function ClientesPage({
         {ctx.perfil === "ADMIN" && (
           <Link
             href="/clientes/novo"
-            className="flex min-h-11 shrink-0 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco"
+            className="flex min-h-11 shrink-0 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
           >
             + Novo cliente
           </Link>
@@ -77,13 +77,13 @@ export default async function ClientesPage({
                     {cliente.razaoSocial}
                   </p>
                   <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold tracking-[0.04em] text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p>
-                  <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente)}</p>
+                  <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Não informado" : documentoCliente(cliente)}</p>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                     <span className="flex flex-wrap items-center gap-2">
                       <Etiqueta>{cliente.segmento}</Etiqueta>
                       {!cliente.ativo && <Etiqueta tom="apagado">Desativado</Etiqueta>}
                     </span>
-                    <span className="text-[14px] text-cinza">{cliente.municipio ?? "—"}</span>
+                    <span className="text-[14px] text-cinza">{cliente.municipio ?? "Não informada"}</span>
                   </div>
                 </Link>
               </div>
@@ -91,57 +91,16 @@ export default async function ClientesPage({
           ))}
         </ul>
 
-        <RolagemHorizontal className="mt-7 hidden md:block" rotulo="Tabela de clientes">
-        <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
-          <thead>
-            <tr className="bg-tinta text-left text-branco">
-              <th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">ID</th>
-              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">
-                Razão social
-              </th>
-              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th>
-              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Segmento</th>
-              <th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Cidade</th>
-              <th className="rounded-r-[3px] px-5 py-3 text-right text-[11.5px] font-semibold tracking-[0.06em] uppercase">
-                {ctx.perfil === "ADMIN" ? "Ações" : ""}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {clientes.map((cliente) => (
-              <tr
-                key={cliente.id}
-                className={`border-t border-linha transition-colors hover:bg-verde-cl ${
-                  cliente.ativo ? "bg-branco" : "bg-papel"
-                }`}
-              >
-                <td className="px-5 py-4 font-[family-name:var(--font-interface)] font-semibold tabular-nums text-azul-esc">{numeroCliente(cliente.numeroIdentificacao)}</td>
-                <td className="px-5 py-4 font-medium text-tinta">
-                  <Link href={`/clientes/${cliente.id}`} className="hover:text-azul-esc">
-                    {cliente.razaoSocial}
-                  </Link>
-                  {!cliente.ativo && (
-                    <span className="ml-2 align-middle">
-                      <Etiqueta tom="apagado">Desativado</Etiqueta>
-                    </span>
-                  )}
-                </td>
-                <td className="whitespace-nowrap px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td>
-                <td className="px-5 py-4">
-                  <Etiqueta>{cliente.segmento}</Etiqueta>
-                </td>
-                <td className="px-5 py-4 text-cinza">{cliente.municipio ?? "—"}</td>
-                <td className="px-5 py-4 text-right">
-                  <div className="flex flex-col items-end gap-2">
-                    <Link href={`/clientes/${cliente.id}`} className="whitespace-nowrap text-azul-esc hover:underline">
-                      Ver detalhe
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <RolagemHorizontal className="mt-7 hidden rounded-[6px] border border-linha bg-branco md:block" rotulo="Tabela de clientes">
+          <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
+            <thead><tr className="bg-papel text-cinza"><th className="w-[35%] px-4 py-3 text-[11px] uppercase">Cliente</th><th className="w-[25%] px-4 py-3 text-[11px] uppercase">CNPJ/CPF</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Segmento</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Cidade</th></tr></thead>
+            <tbody>{clientes.map((cliente) => <tr key={cliente.id} className={`border-t border-linha align-top hover:bg-papel ${cliente.ativo ? "bg-branco" : "bg-papel"}`}>
+              <td className="break-words px-4 py-4"><Link href={`/clientes/${cliente.id}`} className="inline-flex min-h-11 items-center font-semibold text-tinta hover:text-azul-esc hover:underline">{cliente.razaoSocial}</Link><p className="mt-1 text-[12px] tabular-nums text-cinza">ID {numeroCliente(cliente.numeroIdentificacao)}</p>{!cliente.ativo && <span className="mt-1 inline-block"><Etiqueta tom="apagado">Desativado</Etiqueta></span>}</td>
+              <td className="break-all px-4 py-4 tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Não informado" : documentoCliente(cliente)}</td>
+              <td className="break-words px-4 py-4"><div className="[&_span]:max-w-full [&_span]:break-words"><Etiqueta>{cliente.segmento}</Etiqueta></div></td>
+              <td className="break-words px-4 py-4 text-cinza">{cliente.municipio ?? "Não informada"}</td>
+            </tr>)}</tbody>
+          </table>
         </RolagemHorizontal>
         </>
       )}

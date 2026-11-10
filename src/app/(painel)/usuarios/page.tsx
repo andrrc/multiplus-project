@@ -56,7 +56,7 @@ function Atribuicoes({ usuario }: { usuario: UsuarioDaListagem }) {
 function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
   return (
     <li
-      className={`flex flex-col gap-5 border-b border-linha px-5 py-5 last:border-b-0 md:flex-row md:items-start md:justify-between ${
+      className={`flex flex-col gap-4 border-b border-linha px-5 py-4 last:border-b-0 md:flex-row md:items-start md:justify-between ${
         usuario.ativo ? "bg-branco" : "bg-papel"
       }`}
     >
@@ -77,7 +77,7 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
           </p>
         )}
 
-        <dl className="mt-4 grid max-w-[690px] gap-x-6 gap-y-3 sm:grid-cols-3">
+        <dl className="mt-3 grid max-w-[690px] gap-x-6 gap-y-3 sm:grid-cols-3">
           <div>
             <dt className="text-[12px] text-cinza">Perfil</dt>
             <dd className="mt-0.5 text-[14px] text-tinta">{NOME_PERFIL[usuario.perfil]}</dd>
@@ -93,14 +93,14 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
         </dl>
       </div>
 
-      <aside className="w-full shrink-0 border-t border-linha pt-4 md:w-[210px] md:border-t-0 md:border-l md:pl-5 md:pt-0">
+      <aside className="w-full shrink-0 border-t border-linha pt-3 md:w-[200px] md:border-t-0 md:pl-5 md:pt-0">
         <p className="font-[family-name:var(--font-interface)] text-[12px] font-medium text-cinza">
           Ações
         </p>
         <div className="mt-2.5 flex flex-wrap items-start gap-x-4 gap-y-2 md:flex-col md:gap-2">
           <Link
             href={`/usuarios/${usuario.id}/editar`}
-            className="inline-flex min-h-6 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline"
+            className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline"
           >
             Editar dados
           </Link>
@@ -178,17 +178,12 @@ export default async function UsuariosPage({
   });
 
   return (
-    <div className="w-full max-w-[1100px]">
+    <div className="w-full max-w-[1280px]">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[24px] sm:text-[28px]">Usuários</h1>
-          <p className="mt-1.5 text-[15px] text-cinza">
-            Quem tem acesso ao sistema e o que cada pessoa enxerga.
-          </p>
-        </div>
+        <h1 className="text-[24px]">Usuários</h1>
         <Link
           href="/usuarios/novo"
-          className="flex min-h-11 shrink-0 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco"
+          className="flex min-h-11 shrink-0 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
         >
           + Novo usuário
         </Link>
@@ -239,13 +234,13 @@ export default async function UsuariosPage({
           </p>
           <Link
             href="/usuarios/novo"
-            className="mt-4 inline-flex min-h-11 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco"
+            className="mt-4 inline-flex min-h-11 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
           >
             + Novo usuário
           </Link>
         </div>
       ) : (
-        <ul className="mt-7 overflow-hidden rounded-[3px] border border-linha">
+        <ul className="mt-7 overflow-hidden rounded-[6px] border border-linha">
           {usuarios.map((usuario) => (
             <LinhaUsuario key={usuario.id} usuario={usuario} />
           ))}

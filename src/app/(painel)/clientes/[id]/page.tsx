@@ -103,17 +103,16 @@ export default async function DetalheClientePage({
         : "pendente";
 
   return (
-    <div className="flex w-full max-w-[880px] flex-col gap-5">
+    <div className="flex w-full max-w-[1280px] flex-col gap-5">
       <div
-        className="flex flex-col gap-4 rounded-[4px] px-6 py-7 sm:flex-row sm:items-start sm:justify-between sm:px-10 sm:py-9"
-        style={{ background: "linear-gradient(112deg, #0B2530 0%, #14485C 58%, #12703F 130%)" }}
+        className="flex flex-col gap-4 border-b border-linha pb-5 sm:flex-row sm:items-start sm:justify-between"
       >
         <div>
-          <h1 className="text-[24px] text-branco sm:text-[30px]">{cliente.razaoSocial}</h1>
+          <h1 className="break-words text-[24px] text-tinta">{cliente.razaoSocial}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
-            <span className="rounded-[2px] border border-[#2C5567] px-2.5 py-1 font-semibold tabular-nums text-branco">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
-            <span className="tabular-nums text-[#C4DCE4]">{documentoCliente(cliente)}</span>
-            <span className="rounded-[2px] bg-verde px-2.5 py-1 text-[13px] font-medium text-tinta">
+            <span className="rounded-[3px] border border-linha bg-branco px-2.5 py-1 font-semibold tabular-nums text-cinza">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
+            <span className="tabular-nums text-cinza">{documentoCliente(cliente)}</span>
+            <span className="rounded-[3px] bg-verde-cl px-2.5 py-1 text-[13px] font-medium text-verde-esc">
               {cliente.segmento}
             </span>
           </div>
@@ -129,7 +128,7 @@ export default async function DetalheClientePage({
             {cliente.ativo && (
               <Link
                 href={`/clientes/${id}/editar`}
-                className="flex min-h-10 shrink-0 items-center self-start rounded-[3px] border border-[#2C5567] px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-[#C4DCE4] hover:border-[#C4DCE4] hover:text-branco"
+                className="flex min-h-11 shrink-0 items-center self-start rounded-[6px] border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
               >
                 Editar
               </Link>
@@ -242,7 +241,7 @@ export default async function DetalheClientePage({
             {ctx.perfil === "ADMIN" && cliente.ativo && (
               <Link
                 href={`/projetos/novo?clienteId=${encodeURIComponent(id)}`}
-                className="flex min-h-10 items-center rounded-[3px] bg-verde px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc"
+                className="flex min-h-11 items-center rounded-[6px] bg-tinta px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc"
               >
                 + Novo projeto
               </Link>

@@ -97,7 +97,7 @@ pessoa (RN-004).
 - **Banco:** função SQL valida vínculo/responsável, status ativo e perfil; RLS e trigger
   impedem conclusão ou edição direta pelo colaborador. Há no máximo um pedido pendente por
   item e o histórico é preservado.
-- **Fila:** ADMIN revisa todos os pedidos pendentes no topo do painel `/subtarefas`; os
+- **Fila:** ADMIN revisa todos os pedidos pendentes no topo do painel `/subtarefas`; a seção fica oculta quando não há pedidos. Os
   links das notificações também abrem a fila.
 - **Testes:** `aprovacao-conclusao.integration.test.ts` e
   `subtarefas-rn004.integration.test.ts`, incluindo o colaborador interno dono do projeto
@@ -218,6 +218,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual da listagem e da fila de confirmações |
 | 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
 | 2026-11-03 | este commit | Exportar a lista filtrada de `/subtarefas` em PDF, sem a fila de pedidos, seguindo a identidade visual aprovada ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |

@@ -64,7 +64,7 @@ export function FormularioDados({
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar nome"}
         </button>
@@ -149,7 +149,7 @@ export function FormularioSenha() {
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
         >
           {pendente ? "Alterando…" : "Alterar senha"}
         </button>

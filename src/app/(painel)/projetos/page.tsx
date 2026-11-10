@@ -23,14 +23,10 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
   const [projetos, limites] = await Promise.all([listarProjetos(ctx, incluir, busca), buscarLimitesSemaforo(ctx)]);
 
   return (
-    <div className="w-full max-w-[1120px]">
+    <div className="w-full max-w-[1280px]">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="font-[family-name:var(--font-interface)] text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-esc">Controle de projetos</p>
-          <h1 className="mt-1 text-[28px]">Projetos</h1>
-          <p className="mt-1.5 text-[15px] text-cinza">Acompanhe clientes, prazos e entregas em um só lugar.</p>
-        </div>
-        <Link href="/projetos/novo" className="flex min-h-11 items-center rounded-[3px] bg-verde px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-verde-esc hover:text-branco">+ Novo projeto</Link>
+        <h1 className="text-[24px]">Projetos</h1>
+        <Link href="/projetos/novo" className="flex min-h-11 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2">+ Novo projeto</Link>
       </div>
 
       <form className="mt-7 flex flex-wrap items-center gap-3">
@@ -40,7 +36,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
       </form>
 
       {projetos.length === 0 ? (
-        <div className="mt-8 rounded-[3px] border border-dashed border-linha bg-branco px-8 py-14 text-center text-[16px] text-cinza">Nenhum projeto encontrado. Cadastre o primeiro para começar a acompanhar prazos ambientais.</div>
+        <div className="mt-8 rounded-[6px] border border-linha bg-branco px-8 py-14 text-center text-[16px] text-cinza">Nenhum projeto encontrado. Cadastre o primeiro para começar a acompanhar prazos ambientais.</div>
       ) : <>
         <ul className="mt-7 flex flex-col gap-3 md:hidden">
           {projetos.map((p) => (
@@ -69,26 +65,17 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
           ))}
         </ul>
 
-        <RolagemHorizontal className="mt-7 hidden md:block" rotulo="Tabela de projetos">
-        <table className="w-full border-collapse font-[family-name:var(--font-interface)] text-[14px]">
-          <thead><tr className="bg-tinta text-left text-branco"><th className="min-w-[180px] whitespace-nowrap rounded-l-[3px] px-5 py-3 text-[11px] uppercase tracking-[0.06em]">ID</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Projeto</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Cliente</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Proposta comercial</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Valor contratado</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Conclusão</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Status</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Prazo final</th><th className="px-5 py-3 text-[11px] uppercase tracking-[0.06em]">Dias restantes</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
-          <tbody>
-            {projetos.map((p) => (
-              <tr key={p.id} className="border-t border-linha bg-branco hover:bg-papel">
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block whitespace-nowrap px-5 py-4 tabular-nums text-cinza">{codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 font-medium hover:text-azul-esc">{p.nome}</Link></td>
-                <td className="p-0"><Link href={`/clientes/${p.cliente.id}`} className="block px-5 py-4 text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.numeroProposta ?? "—"}</Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-tinta">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "—"}</Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorConclusao indicador={calcularPercentualConclusao(p.tarefas)} /></Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta></Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4 tabular-nums text-cinza">{data(p.dataPrevistaConclusao)}</Link></td>
-                <td className="p-0"><Link href={`/projetos/${p.id}`} className="block px-5 py-4"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></Link></td>
-                <td className="p-0 text-right"><Link href={`/projetos/${p.id}`} className="block whitespace-nowrap px-5 py-4 text-azul-esc hover:underline">Ver detalhe</Link></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <RolagemHorizontal className="mt-7 hidden md:block rounded-[6px] border border-linha bg-branco" rotulo="Tabela de projetos">
+          <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
+            <thead><tr className="bg-papel text-cinza"><th className="w-[27%] px-4 py-3 text-[11px] uppercase">Projeto</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Cliente</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Proposta e valor</th><th className="w-[15%] px-4 py-3 text-[11px] uppercase">Situação</th><th className="w-[18%] px-4 py-3 text-[11px] uppercase">Prazo</th></tr></thead>
+            <tbody>{projetos.map((p) => <tr key={p.id} className="border-t border-linha bg-branco align-top hover:bg-papel">
+              <td className="break-words px-4 py-4"><Link href={`/projetos/${p.id}`} className="inline-flex min-h-11 items-center font-semibold text-tinta hover:text-azul-esc hover:underline">{p.nome}</Link><p className="mt-1 break-all text-[12px] tabular-nums text-cinza">{codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</p></td>
+              <td className="break-words px-4 py-4"><Link href={`/clientes/${p.cliente.id}`} className="inline-flex min-h-11 items-center text-azul-esc hover:underline">{p.cliente.razaoSocial}</Link></td>
+              <td className="break-words px-4 py-4 tabular-nums"><p>{p.numeroProposta ?? "Não informada"}</p><p className="mt-1 text-cinza">{p.valorContratado ? formatarMoeda(p.valorContratado.valorContratado) : "Valor não informado"}</p></td>
+              <td className="break-words px-4 py-4"><Etiqueta tom={p.ativo ? "padrao" : "apagado"}>{p.ativo ? status[p.status] : "Desativado"}</Etiqueta><p className="mt-2 text-cinza">Conclusão: <IndicadorConclusao indicador={calcularPercentualConclusao(p.tarefas)} /></p></td>
+              <td className="break-words px-4 py-4 tabular-nums"><p>{p.dataPrevistaConclusao ? data(p.dataPrevistaConclusao) : "Sem prazo"}</p><div className="mt-2"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} ativo={p.ativo} limites={limites} /></div></td>
+            </tr>)}</tbody>
+          </table>
         </RolagemHorizontal>
       </>}
     </div>

@@ -34,6 +34,12 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 
 ## Funcionalidades
 
+Os cartões de projetos atribuídos e os detalhes administrativos receberam ajustes de apresentação, sem mudança de consultas ou regras.
+
+
+A listagem administrativa de projetos está em adaptação visual aos modelos da Múltiplus, mantendo filtros, dados e links existentes.
+
+
 ### P11. Link de detalhe na listagem
 
 **Como funciona.** Na tabela de projetos, o link “Ver detalhe” permanece em uma linha.
@@ -186,6 +192,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual da listagem de projetos |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |
 | 2026-10-30 | este commit | Simplificar o aviso de rolagem com texto cinza e seta discreta |

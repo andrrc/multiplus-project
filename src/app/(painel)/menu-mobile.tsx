@@ -17,12 +17,7 @@ export function MenuMobile({ navegacao, usuario }: { navegacao: ReactNode; usuar
 
   return (
     <div className="relative bg-tinta lg:hidden">
-      <div
-        className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ background: "linear-gradient(112deg, #0499f3 0%, #1ebd1f 130%)" }}
-      />
-
-      <div className="flex items-center justify-between px-5 pt-5 pb-4">
+      <div className="flex items-center justify-between border-b border-linha bg-branco px-4 py-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-multiplus.png" alt="Múltiplus" width={149} height={41} />
         <button
@@ -30,7 +25,7 @@ export function MenuMobile({ navegacao, usuario }: { navegacao: ReactNode; usuar
           onClick={() => setAberto((atual) => !atual)}
           aria-expanded={aberto}
           aria-controls="menu-painel"
-          className="-mr-2.5 flex h-11 w-11 items-center justify-center text-menu-inativo hover:text-branco"
+          className="-mr-2 flex h-11 w-11 items-center justify-center text-tinta hover:text-azul-esc"
         >
           <span className="sr-only">{aberto ? "Fechar menu" : "Abrir menu"}</span>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">

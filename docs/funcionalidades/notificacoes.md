@@ -33,6 +33,9 @@ avisado.
 
 ## Funcionalidades
 
+As caixas de notificações são apresentadas como **Avisos** no menu e no título, mantendo as rotas, os dados e as ações existentes.
+
+
 ### N1. Central de notificações
 
 **Como funciona.**
@@ -167,6 +170,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual das caixas de avisos |
 | 2026-11-03 | este commit | Acrescentar botão local de demonstração dos quatro estilos de toast, sem gravar notificações ([análise](../analises/gerador-toasts-teste.md)) |
 | 2026-11-03 | este commit | Exibir toasts de notificações em tempo real por SSE, resumo de entrada e leitura sincronizada ao abrir a central ([análise](../analises/toast-notifications-realtime.md)) |
 | 2026-11-03 | este commit | Exibir sino e contador para ADMIN com acesso à caixa existente; prévia e aviso automático cancelados após revisão ([análise](../analises/caixa-notificacoes-popup.md)) |

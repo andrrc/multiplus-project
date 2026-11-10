@@ -44,13 +44,13 @@ it("preserva a seleção ausente nas opções para permitir limpar o filtro", as
 });
 
 
-describe("coluna de progresso ao filtrar responsável (RF-008/RF-039)", () => {
+describe("progresso ao filtrar responsável (RF-008/RF-039)", () => {
   it.each(["pessoa:p1", "usuario:u1", "sem"])("mostra 2/6 na tabela e no cartão ao selecionar %s", async responsavel => {
     const { default: Page } = await import("@/app/(painel)/tarefas/page");
     const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ responsavel }) }));
     const { listarPrazos } = await import("@/lib/projetos-tarefas");
     expect(listarPrazos).toHaveBeenLastCalledWith({ usuarioId: "admin", perfil: "ADMIN" }, expect.objectContaining({ responsavel }), true);
-    expect(html).toContain('>Subtarefas</th>');
+    expect(html.match(/Subtarefas: /g)).toHaveLength(2);
     expect(html.match(/aria-label="2 de 6 subtarefas concluídas"/g)).toHaveLength(2);
     expect(html.match(/2[/]6/g)).toHaveLength(2);
     expect(html).toContain("concluídas");
@@ -60,7 +60,7 @@ describe("coluna de progresso ao filtrar responsável (RF-008/RF-039)", () => {
     const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ responsavel }) }));
     const { listarPrazos } = await import("@/lib/projetos-tarefas");
     expect(listarPrazos).toHaveBeenLastCalledWith({ usuarioId: "admin", perfil: "ADMIN" }, expect.objectContaining({ responsavel }), false);
-    expect(html).not.toContain('>Subtarefas</th>');
+    expect(html).not.toContain("Subtarefas: ");
     expect(html).not.toContain("2 de 6 subtarefas concluídas");
   });
 });

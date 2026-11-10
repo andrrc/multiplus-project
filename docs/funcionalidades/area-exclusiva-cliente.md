@@ -23,6 +23,9 @@ O portal mostra status, datas, última movimentação, progresso dos projetos, t
 
 ## Funcionalidades
 
+Os cartões de acompanhamento do cliente estão em adaptação visual, mantendo os dados já autorizados e os links atuais.
+
+
 ### C1. Painel e detalhe do projeto (RF-012, RF-050)
 
 **Como funciona.**
@@ -81,6 +84,7 @@ O portal mostra status, datas, última movimentação, progresso dos projetos, t
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual do acompanhamento do cliente |
 | 2026-10-27 | este commit | Explicar autorização e consultas do portal do cliente no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |
 | 2026-10-26 | este commit | Mostrar dias restantes para conclusão prevista nos cartões e no detalhe do portal ([análise](../analises/dias-restantes-portal-cliente.md)). |
 | 2026-10-26 | este commit | Trocar o rótulo do indicador do projeto de “Conclusão” para “Progresso” no painel e no detalhe do portal, sem alterar os cálculos. |

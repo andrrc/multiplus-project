@@ -6,6 +6,15 @@ Referência das cores, tipografia e padrões usados na apresentação comercial 
 
 ## 1 · Paleta de cores
 
+### Sistema web — adaptação aos modelos de 10/11/2026
+
+Os tokens ativos do sistema usam azul `#0A8FE0`, azul de links `#0776BA`, verde
+`#1E9E4A`, verde de texto `#17733A`, papel `#F4F7F8`, cinza `#5B6F78` e borda
+`#E1E8EB`. Para estados, âmbar é `#8A5300`, crítico `#B42318`, fundo crítico
+`#FDEDEB` e fundo verde `#E8F5EC`. Os demais tokens permanecem em `globals.css`.
+As tabelas seguintes registram a paleta dos materiais comerciais que originaram
+esta identidade e não substituem os valores dos tokens ativos do sistema web.
+
 ### Cores da marca
 
 Extraídas do gradiente da logomarca.
@@ -73,25 +82,13 @@ background: linear-gradient(118deg, #0B2530, #134C61);
 
 ## 2 · Tipografia
 
-### Sistema web — tipografia vigente desde 21/10/2026
+### Sistema web — tipografia em adaptação aos modelos de 10/11/2026
 
-| Aplicação | Fonte | Pesos |
-|---|---|---|
-| Títulos, menus, botões, tabelas, campos e etiquetas | Raleway | 400, 500, 600, 700 |
-| Parágrafos, descrições e textos de apoio | Montserrat | 400, 500, 600, 700 |
-| Algarismos de 0 a 9, inclusive em textos mistos | Droid Serif | 400, 700 |
-
-Esta combinação foi escolhida pelo usuário. O aumento de 20% sobre a escala
-original continua valendo. Letras e pontuação seguem a fonte do contexto;
-somente os dígitos usam Droid Serif. Os dois pesos da Droid Serif têm dígitos
-de largura igual, preservando o alinhamento das colunas numéricas.
-
-Raleway e Montserrat são carregadas por next/font/google; Droid Serif usa
-next/font/local com unicode-range U+0030-0039 e os arquivos originais do Android
-Open Source Project em src/app/fonts/droid-serif, com a licença Apache 2.0.
-As fontes são servidas pela própria aplicação. Controles de formulário, rótulos
-e tabelas usam explicitamente a família de interface; os demais textos herdam
-a família de leitura, salvo quando um componente define o papel de interface.
+A interface usa **IBM Plex Sans**, nos pesos 400, 500 e 600, inclusive para números,
+valores e identificadores. Os números de tabelas e cartões mantêm `tabular-nums`.
+A fonte é servida pela aplicação com `next/font/local`, a partir dos arquivos e licença em `src/app/fonts/ibm-plex-sans`; os tokens `--font-interface` e
+`--font-leitura` apontam para a mesma família. As demais mudanças visuais dos modelos
+serão aplicadas por etapas, mantendo os fluxos e as permissões existentes.
 
 ### Referência dos materiais comerciais
 

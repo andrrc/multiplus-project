@@ -33,6 +33,9 @@ Além dos dados cadastrais, um cliente PJ pode ter:
 
 ## Funcionalidades
 
+A listagem administrativa e os cabeçalhos das fichas de clientes para administrador e colaborador estão em adaptação visual aos modelos da Múltiplus, mantendo dados, filtros e ações existentes.
+
+
 ### C2. Link de detalhe na listagem
 
 **Como funciona.** A listagem aproveita a largura disponível do painel, e o CNPJ/CPF e o link “Ver detalhe” permanecem em uma linha na tabela.
@@ -261,6 +264,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Iniciar adaptação visual da listagem de clientes |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-11-03 | este commit | Compactar os filtros e identificar o seletor de laudo dentro do campo |
 | 2026-11-03 | este commit | Ampliar a largura da listagem e manter CNPJ/CPF em uma linha |

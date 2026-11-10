@@ -4,34 +4,15 @@ import localFont from "next/font/local";
 import { connection } from "next/server";
 import "./globals.css";
 
-// As fontes locais tornam o build reproduzível e mantêm os pesos usados pela interface.
-const raleway = localFont({
-  src: "./fonts/raleway/Raleway-Latin-Variable.woff2",
-  weight: "400 700",
-  variable: "--font-raleway",
-  display: "swap",
-});
-
-// Montserrat é usada nos textos de leitura conforme a identidade visual do sistema.
-const montserrat = localFont({
-  src: "./fonts/montserrat/Montserrat-Latin-Variable.woff2",
-  weight: "400 700",
-  variable: "--font-montserrat",
-  display: "swap",
-});
-
-// A faixa Unicode restringe Droid Serif aos algarismos, inclusive em textos mistos.
-const droidSerif = localFont({
+// A fonte da interface segue os protótipos compartilhados pela Múltiplus.
+const fonteSistema = localFont({
   src: [
-    { path: "./fonts/droid-serif/DroidSerif-Regular.ttf", weight: "400", style: "normal" },
-    { path: "./fonts/droid-serif/DroidSerif-Bold.ttf", weight: "700", style: "normal" },
+    { path: "./fonts/ibm-plex-sans/IBMPlexSans-Regular.ttf", weight: "400" },
+    { path: "./fonts/ibm-plex-sans/IBMPlexSans-Medium.ttf", weight: "500" },
+    { path: "./fonts/ibm-plex-sans/IBMPlexSans-SemiBold.ttf", weight: "600" },
   ],
-  variable: "--font-droid-serif",
+  variable: "--font-sistema",
   display: "swap",
-  preload: false,
-  adjustFontFallback: false,
-  fallback: [],
-  declarations: [{ prop: "unicode-range", value: "U+0030-0039" }],
 });
 
 export const metadata: Metadata = {
@@ -80,7 +61,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html
       lang="pt-BR"
-      className={`${raleway.variable} ${montserrat.variable} ${droidSerif.variable} h-full antialiased`}
+      className={`${fonteSistema.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

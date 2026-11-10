@@ -3,25 +3,25 @@
 /* Identidade visual Múltiplus Ambiental — ver docs/Identidade_Visual_Multiplus.md */
 /* Tokens abaixo alimentam tanto o CSS base quanto as classes utilitárias do Tailwind. */
 :root {
-  --azul: #0499f3;
-  --azul-esc: #0b6fb0;
+  --azul: #0a8fe0;
+  --azul-esc: #0776ba;
   --lilas: #7c5cbf;
-  --verde: #1ebd1f;
-  --verde-esc: #0e7a3c;
+  --verde: #1e9e4a;
+  --verde-esc: #17733a;
 
   --tinta: #0b2530;
   --tinta2: #12394a;
-  --papel: #f4f8f9;
+  --papel: #f4f7f8;
   --branco: #ffffff;
-  --cinza: #5d7079;
-  --linha: #dce6e9;
+  --cinza: #5b6f78;
+  --linha: #e1e8eb;
 
-  --ambar: #b45309;
-  --critico: #9a2a1e;
-  --critico-cl: #f8ecea;
+  --ambar: #8a5300;
+  --critico: #b42318;
+  --critico-cl: #fdedeb;
   --azul-cl: #e8f4fc;
   --lilas-cl: #f2ecfa;
-  --verde-cl: #eef7f0;
+  --verde-cl: #e8f5ec;
   --verde-borda: #bfe3c6;
 
   --menu-inativo: #a9c4cd;
@@ -59,8 +59,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-interface: var(--font-droid-serif), var(--font-raleway);
-  --font-leitura: var(--font-droid-serif), var(--font-montserrat);
+  --font-interface: var(--font-sistema);
+  --font-leitura: var(--font-sistema);
 }
 
 body {
@@ -68,8 +68,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-leitura), Arial, sans-serif;
-  font-size: 1.275rem;
-  line-height: 1.62;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 h1,
@@ -135,38 +135,5 @@ h4 {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-}
-
-/* Escala de leitura +20% sobre os tamanhos da interface existente.
- * rem respeita o tamanho de fonte escolhido no navegador sem ampliar o layout.
- * A camada utilities mantém a precedência das classes sobre estilos de base. */
-@layer utilities {
-  .text-\[11px\] { font-size: 0.825rem; }
-  .text-\[11\.5px\] { font-size: 0.8625rem; }
-  .text-\[12px\] { font-size: 0.9rem; }
-  .text-\[12\.5px\] { font-size: 0.9375rem; }
-  .text-\[13px\] { font-size: 0.975rem; }
-  .text-\[13\.5px\] { font-size: 1.0125rem; }
-  .text-\[14px\] { font-size: 1.05rem; }
-  .text-\[14\.5px\] { font-size: 1.0875rem; }
-  .text-\[15px\] { font-size: 1.125rem; }
-  .text-\[16px\] { font-size: 1.2rem; }
-  .text-\[17px\] { font-size: 1.275rem; }
-  .text-\[18px\] { font-size: 1.35rem; }
-  .text-\[19px\] { font-size: 1.425rem; }
-  .text-\[20px\] { font-size: 1.5rem; }
-  .text-\[21px\] { font-size: 1.575rem; }
-  .text-\[22px\] { font-size: 1.65rem; }
-  .text-\[24px\] { font-size: 1.8rem; }
-  .text-\[25px\] { font-size: 1.875rem; }
-  .text-\[26px\] { font-size: 1.95rem; }
-  .text-\[28px\] { font-size: 2.1rem; }
-  .text-\[30px\] { font-size: 2.25rem; }
-  .text-\[34px\] { font-size: 2.55rem; }
-  @media (width >= 40rem) {
-    .sm\:text-\[28px\] { font-size: 2.1rem; }
-    .sm\:text-\[30px\] { font-size: 2.25rem; }
-    .sm\:text-\[34px\] { font-size: 2.55rem; }
   }
 }
