@@ -130,3 +130,5 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-10: Iniciada a adaptação visual da agenda; veja [Agenda](funcionalidades/agenda.md).
 - 2026-11-10: Iniciada a adaptação visual de avisos; veja [Notificações](funcionalidades/notificacoes.md).
 - 2026-11-10: Iniciada a adaptação visual do portal; veja [Área exclusiva](funcionalidades/area-exclusiva-cliente.md).
+- 2026-11-10: Adaptada a apresentação do perfil; veja [Interface](funcionalidades/interface.md).
+- 2026-11-10: Ajustada a apresentação de Minhas tarefas e do portal; veja [Tarefas](funcionalidades/tarefas.md) e [Área exclusiva](funcionalidades/area-exclusiva-cliente.md).

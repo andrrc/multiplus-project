@@ -12,6 +12,17 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 ## Funcionalidades
 
+### Meu perfil
+
+**Como funciona.** Os dados pessoais, a troca de senha e as atribuições existentes
+aparecem em seções separadas, seguindo o modelo visual de perfil. Os campos se
+organizam em duas colunas no desktop e uma no celular. Os dados editáveis
+e as atribuições continuam sujeitos às regras atuais de cada perfil.
+
+**Detalhes técnicos.** A rota `/meu-perfil` reorganiza a apresentação de dados já
+consultados e mantém os formulários e ações existentes. A jornada de navegador em
+`tests/browser/jornadas.spec.ts` cobre a troca de senha.
+
 ### Navegação e identidade dos modelos
 
 **Como funciona.** O menu organiza os acessos disponíveis em grupos e usa ícones,
@@ -80,6 +91,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Adaptar a apresentação da tela compartilhada de perfil |
 | 2026-11-10 | este commit | Iniciar adaptação da identidade visual pela tipografia compartilhada |
 | 2026-11-03 | este commit | Remover a dica “Deslize para ver as demais colunas” das tabelas com rolagem horizontal |
 | 2026-11-03 | este commit | Alinhar conteúdo do painel à margem interna em telas largas |

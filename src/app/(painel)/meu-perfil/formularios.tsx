@@ -12,7 +12,7 @@ function Retorno({ estado }: { estado: EstadoPerfil }) {
   if (!estado.erro && !estado.mensagem) return null;
   return (
     <p
-      className={`rounded-[3px] border-l-[3px] px-4 py-3 text-[14.5px] ${
+      className={`rounded-[3px] border px-4 py-3 text-[14.5px] ${
         estado.erro
           ? "border-critico bg-branco text-critico"
           : "border-verde bg-verde-cl text-verde-esc"
@@ -40,31 +40,32 @@ export function FormularioDados({
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="grid gap-4 sm:grid-cols-2">
       <Campo label="Nome" obrigatorio>
         <input name="nome" required defaultValue={nome} className={inputClass} />
       </Campo>
 
-      <Campo label="E-mail">
-        <input value={email} readOnly disabled className={inputClass} />
-      </Campo>
-      {!emailEditavel && (
-        <p className="-mt-2 text-[13.5px] text-cinza">
-          Só o Administrador altera e-mail de usuário.
-        </p>
-      )}
-
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <span className="text-[13px] font-medium text-tinta">E-mail</span>
+        <p className="min-h-11 break-all rounded-[3px] border border-linha bg-papel px-3.5 py-2.5 text-[14.5px] text-cinza">{email}</p>
+      </div>
       <Campo label="Perfil">
         <input value={perfil} readOnly disabled className={inputClass} />
       </Campo>
 
-      <Retorno estado={estado} />
+      {!emailEditavel && (
+        <p className="text-[13.5px] text-cinza sm:col-span-2">
+          Só o Administrador altera e-mail de usuário.
+        </p>
+      )}
 
-      <div>
+      <div className="sm:col-span-2"><Retorno estado={estado} /></div>
+
+      <div className="sm:col-span-2">
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+          className="min-h-11 rounded-[3px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar nome"}
         </button>
@@ -125,9 +126,9 @@ export function FormularioSenha() {
               requisito.ok ? "text-verde-esc" : "text-cinza"
             }`}
           >
-            <span aria-hidden className="w-3.5 shrink-0 text-center">
-              {requisito.ok ? "✓" : "•"}
-            </span>
+            <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5 shrink-0">
+              {requisito.ok ? <path d="m3 8 3 3 7-7" /> : <circle cx="8" cy="8" r="3" />}
+            </svg>
             {requisito.descricao}
           </li>
         ))}
@@ -149,7 +150,7 @@ export function FormularioSenha() {
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+          className="min-h-11 rounded-[3px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
         >
           {pendente ? "Alterando…" : "Alterar senha"}
         </button>

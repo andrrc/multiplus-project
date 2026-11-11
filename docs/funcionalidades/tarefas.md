@@ -226,7 +226,8 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 
 **Como funciona.**
 - **Lista:** o colaborador vê, em ordem de prazo, as tarefas em que é responsável, está
-  atribuído, ou é responsável por alguma subtarefa.
+  atribuído, ou é responsável por alguma subtarefa. Os cartões se reorganizam em uma
+  coluna no celular e mantêm visíveis o prazo e o status.
 - **Na tarefa:** ele conclui a tarefa (se tiver permissão), conclui as próprias subtarefas
   e comenta.
 - **O que ele vê:** o cliente e o projeto, mas não dados restritos como o valor
@@ -311,6 +312,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-10 | este commit | Ajustar a apresentação responsiva de Minhas tarefas |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de tarefas |
 | 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
 | 2026-11-03 | este commit | Exportar a lista filtrada de `/tarefas` em PDF com a identidade visual aprovada, paginação e data exata dos prazos ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |
