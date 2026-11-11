@@ -70,7 +70,7 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
         {usuario.cargo && (
           <p className="text-[13.5px] text-tinta">{usuario.cargo}</p>
         )}
-        <p className="truncate text-[14px] text-cinza">{usuario.email}</p>
+        <p className="break-all text-[14px] text-cinza">{usuario.email}</p>
         {usuario.origemPessoaEnvolvida && (
           <p className="mt-1 text-[13px] text-cinza">
             Pessoa envolvida de {usuario.origemPessoaEnvolvida.cliente}
@@ -117,6 +117,30 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
   );
 }
 
+function LinhaUsuarioDesktop({ usuario }: { usuario: UsuarioDaListagem }) {
+  return (
+    <tr className={`border-t border-linha align-top ${usuario.ativo ? "bg-branco" : "bg-papel"}`}>
+      <td className="px-4 py-4">
+        <Link href={`/usuarios/${usuario.id}`} className="font-semibold text-tinta hover:text-azul-esc hover:underline">{usuario.nome}</Link>
+        {usuario.cargo && <p className="mt-1 text-cinza">{usuario.cargo}</p>}
+        <p className="mt-1 break-all text-cinza">{usuario.email}</p>
+        {usuario.origemPessoaEnvolvida && <p className="mt-1 text-cinza">Pessoa envolvida de {usuario.origemPessoaEnvolvida.cliente}</p>}
+      </td>
+      <td className="px-4 py-4">{NOME_PERFIL[usuario.perfil]}</td>
+      <td className="px-4 py-4"><Atribuicoes usuario={usuario} /></td>
+      <td className="px-4 py-4"><EtiquetaStatus usuario={usuario} /></td>
+      <td className="px-4 py-4">
+        <div className="flex flex-col items-start gap-1">
+          <Link href={`/usuarios/${usuario.id}/editar`} className="inline-flex min-h-11 items-center text-azul-esc hover:underline">Editar dados</Link>
+          {usuario.status === "PENDENTE" && <BotaoGerarLinkConvite usuarioId={usuario.id} />}
+          {usuario.status === "PENDENTE" && <BotaoReenviarConvite usuarioId={usuario.id} />}
+          <BotaoDesativarUsuario usuarioId={usuario.id} nome={usuario.nome} ativo={usuario.ativo} />
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 /**
  * RF-030/RF-040 — retorno do cadastro que acabou de acontecer.
  *
@@ -128,7 +152,7 @@ function LinhaUsuario({ usuario }: { usuario: UsuarioDaListagem }) {
 function RetornoConvite({ convite }: { convite?: string }) {
   if (convite === "enviado") {
     return (
-      <p className="mt-5 rounded-[3px] border-l-[3px] border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
+      <p className="mt-5 rounded-[3px] border border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
         Usuário criado e convite enviado por e-mail.
       </p>
     );
@@ -136,7 +160,7 @@ function RetornoConvite({ convite }: { convite?: string }) {
 
   if (convite === "falhou") {
     return (
-      <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+      <p className="mt-5 rounded-[3px] border border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
         O usuário foi criado, mas o e-mail de convite não saiu. Use &ldquo;Reenviar
         convite&rdquo; na linha dele para tentar de novo.
       </p>
@@ -145,7 +169,7 @@ function RetornoConvite({ convite }: { convite?: string }) {
 
   if (convite === "manual") {
     return (
-      <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+      <p className="mt-5 rounded-[3px] border border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
         O usuário foi criado, mas o envio de e-mail não está configurado. Na linha dele, use
         &ldquo;Gerar link de acesso&rdquo; para copiar e compartilhar um convite seguro.
       </p>
@@ -195,11 +219,12 @@ export default async function UsuariosPage({
         <input
           type="search"
           name="busca"
+          aria-label="Buscar usuários"
           defaultValue={busca}
           placeholder="Buscar por nome, e-mail ou cargo"
           className={`${inputClass} placeholder:text-cinza sm:max-w-sm`}
         />
-        <select name="perfil" defaultValue={perfilFiltrado ?? ""} className={`${inputClass} sm:w-auto`}>
+        <select name="perfil" aria-label="Filtrar por perfil" defaultValue={perfilFiltrado ?? ""} className={`${inputClass} sm:w-auto`}>
           <option value="">Todos os perfis</option>
           {PERFIS_FILTRAVEIS.map((p) => (
             <option key={p} value={p}>
@@ -240,11 +265,19 @@ export default async function UsuariosPage({
           </Link>
         </div>
       ) : (
-        <ul className="mt-7 overflow-hidden rounded-[6px] border border-linha">
-          {usuarios.map((usuario) => (
-            <LinhaUsuario key={usuario.id} usuario={usuario} />
-          ))}
-        </ul>
+        <>
+          <ul className="mt-7 overflow-hidden rounded-[3px] border border-linha md:hidden">
+            {usuarios.map((usuario) => <LinhaUsuario key={usuario.id} usuario={usuario} />)}
+          </ul>
+          <div className="mt-7 hidden overflow-hidden rounded-[3px] border border-linha bg-branco md:block">
+            <table className="w-full table-fixed text-left text-[13px]">
+              <caption className="sr-only">Usuários e acessos</caption>
+              <colgroup><col className="w-[30%]" /><col className="w-[15%]" /><col className="w-[20%]" /><col className="w-[15%]" /><col className="w-[20%]" /></colgroup>
+              <thead className="bg-papel text-cinza"><tr><th scope="col" className="px-4 py-3">Nome</th><th scope="col" className="px-4 py-3">Perfil</th><th scope="col" className="px-4 py-3">O que acessa</th><th scope="col" className="px-4 py-3">Situação</th><th scope="col" className="px-4 py-3">Ações</th></tr></thead>
+              <tbody>{usuarios.map((usuario) => <LinhaUsuarioDesktop key={usuario.id} usuario={usuario} />)}</tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
