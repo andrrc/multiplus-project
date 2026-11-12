@@ -32,13 +32,13 @@ const statuses: Record<string, string> = {
   PROTOCOLADO: "Protocolado",
   SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão",
   COM_EXIGENCIA_A_CUMPRIR: "Com exigência",
-  CONCLUIDO: "Concluído",
-  CANCELADO: "Cancelado",
+  CONCLUIDO: "Concluída",
+  CANCELADO: "Cancelada",
 };
 
 const data = (v: Date | null) => v
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v)
-  : "—";
+  : "Não informado";
 const dataHora = (v: Date) => formatarDataHoraBrasilia(v);
 const statusSubtarefa: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 
@@ -76,17 +76,17 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
             <Link href={`/tarefas/${id}/editar`} className="inline-flex min-h-11 items-center rounded-[6px] border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
             {t.status !== "CONCLUIDO" && <form action={concluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-[6px] bg-tinta px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2">Marcar como concluída</button></form>}
             <form action={excluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-[6px] border border-critico px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-critico hover:bg-critico-cl">Excluir tarefa</button></form>
-          </> : <form action={definirAtivoTarefaFormAction.bind(null, id, true)}><button className="rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-verde">Reativar tarefa</button></form>}
+          </> : <form action={definirAtivoTarefaFormAction.bind(null, id, true)}><button className="min-h-11 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-verde">Reativar tarefa</button></form>}
         </div>
       </div>
-      {t.descricao && <p className="mt-6 max-w-[70ch] text-[15px] text-cinza">{t.descricao}</p>}
 
       {subtarefasSemResponsavel.length > 0 && <div role="status" className="mt-5 rounded-[3px] border border-ambar/30 bg-ambar/8 px-4 py-3 text-[14px] text-tinta">
         <strong className="font-semibold">Atribuição pendente:</strong> {subtarefasSemResponsavel.length} {subtarefasSemResponsavel.length === 1 ? "subtarefa está" : "subtarefas estão"} sem responsável.
         <Link href={`/tarefas/${id}?subtarefa=${subtarefasSemResponsavel[0].id}#subtarefa-${subtarefasSemResponsavel[0].id}`} className="ml-1 font-semibold text-azul-esc underline underline-offset-2">Atribuir agora</Link>
       </div>}
 
-      <section className="mt-9 max-w-[860px]">
+      <div className="mt-9 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]"><div>
+      <section>
         <div>
           <h2 className="text-[21px]">Subtarefas <span className="font-[family-name:var(--font-interface)] text-[14px] text-cinza">({t.subtarefas.filter(s => s.status === StatusSubtarefa.CONCLUIDO).length}/{t.subtarefas.length})</span></h2>
           <p className="mt-1 text-[14px] text-cinza">Cada subtarefa tem prazo, responsável, status e acompanhamento próprios.</p>
@@ -94,9 +94,9 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
 
         <div className="mt-4 rounded-[3px] border border-linha bg-branco">
           {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma subtarefa ainda. Cadastre a primeira etapa para esta tarefa.</p> : t.subtarefas.map(s => (
-            <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="border-b border-linha px-5 py-4 last:border-b-0">
+            <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="group border-b border-linha px-5 py-4 last:border-b-0">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><span>{s.titulo}</span><span className="break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoSubtarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal, s.numeroLocal)}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
+                <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5 shrink-0 transition-transform group-open:rotate-90"><path d="m7 4 6 6-6 6" /></svg><span>{s.titulo}</span><span className="break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoSubtarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal, s.numeroLocal)}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
                 <span className="flex flex-wrap items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta>{t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="group inline-flex min-h-11 items-center"><span className="inline-block rounded-[3px] border border-linha bg-branco px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta group-hover:border-azul group-hover:text-azul-esc">Editar</span></Link>}</span>
               </summary>
               <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
@@ -116,6 +116,9 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
       </section>
 
       <Comentarios alvo={{ tarefaId: t.id }} nivel="tarefa" entidadeId={t.id} />
+      </div>
+      {t.descricao && <aside className="min-w-0"><h2 className="text-[21px]">Descrição</h2><p className="mt-4 break-words rounded-[3px] border border-linha bg-branco p-5 text-[15px] text-cinza">{t.descricao}</p></aside>}
+      </div>
     </div>
   );
 }

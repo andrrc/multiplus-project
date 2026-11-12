@@ -41,7 +41,7 @@ Administradora continua vendo tudo.
 As listas de tarefas atribuídas e os detalhes administrativos receberam ajustes de apresentação, sem mudança de consultas ou regras. Na tabela administrativa, o progresso de subtarefas aparece junto à tarefa quando o filtro de responsável está ativo, mantendo a mesma contagem no cartão móvel.
 
 
-A listagem administrativa de tarefas está em adaptação visual aos modelos da Múltiplus, mantendo filtros, dados e links existentes.
+A listagem administrativa de tarefas está em adaptação visual aos modelos da Múltiplus, mantendo filtros, dados e links existentes. No detalhe, subtarefas e comentários ficam na área principal; a descrição aparece ao lado no desktop e abaixo no celular.
 
 
 ### T1. Criar tarefa
@@ -312,6 +312,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Reorganizar o detalhe da tarefa em áreas responsivas |
 | 2026-11-10 | este commit | Ajustar a apresentação responsiva de Minhas tarefas |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de tarefas |
 | 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
