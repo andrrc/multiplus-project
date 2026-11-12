@@ -80,4 +80,16 @@ A lista abaixo descreve pedidos dos protótipos, não afirma que estejam ausente
 
 ## Estado da adaptação
 
-A tipografia, os tokens e a navegação compartilhada estão em adaptação local, assim como o login, listas e detalhes administrativos, agenda, avisos, algumas telas de colaboradores e acompanhamento do cliente. A comparação ainda não está completa: há componentes, telas de formulário, estados, tabelas e propostas dos protótipos que precisam de adaptação e verificação. Este inventário não é uma confirmação de conclusão.
+A adaptação começou pelos tokens, tipografia, login e navegação. As etapas abaixo alteram a apresentação das capacidades existentes; não representam implementação integral dos protótipos nem aprovação visual da Talita.
+
+| Área | Etapa realizada | Ainda falta |
+|---|---|---|
+| Perfil compartilhado | Dados, senha e atribuições organizados em seções responsivas; e-mail longo legível. | Conteúdo adicional proposto nos modelos depende de dados e regras a avaliar. |
+| Administradora — usuários | Tabela no desktop e cartões no celular, com ações existentes. | Recursos de empresa, último acesso e unificação dos acessos exigem análise. |
+| Administradora — detalhe de projeto | Indicadores em faixa; tarefas e comentários na área principal; documentos ao lado no desktop. | Histórico, documentos e ações adicionais dos protótipos exigem avaliação; o restante do fluxo precisa de revisão. |
+| Administradora — detalhe de tarefa | Subtarefas expansíveis e descrição em coluna no desktop, com ações existentes. | Comprovantes e demais ações propostas exigem análise. |
+| Colaboradores — tarefas, projetos e clientes | Listas responsivas com dados e permissões atuais. | Painéis e restrições propostas por perfil precisam de análise própria. |
+| Cliente — acompanhamento | Cartões com dados do portal existente reorganizados. | Painel, relatórios, unidades e outros recursos propostos precisam de análise. |
+| Avisos e agenda | Indicação de não lido e agrupamento diário da lista móvel da agenda. | Filtros, ações e configurações propostas precisam ser comparados às capacidades existentes. |
+
+Permanecem telas de cadastro e edição, estados, acessibilidade e correspondências que precisam ser conferidos. As alterações locais anteriores em clientes e projetos devem ser preservadas até que sua autoria e destino sejam conhecidos.
