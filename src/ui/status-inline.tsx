@@ -57,8 +57,8 @@ export function StatusInline({
 }
 
 export function StatusCardInline({ status, label, opcoes, action }: { status: string; label: string; opcoes: Opcao[]; action: (formData: FormData) => Promise<void> }) {
-  // A cor da borda e do fundo comunica o estado no cartão sem substituir o rótulo textual.
-  const estilo: Record<string, string> = { A_INICIAR: "border-l-cinza bg-papel text-tinta", EM_ANDAMENTO: "border-l-azul bg-azul/8 text-azul-esc", CONCLUIDO: "border-l-verde bg-verde-cl text-verde-esc", CANCELADO: "border-l-critico bg-critico/8 text-critico" };
+  // O ponto e o rótulo comunicam o estado sem substituir o texto.
+  const estilo: Record<string, string> = { A_INICIAR: "bg-papel text-tinta", EM_ANDAMENTO: "bg-azul/8 text-azul-esc", CONCLUIDO: "bg-verde-cl text-verde-esc", CANCELADO: "bg-critico/8 text-critico" };
   // Reaproveita o mesmo menu, mudando apenas a apresentação do controle que o aciona.
-  return <MenuStatus status={status} opcoes={opcoes} action={action} classeGatilho={`inline-flex min-h-[68px] max-w-full items-center gap-3 rounded-[3px] border border-linha border-l-4 px-4 py-3 ${estilo[status] ?? estilo.A_INICIAR}`} gatilho={<><span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${status === "CONCLUIDO" ? "bg-verde-esc" : status === "CANCELADO" ? "bg-critico" : status === "EM_ANDAMENTO" ? "bg-azul-esc" : "bg-cinza"}`} /><span><span className="block font-[family-name:var(--font-interface)] text-[11px] font-medium leading-4 text-cinza">Status do projeto</span><span className="block font-[family-name:var(--font-interface)] text-[16px] font-semibold leading-5">{label} ▾</span></span></>} />;
+  return <MenuStatus status={status} opcoes={opcoes} action={action} classeGatilho={`inline-flex min-h-[68px] max-w-full items-center gap-3 rounded-[3px] border border-linha px-4 py-3 ${estilo[status] ?? estilo.A_INICIAR}`} gatilho={<><span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${status === "CONCLUIDO" ? "bg-verde-esc" : status === "CANCELADO" ? "bg-critico" : status === "EM_ANDAMENTO" ? "bg-azul-esc" : "bg-cinza"}`} /><span><span className="block font-[family-name:var(--font-interface)] text-[11px] font-medium leading-4 text-cinza">Status do projeto</span><span className="block font-[family-name:var(--font-interface)] text-[16px] font-semibold leading-5">{label} ▾</span></span></>} />;
 }

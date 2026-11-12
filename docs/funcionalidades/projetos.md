@@ -119,13 +119,14 @@ A listagem administrativa de projetos está em adaptação visual aos modelos da
 ### P4. Detalhe do projeto
 
 **Como funciona.**
-- **Painel:** mostra valor contratado, janela do projeto (início e conclusão), semáforo,
+- **Painel:** reúne os indicadores em uma faixa responsiva e mostra valor contratado, janela do projeto (início e conclusão), semáforo,
   tarefas concluídas e status. O status pode ser trocado ali mesmo. Na lista de tarefas,
   o menu de status abre por cima do cartão sem ser cortado pelas bordas. Os menus de
   status (do projeto e das tarefas) fecham ao escolher uma opção, ao clicar fora ou ao
   apertar Esc.
-- **Seções:** lista de tarefas (com troca de status e botão "Editar" em cada tarefa ativa,
-  que abre `/tarefas/[id]/editar`), documentos do projeto e comentários.
+- **Seções:** lista de tarefas e comentários ocupam a área principal; documentos e janela
+  do projeto ficam ao lado no desktop e abaixo no celular. A troca de status permanece
+  na lista, e o botão "Editar" abre `/tarefas/[id]/editar` para cada tarefa ativa.
 
 **Detalhes técnicos.**
 - **Rota:** `/projetos/[id]`.
@@ -192,6 +193,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-11 | este commit | Adaptar a faixa de indicadores no detalhe do projeto |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de projetos |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-10-30 | `este commit` | Manter “Ver detalhe” em uma linha na listagem |

@@ -133,3 +133,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-10: Adaptada a apresentação do perfil; veja [Interface](funcionalidades/interface.md).
 - 2026-11-10: Ajustada a apresentação de Minhas tarefas e do portal; veja [Tarefas](funcionalidades/tarefas.md) e [Área exclusiva](funcionalidades/area-exclusiva-cliente.md).
 - 2026-11-11: Adaptada a listagem responsiva; veja [Usuários](funcionalidades/usuarios.md).
+- 2026-11-11: Adaptada a faixa de indicadores no detalhe; veja [Projetos](funcionalidades/projetos.md).
