@@ -31,7 +31,7 @@ Os cartões de acompanhamento do cliente estão em adaptação visual, mantendo 
 **Como funciona.**
 - Após login, CLIENTE chega ao painel `/portal`; o menu contém Acompanhamento e Meu Perfil.
 - O painel lista os projetos ativos próprios, ordenados pela atividade mais recente. Sem projetos, informa “Nenhum projeto cadastrado ainda”.
-- O detalhe mostra status, datas, atualização, progresso, tarefas, responsável e documentos vinculados ao projeto ou ao cadastro. O indicador agregado do projeto usa o rótulo “Progresso” no painel e no detalhe.
+- O detalhe mostra status, datas, atualização, progresso, tarefas, responsável e documentos vinculados ao projeto ou ao cadastro. Os indicadores formam uma faixa; tarefas e documentos ficam lado a lado no desktop e em coluna no celular. O indicador agregado do projeto usa o rótulo “Progresso” no painel e no detalhe.
 - O painel e o detalhe mostram “Dias restantes” junto à conclusão prevista, com o semáforo existente: dias até o prazo, “Vence hoje”, atraso, “Sem prazo”, “Concluído” ou “Cancelado”. A contagem usa dias corridos e o dia atual em São Paulo.
 - Nos cartões do painel, o nome do projeto aparece como título; o detalhe mantém os rótulos de projeto e tarefa.
 - Cada tarefa aparece em seu próprio cartão; o nome e o status ocupam posições estáveis, enquanto prazo, responsável e progresso se alinham em colunas que se empilham no celular. O progresso distingue “Subtarefas concluídas” da conclusão da própria tarefa e inclui uma barra visual.
@@ -84,6 +84,7 @@ Os cartões de acompanhamento do cliente estão em adaptação visual, mantendo 
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Organizar o detalhe do projeto no portal |
 | 2026-11-10 | este commit | Simplificar a apresentação dos cartões do portal, preservando dados e acesso |
 | 2026-11-10 | este commit | Iniciar adaptação visual do acompanhamento do cliente |
 | 2026-10-27 | este commit | Explicar autorização e consultas do portal do cliente no código ([guia](../codigo/README.md), [análise](../analises/documentacao-codigo-portugues.md)) |

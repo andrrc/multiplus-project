@@ -141,3 +141,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-12: Agrupados os itens por dia no celular; veja [Agenda](funcionalidades/agenda.md).
 - 2026-11-12: Organizado o detalhe de projetos atribuídos; veja [Projetos](funcionalidades/projetos.md).
 - 2026-11-12: Reorganizado o detalhe para colaboradores; veja [Tarefas](funcionalidades/tarefas.md).
+- 2026-11-12: Organizado o detalhe no portal; veja [Área exclusiva](funcionalidades/area-exclusiva-cliente.md).
