@@ -28,20 +28,20 @@ export default async function MeusClientesPage() {
           {clientes.map((cliente) => (
             <li key={cliente.id}>
               <Link href={`/meus-clientes/${cliente.id}`} className="block rounded-[3px] border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
-                <p className="text-[15px] font-medium text-tinta">{cliente.razaoSocial}</p>
+                <p className="break-words text-[15px] font-medium text-tinta">{cliente.razaoSocial}</p>
                 <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold tracking-[0.04em] text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p>
-                <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente)}</p>
+                <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Documento não informado" : documentoCliente(cliente)}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <Etiqueta>{cliente.segmento}</Etiqueta>
-                  <span className="text-[14px] text-cinza">{cliente.municipio ?? "—"}</span>
+                  <span className="text-[14px] text-cinza">{cliente.municipio ?? "Cidade não informada"}</span>
                 </div>
               </Link>
             </li>
           ))}
         </ul>
-        <table className="mt-7 hidden w-full border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table">
-          <thead><tr className="bg-papel text-left text-cinza"><th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Razão social</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Segmento</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Cidade</th><th className="rounded-r-[3px] px-5 py-3" /></tr></thead>
-          <tbody>{clientes.map((cliente) => <tr key={cliente.id} className="border-t border-linha bg-branco transition-colors hover:bg-papel"><td className="px-5 py-4 font-medium text-tinta"><Link href={`/meus-clientes/${cliente.id}`} className="hover:text-azul-esc">{cliente.razaoSocial}</Link><p className="mt-1 text-[12px] font-semibold tabular-nums text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p></td><td className="px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente)}</td><td className="px-5 py-4"><Etiqueta>{cliente.segmento}</Etiqueta></td><td className="px-5 py-4 text-cinza">{cliente.municipio ?? "—"}</td><td className="px-5 py-4 text-right"><Link href={`/meus-clientes/${cliente.id}`} className="text-azul-esc hover:underline">Ver detalhe</Link></td></tr>)}</tbody>
+        <table className="mt-7 hidden w-full table-fixed border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table"><caption className="sr-only">Clientes acessíveis</caption><colgroup><col className="w-[35%]" /><col className="w-[25%]" /><col className="w-[20%]" /><col className="w-[20%]" /></colgroup>
+          <thead><tr className="bg-papel text-left text-cinza"><th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Razão social</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Segmento</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Cidade</th></tr></thead>
+          <tbody>{clientes.map((cliente) => <tr key={cliente.id} className="border-t border-linha bg-branco transition-colors hover:bg-papel"><td className="break-words px-5 py-4 font-medium text-tinta"><Link href={`/meus-clientes/${cliente.id}`} className="hover:text-azul-esc">{cliente.razaoSocial}</Link><p className="mt-1 text-[12px] font-semibold tabular-nums text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p></td><td className="break-all px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Documento não informado" : documentoCliente(cliente)}</td><td className="px-5 py-4"><Etiqueta>{cliente.segmento}</Etiqueta></td><td className="px-5 py-4 text-cinza">{cliente.municipio ?? "Cidade não informada"}</td></tr>)}</tbody>
         </table>
         </>
       )}

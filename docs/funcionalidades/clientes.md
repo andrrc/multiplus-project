@@ -146,7 +146,7 @@ A listagem administrativa e os cabeçalhos das fichas de clientes para administr
 ### C6. Clientes do colaborador (RF-046)
 
 **Como funciona.**
-- **Onde:** o colaborador vê em "Clientes" apenas os clientes ligados ao trabalho dele.
+- **Onde:** o colaborador vê em "Clientes" apenas os clientes ligados ao trabalho dele. A lista usa tabela no desktop e cartões no celular, com mensagens para dados não informados.
 - **Na ficha:** dados cadastrais não financeiros, links do Drive e os projetos a que tem
   acesso.
 
@@ -264,6 +264,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Ajustar a lista de clientes dos colaboradores |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de clientes |
 | 2026-11-02 | este commit | Adicionar rolagem vertical interna e cabeçalho fixo à tabela ([análise](../analises/rolagem-interna-listagens.md)) |
 | 2026-11-03 | este commit | Compactar os filtros e identificar o seletor de laudo dentro do campo |
