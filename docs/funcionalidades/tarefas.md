@@ -229,7 +229,8 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
   atribuído, ou é responsável por alguma subtarefa. Os cartões se reorganizam em uma
   coluna no celular e mantêm visíveis o prazo e o status.
 - **Na tarefa:** ele conclui a tarefa (se tiver permissão), conclui as próprias subtarefas
-  e comenta.
+  e comenta. A descrição aparece ao lado das subtarefas no desktop e abaixo no celular;
+  o indicador em cada subtarefa mostra que ela pode ser expandida.
 - **O que ele vê:** o cliente e o projeto, mas não dados restritos como o valor
   contratado.
 
@@ -312,6 +313,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Reorganizar o detalhe da tarefa para colaboradores |
 | 2026-11-12 | este commit | Reorganizar o detalhe da tarefa em áreas responsivas |
 | 2026-11-10 | este commit | Ajustar a apresentação responsiva de Minhas tarefas |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de tarefas |
