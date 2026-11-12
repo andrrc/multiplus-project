@@ -34,7 +34,7 @@ O **semáforo** mostra quantos dias corridos faltam para a conclusão prevista.
 
 ## Funcionalidades
 
-Os cartões de projetos atribuídos abrem o detalhe ao serem selecionados e apresentam prazo, progresso e status em uma grade responsiva, sem mudança de consultas ou regras.
+Os cartões de projetos atribuídos abrem o detalhe ao serem selecionados e apresentam prazo, progresso e status em uma grade responsiva. No detalhe, tarefas e documentos ficam lado a lado no desktop e em coluna no celular, sem mudança de consultas ou regras.
 
 
 A listagem administrativa de projetos está em adaptação visual aos modelos da Múltiplus, mantendo filtros, dados e links existentes.
@@ -193,6 +193,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Organizar o detalhe de projetos atribuídos |
 | 2026-11-12 | este commit | Adaptar os cartões de projetos atribuídos |
 | 2026-11-11 | este commit | Adaptar a faixa de indicadores no detalhe do projeto |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de projetos |
