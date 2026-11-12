@@ -20,7 +20,7 @@ hora, para a Administradora planejar o mês.
 
 ## Funcionalidades
 
-A apresentação do calendário está em adaptação visual aos modelos da Múltiplus; os eventos, consultas e a navegação mensal continuam existentes. No celular, os mesmos itens são apresentados em lista por data para facilitar a leitura.
+A apresentação do calendário está em adaptação visual aos modelos da Múltiplus; os eventos, consultas e a navegação mensal continuam existentes. No celular, os mesmos itens são agrupados por dia em ordem cronológica para facilitar a leitura.
 
 
 ### G1. Calendário mensal de prazos (RF-036)
@@ -78,6 +78,7 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Agrupar os itens da agenda por dia no celular |
 | 2026-11-10 | este commit | Iniciar adaptação visual da agenda |
 | 2026-09-17 | `ddec7eb` | Agenda mensal com ocorrências projetadas (Sprint 4B) |
 | 2026-09-28 | `9969bff` | Projeção semanal respeita o dia da semana escolhido |
