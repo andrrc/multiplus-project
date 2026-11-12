@@ -137,3 +137,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-12: Reorganizado o detalhe da tarefa; veja [Tarefas](funcionalidades/tarefas.md).
 - 2026-11-12: Adaptados os cartões de projetos atribuídos; veja [Projetos](funcionalidades/projetos.md).
 - 2026-11-12: Ajustada a lista contextual; veja [Clientes](funcionalidades/clientes.md).
+- 2026-11-12: Ajustado o destaque de avisos; veja [Notificações](funcionalidades/notificacoes.md).

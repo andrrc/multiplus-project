@@ -39,7 +39,7 @@ As caixas de notificações são apresentadas como **Avisos** no menu e no títu
 ### N1. Central de notificações
 
 **Como funciona.**
-- **Lista:** avisos recentes, com as não lidas destacadas, o link "Abrir registro",
+- **Lista:** avisos recentes, com um ponto azul nas não lidas, o link "Abrir registro",
   "Marcar como lida" e "Marcar todas como lidas".
 - **Sino:** ADMIN, ADMIN_INTERNO e ADMIN_EXTERNO acessam a própria caixa pelo menu. Para
   ADMIN, o sino mostra também o contador de não lidas e abre `/notificacoes`. Não há prévia
@@ -170,6 +170,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Ajustar o destaque de avisos não lidos |
 | 2026-11-10 | este commit | Iniciar adaptação visual das caixas de avisos |
 | 2026-11-03 | este commit | Acrescentar botão local de demonstração dos quatro estilos de toast, sem gravar notificações ([análise](../analises/gerador-toasts-teste.md)) |
 | 2026-11-03 | este commit | Exibir toasts de notificações em tempo real por SSE, resumo de entrada e leitura sincronizada ao abrir a central ([análise](../analises/toast-notifications-realtime.md)) |
