@@ -162,7 +162,7 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 
   await page.goto("/meu-perfil");
-  await page.getByRole("button", { name: "Alterar senha" }).click();
+  // O formulário de senha fica sempre à vista; o botão só habilita com os requisitos atendidos.
   await page.getByLabel("Senha atual").fill(senha);
   await page.locator('input[name="senhaNova"]').fill("OutraSenha123!");
   await page.getByLabel("Confirmar nova senha").fill("OutraSenha123!");

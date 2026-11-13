@@ -1,14 +1,17 @@
 /**
- * Página da rota `src/app/(painel)/portal/[id]/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ * Detalhe do projeto no portal do cliente (protótipo cliente/02-projetos). Mostra só o que o portal já entrega:
+ * progresso, datas, tarefas com prazo, responsável e andamento, e os documentos vinculados. A busca pelo id e
+ * pelo cliente da sessão acontece no servidor (`buscarProjetoPortal`); esta página não amplia nenhum dado.
  */
 import { formatarDataHoraBrasilia } from "@/lib/datas";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjetoPortal } from "@/lib/portal-cliente";
 import { EtiquetaStatusPortal } from "@/ui/etiqueta-status-portal";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { codigoProjeto, codigoTarefa } from "@/lib/identificadores-hierarquicos";
+import { Cartao, CelulaResumo, FaixaResumo, Trilha } from "@/ui/cartao";
+import { StatusPonto } from "@/ui/status-ponto";
 
 const data = (valor: Date | null) => valor
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor)
@@ -26,49 +29,81 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
   const projeto = await buscarProjetoPortal(ctx, id);
   // A função retorna null tanto para item inexistente quanto fora do escopo do cliente.
   if (!projeto) notFound();
-  // O detalhe renderiza progresso, tarefas, responsáveis e documentos já filtrados no servidor.
-  return <div className="w-full max-w-[1280px]">
-    <Link href="/portal" className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Meus projetos</Link>
-    <div className="mt-3 flex flex-wrap items-start justify-between gap-4 border-b border-linha pb-6">
-      <div className="min-w-0"><p className="text-[14px] text-cinza">Nome do projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[13px] tabular-nums text-cinza">ID {codigoProjeto(projeto.cliente.numeroIdentificacao, projeto.numeroLocal)}</p></div>
-      <EtiquetaStatusPortal status={projeto.status}>{projetoStatus[projeto.status]}</EtiquetaStatusPortal>
+  const percentual = projeto.conclusao.percentual;
+
+  return (
+    <div className="w-full max-w-[1280px]">
+      <Trilha itens={[{ rotulo: "Painel", href: "/portal" }, { rotulo: projeto.nome }]} />
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="break-words text-2xl">{projeto.nome}</h1>
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-cinza">
+            <span className="break-all tabular-nums text-faint">{codigoProjeto(projeto.cliente.numeroIdentificacao, projeto.numeroLocal)}</span>
+            <StatusPonto status={projeto.status}>{projetoStatus[projeto.status] ?? projeto.status}</StatusPonto>
+          </p>
+        </div>
+      </div>
+
+      <FaixaResumo rotulo="Resumo do projeto" colunas={5}>
+        <CelulaResumo rotulo="Progresso" detalhe={percentual !== null ? `${projeto.conclusao.concluidas} de ${projeto.conclusao.total} tarefas` : undefined}>
+          {percentual === null ? <span className="text-base text-cinza">Sem tarefas ativas</span> : `${percentual}%`}
+        </CelulaResumo>
+        <CelulaResumo rotulo="Início"><span className="text-base">{data(projeto.dataInicio)}</span></CelulaResumo>
+        <CelulaResumo rotulo="Conclusão prevista"><span className="text-base">{data(projeto.dataPrevistaConclusao)}</span></CelulaResumo>
+        <CelulaResumo rotulo="Dias restantes"><IndicadorSemaforoProjeto prazo={projeto.dataPrevistaConclusao} status={projeto.status} /></CelulaResumo>
+        <CelulaResumo rotulo="Última atualização"><span className="break-words text-base">{atualizacao(projeto.ultimaAtualizacao)}</span></CelulaResumo>
+      </FaixaResumo>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
+        <Cartao titulo="Tarefas" semMargem acao={<span className="text-[13px] tabular-nums text-cinza">{projeto.tarefas.length} {projeto.tarefas.length === 1 ? "tarefa" : "tarefas"}</span>}>
+          {projeto.tarefas.length === 0 ? (
+            <p className="px-5 py-8 text-sm text-cinza">Nenhuma tarefa ativa neste projeto.</p>
+          ) : (
+            <ul>
+              {projeto.tarefas.map((tarefa) => (
+                <li key={tarefa.id} className="min-w-0 border-t border-linha px-5 py-4 first:border-t-0">
+                  <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                    <div className="min-w-0">
+                      <h3 className="break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold">{tarefa.nome}</h3>
+                      <p className="mt-0.5 break-all text-xs tabular-nums text-faint">{codigoTarefa(projeto.cliente.numeroIdentificacao, projeto.numeroLocal, tarefa.numeroLocal)}</p>
+                    </div>
+                    <EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal>
+                  </div>
+                  <dl className="mt-3 grid min-w-0 grid-cols-1 gap-x-6 gap-y-3 text-[13px] sm:grid-cols-3">
+                    <div className="min-w-0"><dt className="text-cinza">Prazo</dt><dd className="mt-0.5 break-words tabular-nums">{data(tarefa.prazo)}</dd></div>
+                    <div className="min-w-0"><dt className="text-cinza">Responsável</dt><dd className="mt-0.5 break-words">{tarefa.responsavel ?? "Não definido"}</dd></div>
+                    <div className="min-w-0">
+                      <dt className="text-cinza">{tarefa.progresso.total === 0 ? "Conclusão da tarefa" : "Subtarefas concluídas"}</dt>
+                      <dd className="mt-0.5 tabular-nums">
+                        {tarefa.progresso.percentual === null ? "Não disponível" : tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total}`}
+                      </dd>
+                      {tarefa.progresso.percentual !== null && (
+                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-linha" role="progressbar" aria-label={tarefa.progresso.total === 0 ? "Conclusão da tarefa" : "Subtarefas concluídas"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={tarefa.progresso.percentual} aria-valuetext={tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total} subtarefas`}>
+                          <div className="h-full rounded-full bg-verde" style={{ width: `${tarefa.progresso.percentual}%` }} />
+                        </div>
+                      )}
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Cartao>
+
+        <Cartao titulo="Documentos" semMargem>
+          {projeto.documentos.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-cinza">Nenhum documento vinculado a este projeto.</p>
+          ) : (
+            <ul>
+              {projeto.documentos.map((documento) => (
+                <li key={documento.id} className="min-w-0 break-words border-t border-linha px-5 py-3 first:border-t-0">
+                  <a href={documento.link} target="_blank" rel="noreferrer" className="font-[family-name:var(--font-interface)] text-sm text-azul-esc hover:underline">{documento.nome} ↗</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Cartao>
+      </div>
     </div>
-    <section className="mt-6 grid overflow-hidden rounded-cartao border border-linha bg-branco sm:grid-cols-2 lg:grid-cols-5">
-      <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Progresso</p><p className="mt-1 font-[family-name:var(--font-interface)] text-[20px] font-semibold">{projeto.conclusao.percentual === null ? "Sem tarefas ativas" : `${projeto.conclusao.percentual}%`}</p>{projeto.conclusao.percentual !== null && <p className="text-[13px] text-cinza">{projeto.conclusao.concluidas} de {projeto.conclusao.total} tarefas</p>}</div>
-      <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Início</p><p className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataInicio)}</p></div>
-      <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Conclusão prevista</p><p className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataPrevistaConclusao)}</p></div>
-      <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Dias restantes</p><div className="mt-1"><IndicadorSemaforoProjeto prazo={projeto.dataPrevistaConclusao} status={projeto.status} /></div></div>
-      <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Última atualização</p><p className="mt-1 break-words font-[family-name:var(--font-interface)] tabular-nums">{atualizacao(projeto.ultimaAtualizacao)}</p></div>
-    </section>
-    <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
-    <section>
-      <h2 className="text-[21px]">Tarefas</h2>
-      {projeto.tarefas.length === 0 ? <p className="mt-3 border border-dashed border-linha bg-branco px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa ativa neste projeto.</p> : <ul className="mt-4 grid gap-3">
-        {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 rounded-cartao border border-linha bg-branco p-4 sm:p-5">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-            <div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoTarefa(projeto.cliente.numeroIdentificacao, projeto.numeroLocal, tarefa.numeroLocal)}</p></div>
-            <div className="justify-self-start sm:justify-self-end"><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>
-          </div>
-          <dl className="mt-4 grid min-w-0 grid-cols-1 gap-x-6 gap-y-4 text-[13px] sm:grid-cols-2 lg:grid-cols-3">
-            <div className="min-w-0"><dt className="text-cinza">Prazo</dt><dd className="mt-1 break-words font-[family-name:var(--font-interface)] tabular-nums">{data(tarefa.prazo)}</dd></div>
-            <div className="min-w-0"><dt className="text-cinza">Responsável</dt><dd className="mt-1 break-words font-[family-name:var(--font-interface)]">{tarefa.responsavel ?? "Não definido"}</dd></div>
-            <div className="min-w-0">
-              <dt className="text-cinza">{tarefa.progresso.total === 0 ? "Conclusão da tarefa" : "Subtarefas concluídas"}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-interface)]">
-                {tarefa.progresso.percentual === null ? "Não disponível" : tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total}`}
-              </dd>
-              {tarefa.progresso.percentual !== null && <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-papel" role="progressbar" aria-label={tarefa.progresso.total === 0 ? "Conclusão da tarefa" : "Subtarefas concluídas"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={tarefa.progresso.percentual} aria-valuetext={tarefa.progresso.total === 0 ? `${tarefa.progresso.percentual}%` : `${tarefa.progresso.concluidas} de ${tarefa.progresso.total} subtarefas`}>
-                <div className="h-full rounded-full bg-verde-esc" style={{ width: `${tarefa.progresso.percentual}%` }} />
-              </div>}
-            </div>
-          </dl>
-        </li>)}
-      </ul>}
-    </section>
-    <section>
-      <h2 className="text-[21px]">Documentos</h2>
-      {projeto.documentos.length === 0 ? <p className="mt-3 text-[14px] text-cinza">Nenhum documento vinculado a este projeto.</p> : <ul className="mt-4 space-y-2">{projeto.documentos.map((documento) => <li key={documento.id} className="min-w-0 break-words border border-linha bg-branco px-4 py-3"><a href={documento.link} target="_blank" rel="noreferrer" className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">{documento.nome} ↗</a></li>)}</ul>}
-    </section>
-    </div>
-  </div>;
+  );
 }

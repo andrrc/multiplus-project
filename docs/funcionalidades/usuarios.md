@@ -122,7 +122,7 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 - **Primeira senha:** quem ainda não ativou o acesso define a senha pelo link do convite.
 
 **Detalhes técnicos.**
-- **Rota:** `/meu-perfil`.
+- **Rota:** `/meu-perfil` (visual refeito em 13/11/2026, sem mudança de regra; ver `interface.md`).
 - **Funções:** `atualizarMeuNome` e `alterarMinhaSenha`, que aplicam a política de senha
   (ver `autenticacao-acesso.md`).
 - **Teste:** `meu-perfil-rf042.integration.test.ts`, com 8 casos.
@@ -153,3 +153,4 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 | 2026-09-30 | `1d88b94` | Máscara e validação do telefone celular; ver [análise](../analises/formatacao-campos-telefone.md) |
 | 2026-10-01 | `9bce2c0` | Sessões passam a respeitar a desativação e o perfil atual ([análise](../analises/revalidacao-sessao-usuarios.md)) |
 | 2026-11-13 | este commit | Lista, cadastro e detalhe no padrão do protótipo `07-usuarios`: tabela que vira cartões, filtros com contagem, perfis em cartões e rodapé fixo no cadastro |
+| 2026-11-13 | este commit | Visual do Meu perfil refeito: avatar, cartões e requisitos de senha conferidos na hora |

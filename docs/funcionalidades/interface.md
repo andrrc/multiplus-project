@@ -14,14 +14,31 @@ Padrões visuais compartilhados pelo login, painel, telas dos colaboradores e po
 
 ### Meu perfil
 
-**Como funciona.** Os dados pessoais, a troca de senha e as atribuições existentes
-aparecem em seções separadas, seguindo o modelo visual de perfil. Os campos se
-organizam em duas colunas no desktop e uma no celular. Os dados editáveis
-e as atribuições continuam sujeitos às regras atuais de cada perfil.
+**Como funciona.** A mesma tela serve aos quatro perfis. No topo do cartão **Meus dados** ficam o avatar com as iniciais, o nome e
+o selo do perfil; abaixo, o nome (único campo que a pessoa edita, RF-042), o telefone, o e-mail e o cargo, estes três só para
+conferência, com a dica "só a administradora altera". "Salvar nome" só habilita quando o nome mudou. O cartão **Senha** fica
+sempre à vista, com os requisitos (8 caracteres, uma letra, um número e as duas senhas iguais) conferidos enquanto a pessoa digita,
+e "Alterar senha" só habilita com a senha atual preenchida e todos os requisitos atendidos. **O que você acessa** lista os projetos e
+as tarefas atribuídos ao colaborador interno ou externo; o cliente não vê esse cartão. Os campos ficam em duas colunas no desktop e
+em uma no celular.
 
-**Detalhes técnicos.** A rota `/meu-perfil` reorganiza a apresentação de dados já
-consultados e mantém os formulários e ações existentes. A jornada de navegador em
-`tests/browser/jornadas.spec.ts` cobre a troca de senha.
+**Detalhes técnicos.** `meu-perfil/page.tsx` e `formularios.tsx`, com `Cartao` e `Avatar` de `src/ui/cartao.tsx` e as ações
+existentes (`atualizarNomeAction`, `alterarSenhaAction`), sem mudança de regra nem de permissão. A validação continua no servidor. O
+teste de navegador de `jornadas.spec.ts` deixou de abrir o formulário de senha antes de preencher, pois ele agora está sempre
+visível; `colaborador.spec.ts` confere o perfil do externo e do cliente a 375 px.
+
+**Pendências.** Telefone editável pela própria pessoa e a tabela "Avisos que você recebe" do protótipo dependem de dado e de regra
+novos e **não foram criados**.
+
+### Projeto no portal do cliente
+
+**Como funciona.** O detalhe do projeto (`/portal/[id]`) ganhou a trilha "Painel / Projeto", o título com o código e o status, a faixa
+de resumo (progresso, início, conclusão prevista, dias restantes e última atualização) e os cartões **Tarefas** (nome, código,
+andamento, prazo, responsável e progresso das subtarefas) e **Documentos**.
+
+**Detalhes técnicos.** `portal/[id]/page.tsx` usa só `buscarProjetoPortal`, que já limita o que o cliente enxerga; nenhum dado novo
+foi exposto. A trilha de etapas, as atualizações da Múltiplus e o filtro Em andamento/Concluídos do protótipo dependem de dados que
+o portal não entrega (etapas nomeadas, comentários liberados ao cliente) e ficaram de fora.
 
 ### Navegação e identidade dos modelos
 
@@ -282,6 +299,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer o Meu perfil (todos os perfis) e o detalhe do projeto no portal do cliente conforme os protótipos |
 | 2026-11-13 | este commit | Criar o Painel (administradora e colaborador interno), o Painel do cliente e as Configurações, e passar o Painel a tela inicial |
 | 2026-11-13 | este commit | Tela própria de tarefas do colaborador externo, só visual e sem restringir menu nem dados |
 | 2026-11-13 | este commit | Refazer as telas do colaborador interno no padrão dos protótipos (ver [Tarefas](tarefas.md), [Projetos](projetos.md) e [Clientes](clientes.md)) |

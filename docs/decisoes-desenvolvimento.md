@@ -153,3 +153,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-13: Refeitas as telas do colaborador interno no padrão dos modelos; veja [Interface](funcionalidades/interface.md).
 - 2026-11-13: Criada a tela de tarefas do colaborador externo, só visual (sem restringir menu nem dados, que exigem análise); veja [Interface](funcionalidades/interface.md).
 - 2026-11-13: Criados o Painel, o Painel do cliente e as Configurações; o Painel passa a ser a tela inicial da administradora e do colaborador interno. Instruções e Relatórios ficaram de fora por descreverem recursos inexistentes; veja [Interface](funcionalidades/interface.md).
+- 2026-11-13: Refeitos o Meu perfil (todos os perfis) e o detalhe do projeto no portal do cliente. O formulário de senha passou a ficar sempre visível, com o botão habilitado só com os requisitos atendidos; telefone editável e avisos recebidos ficaram pendentes por dependerem de dado novo; veja [Interface](funcionalidades/interface.md).

@@ -1,11 +1,14 @@
 /**
- * Página da rota `src/app/(painel)/meu-perfil/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
+ * Meu perfil (protótipos 09 do interno, 04 do externo e 04 do cliente): a mesma tela para os quatro
+ * perfis. Cartões "Meus dados", "Senha" e "O que você acessa". Cada pessoa vê e edita só a própria
+ * linha, identificada pela sessão (RF-042), por isso não usa `exigirAcessoARota` com restrição de perfil.
+ * Telefone editável e a tabela de avisos recebidos dependem de dado novo e ficaram de fora.
  */
 import type { Perfil } from "@prisma/client";
 import { obterContexto } from "@/server/auth/contexto";
 import { buscarUsuario, listarAtribuicoesDetalhadas } from "@/lib/usuarios";
 import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
-import { Etiqueta } from "@/ui/campo";
+import { Cartao, Avatar } from "@/ui/cartao";
 import { FormularioDados, FormularioSenha } from "./formularios";
 
 const NOME_PERFIL: Record<Perfil, string> = {
@@ -15,11 +18,6 @@ const NOME_PERFIL: Record<Perfil, string> = {
   CLIENTE: "Cliente",
 };
 
-/**
- * Tela A6 (RF-042) — acessível a todos os perfis, e a única tela de administração que não
- * é do Administrador. Por isso não usa `exigirAcessoARota` com restrição de perfil: cada
- * pessoa vê e edita a própria linha, identificada pela sessão.
- */
 export default async function MeuPerfilPage() {
   const ctx = await obterContexto();
 
@@ -31,110 +29,81 @@ export default async function MeuPerfilPage() {
   if (!usuario) return null;
 
   const ehAdministrador = ctx.perfil === "ADMIN";
+  const mostraAtribuicoes = ctx.perfil === "ADMIN_INTERNO" || ctx.perfil === "ADMIN_EXTERNO";
+  const documentos = [
+    usuario.cpf ? { rotulo: "CPF", valor: formatarCpf(usuario.cpf) } : null,
+    usuario.cnpj ? { rotulo: "CNPJ", valor: formatarCnpj(usuario.cnpj) } : null,
+  ].filter((item): item is { rotulo: string; valor: string } => item !== null);
 
   return (
-    <div className="w-full max-w-[900px]">
-      <h1 className="text-[24px] sm:text-[28px]">Meu perfil</h1>
+    <div className="w-full max-w-[860px]">
+      <h1 className="text-2xl">Meu perfil</h1>
 
-      <section className="mt-7 overflow-hidden rounded-cartao border border-linha bg-branco">
-        <div className="border-b border-linha px-5 py-4 sm:px-6">
-          <h2 className="text-[19px]">Meus dados</h2>
-        </div>
-        <div className="px-5 py-5 sm:px-6">
-          <div>
-            <FormularioDados
-              nome={usuario.nome}
-              email={usuario.email}
-              perfil={NOME_PERFIL[usuario.perfil]}
-              emailEditavel={ehAdministrador}
-            />
-          </div>
-
-          {/* RF-042 dá ao próprio usuário apenas o nome para editar; cargo e documento são
-              definição da administração, então aparecem aqui só para conferência. */}
-          {(usuario.cargo || usuario.telefone || usuario.cpf || usuario.cnpj) && (
-            <dl className="mt-7 grid max-w-sm grid-cols-1 gap-4 border-t border-linha pt-6 sm:grid-cols-2">
-              {usuario.cargo && (
-                <div>
-                  <dt className="text-[13px] text-cinza">Cargo ou função</dt>
-                  <dd className="font-[family-name:var(--font-interface)] text-[14.5px] text-tinta">
-                    {usuario.cargo}
-                  </dd>
-                </div>
-              )}
-              {usuario.telefone && (
-                <div>
-                  <dt className="text-[13px] text-cinza">Telefone</dt>
-                  <dd className="font-[family-name:var(--font-interface)] text-[14.5px] tabular-nums text-tinta">
-                    {formatarTelefone(usuario.telefone)}
-                  </dd>
-                </div>
-              )}
-              {usuario.cpf && (
-                <div>
-                  <dt className="text-[13px] text-cinza">CPF</dt>
-                  <dd className="font-[family-name:var(--font-interface)] text-[14.5px] tabular-nums text-tinta">
-                    {formatarCpf(usuario.cpf)}
-                  </dd>
-                </div>
-              )}
-              {usuario.cnpj && (
-                <div>
-                  <dt className="text-[13px] text-cinza">CNPJ</dt>
-                  <dd className="font-[family-name:var(--font-interface)] text-[14.5px] tabular-nums text-tinta">
-                    {formatarCnpj(usuario.cnpj)}
-                  </dd>
-                </div>
-              )}
-              <p className="text-[13px] text-cinza sm:col-span-2">
-                Para corrigir estes dados, fale com a administração.
+      <div className="mt-6 flex flex-col gap-4">
+        <Cartao titulo="Meus dados">
+          <div className="flex items-center gap-4 pb-5">
+            <Avatar nome={usuario.nome} tamanho={52} />
+            <div className="min-w-0">
+              <p className="truncate font-[family-name:var(--font-interface)] text-lg font-semibold">{usuario.nome}</p>
+              <p className="mt-1">
+                <span className="inline-block rounded-selo bg-azul-cl px-2 py-[3px] font-[family-name:var(--font-interface)] text-xs font-semibold text-azul-esc">
+                  {NOME_PERFIL[usuario.perfil]}
+                </span>
               </p>
+            </div>
+          </div>
+          <FormularioDados
+            nome={usuario.nome}
+            email={usuario.email}
+            emailEditavel={ehAdministrador}
+            cargo={usuario.cargo ?? null}
+            telefone={usuario.telefone ? formatarTelefone(usuario.telefone) : null}
+          />
+          {/* RF-042 dá ao próprio usuário apenas o nome para editar; os demais dados são definição da administração. */}
+          {documentos.length > 0 && (
+            <dl className="mt-5 grid grid-cols-1 gap-4 border-t border-linha pt-4 text-[13px] sm:grid-cols-2">
+              {documentos.map((documento) => (
+                <div key={documento.rotulo}>
+                  <dt className="text-cinza">{documento.rotulo}</dt>
+                  <dd className="mt-0.5 tabular-nums">{documento.valor}</dd>
+                </div>
+              ))}
+              <p className="text-cinza sm:col-span-2">Para corrigir estes dados, fale com a administração.</p>
             </dl>
           )}
-        </div>
-      </section>
+        </Cartao>
 
-      <section className="mt-5 rounded-cartao border border-linha bg-branco px-5 py-5 sm:px-6">
-        <h2 className="text-[19px]">Segurança</h2>
-        <p className="mt-1.5 text-[15px] text-cinza">
-          Para trocar a senha, informe a atual.
-        </p>
-        <div className="mt-4">
+        <Cartao titulo="Senha" acao={<span className="text-[13px] text-cinza">Para trocar, informe a senha atual.</span>}>
           <FormularioSenha />
-        </div>
-      </section>
+        </Cartao>
 
-      {(ctx.perfil === "ADMIN_INTERNO" || ctx.perfil === "ADMIN_EXTERNO") && (
-        <section className="mt-5 rounded-cartao border border-linha bg-branco px-5 py-5 sm:px-6">
-          <h2 className="text-[19px]">Minhas atribuições</h2>
-          {atribuicoes.length === 0 ? (
-            <p className="mt-4 rounded-cartao border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">
-              Você ainda não tem nada atribuído. Fale com a administração para receber acesso
-              a um projeto ou tarefa.
-            </p>
-          ) : (
-            <ul className="mt-4 overflow-hidden rounded-cartao border border-linha bg-branco">
-              {atribuicoes.map((atribuicao) => (
-                <li
-                  key={atribuicao.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4 last:border-b-0"
-                >
-                  <div>
-                    <p className="font-[family-name:var(--font-interface)] text-[14.5px] font-medium text-tinta">
+        {mostraAtribuicoes && (
+          <Cartao titulo="O que você acessa" semMargem acao={<span className="text-[13px] text-cinza">Para mudar, fale com a administração.</span>}>
+            {atribuicoes.length === 0 ? (
+              <p className="px-5 py-4 text-sm text-cinza">
+                Você ainda não tem nada atribuído. Fale com a administração para receber acesso a um projeto ou tarefa.
+              </p>
+            ) : (
+              <ul>
+                {atribuicoes.map((atribuicao) => (
+                  <li
+                    key={atribuicao.id}
+                    className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b border-linha px-5 py-3 text-sm last:border-b-0"
+                  >
+                    <span className="min-w-0 break-words font-[family-name:var(--font-interface)] font-medium">
                       {atribuicao.entidadeNome ?? "(registro removido)"}
-                    </p>
-                    <p className="text-[13.5px] text-cinza">
-                      {atribuicao.cliente ?? "Cliente não informado"} ·{" "}
-                      {atribuicao.entidadeTipo === "PROJETO" ? "Projeto" : "Tarefa"}
-                    </p>
-                  </div>
-                  <Etiqueta>{atribuicao.entidadeTipo === "PROJETO" ? "Projeto" : "Tarefa"}</Etiqueta>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+                      <span className="ml-2 text-xs font-normal text-cinza">
+                        {atribuicao.entidadeTipo === "PROJETO" ? "Projeto" : "Tarefa"}
+                      </span>
+                    </span>
+                    <span className="min-w-0 break-words text-cinza">{atribuicao.cliente ?? "Cliente não informado"}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Cartao>
+        )}
+      </div>
     </div>
   );
 }

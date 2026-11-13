@@ -80,6 +80,7 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
     [`/minhas-tarefas/${tarefaId}`, `Tarefa colaborador ${sufixo}`],
     ["/meus-clientes", "Clientes"],
     [`/meus-clientes/${clienteId}`, nomeCliente],
+    ["/meu-perfil", "Meu perfil"],
   ];
   for (const largura of [1024, 375]) {
     await page.setViewportSize({ width: largura, height: 800 });
@@ -111,6 +112,13 @@ test("colaborador externo vê a tela própria de tarefas e ela cabe no celular",
   // Abrir a tarefa continua levando ao detalhe de sempre.
   await page.getByRole("link", { name: new RegExp(`Tarefa colaborador ${sufixo}`) }).click();
   await expect(page.getByRole("heading", { name: `Tarefa colaborador ${sufixo}`, level: 1 })).toBeVisible();
+  // Perfil: dados, senha e o que a pessoa acessa; o botão de senha só habilita com os requisitos atendidos.
+  await page.goto("/meu-perfil");
+  await expect(page.getByRole("heading", { name: "Meu perfil", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "O que você acessa", level: 2 })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Alterar senha", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Salvar nome" })).toBeDisabled();
+  expect(await semRolagemLateral(page)).toBe(true);
 });
 
 test("cliente abre o painel do portal e ele cabe no celular", async ({ page }) => {
@@ -121,5 +129,16 @@ test("cliente abre o painel do portal e ele cabe no celular", async ({ page }) =
   await page.getByRole("button", { name: "Definir senha e entrar" }).click();
   await expect(page.getByRole("heading", { name: "Olá, Marcos", level: 1 })).toBeVisible();
   await expect(page.getByRole("link", { name: `Projeto colaborador ${sufixo}` })).toBeVisible();
+  expect(await semRolagemLateral(page)).toBe(true);
+  // Detalhe do projeto: resumo, tarefas e documentos, sem rolagem lateral.
+  await page.getByRole("link", { name: `Projeto colaborador ${sufixo}` }).click();
+  await expect(page.getByRole("heading", { name: `Projeto colaborador ${sufixo}`, level: 1 })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Resumo do projeto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: `Tarefa colaborador ${sufixo}`, level: 3 })).toBeVisible();
+  expect(await semRolagemLateral(page)).toBe(true);
+  // Perfil do cliente: sem a lista de atribuições, que é só dos colaboradores.
+  await page.goto("/meu-perfil");
+  await expect(page.getByRole("heading", { name: "Meu perfil", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "O que você acessa", level: 2 })).toHaveCount(0);
   expect(await semRolagemLateral(page)).toBe(true);
 });
