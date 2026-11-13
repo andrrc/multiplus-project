@@ -7,7 +7,7 @@ export function CamposLaudo({ valor, onChange, responsaveis, disabled = false }:
   // Mantém o nome local para tornar explícito que as opções vêm da consulta autorizada do servidor.
   const opcoes = responsaveis;
   return (
-    <fieldset disabled={disabled} className="min-w-0 rounded-[3px] border border-linha bg-papel p-4">
+    <fieldset disabled={disabled} className="min-w-0 rounded-cartao border border-linha bg-papel p-4">
       <legend className="px-1 font-[family-name:var(--font-interface)] font-semibold">Laudo técnico</legend>
       <label className="flex min-h-11 items-center gap-2 font-[family-name:var(--font-interface)] text-[14px]">
         {/* O campo controla se os demais dados devem ser exibidos e persistidos. */}

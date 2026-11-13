@@ -73,14 +73,14 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
         <div className="flex flex-wrap gap-2">
           {t.ativo ? <StatusInline status={t.status} label={statuses[t.status]} opcoes={Object.entries(statuses).map(([valor, label]) => ({ valor, label }))} action={alterarStatusTarefaAction.bind(null, id)} /> : <Etiqueta tom="apagado">Desativada</Etiqueta>}
           {t.ativo ? <>
-            <Link href={`/tarefas/${id}/editar`} className="inline-flex min-h-11 items-center rounded-[6px] border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
-            {t.status !== "CONCLUIDO" && <form action={concluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-[6px] bg-tinta px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2">Marcar como concluída</button></form>}
-            <form action={excluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-[6px] border border-critico px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-critico hover:bg-critico-cl">Excluir tarefa</button></form>
-          </> : <form action={definirAtivoTarefaFormAction.bind(null, id, true)}><button className="min-h-11 rounded-[3px] border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-verde">Reativar tarefa</button></form>}
+            <Link href={`/tarefas/${id}/editar`} className="inline-flex min-h-11 items-center rounded-controle border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-azul">Editar</Link>
+            {t.status !== "CONCLUIDO" && <form action={concluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-controle bg-tinta px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2">Marcar como concluída</button></form>}
+            <form action={excluirTarefaAction.bind(null, id)}><button className="min-h-11 rounded-controle border border-critico px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-critico hover:bg-critico-cl">Excluir tarefa</button></form>
+          </> : <form action={definirAtivoTarefaFormAction.bind(null, id, true)}><button className="min-h-11 rounded-controle border border-linha px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] hover:border-verde">Reativar tarefa</button></form>}
         </div>
       </div>
 
-      {subtarefasSemResponsavel.length > 0 && <div role="status" className="mt-5 rounded-[3px] border border-ambar/30 bg-ambar/8 px-4 py-3 text-[14px] text-tinta">
+      {subtarefasSemResponsavel.length > 0 && <div role="status" className="mt-5 rounded-cartao border border-ambar/30 bg-ambar/8 px-4 py-3 text-[14px] text-tinta">
         <strong className="font-semibold">Atribuição pendente:</strong> {subtarefasSemResponsavel.length} {subtarefasSemResponsavel.length === 1 ? "subtarefa está" : "subtarefas estão"} sem responsável.
         <Link href={`/tarefas/${id}?subtarefa=${subtarefasSemResponsavel[0].id}#subtarefa-${subtarefasSemResponsavel[0].id}`} className="ml-1 font-semibold text-azul-esc underline underline-offset-2">Atribuir agora</Link>
       </div>}
@@ -92,19 +92,19 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           <p className="mt-1 text-[14px] text-cinza">Cada subtarefa tem prazo, responsável, status e acompanhamento próprios.</p>
         </div>
 
-        <div className="mt-4 rounded-[3px] border border-linha bg-branco">
+        <div className="mt-4 rounded-cartao border border-linha bg-branco">
           {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-[14px] text-cinza">Nenhuma subtarefa ainda. Cadastre a primeira etapa para esta tarefa.</p> : t.subtarefas.map(s => (
             <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="group border-b border-linha px-5 py-4 last:border-b-0">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                 <span className="flex flex-wrap items-center gap-2 font-medium text-tinta"><svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5 shrink-0 transition-transform group-open:rotate-90"><path d="m7 4 6 6-6 6" /></svg><span>{s.titulo}</span><span className="break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoSubtarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal, s.numeroLocal)}</span><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>
-                <span className="flex flex-wrap items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta>{t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="group inline-flex min-h-11 items-center"><span className="inline-block rounded-[3px] border border-linha bg-branco px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta group-hover:border-azul group-hover:text-azul-esc">Editar</span></Link>}</span>
+                <span className="flex flex-wrap items-center gap-3 text-[13px] text-cinza"><span>Prazo: {data(s.prazo)}</span><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /><span>{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? "Sem responsável"}</span><Etiqueta tom={s.status === StatusSubtarefa.CONCLUIDO ? "positivo" : s.status === StatusSubtarefa.CANCELADO ? "apagado" : undefined}>{statusSubtarefa[s.status]}</Etiqueta>{t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="group inline-flex min-h-11 items-center"><span className="inline-block rounded-selo border border-linha bg-branco px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta group-hover:border-azul group-hover:text-azul-esc">Editar</span></Link>}</span>
               </summary>
-              <div className="mt-4 rounded-[3px] border border-linha bg-papel p-4">
+              <div className="mt-4 rounded-cartao border border-linha bg-papel p-4">
                 <p className="text-[14px] leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
                 <p className="mt-2 text-[12px] text-cinza">Criado por: {s.criadoPorNome ?? "Registro anterior"} · {dataHora(s.criadoEm)}</p>
                 <EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} />
-                {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="mt-3 inline-flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-3 text-[13px] font-medium hover:border-azul hover:text-azul-esc">Editar subtarefa</Link>}
-                {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-[12px] font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className="min-h-11 rounded-[3px] border border-linha bg-branco px-3 text-[13px] hover:border-azul">Salvar responsável</button></form>}
+                {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className="mt-3 inline-flex min-h-11 items-center rounded-controle border border-linha bg-branco px-3 text-[13px] font-medium hover:border-azul hover:text-azul-esc">Editar subtarefa</Link>}
+                {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-[12px] font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className="min-h-11 rounded-controle border border-linha bg-branco px-3 text-[13px] hover:border-azul">Salvar responsável</button></form>}
                 {t.ativo && s.ativo && <div className="mt-3"><StatusInline status={s.status} label={statusSubtarefa[s.status]} opcoes={Object.values(StatusSubtarefa).map(valor => ({ valor, label: statusSubtarefa[valor] }))} action={atualizarStatusSubtarefaAction.bind(null, s.id)} alinhar="esquerda" /></div>}
                 {t.ativo && s.ativo && <Comentarios alvo={{ subtarefaId: s.id }} nivel="subtarefa" entidadeId={s.id} tarefaId={t.id} />}
               </div>
@@ -112,12 +112,12 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           ))}
         </div>
 
-        {t.ativo && <Link href={`/tarefas/${id}/subtarefas/nova`} className="mt-4 inline-flex min-h-11 items-center rounded-[6px] bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">+ Nova subtarefa</Link>}
+        {t.ativo && <Link href={`/tarefas/${id}/subtarefas/nova`} className="mt-4 inline-flex min-h-11 items-center rounded-controle bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">+ Nova subtarefa</Link>}
       </section>
 
       <Comentarios alvo={{ tarefaId: t.id }} nivel="tarefa" entidadeId={t.id} />
       </div>
-      {t.descricao && <aside className="min-w-0"><h2 className="text-[21px]">Descrição</h2><p className="mt-4 break-words rounded-[3px] border border-linha bg-branco p-5 text-[15px] text-cinza">{t.descricao}</p></aside>}
+      {t.descricao && <aside className="min-w-0"><h2 className="text-[21px]">Descrição</h2><p className="mt-4 break-words rounded-cartao border border-linha bg-branco p-5 text-[15px] text-cinza">{t.descricao}</p></aside>}
       </div>
     </div>
   );

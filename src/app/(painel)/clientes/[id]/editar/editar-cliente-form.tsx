@@ -347,14 +347,14 @@ export function EditarClienteForm({
       <CamposLaudo valor={laudoTecnico} onChange={setLaudoTecnico} responsaveis={responsaveisLaudo} disabled={enviando} />
 
       {erro && (
-        <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-4 py-3 text-[15px] text-critico">{erro}</p>
+        <p className="rounded-cartao border border-critico/25 bg-critico-cl px-4 py-3 text-[15px] text-critico">{erro}</p>
       )}
 
       <div className="flex gap-3">
         <button
           type="submit"
           disabled={enviando}
-          className="min-h-11 rounded-[6px] bg-tinta px-6 py-3 font-[family-name:var(--font-interface)] text-[15px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-controle bg-tinta px-6 py-3 font-[family-name:var(--font-interface)] text-[15px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {enviando ? "Salvando…" : "Salvar alterações"}
         </button>

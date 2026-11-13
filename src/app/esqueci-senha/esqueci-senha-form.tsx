@@ -11,7 +11,7 @@ export function EsqueciSenhaForm() {
   if (estado.mensagem) {
     // Após o envio, mostra apenas confirmação genérica e remove o formulário.
     return (
-      <p className="rounded-[3px] border-l-[3px] border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
+      <p className="rounded-cartao border border-verde-borda bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
         {estado.mensagem}
       </p>
     );
@@ -34,7 +34,7 @@ export function EsqueciSenhaForm() {
       </div>
 
       {estado.erro && (
-        <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-3.5 py-2.5 text-[14px] text-critico">
+        <p className="rounded-cartao border border-critico/25 bg-critico-cl px-3.5 py-2.5 text-[14px] text-critico">
           {estado.erro}
         </p>
       )}
@@ -42,7 +42,7 @@ export function EsqueciSenhaForm() {
       <button
         type="submit"
         disabled={pendente}
-        className="mt-2 min-h-11 rounded-[3px] bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+        className="mt-2 min-h-11 rounded-controle bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
       >
         {pendente ? "Enviando…" : "Enviar link de redefinição"}
       </button>

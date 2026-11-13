@@ -12,7 +12,7 @@ function Retorno({ estado }: { estado: EstadoPerfil }) {
   if (!estado.erro && !estado.mensagem) return null;
   return (
     <p
-      className={`rounded-[3px] border px-4 py-3 text-[14.5px] ${
+      className={`rounded-cartao border px-4 py-3 text-[14.5px] ${
         estado.erro
           ? "border-critico bg-branco text-critico"
           : "border-verde bg-verde-cl text-verde-esc"
@@ -47,7 +47,7 @@ export function FormularioDados({
 
       <div className="flex min-w-0 flex-col gap-1.5">
         <span className="text-[13px] font-medium text-tinta">E-mail</span>
-        <p className="min-h-11 break-all rounded-[3px] border border-linha bg-papel px-3.5 py-2.5 text-[14.5px] text-cinza">{email}</p>
+        <p className="min-h-11 break-all rounded-controle border border-linha bg-papel px-3.5 py-2.5 text-[14.5px] text-cinza">{email}</p>
       </div>
       <Campo label="Perfil">
         <input value={perfil} readOnly disabled className={inputClass} />
@@ -65,7 +65,7 @@ export function FormularioDados({
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[3px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+          className="min-h-11 rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar nome"}
         </button>
@@ -87,7 +87,7 @@ export function FormularioSenha() {
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="min-h-11 rounded-[3px] border border-linha px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
+        className="min-h-11 rounded-controle border border-linha px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
       >
         Alterar senha
       </button>
@@ -150,7 +150,7 @@ export function FormularioSenha() {
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[3px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
+          className="min-h-11 rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
         >
           {pendente ? "Alterando…" : "Alterar senha"}
         </button>

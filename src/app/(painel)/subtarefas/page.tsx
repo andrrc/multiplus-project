@@ -52,14 +52,14 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     <div className="flex flex-wrap items-end justify-between gap-4">
       <h1 className="text-[24px]">Subtarefas</h1>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
-        <div className="rounded-[6px] border border-linha bg-branco px-5 py-3"><p className="text-[11px] uppercase tracking-[0.08em] text-cinza">Em dia</p><p className="font-[family-name:var(--font-interface)] text-[25px] font-semibold text-tinta">{indicador.percentual === null ? "—" : `${indicador.percentual}%`} <span className="text-[13px] font-normal text-cinza">({indicador.emDia}/{indicador.total})</span></p></div>
+        <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-controle border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
+        <div className="rounded-controle border border-linha bg-branco px-5 py-3"><p className="text-[11px] uppercase tracking-[0.08em] text-cinza">Em dia</p><p className="font-[family-name:var(--font-interface)] text-[25px] font-semibold text-tinta">{indicador.percentual === null ? "—" : `${indicador.percentual}%`} <span className="text-[13px] font-normal text-cinza">({indicador.emDia}/{indicador.total})</span></p></div>
       </div>
     </div>
-    {solicitacoes.length > 0 && <section className="mt-7 rounded-[6px] border border-linha bg-branco p-4 sm:p-5" aria-labelledby="conclusoes-pendentes">
+    {solicitacoes.length > 0 && <section className="mt-7 rounded-controle border border-linha bg-branco p-4 sm:p-5" aria-labelledby="conclusoes-pendentes">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h2 id="conclusoes-pendentes" className="font-[family-name:var(--font-interface)] text-[18px] font-semibold">Conclusões aguardando confirmação</h2><p className="mt-1 text-[13px] text-cinza">Confirme para registrar a conclusão ou rejeite para devolver o item ao status anterior.</p></div>
-        <span className="rounded-[2px] bg-ambar/10 px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-ambar">{solicitacoes.length} {solicitacoes.length === 1 ? "pedido" : "pedidos"}</span>
+        <span className="rounded-selo bg-ambar/10 px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-ambar">{solicitacoes.length} {solicitacoes.length === 1 ? "pedido" : "pedidos"}</span>
       </div>
       {solicitacoes.length === 0 ? <p className="mt-4 border-t border-linha pt-4 text-[14px] text-cinza">Nenhuma conclusão aguarda confirmação.</p> : <ul className="mt-4 divide-y divide-linha border-t border-linha">{solicitacoes.map((pedido) => {
         const ehTarefa = !!pedido.tarefa;
@@ -80,8 +80,8 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
           </div>
           <form action={decidirSolicitacaoConclusaoFormAction.bind(null, pedido.id)} className="grid gap-2">
             {!itemAtivo && <p className="text-[13px] text-ambar">Item cancelado/inativo ou projeto/cliente inativo. Reative para confirmar; este pedido ainda pode ser rejeitado.</p>}
-            <label className="grid gap-1 text-[12px] font-medium text-cinza">Comentário (opcional, usado se rejeitar)<textarea name="comentario" maxLength={2000} rows={2} className="min-h-11 w-full rounded-[3px] border border-linha bg-branco px-3 py-2 text-[13px] text-tinta" /></label>
-            <div className="flex flex-wrap gap-2"><button name="decisao" value="APROVAR" disabled={!itemAtivo} className="min-h-11 rounded-[6px] bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:cursor-not-allowed disabled:opacity-50">Confirmar conclusão</button><button name="decisao" value="REJEITAR" className="min-h-11 rounded-[3px] border border-critico px-4 font-[family-name:var(--font-interface)] text-[13px] font-medium text-critico hover:bg-critico-cl">Rejeitar</button></div>
+            <label className="grid gap-1 text-[12px] font-medium text-cinza">Comentário (opcional, usado se rejeitar)<textarea name="comentario" maxLength={2000} rows={2} className="min-h-11 w-full rounded-controle border border-linha bg-branco px-3 py-2 text-[13px] text-tinta" /></label>
+            <div className="flex flex-wrap gap-2"><button name="decisao" value="APROVAR" disabled={!itemAtivo} className="min-h-11 rounded-controle bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:cursor-not-allowed disabled:opacity-50">Confirmar conclusão</button><button name="decisao" value="REJEITAR" className="min-h-11 rounded-controle border border-critico px-4 font-[family-name:var(--font-interface)] text-[13px] font-medium text-critico hover:bg-critico-cl">Rejeitar</button></div>
           </form>
         </li>;
       })}</ul>}
@@ -101,8 +101,8 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
       incluirFiltroConcluidas
     />
     {responsavelInvalido && <p role="alert" className="mt-4 text-[14px] text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
-    {subtarefas.length === 0 ? <div className="mt-8 rounded-[6px] border border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
-      <RolagemHorizontal className="mt-7 hidden md:block rounded-[6px] border border-linha bg-branco" rotulo="Tabela de subtarefas">
+    {subtarefas.length === 0 ? <div className="mt-8 rounded-controle border border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma subtarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">A fila está limpa ou os filtros não encontraram subtarefas.</p></div> : <>
+      <RolagemHorizontal className="mt-7 hidden md:block rounded-controle border border-linha bg-branco" rotulo="Tabela de subtarefas">
         <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
           <thead><tr className="bg-papel text-cinza"><th className="w-[25%] px-4 py-3 text-[11px] uppercase">Subtarefa</th><th className="w-[32%] px-4 py-3 text-[11px] uppercase">Tarefa, projeto e cliente</th><th className="w-[17%] px-4 py-3 text-[11px] uppercase">Responsável</th><th className="w-[14%] px-4 py-3 text-[11px] uppercase">Prazo</th><th className="w-[12%] px-4 py-3 text-[11px] uppercase">Status</th></tr></thead>
           <tbody>{subtarefas.map(s => {
@@ -120,7 +120,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
       </RolagemHorizontal>
       <ul className="mt-7 flex flex-col gap-3 md:hidden">{subtarefas.map(s => {
         return <li key={s.id}>
-          <article className="relative rounded-[6px] border border-linha bg-branco px-4 py-4 hover:border-azul">
+          <article className="relative rounded-controle border border-linha bg-branco px-4 py-4 hover:border-azul">
             <Link href={hrefSubtarefa(s.tarefa.id, s.id)} aria-label={`Abrir subtarefa ${s.titulo}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir subtarefa {s.titulo}</span></Link>
             <div className="pointer-events-none relative z-10">
               <div className="flex items-start justify-between gap-3"><p className="min-w-0 break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{s.titulo}</p><IndicadorSemaforoProjeto prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></div>

@@ -38,17 +38,17 @@ export default async function EtiquetasPage({ searchParams }: { searchParams: Pr
       <p className="mt-1.5 max-w-[66ch] text-[15px] leading-6 text-cinza">Gerencie os nomes e as cores usados nas subtarefas. Cada alteração vale em todos os projetos.</p>
     </header>
 
-    {params.erro && <p role="alert" className="mt-5 border-l-[3px] border-critico bg-critico-cl px-4 py-3 text-[14px] text-tinta">{mensagensErro[params.erro] ?? mensagensErro.falha}</p>}
-    {params.resultado && <p role="status" className="mt-5 border-l-[3px] border-verde-esc bg-verde-cl px-4 py-3 text-[14px] text-tinta">{params.resultado === "excluida" ? `Etiqueta excluída. Removida de ${quantidadeUsosExcluidos} ${quantidadeUsosExcluidos === 1 ? "subtarefa" : "subtarefas"}.` : mensagensSucesso[params.resultado] ?? "Alterações salvas."}</p>}
+    {params.erro && <p role="alert" className="mt-5 border border-critico/25 bg-critico-cl px-4 py-3 text-[14px] text-tinta">{mensagensErro[params.erro] ?? mensagensErro.falha}</p>}
+    {params.resultado && <p role="status" className="mt-5 border border-verde-borda bg-verde-cl px-4 py-3 text-[14px] text-tinta">{params.resultado === "excluida" ? `Etiqueta excluída. Removida de ${quantidadeUsosExcluidos} ${quantidadeUsosExcluidos === 1 ? "subtarefa" : "subtarefas"}.` : mensagensSucesso[params.resultado] ?? "Alterações salvas."}</p>}
 
-    <section id="nova-etiqueta" aria-labelledby="titulo-nova-etiqueta" className="mt-8 border border-linha border-t-2 border-t-verde-esc bg-branco p-5 sm:p-6">
+    <section id="nova-etiqueta" aria-labelledby="titulo-nova-etiqueta" className="mt-8 rounded-cartao border border-linha bg-branco p-5 sm:p-6">
       <div className="max-w-[620px]">
         <h2 id="titulo-nova-etiqueta" className="text-[19px]">Criar etiqueta</h2>
         <p className="mt-1 text-[13px] text-cinza">Ela ficará disponível para as subtarefas de qualquer projeto.</p>
         <form action={criarEtiquetaAction} className="mt-5 grid gap-4">
           <label className="grid gap-1.5 text-[13px] font-medium">Nome da etiqueta<input name="nome" required maxLength={40} placeholder="Ex.: Aguardando documento" className={inputClass} /></label>
           <CampoCorEtiqueta inicial={corPadrao} />
-          <button className="min-h-11 w-fit rounded-[3px] bg-tinta px-5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">Criar etiqueta</button>
+          <button className="min-h-11 w-fit rounded-controle bg-tinta px-5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">Criar etiqueta</button>
         </form>
       </div>
     </section>
@@ -68,7 +68,7 @@ export default async function EtiquetasPage({ searchParams }: { searchParams: Pr
             <form action={atualizarEtiquetaAction.bind(null, etiqueta.id)} className="grid min-w-0 gap-3 sm:grid-cols-[minmax(150px,0.8fr)_minmax(260px,1.4fr)_auto] sm:items-end">
               <label className="grid gap-1.5 text-[12px] font-medium">Nome<input name="nome" required maxLength={40} defaultValue={etiqueta.nome} className={inputClass} /></label>
               <CampoCorEtiqueta inicial={etiqueta.cor} />
-              <button className="min-h-10 rounded-[3px] border border-linha bg-branco px-3 text-[13px] font-medium text-tinta hover:border-azul">Salvar</button>
+              <button className="min-h-10 rounded-controle border border-linha bg-branco px-3 text-[13px] font-medium text-tinta hover:border-azul">Salvar</button>
             </form>
             <div className="flex items-end"><ExcluirEtiqueta id={etiqueta.id} nome={etiqueta.nome} quantidadeSubtarefas={etiqueta.quantidadeSubtarefas} /></div>
           </div>

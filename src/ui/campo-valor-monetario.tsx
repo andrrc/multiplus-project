@@ -40,7 +40,7 @@ export function CampoValorMonetario({
   const [centavos, setCentavos] = useState(() => emCentavos(defaultValue));
 
   return (
-    <div className="flex min-h-11 overflow-hidden rounded-[3px] border border-linha bg-branco transition-colors focus-within:border-azul focus-within:ring-2 focus-within:ring-azul/15">
+    <div className="flex min-h-11 overflow-hidden rounded-controle border border-linha bg-branco transition-colors focus-within:border-azul focus-within:ring-2 focus-within:ring-azul/15">
       <span className="flex items-center border-r border-linha bg-papel px-3 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta">
         R$
       </span>

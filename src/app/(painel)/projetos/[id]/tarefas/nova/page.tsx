@@ -25,7 +25,7 @@ export default async function NovaTarefaPage({ params }: { params: Promise<{ id:
         <Campo label="Nome da tarefa" obrigatorio><input name="nome" required className={inputClass} placeholder="Ex.: Protocolar renovação" /></Campo>
         <Campo label="Descrição"><textarea name="descricao" rows={4} className={inputClass} /></Campo>
         <Campo label="Responsável"><select name="responsavelId" className={inputClass}><option value="">Sem responsável</option>{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}{p.temAcesso ? " · acesso ativo" : ""}</option>)}</select></Campo>
-        <label className="flex items-start gap-3 rounded-[3px] border border-linha bg-branco p-4 text-[14px]">
+        <label className="flex items-start gap-3 rounded-controle border border-linha bg-branco p-4 text-[14px]">
           <input type="checkbox" name="colaboradorPodeCriarSubtarefas" className="mt-1 accent-verde" />
           <span><strong className="font-semibold">Permitir que o colaborador responsável crie subtarefas</strong><span className="mt-1 block text-[13px] text-cinza">A permissão vale somente para o colaborador atribuído diretamente a esta tarefa.</span></span>
         </label>
@@ -37,7 +37,7 @@ export default async function NovaTarefaPage({ params }: { params: Promise<{ id:
         </div>
         <div className="grid gap-4 sm:grid-cols-2"><CamposRecorrencia /></div>
       </SecaoNumerada>
-      <div className="flex gap-3"><button className="min-h-11 rounded-[6px] bg-tinta px-5 text-[14px] font-semibold text-branco">Criar tarefa</button><a href={`/projetos/${id}`} className="flex min-h-11 items-center rounded-[3px] border border-linha px-5 text-[14px]">Cancelar</a></div>
+      <div className="flex gap-3"><button className="min-h-11 rounded-controle bg-tinta px-5 text-[14px] font-semibold text-branco">Criar tarefa</button><a href={`/projetos/${id}`} className="flex min-h-11 items-center rounded-controle border border-linha px-5 text-[14px]">Cancelar</a></div>
     </form>
   </div>;
 }

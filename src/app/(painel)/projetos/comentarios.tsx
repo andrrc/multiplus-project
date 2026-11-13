@@ -52,7 +52,7 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
       <h2 className="text-[21px]">Comentários <span className="font-[family-name:var(--font-interface)] text-[14px] text-cinza">({comentarios.length})</span></h2>
       {comentarios.length > 0 && <ol className="mt-4 space-y-3">
         {comentarios.map((comentario) => (
-          <li key={comentario.id} className="border-l-[3px] border-l-azul bg-branco px-5 py-4">
+          <li key={comentario.id} className="rounded-cartao border border-linha bg-branco px-5 py-4">
             <div className="flex flex-wrap justify-between gap-2 font-[family-name:var(--font-interface)] text-[12px] text-cinza">
               <strong className="font-semibold text-tinta">{comentario.autor.nome}</strong>
               <time>{formatarDataHoraBrasilia(comentario.criadoEm)}</time>
@@ -60,7 +60,7 @@ export async function Comentarios({ alvo, nivel, entidadeId, tarefaId }: { alvo:
             <p className="mt-2 whitespace-pre-wrap text-[14px] leading-6 text-tinta">{textoComMencoes(comentario.texto, comentario.nomesMencionados)}</p>
             {comentario.imagemChave && <ImagemComentario comentarioId={comentario.id} />}
             {comentario.link && (
-              <a href={comentario.link} target="_blank" rel="noreferrer" title={comentario.link} className="mt-3 flex items-center gap-3 border-l-[3px] border-verde bg-verde-cl px-3 py-2.5 font-[family-name:var(--font-interface)] hover:bg-branco focus-visible:outline-none">
+              <a href={comentario.link} target="_blank" rel="noreferrer" title={comentario.link} className="mt-3 flex items-center gap-3 rounded-controle border border-verde-borda bg-verde-cl px-3 py-2.5 font-[family-name:var(--font-interface)] hover:bg-branco focus-visible:outline-none">
                 <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center border border-verde-borda bg-branco text-verde-esc">
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]"><path d="M10 13a5 5 0 0 0 7.07.07l2-2a5 5 0 0 0-7.07-7.07l-1.15 1.15" /><path d="M14 11a5 5 0 0 0-7.07-.07l-2 2A5 5 0 0 0 12 20l1.15-1.15" /></svg>
                 </span>

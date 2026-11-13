@@ -22,13 +22,13 @@ export default async function MeusProjetosPage() {
       <h1 className="text-[24px] sm:text-[28px]">Meus projetos</h1>
       <p className="mt-1.5 text-[15px] text-cinza">Projetos em que você possui uma tarefa ou subtarefa atribuída.</p>
       {projetos.length === 0 ? (
-        <div className="mt-7 rounded-[3px] border border-linha bg-branco px-6 py-14 text-center text-[15px] text-cinza">Nenhum projeto com tarefa ou subtarefa atribuída a você ainda.</div>
+        <div className="mt-7 rounded-cartao border border-linha bg-branco px-6 py-14 text-center text-[15px] text-cinza">Nenhum projeto com tarefa ou subtarefa atribuída a você ainda.</div>
       ) : (
         <div className="mt-7 grid gap-4 md:grid-cols-2">
           {projetos.map((p) => {
             const conclusao = calcularPercentualConclusao(p.tarefas);
             return (
-            <Link key={p.id} href={`/meus-projetos/${p.id}`} className="block min-w-0 rounded-[3px] border border-linha bg-branco p-5 hover:border-azul-esc">
+            <Link key={p.id} href={`/meus-projetos/${p.id}`} className="block min-w-0 rounded-controle border border-linha bg-branco p-5 hover:border-azul-esc">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h2 className="break-words text-[17px] font-semibold text-tinta">{p.nome}</h2>

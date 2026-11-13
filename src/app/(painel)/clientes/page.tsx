@@ -29,10 +29,10 @@ export default async function ClientesPage({
 
   return (
     <div className="w-full">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-linha pb-5">
         <div>
           <h1 className="text-[24px] sm:text-[28px]">Clientes</h1>
-          <p className="mt-1.5 text-[15px] text-cinza">
+          <p className="mt-1.5 text-[14px] text-cinza">
             {clientes.length === 0
               ? "Nenhum cliente cadastrado ainda."
               : `${clientes.length} ${clientes.length === 1 ? "cliente cadastrado" : "clientes cadastrados"}.`}
@@ -41,7 +41,7 @@ export default async function ClientesPage({
         {ctx.perfil === "ADMIN" && (
           <Link
             href="/clientes/novo"
-            className="flex min-h-11 shrink-0 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
+            className="flex min-h-11 shrink-0 items-center gap-2 rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
           >
             + Novo cliente
           </Link>
@@ -59,7 +59,7 @@ export default async function ClientesPage({
       />
 
       {clientes.length === 0 ? (
-        <div className="mt-8 rounded-[3px] border border-linha bg-branco px-8 py-14 text-center">
+        <div className="mt-8 rounded-cartao border border-linha bg-branco px-8 py-14 text-center">
           <p className="max-w-[46ch] mx-auto text-[16px] text-cinza">
             {busca || cidade || filtroLaudo
               ? "Nenhum cliente encontrado para esse filtro."
@@ -68,10 +68,10 @@ export default async function ClientesPage({
         </div>
       ) : (
         <>
-        <ul className="mt-7 flex flex-col gap-3 md:hidden">
+        <ul className="mt-5 flex flex-col gap-3 md:hidden">
           {clientes.map((cliente) => (
             <li key={cliente.id}>
-              <div className="rounded-[3px] border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
+              <div className="rounded-cartao border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
                 <Link href={`/clientes/${cliente.id}`} className="block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc">
                   <p className={`text-[15px] font-medium ${cliente.ativo ? "text-tinta" : "text-cinza"}`}>
                     {cliente.razaoSocial}
@@ -91,11 +91,12 @@ export default async function ClientesPage({
           ))}
         </ul>
 
-        <RolagemHorizontal className="mt-7 hidden rounded-[6px] border border-linha bg-branco md:block" rotulo="Tabela de clientes">
+        <RolagemHorizontal className="mt-5 hidden rounded-cartao border border-linha bg-branco md:block" rotulo="Tabela de clientes">
           <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
-            <thead><tr className="bg-papel text-cinza"><th className="w-[35%] px-4 py-3 text-[11px] uppercase">Cliente</th><th className="w-[25%] px-4 py-3 text-[11px] uppercase">CNPJ/CPF</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Segmento</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Cidade</th></tr></thead>
+            <thead><tr className="border-b border-linha bg-papel text-cinza"><th className="w-[10%] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">ID</th><th className="w-[30%] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">Cliente</th><th className="w-[24%] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">CNPJ/CPF</th><th className="w-[18%] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">Segmento</th><th className="w-[18%] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.04em]">Cidade</th></tr></thead>
             <tbody>{clientes.map((cliente) => <tr key={cliente.id} className={`border-t border-linha align-top hover:bg-papel ${cliente.ativo ? "bg-branco" : "bg-papel"}`}>
-              <td className="break-words px-4 py-4"><Link href={`/clientes/${cliente.id}`} className="inline-flex min-h-11 items-center font-semibold text-tinta hover:text-azul-esc hover:underline">{cliente.razaoSocial}</Link><p className="mt-1 text-[12px] tabular-nums text-cinza">ID {numeroCliente(cliente.numeroIdentificacao)}</p>{!cliente.ativo && <span className="mt-1 inline-block"><Etiqueta tom="apagado">Desativado</Etiqueta></span>}</td>
+              <td className="px-4 py-4 tabular-nums text-cinza">{numeroCliente(cliente.numeroIdentificacao)}</td>
+              <td className="break-words px-4 py-4"><Link href={`/clientes/${cliente.id}`} className="inline-flex min-h-11 items-center font-semibold text-tinta hover:text-azul-esc hover:underline">{cliente.razaoSocial}</Link>{!cliente.ativo && <span className="mt-1 inline-block"><Etiqueta tom="apagado">Desativado</Etiqueta></span>}</td>
               <td className="break-all px-4 py-4 tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Não informado" : documentoCliente(cliente)}</td>
               <td className="break-words px-4 py-4"><div className="[&_span]:max-w-full [&_span]:break-words"><Etiqueta>{cliente.segmento}</Etiqueta></div></td>
               <td className="break-words px-4 py-4 text-cinza">{cliente.municipio ?? "Não informada"}</td>

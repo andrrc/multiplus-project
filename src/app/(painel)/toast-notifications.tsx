@@ -18,7 +18,7 @@ export function BotaoGerarToastsDemonstracao({ habilitado }: { habilitado: boole
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(EVENTO_GERAR_TOASTS_DEMONSTRACAO))}
-      className="inline-flex min-h-11 items-center justify-center rounded-[3px] border border-azul px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-medium text-azul-esc hover:bg-azul-cl"
+      className="inline-flex min-h-11 items-center justify-center rounded-controle border border-azul px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-medium text-azul-esc hover:bg-azul-cl"
     >
       Gerar toasts de demonstração
     </button>
@@ -109,7 +109,7 @@ function ToastCard({
       onBlurCapture={(evento) => {
         if (!evento.currentTarget.contains(evento.relatedTarget as Node | null)) retomar();
       }}
-      className={`pointer-events-auto relative overflow-hidden rounded-[3px] border border-linha bg-branco ${fechando ? "animate-toast-saida" : "animate-toast-entrada"}`}
+      className={`pointer-events-auto relative overflow-hidden rounded-cartao border border-linha bg-branco ${fechando ? "animate-toast-saida" : "animate-toast-entrada"}`}
     >
       <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-[3px] ${visual.barra}`} />
       <Link
@@ -127,7 +127,7 @@ function ToastCard({
         }}
         className="flex min-h-[88px] items-start gap-3 px-4 py-3 pr-12 text-tinta focus-visible:outline-offset-[-3px]"
       >
-        <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[3px] ${visual.classe}`}>
+        <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-controle ${visual.classe}`}>
           <Icone aria-hidden="true" size={21} stroke={1.8} />
         </span>
         <span className="min-w-0 flex-1">
@@ -142,7 +142,7 @@ function ToastCard({
         type="button"
         aria-label="Fechar notificação"
         onClick={fechar}
-        className="absolute right-1.5 top-1.5 inline-flex min-h-11 min-w-11 items-center justify-center rounded-[3px] text-cinza hover:bg-papel hover:text-tinta"
+        className="absolute right-1.5 top-1.5 inline-flex min-h-11 min-w-11 items-center justify-center rounded-controle text-cinza hover:bg-papel hover:text-tinta"
       >
         <IconX aria-hidden="true" size={17} stroke={1.8} />
       </button>

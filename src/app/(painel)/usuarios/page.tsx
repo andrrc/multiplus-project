@@ -152,7 +152,7 @@ function LinhaUsuarioDesktop({ usuario }: { usuario: UsuarioDaListagem }) {
 function RetornoConvite({ convite }: { convite?: string }) {
   if (convite === "enviado") {
     return (
-      <p className="mt-5 rounded-[3px] border border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
+      <p className="mt-5 rounded-cartao border border-verde bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
         Usuário criado e convite enviado por e-mail.
       </p>
     );
@@ -160,7 +160,7 @@ function RetornoConvite({ convite }: { convite?: string }) {
 
   if (convite === "falhou") {
     return (
-      <p className="mt-5 rounded-[3px] border border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+      <p className="mt-5 rounded-cartao border border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
         O usuário foi criado, mas o e-mail de convite não saiu. Use &ldquo;Reenviar
         convite&rdquo; na linha dele para tentar de novo.
       </p>
@@ -169,7 +169,7 @@ function RetornoConvite({ convite }: { convite?: string }) {
 
   if (convite === "manual") {
     return (
-      <p className="mt-5 rounded-[3px] border border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+      <p className="mt-5 rounded-cartao border border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
         O usuário foi criado, mas o envio de e-mail não está configurado. Na linha dele, use
         &ldquo;Gerar link de acesso&rdquo; para copiar e compartilhar um convite seguro.
       </p>
@@ -207,7 +207,7 @@ export default async function UsuariosPage({
         <h1 className="text-[24px]">Usuários</h1>
         <Link
           href="/usuarios/novo"
-          className="flex min-h-11 shrink-0 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
+          className="flex min-h-11 shrink-0 items-center rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
         >
           + Novo usuário
         </Link>
@@ -244,14 +244,14 @@ export default async function UsuariosPage({
         </label>
         <button
           type="submit"
-          className="min-h-11 w-full rounded-[3px] border border-linha px-4 py-2.5 text-[14px] font-medium text-tinta hover:border-azul sm:w-auto"
+          className="min-h-11 w-full rounded-controle border border-linha px-4 py-2.5 text-[14px] font-medium text-tinta hover:border-azul sm:w-auto"
         >
           Filtrar
         </button>
       </form>
 
       {usuarios.length === 0 ? (
-        <div className="mt-7 rounded-[3px] border border-linha bg-branco px-6 py-10 text-center">
+        <div className="mt-7 rounded-cartao border border-linha bg-branco px-6 py-10 text-center">
           <p className="text-[15px] text-cinza">
             {busca || perfilFiltrado
               ? "Nenhum usuário corresponde a esse filtro."
@@ -259,17 +259,17 @@ export default async function UsuariosPage({
           </p>
           <Link
             href="/usuarios/novo"
-            className="mt-4 inline-flex min-h-11 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
+            className="mt-4 inline-flex min-h-11 items-center rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2"
           >
             + Novo usuário
           </Link>
         </div>
       ) : (
         <>
-          <ul className="mt-7 overflow-hidden rounded-[3px] border border-linha md:hidden">
+          <ul className="mt-7 overflow-hidden rounded-cartao border border-linha md:hidden">
             {usuarios.map((usuario) => <LinhaUsuario key={usuario.id} usuario={usuario} />)}
           </ul>
-          <div className="mt-7 hidden overflow-hidden rounded-[3px] border border-linha bg-branco md:block">
+          <div className="mt-7 hidden overflow-hidden rounded-cartao border border-linha bg-branco md:block">
             <table className="w-full table-fixed text-left text-[13px]">
               <caption className="sr-only">Usuários e acessos</caption>
               <colgroup><col className="w-[30%]" /><col className="w-[15%]" /><col className="w-[20%]" /><col className="w-[15%]" /><col className="w-[20%]" /></colgroup>

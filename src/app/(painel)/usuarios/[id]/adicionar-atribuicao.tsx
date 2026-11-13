@@ -40,7 +40,7 @@ export function AdicionarAtribuicao({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
+    <form action={formAction} className="flex flex-col gap-3 rounded-cartao border border-linha bg-branco p-4">
       <select name="atribuicao" required defaultValue="" className={inputClass}>
         <option value="" disabled>
           Selecione
@@ -60,7 +60,7 @@ export function AdicionarAtribuicao({
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-controle bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Atribuir"}
         </button>

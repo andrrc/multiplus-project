@@ -206,7 +206,7 @@ export function BotaoGerarLinkConvite({ usuarioId }: { usuarioId: string }) {
                     readOnly
                     value={estado.link}
                     aria-label="Link de acesso para compartilhar"
-                    className="mt-4 block w-full rounded-[2px] border border-linha bg-papel px-3 py-2.5 text-[13px] text-tinta"
+                    className="mt-4 block w-full rounded-selo border border-linha bg-papel px-3 py-2.5 text-[13px] text-tinta"
                     onFocus={(evento) => evento.currentTarget.select()}
                   />
                   <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -221,7 +221,7 @@ export function BotaoGerarLinkConvite({ usuarioId }: { usuarioId: string }) {
                       Gerar outro link
                     </button>
                   </div>
-                  <p className="mt-4 border-l-2 border-ambar pl-3 text-[12.5px] leading-5 text-cinza">
+                  <p className="mt-4 text-[12.5px] leading-5 text-cinza">
                     Ao gerar outro link, este é cancelado imediatamente.
                   </p>
                 </>

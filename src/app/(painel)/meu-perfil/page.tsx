@@ -36,7 +36,7 @@ export default async function MeuPerfilPage() {
     <div className="w-full max-w-[900px]">
       <h1 className="text-[24px] sm:text-[28px]">Meu perfil</h1>
 
-      <section className="mt-7 overflow-hidden rounded-[3px] border border-linha bg-branco">
+      <section className="mt-7 overflow-hidden rounded-cartao border border-linha bg-branco">
         <div className="border-b border-linha px-5 py-4 sm:px-6">
           <h2 className="text-[19px]">Meus dados</h2>
         </div>
@@ -94,7 +94,7 @@ export default async function MeuPerfilPage() {
         </div>
       </section>
 
-      <section className="mt-5 rounded-[3px] border border-linha bg-branco px-5 py-5 sm:px-6">
+      <section className="mt-5 rounded-cartao border border-linha bg-branco px-5 py-5 sm:px-6">
         <h2 className="text-[19px]">Segurança</h2>
         <p className="mt-1.5 text-[15px] text-cinza">
           Para trocar a senha, informe a atual.
@@ -105,15 +105,15 @@ export default async function MeuPerfilPage() {
       </section>
 
       {(ctx.perfil === "ADMIN_INTERNO" || ctx.perfil === "ADMIN_EXTERNO") && (
-        <section className="mt-5 rounded-[3px] border border-linha bg-branco px-5 py-5 sm:px-6">
+        <section className="mt-5 rounded-cartao border border-linha bg-branco px-5 py-5 sm:px-6">
           <h2 className="text-[19px]">Minhas atribuições</h2>
           {atribuicoes.length === 0 ? (
-            <p className="mt-4 rounded-[3px] border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">
+            <p className="mt-4 rounded-cartao border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">
               Você ainda não tem nada atribuído. Fale com a administração para receber acesso
               a um projeto ou tarefa.
             </p>
           ) : (
-            <ul className="mt-4 overflow-hidden rounded-[3px] border border-linha bg-branco">
+            <ul className="mt-4 overflow-hidden rounded-cartao border border-linha bg-branco">
               {atribuicoes.map((atribuicao) => (
                 <li
                   key={atribuicao.id}

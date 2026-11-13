@@ -43,7 +43,7 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
     </section>
     <section>
       <h2 className="text-[21px]">Documentos</h2>
-      {documentos.length === 0 ? <p className="mt-3 text-[14px] text-cinza">Nenhum documento vinculado a este projeto ou cliente.</p> : <ul className="mt-4 space-y-2">{documentos.map(d => <li key={d.id} className="rounded-[3px] border border-linha bg-branco px-4 py-3"><a href={d.link} target="_blank" rel="noreferrer" className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">{d.nome} ↗</a></li>)}</ul>}
+      {documentos.length === 0 ? <p className="mt-3 text-[14px] text-cinza">Nenhum documento vinculado a este projeto ou cliente.</p> : <ul className="mt-4 space-y-2">{documentos.map(d => <li key={d.id} className="rounded-cartao border border-linha bg-branco px-4 py-3"><a href={d.link} target="_blank" rel="noreferrer" className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">{d.nome} ↗</a></li>)}</ul>}
     </section>
     </div>
   </div>;

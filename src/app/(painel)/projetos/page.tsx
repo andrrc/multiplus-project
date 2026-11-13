@@ -26,23 +26,25 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
     <div className="w-full max-w-[1280px]">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-[24px]">Projetos</h1>
-        <Link href="/projetos/novo" className="flex min-h-11 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2">+ Novo projeto</Link>
+        <Link href="/projetos/novo" className="flex min-h-11 items-center rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2">+ Novo projeto</Link>
       </div>
 
-      <form className="mt-7 flex flex-wrap items-center gap-3">
+      <form className="mt-6 flex flex-wrap items-center gap-3 rounded-cartao border border-linha bg-branco p-4">
         <input type="search" name="busca" defaultValue={busca ?? ""} placeholder="Buscar projeto, cliente ou proposta" className={`${inputClass} sm:max-w-sm`} />
         <label className="flex min-h-11 items-center gap-2 text-[14px] text-tinta"><input type="checkbox" name="desativados" value="1" defaultChecked={incluir} className="h-4 w-4 accent-verde" />Mostrar desativados</label>
-        <button className="min-h-11 rounded-[3px] border border-linha px-4 text-[14px] font-medium hover:border-azul">Filtrar</button>
+        <button className="min-h-11 rounded-controle border border-linha px-4 text-[14px] font-medium hover:border-azul">Filtrar</button>
       </form>
 
+      <p className="mt-4 text-[13px] text-cinza" aria-live="polite">{projetos.length} {projetos.length === 1 ? "projeto encontrado" : "projetos encontrados"}</p>
+
       {projetos.length === 0 ? (
-        <div className="mt-8 rounded-[6px] border border-linha bg-branco px-8 py-14 text-center text-[16px] text-cinza">Nenhum projeto encontrado. Cadastre o primeiro para começar a acompanhar prazos ambientais.</div>
+        <div className="mt-8 rounded-controle border border-linha bg-branco px-8 py-14 text-center text-[16px] text-cinza">Nenhum projeto encontrado. Cadastre o primeiro para começar a acompanhar prazos ambientais.</div>
       ) : <>
         <ul className="mt-7 flex flex-col gap-3 md:hidden">
           {projetos.map((p) => (
             <li key={p.id}>
-              <article className="relative block rounded-[3px] border border-linha bg-branco px-4 py-4 hover:border-azul">
-                <Link href={`/projetos/${p.id}`} aria-label={`Abrir projeto ${p.nome}`} className="absolute inset-0 z-0 rounded-[3px]">
+              <article className="relative block rounded-cartao border border-linha bg-branco px-4 py-4 hover:border-azul">
+                <Link href={`/projetos/${p.id}`} aria-label={`Abrir projeto ${p.nome}`} className="absolute inset-0 z-0 rounded-controle">
                   <span className="sr-only">Abrir projeto {p.nome}</span>
                 </Link>
                 <div className="pointer-events-none relative z-10">
@@ -65,7 +67,7 @@ export default async function ProjetosPage({ searchParams }: { searchParams: Pro
           ))}
         </ul>
 
-        <RolagemHorizontal className="mt-7 hidden md:block rounded-[6px] border border-linha bg-branco" rotulo="Tabela de projetos">
+        <RolagemHorizontal className="mt-7 hidden md:block rounded-controle border border-linha bg-branco" rotulo="Tabela de projetos">
           <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
             <thead><tr className="bg-papel text-cinza"><th className="w-[27%] px-4 py-3 text-[11px] uppercase">Projeto</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Cliente</th><th className="w-[20%] px-4 py-3 text-[11px] uppercase">Proposta e valor</th><th className="w-[15%] px-4 py-3 text-[11px] uppercase">Situação</th><th className="w-[18%] px-4 py-3 text-[11px] uppercase">Prazo</th></tr></thead>
             <tbody>{projetos.map((p) => <tr key={p.id} className="border-t border-linha bg-branco align-top hover:bg-papel">

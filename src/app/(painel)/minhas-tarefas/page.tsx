@@ -23,11 +23,11 @@ export default async function MinhasTarefasPage() {
       <h1 className="text-[24px] sm:text-[28px]">Minhas tarefas</h1>
       <p className="mt-1.5 text-[15px] text-cinza">O que precisa da sua atenção, em ordem de prazo.</p>
       {tarefas.length === 0 ? (
-        <div className="mt-7 rounded-[3px] border border-linha bg-branco px-6 py-14 text-center text-[15px] text-cinza">
+        <div className="mt-7 rounded-cartao border border-linha bg-branco px-6 py-14 text-center text-[15px] text-cinza">
           Nenhuma tarefa atribuída a você ainda.
         </div>
       ) : (
-        <div className="mt-7 overflow-hidden rounded-[3px] border border-linha bg-branco">
+        <div className="mt-7 overflow-hidden rounded-cartao border border-linha bg-branco">
           {tarefas.map((t) => {
             const progresso = t.subtarefas.length
               ? calcularPercentualConclusao(t.subtarefas)

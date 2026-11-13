@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-const filtroClass = "min-h-11 w-full rounded-[3px] border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-tinta focus:border-azul disabled:bg-papel disabled:text-cinza";
+const filtroClass = "min-h-11 w-full rounded-controle border border-linha bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-[13px] text-tinta focus:border-azul disabled:bg-papel disabled:text-cinza";
 
 type Filtros = { busca: string; cidade: string; desativados: boolean; laudo?: string };
 
@@ -60,7 +60,7 @@ export function FiltrosClientes({
   }
 
   return (
-    <div className="mt-7 flex flex-wrap gap-3" aria-label="Filtros de clientes">
+    <div className="mt-5 flex flex-wrap items-center gap-2.5 rounded-cartao border border-linha bg-branco p-3 sm:p-4" aria-label="Filtros de clientes">
       <input
         type="search"
         name="busca"

@@ -61,14 +61,14 @@ function SelecaoAtribuicoes({
 }) {
   if (opcoes.length === 0) {
     return (
-      <p className="rounded-[3px] border border-linha bg-branco px-4 py-3.5 text-[14.5px] text-cinza">
+      <p className="rounded-cartao border border-linha bg-branco px-4 py-3.5 text-[14.5px] text-cinza">
         {vazioTexto}
       </p>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-[3px] border border-linha bg-branco px-4 py-3.5">
+    <div className="flex flex-col gap-4 rounded-cartao border border-linha bg-branco px-4 py-3.5">
       {[...agrupar(opcoes)].map(([grupo, itens]) => (
         <fieldset key={grupo} className="flex flex-col gap-2">
           <legend className="font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta">
@@ -293,7 +293,7 @@ export function UsuarioForm({
             descricao="O que esta pessoa passa a enxergar. Pode ficar em branco e ser definido depois."
           >
             {perfil === "ADMIN" ? (
-              <p className="rounded-[3px] border border-linha bg-branco px-4 py-3.5 text-[14.5px] text-cinza">
+              <p className="rounded-cartao border border-linha bg-branco px-4 py-3.5 text-[14.5px] text-cinza">
                 Administrador enxerga tudo e não recebe atribuição.
               </p>
             ) : perfil === "ADMIN_INTERNO" ? (
@@ -313,7 +313,7 @@ export function UsuarioForm({
         )}
 
         {estado.erro && !estado.campo && (
-          <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-4 py-3 text-[14.5px] text-critico">
+          <p className="rounded-cartao border border-critico/25 bg-critico-cl px-4 py-3 text-[14.5px] text-critico">
             {estado.erro}
           </p>
         )}
@@ -322,7 +322,7 @@ export function UsuarioForm({
           <button
             type="submit"
             disabled={pendente}
-            className="min-h-11 rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+            className="min-h-11 rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
           >
             {pendente ? "Salvando…" : rotuloEnvio}
           </button>

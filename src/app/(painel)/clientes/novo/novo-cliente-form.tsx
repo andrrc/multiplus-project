@@ -305,7 +305,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
           <button
             type="button"
             onClick={() => trocarTipo("PESSOA_JURIDICA")}
-            className={`rounded-[3px] border px-5 py-3 font-[family-name:var(--font-interface)] text-[14.5px] font-medium ${
+            className={`rounded-controle border px-5 py-3 font-[family-name:var(--font-interface)] text-[14.5px] font-medium ${
               tipo === "PESSOA_JURIDICA"
                 ? "border-verde bg-verde-cl text-verde-esc"
                 : "border-linha text-tinta hover:border-azul"
@@ -316,7 +316,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
           <button
             type="button"
             onClick={() => trocarTipo("PESSOA_FISICA")}
-            className={`rounded-[3px] border px-5 py-3 font-[family-name:var(--font-interface)] text-[14.5px] font-medium ${
+            className={`rounded-controle border px-5 py-3 font-[family-name:var(--font-interface)] text-[14.5px] font-medium ${
               tipo === "PESSOA_FISICA"
                 ? "border-verde bg-verde-cl text-verde-esc"
                 : "border-linha text-tinta hover:border-azul"
@@ -348,7 +348,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
                   type="button"
                   onClick={buscarCnpj}
                   disabled={buscandoCnpj || !cnpj}
-                  className="min-h-11 shrink-0 rounded-[3px] border border-linha px-4 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
+                  className="min-h-11 shrink-0 rounded-controle border border-linha px-4 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
                 >
                   {buscandoCnpj ? "Buscando…" : "Buscar"}
                 </button>
@@ -498,7 +498,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
                 setPessoasEnvolvidas((lista) => lista.map((p, idx) => (idx === i ? { ...p, [campo]: valor } : p)));
 
               return (
-                <div key={i} className="flex flex-col gap-2 rounded-[3px] border border-linha p-3">
+                <div key={i} className="flex flex-col gap-2 rounded-cartao border border-linha p-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap gap-3">
                       <label className="flex items-center gap-1.5 text-[13.5px] text-tinta">
@@ -582,7 +582,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
               type="button"
               disabled={!podeAdicionarPessoa}
               onClick={() => setPessoasEnvolvidas((lista) => [...lista, { ...PESSOA_ENVOLVIDA_VAZIA }])}
-              className="min-h-11 self-start rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
+              className="min-h-11 self-start rounded-controle border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-50"
             >
               + Adicionar pessoa envolvida
             </button>
@@ -593,7 +593,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
       {tipo && <CamposLaudo valor={laudoTecnico} onChange={setLaudoTecnico} responsaveis={responsaveisLaudo} disabled={enviando} />}
 
       {erro && (
-        <p className="rounded-[3px] border-l-[3px] border-critico bg-branco px-4 py-3 text-[15px] text-critico">
+        <p className="rounded-cartao border border-critico/25 bg-critico-cl px-4 py-3 text-[15px] text-critico">
           {erro}
         </p>
       )}
@@ -603,7 +603,7 @@ export function NovoClienteForm({ responsaveisLaudo = [] }: { responsaveisLaudo?
           <button
             type="submit"
             disabled={enviando}
-            className="min-h-11 rounded-[6px] bg-tinta px-6 py-3 font-[family-name:var(--font-interface)] text-[15px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+            className="min-h-11 rounded-controle bg-tinta px-6 py-3 font-[family-name:var(--font-interface)] text-[15px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
           >
             {enviando ? "Salvando…" : "Salvar"}
           </button>

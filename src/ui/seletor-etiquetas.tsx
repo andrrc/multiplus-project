@@ -69,10 +69,10 @@ export function SeletorEtiquetas({ disponiveis, selecionadasIniciais = [] }: { d
     {/* Campos ocultos traduzem o estado visual para os nomes esperados pela action. */}
     {selecionadas.map((etiqueta) => <input key={etiqueta.nome} type="hidden" name="etiquetaNome" value={etiqueta.nome} />)}
     <input type="hidden" name="novasEtiquetas" value={JSON.stringify(novasSelecionadas)} />
-    <button ref={botaoRef} type="button" aria-expanded={aberto} onClick={() => setAberto((atual) => !atual)} className="inline-flex min-h-10 w-fit items-center gap-2 rounded-[3px] border border-dashed border-linha bg-branco px-3 text-[13px] font-medium text-cinza hover:border-azul hover:text-azul-esc focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul">
+    <button ref={botaoRef} type="button" aria-expanded={aberto} onClick={() => setAberto((atual) => !atual)} className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controle border border-dashed border-linha bg-branco px-3 text-[13px] font-medium text-cinza hover:border-azul hover:text-azul-esc focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azul">
       <span aria-hidden="true" className="text-[18px] leading-none">{aberto ? "−" : "+"}</span>{aberto ? "Fechar etiquetas" : "Adicionar etiqueta"}
     </button>
-    {aberto && <div className="grid gap-3 rounded-[3px] border border-linha bg-papel p-3">
+    {aberto && <div className="grid gap-3 rounded-cartao border border-linha bg-papel p-3">
       <label className="grid gap-1 text-[12px] font-medium text-cinza">Buscar ou criar etiqueta<input autoFocus value={busca} onChange={(event) => setBusca(event.target.value)} maxLength={40} placeholder="Ex.: Aguardando documento" className={inputClass} /></label>
       {/* Cada resultado mantém o estado acessível pelo atributo aria-pressed. */}
       {resultados.length > 0 && <ul aria-label="Etiquetas existentes" className="flex max-h-40 flex-wrap content-start gap-2 overflow-y-auto">

@@ -40,7 +40,7 @@ export default async function EditarSubtarefaPage({ params }: { params: Promise<
     <Link href={`/tarefas/${id}?subtarefa=${subtarefa.id}#subtarefa-${subtarefa.id}`} className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Voltar para {tarefa.nome}</Link>
     <h1 className="mt-4 text-[28px]">Editar subtarefa</h1>
     <p className="mt-1 text-[15px] text-cinza">Atualize os dados e as etiquetas desta etapa.</p>
-    <form action={atualizarSubtarefaERedirecionarAction.bind(null, subtarefa.id)} className="mt-6 grid gap-4 rounded-[3px] border border-linha bg-branco p-5">
+    <form action={atualizarSubtarefaERedirecionarAction.bind(null, subtarefa.id)} className="mt-6 grid gap-4 rounded-cartao border border-linha bg-branco p-5">
       <label className="grid gap-1.5 text-[13px] font-medium">Título<input name="titulo" required maxLength={180} defaultValue={subtarefa.titulo} className={inputClass} /></label>
       <label className="grid gap-1.5 text-[13px] font-medium">Descrição<textarea name="descricao" rows={4} defaultValue={subtarefa.descricao ?? ""} className={inputClass} /></label>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -53,7 +53,7 @@ export default async function EditarSubtarefaPage({ params }: { params: Promise<
         <optgroup label="Pessoas envolvidas">{pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}</optgroup>
       </select></label>
       <SeletorEtiquetas disponiveis={catalogo} selecionadasIniciais={selecionadasIniciais} />
-      <div className="flex flex-wrap justify-end gap-2"><Link href={`/tarefas/${id}?subtarefa=${subtarefa.id}#subtarefa-${subtarefa.id}`} className="rounded-[3px] border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button className="rounded-[3px] bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">Salvar alterações</button></div>
+      <div className="flex flex-wrap justify-end gap-2"><Link href={`/tarefas/${id}?subtarefa=${subtarefa.id}#subtarefa-${subtarefa.id}`} className="rounded-controle border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button className="rounded-controle bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">Salvar alterações</button></div>
     </form>
   </div>;
 }

@@ -23,7 +23,7 @@ export function NavLink({
     <Link
       href={href}
       aria-current={ativo ? "page" : undefined}
-      className={`relative block min-h-11 rounded-[6px] pr-3 font-[family-name:var(--font-interface)] font-medium transition-colors ${
+      className={`relative block min-h-11 rounded-controle pr-3 font-[family-name:var(--font-interface)] font-medium transition-colors ${
         nivel === "filho"
           ? "py-2 pl-7 text-[13px]"
           : "py-3 pl-3 text-[14px]"

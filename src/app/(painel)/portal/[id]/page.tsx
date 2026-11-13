@@ -33,7 +33,7 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
       <div className="min-w-0"><p className="text-[14px] text-cinza">Nome do projeto</p><h1 className="mt-1 break-words text-[28px]">{projeto.nome}</h1><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[13px] tabular-nums text-cinza">ID {codigoProjeto(projeto.cliente.numeroIdentificacao, projeto.numeroLocal)}</p></div>
       <EtiquetaStatusPortal status={projeto.status}>{projetoStatus[projeto.status]}</EtiquetaStatusPortal>
     </div>
-    <section className="mt-6 grid overflow-hidden rounded-[3px] border border-linha bg-branco sm:grid-cols-2 lg:grid-cols-5">
+    <section className="mt-6 grid overflow-hidden rounded-cartao border border-linha bg-branco sm:grid-cols-2 lg:grid-cols-5">
       <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Progresso</p><p className="mt-1 font-[family-name:var(--font-interface)] text-[20px] font-semibold">{projeto.conclusao.percentual === null ? "Sem tarefas ativas" : `${projeto.conclusao.percentual}%`}</p>{projeto.conclusao.percentual !== null && <p className="text-[13px] text-cinza">{projeto.conclusao.concluidas} de {projeto.conclusao.total} tarefas</p>}</div>
       <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Início</p><p className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataInicio)}</p></div>
       <div className="min-w-0 border-b border-linha p-4 last:border-b-0 sm:border-r lg:border-b-0"><p className="text-[12px] text-cinza">Conclusão prevista</p><p className="mt-1 font-[family-name:var(--font-interface)] tabular-nums">{data(projeto.dataPrevistaConclusao)}</p></div>
@@ -44,7 +44,7 @@ export default async function PortalProjetoPage({ params }: { params: Promise<{ 
     <section>
       <h2 className="text-[21px]">Tarefas</h2>
       {projeto.tarefas.length === 0 ? <p className="mt-3 border border-dashed border-linha bg-branco px-5 py-8 text-[14px] text-cinza">Nenhuma tarefa ativa neste projeto.</p> : <ul className="mt-4 grid gap-3">
-        {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 rounded-[3px] border border-linha bg-branco p-4 sm:p-5">
+        {projeto.tarefas.map((tarefa) => <li key={tarefa.id} className="min-w-0 rounded-cartao border border-linha bg-branco p-4 sm:p-5">
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div className="min-w-0"><p className="text-[12px] text-cinza">Nome da tarefa</p><h3 className="mt-1 break-words font-[family-name:var(--font-interface)] text-[16px] font-semibold">{tarefa.nome}</h3><p className="mt-1 break-all font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoTarefa(projeto.cliente.numeroIdentificacao, projeto.numeroLocal, tarefa.numeroLocal)}</p></div>
             <div className="justify-self-start sm:justify-self-end"><EtiquetaStatusPortal status={tarefa.status}>{tarefaStatus[tarefa.status]}</EtiquetaStatusPortal></div>

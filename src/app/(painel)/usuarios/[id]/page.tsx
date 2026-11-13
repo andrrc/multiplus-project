@@ -123,7 +123,7 @@ export default async function DetalheUsuarioPage({
         </div>
         <Link
           href={`/usuarios/${id}/editar`}
-          className="flex min-h-11 shrink-0 items-center rounded-[3px] border border-linha px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
+          className="flex min-h-11 shrink-0 items-center rounded-controle border border-linha px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
         >
           Editar
         </Link>
@@ -142,7 +142,7 @@ export default async function DetalheUsuarioPage({
         usuario.cpf ||
         usuario.cnpj ||
         usuario.observacoes) && (
-        <section className="mt-7 rounded-[3px] border border-linha bg-branco px-5 py-[22px] sm:px-6">
+        <section className="mt-7 rounded-cartao border border-linha bg-branco px-5 py-[22px] sm:px-6">
           <h2 className="text-[16px]">Dados de cadastro</h2>
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {usuario.cargo && <DadoCadastral rotulo="Cargo ou função" valor={usuario.cargo} />}
@@ -179,7 +179,7 @@ export default async function DetalheUsuarioPage({
       )}
 
       {atribuicoesRemovidas && (
-        <p className="mt-5 rounded-[3px] border-l-[3px] border-ambar bg-branco px-4 py-3 text-[14.5px] text-ambar">
+        <p className="mt-5 rounded-cartao border border-ambar/25 bg-ambar-cl px-4 py-3 text-[14.5px] text-ambar">
           A troca de perfil removeu {atribuicoesRemovidas}{" "}
           {Number(atribuicoesRemovidas) === 1 ? "atribuição que não correspondia" : "atribuições que não correspondiam"}{" "}
           à nova granularidade.
@@ -190,18 +190,18 @@ export default async function DetalheUsuarioPage({
         <h2 className="text-[19px]">Atribuições</h2>
 
         {usuario.perfil === "ADMIN" ? (
-          <p className="mt-4 rounded-[3px] border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">
+          <p className="mt-4 rounded-cartao border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">
             Administrador enxerga todos os clientes, projetos e tarefas sem precisar de
             atribuição.
           </p>
         ) : (
           <>
             {atribuicoes.length === 0 ? (
-              <p className="mt-4 rounded-[3px] border-l-[3px] border-ambar bg-branco px-5 py-4 text-[14.5px] text-ambar">
+              <p className="mt-4 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-4 text-[14.5px] text-ambar">
                 Nenhuma atribuição — este usuário não visualiza nada ao entrar.
               </p>
             ) : (
-              <ul className="mt-4 overflow-hidden rounded-[3px] border border-linha bg-branco">
+              <ul className="mt-4 overflow-hidden rounded-cartao border border-linha bg-branco">
                 {atribuicoes.map((atribuicao) => (
                   <LinhaAtribuicao key={atribuicao.id} atribuicao={atribuicao} usuarioId={id} />
                 ))}

@@ -48,6 +48,6 @@ export function CamposRecorrencia({ prazoInicial = "", periodicidadeInicial = ""
     <Campo label="Periodicidade"><select name="periodicidade" value={periodicidade} onChange={e => setPeriodicidade(e.target.value)} className={inputClass}><option value="">Sem recorrência</option><option value="SEMANAL">Semanal</option><option value="MENSAL">Mensal</option><option value="TRIMESTRAL">Trimestral</option><option value="SEMESTRAL">Semestral</option><option value="ANUAL">Anual</option></select></Campo>
     {periodicidade === "SEMANAL" && <Campo label="Repetir em"><select name="diaSemana" value={diaSemana} onChange={e => { setDiaSemana(Number(e.target.value)); setDiaEscolhido(true); }} className={inputClass}>{dias.map((dia, indice) => <option value={indice} key={dia}>{dia[0].toLocaleUpperCase("pt-BR") + dia.slice(1)}</option>)}</select></Campo>}
     {periodicidade !== "SEMANAL" && <input type="hidden" name="diaSemana" value="" />}
-    {resumo() && <p aria-live="polite" className="sm:col-span-2 rounded-[3px] border border-verde/40 bg-verde/10 px-4 py-3 text-[14px] font-medium text-tinta">{resumo()} {periodicidade === "SEMANAL" && "O prazo da próxima ocorrência seguirá esse dia da semana."}</p>}
+    {resumo() && <p aria-live="polite" className="sm:col-span-2 rounded-cartao border border-verde/40 bg-verde/10 px-4 py-3 text-[14px] font-medium text-tinta">{resumo()} {periodicidade === "SEMANAL" && "O prazo da próxima ocorrência seguirá esse dia da semana."}</p>}
   </>;
 }

@@ -22,7 +22,7 @@ import {
 
 function Bloco({ titulo, acao, children }: { titulo: string; acao?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-[3px] border border-linha bg-branco px-5 py-[22px] sm:px-6">
+    <section className="rounded-cartao border border-linha bg-branco px-5 py-[22px] sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[16px]">{titulo}</h2>
         {acao}
@@ -110,9 +110,9 @@ export default async function DetalheClientePage({
         <div>
           <h1 className="break-words text-[24px] text-tinta">{cliente.razaoSocial}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]">
-            <span className="rounded-[3px] border border-linha bg-branco px-2.5 py-1 font-semibold tabular-nums text-cinza">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
+            <span className="rounded-selo border border-linha bg-branco px-2.5 py-1 font-semibold tabular-nums text-cinza">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
             <span className="tabular-nums text-cinza">{documentoCliente(cliente)}</span>
-            <span className="rounded-[3px] bg-verde-cl px-2.5 py-1 text-[13px] font-medium text-verde-esc">
+            <span className="rounded-selo bg-verde-cl px-2.5 py-1 text-[13px] font-medium text-verde-esc">
               {cliente.segmento}
             </span>
           </div>
@@ -128,7 +128,7 @@ export default async function DetalheClientePage({
             {cliente.ativo && (
               <Link
                 href={`/clientes/${id}/editar`}
-                className="flex min-h-11 shrink-0 items-center self-start rounded-[6px] border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
+                className="flex min-h-11 shrink-0 items-center self-start rounded-controle border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
               >
                 Editar
               </Link>
@@ -140,7 +140,7 @@ export default async function DetalheClientePage({
       {/* RF-039 — cliente desativado é somente leitura; a faixa explica por que a edição
           não está disponível. A reativação fica no botão único do topo. */}
       {!cliente.ativo && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border-l-[3px] border-ambar bg-branco px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-4">
           <p className="text-[14.5px] text-ambar">
             Cadastro desativado. Os registros e projetos vinculados ficam indisponíveis até a reativação.
           </p>
@@ -213,7 +213,7 @@ export default async function DetalheClientePage({
       </Bloco>
 
       {ctx.perfil === "ADMIN" && (
-        <div className="flex flex-col gap-3 border-l-[3px] border-azul-esc bg-branco px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5">
+        <div className="flex flex-col gap-3 rounded-cartao border border-linha bg-branco px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5">
           <div className="min-w-0">
             <p className="font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta">
               Registros desativados
@@ -224,7 +224,7 @@ export default async function DetalheClientePage({
           </div>
           <Link
             href={`/clientes/${id}${mostrarDesativados ? "" : "?desativados=1"}`}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-medium text-azul-esc hover:border-azul-esc hover:bg-papel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:self-auto"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-controle border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-medium text-azul-esc hover:border-azul-esc hover:bg-papel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:self-auto"
           >
             {mostrarDesativados ? "Ocultar desativados" : "Mostrar desativados"}
           </Link>
@@ -241,7 +241,7 @@ export default async function DetalheClientePage({
             {ctx.perfil === "ADMIN" && cliente.ativo && (
               <Link
                 href={`/projetos/novo?clienteId=${encodeURIComponent(id)}`}
-                className="flex min-h-11 items-center rounded-[6px] bg-tinta px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc"
+                className="flex min-h-11 items-center rounded-controle bg-tinta px-4 py-2 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-tinta2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc"
               >
                 + Novo projeto
               </Link>
@@ -250,7 +250,7 @@ export default async function DetalheClientePage({
         }
       >
         {projetos.length === 0 ? (
-          <p className="rounded-[3px] border border-dashed border-linha bg-papel px-4 py-5 font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
+          <p className="rounded-cartao border border-dashed border-linha bg-papel px-4 py-5 font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">
             Nenhum projeto cadastrado para este cliente.
           </p>
         ) : (
@@ -263,7 +263,7 @@ export default async function DetalheClientePage({
                 <li key={projeto.id}>
                   <Link
                     href={`/projetos/${projeto.id}`}
-                    className="group flex min-h-[76px] flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-[3px] border border-linha border-l-[3px] border-l-azul-esc bg-branco px-4 py-3 transition-colors hover:bg-papel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:px-5"
+                    className="group flex min-h-[76px] flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-controle border border-linha bg-branco px-4 py-3 transition-colors hover:bg-papel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc sm:px-5"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta group-hover:text-azul-esc">
@@ -287,7 +287,7 @@ export default async function DetalheClientePage({
                       >
                         {projeto.ativo ? STATUS_PROJETO[projeto.status] ?? projeto.status : "Desativado"}
                       </Etiqueta>
-                      <span className="inline-flex min-h-9 items-center rounded-[3px] bg-papel px-3 font-[family-name:var(--font-interface)] text-[12px] font-medium text-azul-esc group-hover:bg-branco">
+                      <span className="inline-flex min-h-9 items-center rounded-controle bg-papel px-3 font-[family-name:var(--font-interface)] text-[12px] font-medium text-azul-esc group-hover:bg-branco">
                         Abrir projeto
                       </span>
                     </div>

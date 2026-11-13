@@ -27,7 +27,7 @@ export default async function MeusClientesPage() {
         <ul className="mt-7 flex flex-col gap-3 md:hidden">
           {clientes.map((cliente) => (
             <li key={cliente.id}>
-              <Link href={`/meus-clientes/${cliente.id}`} className="block rounded-[3px] border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
+              <Link href={`/meus-clientes/${cliente.id}`} className="block rounded-controle border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
                 <p className="break-words text-[15px] font-medium text-tinta">{cliente.razaoSocial}</p>
                 <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold tracking-[0.04em] text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p>
                 <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Documento não informado" : documentoCliente(cliente)}</p>

@@ -57,7 +57,7 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
   }
 
   return (
-    <form action={formAction} className="flex w-full flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
+    <form action={formAction} className="flex w-full flex-col gap-3 rounded-cartao border border-linha bg-branco p-4">
       <div className="flex flex-wrap gap-3">
         <label className="flex items-center gap-1.5 text-[14px] text-tinta">
           <input
@@ -113,7 +113,7 @@ export function FormularioPessoaEnvolvida({ clienteId }: { clienteId: string }) 
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-controle bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar"}
         </button>
@@ -151,7 +151,7 @@ export function FormularioDocumento({ clienteId }: { clienteId: string }) {
   }
 
   return (
-    <form action={formAction} className="flex w-full flex-col gap-3 rounded-[3px] border border-linha bg-branco p-4">
+    <form action={formAction} className="flex w-full flex-col gap-3 rounded-cartao border border-linha bg-branco p-4">
       <input name="nome" required placeholder="Nome do documento" className={inputClass} />
       <input name="link" required type="url" placeholder="Link do Google Drive" className={inputClass} />
       {estado.erro && <p className="text-[14px] text-critico">{estado.erro}</p>}
@@ -159,7 +159,7 @@ export function FormularioDocumento({ clienteId }: { clienteId: string }) {
         <button
           type="submit"
           disabled={pendente}
-          className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+          className="min-h-11 rounded-controle bg-tinta px-4 py-2 text-[14px] font-medium text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
         >
           {pendente ? "Salvando…" : "Salvar"}
         </button>
@@ -197,14 +197,14 @@ export function BotaoCriarAcesso({ clienteId }: { clienteId: string }) {
               setCopiado(false);
             })
           }
-          className="min-h-11 rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-60"
+          className="min-h-11 rounded-controle border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul disabled:opacity-60"
         >
           {pendente ? "Criando…" : "Criar acesso do cliente"}
         </button>
       )}
       {erro && <p className="mt-2 text-[14px] text-critico">{erro}</p>}
       {link && convite && (
-        <div className="mt-4 max-w-2xl rounded-[3px] border border-linha bg-branco p-4" role="status">
+        <div className="mt-4 max-w-2xl rounded-cartao border border-linha bg-branco p-4" role="status">
           <p className="font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta">
             {convite === "enviado"
               ? "Convite enviado por e-mail."
@@ -233,7 +233,7 @@ export function BotaoCriarAcesso({ clienteId }: { clienteId: string }) {
                   setCopiado(false);
                 }
               }}
-              className="min-h-11 rounded-[3px] border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul"
+              className="min-h-11 rounded-controle border border-linha px-4 py-2 text-[14px] font-medium text-tinta hover:border-azul"
             >
               {copiado ? "Link copiado" : "Copiar link"}
             </button>
@@ -294,13 +294,13 @@ export function BotaoReenviarConviteCliente({
           setErro(null);
           setConfirmando((aberto) => !aberto);
         }}
-        className="min-h-11 rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-azul-esc hover:border-azul-esc disabled:opacity-60"
+        className="min-h-11 rounded-controle border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-azul-esc hover:border-azul-esc disabled:opacity-60"
       >
         {pendente ? "Reenviando…" : "Reenviar convite"}
       </button>
 
       {confirmando && (
-        <div id={confirmacaoId} className="mt-3 max-w-2xl border-l-[3px] border-azul-esc bg-papel px-4 py-3">
+        <div id={confirmacaoId} className="mt-3 max-w-2xl rounded-controle border border-linha bg-papel px-4 py-3">
           <p className="font-[family-name:var(--font-leitura)] text-[14px] leading-5 text-tinta">
             O novo convite será enviado para <strong className="break-all">{email}</strong> e substituirá o link anterior. Ele valerá por 7 dias.
           </p>
@@ -308,7 +308,7 @@ export function BotaoReenviarConviteCliente({
             <button
               type="button"
               onClick={() => setConfirmando(false)}
-              className="min-h-11 rounded-[3px] border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] text-tinta hover:bg-papel"
+              className="min-h-11 rounded-controle border border-linha bg-branco px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] text-tinta hover:bg-papel"
             >
               Cancelar
             </button>
@@ -316,7 +316,7 @@ export function BotaoReenviarConviteCliente({
               type="button"
               disabled={pendente}
               onClick={reenviar}
-              className="min-h-11 rounded-[6px] bg-tinta px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
+              className="min-h-11 rounded-controle bg-tinta px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
             >
               {pendente ? "Reenviando…" : "Confirmar reenvio"}
             </button>
@@ -327,7 +327,7 @@ export function BotaoReenviarConviteCliente({
       {erro && <p role="alert" className="mt-3 text-[14px] text-critico">{erro}</p>}
 
       {resultado && (
-        <div className="mt-3 max-w-2xl rounded-[3px] border border-linha bg-branco p-4" role="status">
+        <div className="mt-3 max-w-2xl rounded-cartao border border-linha bg-branco p-4" role="status">
           <p className="font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta">
             {resultado.convite === "enviado"
               ? `Convite reenviado para ${resultado.destinatario}.`
@@ -356,7 +356,7 @@ export function BotaoReenviarConviteCliente({
                   setCopiado(false);
                 }
               }}
-              className="min-h-11 rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
+              className="min-h-11 rounded-controle border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
             >
               {copiado ? "Link copiado" : "Copiar link"}
             </button>
@@ -431,7 +431,7 @@ export function BotaoDesativarCliente({
           if (ativo) dialogRef.current?.showModal();
           else alterarAtivo(true);
         }}
-        className={`inline-flex items-center justify-center whitespace-nowrap rounded-[3px] border font-[family-name:var(--font-interface)] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc disabled:opacity-60 ${compacto ? "min-h-8 w-fit px-2.5 py-1 text-[12px]" : "min-h-9 px-3 py-1.5 text-[13px]"} ${
+        className={`inline-flex items-center justify-center whitespace-nowrap rounded-controle border font-[family-name:var(--font-interface)] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azul-esc disabled:opacity-60 ${compacto ? "min-h-8 w-fit px-2.5 py-1 text-[12px]" : "min-h-9 px-3 py-1.5 text-[13px]"} ${
           ativo
             ? "border-[#E4A9A9] bg-[#FFF7F7] text-critico hover:bg-[#FDE9E9]"
             : "border-linha bg-branco text-azul-esc hover:border-azul"
@@ -455,7 +455,7 @@ export function BotaoDesativarCliente({
         }}
         className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[480px] overflow-y-auto border-0 bg-transparent p-0 text-tinta backdrop:bg-tinta/60"
       >
-        <div className="overflow-hidden rounded-[4px] border border-linha bg-branco shadow-2xl">
+        <div className="overflow-hidden rounded-controle border border-linha bg-branco shadow-2xl">
           <div className="border-b border-linha bg-papel px-5 py-5 sm:px-6">
             <p className="text-[12px] font-semibold text-critico">Cadastro do cliente</p>
             <h2 id={`${dialogId}-titulo`} className="mt-1 text-[20px] font-semibold text-tinta">
@@ -466,7 +466,7 @@ export function BotaoDesativarCliente({
             <p id={`${dialogId}-efeito`} className="text-[14px] leading-6 text-tinta">
               O cadastro sairá das listas de clientes ativos e ficará somente para consulta. Os projetos e registros vinculados deixarão de ficar disponíveis enquanto ele estiver desativado. O histórico será preservado e você poderá reativá-lo depois.
             </p>
-            <p id={`${dialogId}-acesso`} className="mt-3 border-l-2 border-azul-esc pl-3 text-[13px] leading-5 text-cinza">
+            <p id={`${dialogId}-acesso`} className="mt-3 text-[13px] leading-5 text-cinza">
               Esta ação não bloqueia o login do cliente. Para impedir a entrada no portal, bloqueie a conta na seção “Login do cliente no portal”.
             </p>
             {erro && <p role="alert" className="mt-4 text-[13px] text-critico">{erro}</p>}
@@ -476,7 +476,7 @@ export function BotaoDesativarCliente({
                 autoFocus
                 disabled={pendente}
                 onClick={() => dialogRef.current?.close()}
-                className="min-h-10 rounded-[3px] border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:bg-papel disabled:opacity-60"
+                className="min-h-10 rounded-controle border border-linha px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:bg-papel disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -484,7 +484,7 @@ export function BotaoDesativarCliente({
                 type="button"
                 disabled={pendente}
                 onClick={() => alterarAtivo(false)}
-                className="min-h-10 rounded-[3px] bg-critico px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-critico disabled:opacity-60"
+                className="min-h-10 rounded-controle bg-critico px-4 py-2 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-critico disabled:opacity-60"
               >
                 {pendente ? "Desativando…" : "Desativar cadastro"}
               </button>

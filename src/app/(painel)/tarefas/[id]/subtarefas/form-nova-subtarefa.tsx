@@ -39,7 +39,7 @@ export function FormNovaSubtarefa({
     <Link href={voltar} className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← {tarefaNome}</Link>
     <h1 className="mt-4 text-[28px]">Nova subtarefa</h1>
     <p className="mt-1 text-[15px] text-cinza">Cadastre uma etapa com responsável, prazo e status próprios.</p>
-    <form action={criarSubtarefaERedirecionarAction} className="mt-6 grid gap-4 rounded-[3px] border border-linha bg-branco p-5">
+    <form action={criarSubtarefaERedirecionarAction} className="mt-6 grid gap-4 rounded-cartao border border-linha bg-branco p-5">
       <input type="hidden" name="tarefaId" value={tarefaId} />
       <label className="grid gap-1.5 text-[13px] font-medium">Título<input name="titulo" required maxLength={180} className={inputClass} /></label>
       <label className="grid gap-1.5 text-[13px] font-medium">Descrição<textarea name="descricao" rows={4} className={inputClass} /></label>
@@ -53,7 +53,7 @@ export function FormNovaSubtarefa({
       <SeletorEtiquetas disponiveis={etiquetas} />
       {opcoesResponsavel && !responsaveisDisponiveis && <p className="text-[13px] text-critico">Cadastre uma pessoa envolvida ou um integrante ativo da equipe para poder criar a subtarefa.</p>}
       <p className="text-[13px] text-cinza">Depois de salvar, você poderá abrir a subtarefa para consultar os detalhes e registrar comentários.</p>
-      <div className="flex flex-wrap justify-end gap-2"><Link href={voltar} className="min-h-11 rounded-[3px] border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button disabled={!responsaveisDisponiveis} className="min-h-11 rounded-[3px] bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:cursor-not-allowed disabled:opacity-50">Criar subtarefa</button></div>
+      <div className="flex flex-wrap justify-end gap-2"><Link href={voltar} className="min-h-11 rounded-controle border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button disabled={!responsaveisDisponiveis} className="min-h-11 rounded-controle bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:cursor-not-allowed disabled:opacity-50">Criar subtarefa</button></div>
     </form>
   </div>;
 }

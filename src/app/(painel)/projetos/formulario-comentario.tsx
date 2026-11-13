@@ -122,30 +122,30 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
     : `${(anexo.tamanho / 1024 / 1024).toFixed(1)} MB`);
 
   return (
-    <form ref={formRef} action={enviar} className="mt-4 rounded-[3px] border border-linha bg-branco p-4">
+    <form ref={formRef} action={enviar} className="mt-4 rounded-cartao border border-linha bg-branco p-4">
       <input type="hidden" name="nivel" value={nivel} />
       <input type="hidden" name="entidadeId" value={entidadeId} />
       {tarefaId && <input type="hidden" name="tarefaId" value={tarefaId} />}
 
       <div>
         <textarea ref={textoRef} name="texto" required rows={3} value={texto} onChange={(event) => alterarTexto(event.target.value, event.target.selectionStart)} onKeyDown={navegarSugestoes} placeholder="Escreva uma atualização para este item" className={inputClass} aria-autocomplete="list" aria-controls="sugestoes-mencao-comentario" />
-        {consultaMencao && sugestoes.length > 0 && <ul id="sugestoes-mencao-comentario" role="listbox" aria-label="Pessoas para mencionar" className="mt-1 max-h-56 overflow-y-auto rounded-[3px] border border-linha bg-branco py-1 shadow-lg">
+        {consultaMencao && sugestoes.length > 0 && <ul id="sugestoes-mencao-comentario" role="listbox" aria-label="Pessoas para mencionar" className="mt-1 max-h-56 overflow-y-auto rounded-controle border border-linha bg-branco py-1 shadow-lg">
           {sugestoes.map((usuario, indice) => <li key={usuario.id} role="option" aria-selected={indice === opcaoMencaoAtiva}><button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => selecionarMencao(usuario)} className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left ${indice === opcaoMencaoAtiva ? "bg-verde-cl" : "hover:bg-papel"}`}><span className="truncate text-[14px] font-medium text-tinta">{usuario.nome}</span><span className="shrink-0 text-[12px] text-cinza">{perfilLabel[usuario.perfil] ?? "Usuário"}</span></button></li>)}
         </ul>}
-        {consultaMencao && sugestoes.length === 0 && <p role="status" className="mt-1 rounded-[3px] border border-linha bg-branco px-3 py-2 text-[13px] text-cinza">Nenhuma pessoa com acesso a este registro corresponde à busca.</p>}
+        {consultaMencao && sugestoes.length === 0 && <p role="status" className="mt-1 rounded-cartao border border-linha bg-branco px-3 py-2 text-[13px] text-cinza">Nenhuma pessoa com acesso a este registro corresponde à busca.</p>}
       </div>
       <p className="mt-1 text-[12px] text-cinza">Digite @ para mencionar alguém que também tenha acesso a este registro. Você e as pessoas mencionadas receberão um e-mail.</p>
       {mencoes.map((usuario) => <input key={usuario.id} type="hidden" name="mencaoUsuarioId" value={usuario.id} />)}
       <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_190px]">
         <input name="link" type="url" placeholder="Link opcional" className={inputClass} />
-        <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-[3px] border border-dashed border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] text-cinza hover:border-azul hover:text-tinta focus-within:border-azul focus-within:text-tinta">
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-controle border border-dashed border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] text-cinza hover:border-azul hover:text-tinta focus-within:border-azul focus-within:text-tinta">
           <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 fill-none stroke-current stroke-[1.8]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m21 3-9.5 9.5-3-3L18 0" /></svg>
           <span className="truncate">{anexo ? "Trocar imagem" : "Anexar imagem"}</span>
           <input ref={imagemRef} name="imagem" type="file" accept="image/webp,image/jpeg,image/png" className="sr-only" onChange={selecionarImagem} />
         </label>
       </div>
 
-      {anexo && <div className="mt-3 flex items-center gap-3 border-l-[3px] border-azul bg-papel p-3" aria-live="polite">
+      {anexo && <div className="mt-3 flex items-center gap-3 rounded-controle border border-linha bg-papel p-3" aria-live="polite">
         {/* A prévia usa uma URL local temporária (blob), incompatível com a otimização remota do next/image. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={anexo.preview} alt="Prévia da imagem que será anexada" className="h-14 w-14 shrink-0 border border-linha bg-branco object-cover" />
@@ -158,7 +158,7 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
 
       {erro && <p role="alert" className="mt-2 text-[13px] text-critico">{erro}</p>}
       {sucesso && <p role="status" className="mt-2 text-[13px] text-verde-esc">Comentário publicado.</p>}
-      <button disabled={enviando} className="mt-3 min-h-10 rounded-[3px] bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:opacity-60">{enviando ? "Publicando…" : "Publicar comentário"}</button>
+      <button disabled={enviando} className="mt-3 min-h-10 rounded-controle bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:opacity-60">{enviando ? "Publicando…" : "Publicar comentário"}</button>
     </form>
   );
 }

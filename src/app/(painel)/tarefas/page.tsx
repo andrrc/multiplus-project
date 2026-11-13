@@ -46,8 +46,8 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
     <div className="flex flex-wrap items-end justify-between gap-4">
       <h1 className="text-[24px]">Tarefas</h1>
       <div className="flex flex-wrap gap-2">
-        <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-[3px] border border-linha bg-branco px-4 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
-        <Link href="/projetos" className="flex min-h-11 items-center rounded-[6px] bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2">Ver projetos</Link>
+        <Link href={hrefExportacao} className="flex min-h-11 items-center rounded-controle border border-linha bg-branco px-4 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-tinta hover:bg-papel">Exportar PDF</Link>
+        <Link href="/projetos" className="flex min-h-11 items-center rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2">Ver projetos</Link>
       </div>
     </div>
     <FiltrosListagens
@@ -63,8 +63,8 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
       tarefaInicial={filtros.tarefa}
     />
     {responsavelInvalido && <p role="alert" className="mt-4 text-[14px] text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
-    {tarefas.length === 0 ? <div className="mt-8 rounded-[6px] border border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma tarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">Não há tarefas ativas ou os filtros não encontraram tarefas.</p></div> : <div className="mt-7">
-      <RolagemHorizontal className="hidden rounded-[6px] border border-linha bg-branco md:block" rotulo="Tabela de tarefas">
+    {tarefas.length === 0 ? <div className="mt-8 rounded-controle border border-linha bg-branco px-8 py-14 text-center"><p className="text-[17px] text-tinta">Nenhuma tarefa nesta seleção.</p><p className="mt-2 text-[14px] text-cinza">Não há tarefas ativas ou os filtros não encontraram tarefas.</p></div> : <div className="mt-7">
+      <RolagemHorizontal className="hidden rounded-controle border border-linha bg-branco md:block" rotulo="Tabela de tarefas">
         <table className="w-full table-fixed border-collapse text-left font-[family-name:var(--font-interface)] text-[13px]">
           <thead><tr className="bg-papel text-cinza"><th className="w-[27%] px-4 py-3 text-[11px] uppercase">Tarefa</th><th className="w-[28%] px-4 py-3 text-[11px] uppercase">Projeto e cliente</th><th className="w-[17%] px-4 py-3 text-[11px] uppercase">Responsável</th><th className="w-[14%] px-4 py-3 text-[11px] uppercase">Prazo</th><th className="w-[14%] px-4 py-3 text-[11px] uppercase">Status</th></tr></thead>
           <tbody>{tarefas.map(tarefa => <tr key={tarefa.id} className="border-t border-linha bg-branco align-top hover:bg-papel">
@@ -77,7 +77,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
         </table>
       </RolagemHorizontal>
       <ul className="flex flex-col gap-3 md:hidden">{tarefas.map(tarefa => <li key={tarefa.id}>
-        <article className="relative rounded-[3px] border border-linha bg-branco px-4 py-4 hover:border-azul">
+        <article className="relative rounded-cartao border border-linha bg-branco px-4 py-4 hover:border-azul">
           <Link href={`/tarefas/${tarefa.id}`} aria-label={`Abrir tarefa ${tarefa.nome}`} className="absolute inset-0 z-0"><span className="sr-only">Abrir tarefa {tarefa.nome}</span></Link>
           <div className="pointer-events-none relative z-10">
             <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-[family-name:var(--font-interface)] text-[15px] font-semibold text-tinta">{tarefa.nome}</p><p className="mt-1 whitespace-nowrap font-[family-name:var(--font-interface)] text-[12px] tabular-nums text-cinza">ID {codigoTarefa(tarefa.projeto.cliente.numeroIdentificacao, tarefa.projeto.numeroLocal, tarefa.numeroLocal)}</p></div><Etiqueta tom={tarefa.status === "CONCLUIDO" ? "positivo" : undefined}>{status[tarefa.status]}</Etiqueta></div>
