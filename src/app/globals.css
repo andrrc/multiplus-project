@@ -29,6 +29,8 @@
   --verde-borda: #bfe3c6;
 
   --menu-inativo: #a9c4cd;
+  --menu-texto: #d5e0e4;
+  --menu-grupo: #7f97a1;
   --menu-hover: #0e2e3c;
   --menu-ativo: #103647;
 
@@ -61,6 +63,8 @@
   --color-verde-cl: var(--verde-cl);
   --color-verde-borda: var(--verde-borda);
   --color-menu-inativo: var(--menu-inativo);
+  --color-menu-texto: var(--menu-texto);
+  --color-menu-grupo: var(--menu-grupo);
   --color-menu-hover: var(--menu-hover);
   --color-menu-ativo: var(--menu-ativo);
 

@@ -1,21 +1,14 @@
 "use client";
 /**
- * Componente de interface `nav link`. Recebe dados e callbacks de seu chamador, mantém apenas o estado necessário à interação e delega validações e persistência ao servidor.
+ * Link do menu lateral. Marca a rota atual com a barra verde dos protótipos e mantém a área
+ * de toque de 44 px no celular, onde o menu abre como gaveta.
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-export function NavLink({
-  href,
-  children,
-  nivel = "principal",
-}: {
-  href: string;
-  children: ReactNode;
-  nivel?: "principal" | "filho";
-}) {
+export function NavLink({ href, children }: { href: string; children: ReactNode }) {
   const pathname = usePathname();
   const ativo = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
@@ -23,14 +16,10 @@ export function NavLink({
     <Link
       href={href}
       aria-current={ativo ? "page" : undefined}
-      className={`relative block min-h-11 rounded-controle pr-3 font-[family-name:var(--font-interface)] font-medium transition-colors ${
-        nivel === "filho"
-          ? "py-2 pl-7 text-[13px]"
-          : "py-3 pl-3 text-[14px]"
-      } ${
+      className={`relative flex items-center gap-3 rounded-controle px-3 py-2 font-[family-name:var(--font-interface)] text-sm max-lg:min-h-11 ${
         ativo
-          ? "bg-menu-ativo text-branco before:absolute before:inset-y-1.5 before:-left-3 before:w-[3px] before:rounded-r-[3px] before:bg-verde"
-          : "text-menu-inativo hover:bg-menu-hover hover:text-branco"
+          ? "bg-branco/10 font-medium text-branco before:absolute before:inset-y-1.5 before:-left-3 before:w-[3px] before:rounded-r-[3px] before:bg-verde"
+          : "text-menu-texto hover:bg-branco/5 hover:text-branco"
       }`}
     >
       {children}

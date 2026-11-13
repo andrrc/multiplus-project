@@ -12,8 +12,8 @@ import {
 /** Mesmos rótulos da barra lateral (reunião de aprovação da Sprint 2). */
 const NOME_PERFIL: Record<Perfil, string> = {
   ADMIN: "Administrador",
-  ADMIN_INTERNO: "Colaborador Interno",
-  ADMIN_EXTERNO: "Colaborador Externo",
+  ADMIN_INTERNO: "Colaborador interno",
+  ADMIN_EXTERNO: "Colaborador externo",
   CLIENTE: "Cliente",
 };
 

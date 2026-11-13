@@ -30,12 +30,12 @@ const PERFIS: { valor: Perfil; rotulo: string; explicacao: string }[] = [
   },
   {
     valor: "ADMIN_INTERNO",
-    rotulo: "Colaborador Interno",
+    rotulo: "Colaborador interno",
     explicacao: "Vê todas as tarefas e subtarefas dos projetos selecionados.",
   },
   {
     valor: "ADMIN_EXTERNO",
-    rotulo: "Colaborador Externo",
+    rotulo: "Colaborador externo",
     explicacao: "Vê apenas as tarefas selecionadas, sem visão do projeto.",
   },
 ];

@@ -3,7 +3,10 @@ import { auth, signOut } from "@/server/auth";
 import { obterContexto } from "@/server/auth/contexto";
 import { contarNotificacoesNaoLidas } from "@/lib/notificacoes";
 import { podeGerarToastsDemonstracao } from "@/lib/notificacoes-toasts";
-import { MenuMobile } from "./menu-mobile";
+import Link from "next/link";
+import { BotaoNovo } from "./botao-novo";
+import { CascaPainel } from "./casca-painel";
+import { IconePerfil, IconeSair } from "./icones-shell";
 import { NavegacaoPainel } from "./navegacao-painel";
 import { ToastNotifications } from "./toast-notifications";
 
@@ -14,8 +17,8 @@ import { ToastNotifications } from "./toast-notifications";
  */
 const NOME_PERFIL: Record<string, string> = {
   ADMIN: "Administrador",
-  ADMIN_INTERNO: "Colaborador Interno",
-  ADMIN_EXTERNO: "Colaborador Externo",
+  ADMIN_INTERNO: "Colaborador interno",
+  ADMIN_EXTERNO: "Colaborador externo",
   CLIENTE: "Cliente",
 };
 
@@ -25,29 +28,37 @@ function Navegacao({ perfil, naoLidas }: { perfil: Perfil; naoLidas: number }) {
 }
 
 function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }) {
+  const inicial = (nome ?? "?").trim().charAt(0).toUpperCase();
+  const classeIcone =
+    "flex h-11 w-11 items-center justify-center rounded-controle text-menu-inativo hover:bg-branco/10 hover:text-branco lg:h-8 lg:w-8";
   return (
-    <>
-      <p className="truncate font-[family-name:var(--font-interface)] text-[13px] font-medium text-branco">
-        {nome}
-      </p>
-      <p className="mt-0.5 text-[12px] tracking-[0.02em] text-menu-inativo">
-        {NOME_PERFIL[perfil] ?? perfil}
-      </p>
-      <form
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/login" });
-        }}
-        className="mt-3"
+    <div className="flex items-center gap-3">
+      <span
+        aria-hidden="true"
+        className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-tinta2 font-[family-name:var(--font-interface)] text-sm font-semibold text-branco"
       >
-        <button
-          type="submit"
-          className="min-h-11 font-[family-name:var(--font-interface)] text-[12px] font-medium text-menu-inativo hover:text-branco"
+        {inicial}
+      </span>
+      <div className="min-w-0 leading-snug">
+        <p className="truncate font-[family-name:var(--font-interface)] text-sm font-medium text-branco">{nome}</p>
+        <p className="truncate text-xs text-menu-inativo">{NOME_PERFIL[perfil] ?? perfil}</p>
+      </div>
+      <div className="ml-auto flex shrink-0 gap-0.5">
+        <Link href="/meu-perfil" title="Meu perfil" aria-label="Meu perfil" className={classeIcone}>
+          <IconePerfil />
+        </Link>
+        <form
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/login" });
+          }}
         >
-          Sair
-        </button>
-      </form>
-    </>
+          <button type="submit" title="Sair" aria-label="Sair" className={classeIcone}>
+            <IconeSair />
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -58,30 +69,14 @@ export default async function PainelLayout({ children }: { children: React.React
   const naoLidas = ctx.perfil === "CLIENTE" ? 0 : await contarNotificacoesNaoLidas(ctx);
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
-      <MenuMobile
+    <>
+      <CascaPainel
         navegacao={<Navegacao perfil={ctx.perfil} naoLidas={naoLidas} />}
-        usuario={<BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />}
-      />
-
-      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col bg-tinta lg:flex">
-        <div className="px-6 pt-[26px] pb-[22px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-multiplus.png" alt="Múltiplus" width={172} height={47} />
-        </div>
-
-        <nav className="flex flex-1 flex-col overflow-y-auto px-3 pb-4">
-          <Navegacao perfil={ctx.perfil} naoLidas={naoLidas} />
-        </nav>
-
-        <div className="border-t border-tinta2 px-4 py-3">
-          <BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />
-        </div>
-      </aside>
-
-      <main className="min-w-0 flex-1 overflow-x-hidden bg-papel px-4 pt-5 pb-12 sm:px-8 lg:pt-8 lg:pb-16">
-        <div className="max-w-[1280px]">{children}</div>
-      </main>
+        rodape={<BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />}
+        acoes={ctx.perfil === "ADMIN" ? <BotaoNovo /> : undefined}
+      >
+        {children}
+      </CascaPainel>
       {ctx.perfil !== "CLIENTE" && <ToastNotifications
         usuarioId={ctx.usuarioId}
         versaoSessao={session!.user.versaoSessao}
@@ -89,6 +84,6 @@ export default async function PainelLayout({ children }: { children: React.React
         naoLidasIniciais={naoLidas}
         demoDisponivel={podeGerarToastsDemonstracao(ctx.perfil, process.env.NODE_ENV)}
       />}
-    </div>
+    </>
   );
 }

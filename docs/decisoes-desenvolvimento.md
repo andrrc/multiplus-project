@@ -144,3 +144,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-12: Organizado o detalhe no portal; veja [Área exclusiva](funcionalidades/area-exclusiva-cliente.md).
 - 2026-11-12: Removidos dados provisórios do login; veja [Autenticação e acesso](funcionalidades/autenticacao-acesso.md).
 - 2026-11-13: Adotados os protótipos de `telas-novas/` como fonte da verdade visual e atualizadas as regras de interface; veja [Interface](funcionalidades/interface.md).
+- 2026-11-13: Refeito o shell do painel (menu, barra superior, gaveta no celular) e as telas de senha; veja [Interface](funcionalidades/interface.md).

@@ -25,15 +25,40 @@ consultados e mantém os formulários e ações existentes. A jornada de navegad
 
 ### Navegação e identidade dos modelos
 
-**Como funciona.** O menu organiza os acessos disponíveis em grupos e usa ícones,
-com a caixa de avisos identificada como Avisos. No celular o menu é aberto pelo
-botão superior; as mesmas opções continuam disponíveis conforme o perfil.
+**Como funciona.** O menu lateral organiza os acessos do perfil em grupos, com os ícones e
+as cores dos modelos. A rota atual ganha uma barra verde. No rodapé do menu ficam o avatar
+com a inicial, o nome, o perfil e os ícones de Meu perfil e Sair. Há uma barra superior de
+64 px: no desktop ela aparece só para a Administradora, com o botão "Novo", que abre atalhos
+para Novo projeto, Novo cliente e Novo usuário; no celular ela traz o botão que abre o menu.
+No celular o menu abre como gaveta lateral sobre um fundo escurecido, fecha ao navegar, ao
+tocar fora ou com Esc. A caixa de avisos aparece como Avisos, com o contador de não lidos.
 
-**Detalhes técnicos.** `navegacao-painel.tsx` organiza visualmente os itens retornados
-por `menuDoPerfil`, sem alterar a matriz de permissões ou as rotas. O layout e
-`nav-link.tsx` aplicam a estrutura compartilhada. A paleta de tokens e a tipografia
-são descritas na [identidade visual](../Identidade_Visual_Multiplus.md); a adaptação
-das telas individuais ainda está em andamento.
+**Detalhes técnicos.** `casca-painel.tsx` guarda o estado da gaveta e monta menu, barra e
+conteúdo; `layout.tsx` (servidor) entrega o menu, o rodapé e as ações. `navegacao-painel.tsx`
+organiza visualmente os itens de `menuDoPerfil`, sem alterar a matriz de permissões nem as
+rotas; Meu perfil continua no `MENU` (para a guarda de rota) mas sai da lista, pois fica no
+rodapé. `botao-novo.tsx` usa só rotas já existentes. Os ícones estão em `icones-shell.tsx`.
+Os rótulos passaram a usar minúsculas ("Colaborador interno", "Meus projetos", "Minhas
+tarefas", "Meu perfil"). A paleta de tokens e a tipografia estão na
+[identidade visual](../Identidade_Visual_Multiplus.md).
+
+**Pendências desta área.** A busca geral da barra superior, o seletor de unidade e o botão
+"Gerar relatório" do cliente e a barra do colaborador externo dependem de dados e regras
+ainda não decididos e não foram criados. O item Painel e a página de Configurações dependem
+de rotas novas.
+
+### Recuperar e definir senha
+
+**Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
+login: painel com foto ao lado, formulário centralizado, aviso de erro e de sucesso no
+padrão dos modelos. Ao definir a senha, há o botão Mostrar/Ocultar e os requisitos da senha
+são marcados enquanto se digita.
+
+**Detalhes técnicos.** `src/app/auth-shell.tsx` reaproveita o CSS do login
+(`src/app/login/login-reference.css`, escopo `.login-reference`). Os formulários usam as
+classes desse CSS (`.field`, `.btn`, `.alert`, `.notice`, `.reqs`), pois o reset do escopo
+anula utilitários de espaçamento do Tailwind dentro dele. As regras de senha e os fluxos não
+mudaram. A jornada de navegador em `tests/browser/jornadas.spec.ts` cobre a definição de senha.
 
 ### Alinhamento do painel em telas largas
 
@@ -101,6 +126,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer o shell: menu com rodapé de avatar, barra superior com "Novo" (Administradora), gaveta no celular e telas de senha no padrão do login |
 | 2026-11-13 | este commit | Aplicar a base visual dos protótipos: tokens `ink`, `faint`, `linha-forte` e `ambar-cl`, raios 8/6/5 px, selo de prazo claro ("Em N dias", "Amanhã"), selos e status sem borda, campos com foco em anel azul, fim do lilás em "A iniciar" e das bordas laterais coloridas decorativas |
 | 2026-11-13 | este commit | Adotar os protótipos de `telas-novas/` como fonte da verdade visual: regras de `AGENTS.md` §6 e da [identidade visual](../Identidade_Visual_Multiplus.md) atualizadas (raios 8/6/5 px, sombras só em camadas flutuantes, botão azul-escuro, IBM Plex Sans) e [mapa das telas](../mapeamento-telas-talita.md) corrigido |
 | 2026-11-10 | este commit | Adaptar a apresentação da tela compartilhada de perfil |

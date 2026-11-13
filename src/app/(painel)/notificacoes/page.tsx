@@ -20,7 +20,7 @@ const eventoLabel: Record<EventoNotificacao, string> = {
   NOVO_COMENTARIO: "Novo comentário",
   ATRIBUICAO_RECEBIDA: "Atribuição recebida",
 };
-const perfilLabel = { ADMIN: "Administrador", ADMIN_INTERNO: "Colaborador Interno", ADMIN_EXTERNO: "Colaborador Externo", CLIENTE: "Cliente" } as const;
+const perfilLabel = { ADMIN: "Administrador", ADMIN_INTERNO: "Colaborador interno", ADMIN_EXTERNO: "Colaborador externo", CLIENTE: "Cliente" } as const;
 const eventos = Object.values(EventoNotificacao);
 const perfis = Object.keys(perfilLabel) as (keyof typeof perfilLabel)[];
 const quando = (data: Date) => formatarDataHoraBrasilia(data);
