@@ -125,7 +125,7 @@ pessoa (RN-004).
 - **Indicador:** componente compartilhado `src/ui/rolagem-horizontal.tsx`, usado pelo painel para medir o excesso de conteúdo e mostrar a orientação sem cobrir a tabela.
 - **Filtro por responsável (RF-005/RF-037):** `responsavel=pessoa:<id>`, `usuario:<id>` ou `sem`; validado e aplicado no servidor em `listarPrazos`/`listarSubtarefasPrazos`. Parâmetro inválido mostra aviso e resultado vazio. `listarResponsaveisParaFiltro` exige ADMIN e retorna apenas valor e rótulo, com origem e cliente para distinguir pessoas envolvidas. Opções consideram os demais filtros e o toggle, incluem responsáveis inativos ainda vinculados a registros elegíveis e não expõem dados de contato. A agenda continua sem esse filtro.
 - **Testes do filtro:** `filtro-responsavel.integration.test.ts` (origens, homônimos, nulos, composição, inativos, indicador, agenda e perfis negados) e `filtro-responsavel.unit.test.ts` (parâmetros, URL, seleção sem resultado e nome da equipe na tabela/cartão).
-- **Rota:** `/subtarefas`, que é a tela inicial do `ADMIN`.
+- **Rota:** `/subtarefas` (a tela inicial do `ADMIN` passou a ser o Painel em 13/11/2026).
 - **Funções:** `listarSubtarefasPrazos` e `indicadorDePrazosSubtarefas`.
 - **Regras de prazo:**
   - atraso segue o RN-001, em que o dia do prazo ainda conta como em dia;

@@ -54,7 +54,7 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.getByLabel("Nova senha").fill(senha);
   await page.getByLabel("Confirmar senha").fill(senha);
   await page.getByRole("button", { name: "Definir senha e entrar" }).click();
-  await expect(page.getByRole("heading", { name: "Subtarefas", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Painel", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Sair" }).click();
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha", { exact: true }).fill("SenhaErrada123!");
@@ -63,9 +63,11 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha", { exact: true }).fill(senha);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Subtarefas", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Painel", exact: true })).toBeVisible();
 
   await page.setViewportSize({ width: 1024, height: 800 });
+  // Depois do login a administradora cai no Painel; a lista de subtarefas é aberta pelo menu.
+  await page.goto("/subtarefas");
   const tabela = page.getByRole("region", { name: "Tabela de subtarefas" });
   const aviso = page.getByText("Deslize para ver as demais colunas");
   await expect(aviso).toHaveCount(0);
@@ -107,6 +109,17 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.getByRole("link", { name: "Lista", exact: true }).click();
   await expect(page).toHaveURL(/visao=lista/);
   await expect(page.getByRole("link", { name: "Prazo de exemplo" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  // Painel e Configurações: o painel abre pela tela inicial e as configurações têm abas.
+  await page.goto("/painel");
+  await expect(page.getByRole("heading", { name: "Painel", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Indicadores" })).toBeVisible();
+  await page.goto("/configuracoes");
+  await expect(page.getByRole("heading", { name: "Configurações", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Semáforo de prazos" })).toBeVisible();
+  await page.getByRole("link", { name: "Notificações por perfil" }).click();
+  await expect(page.getByRole("heading", { name: "Notificações por perfil", level: 2 })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 
   // Usuários: a lista cabe na largura e o formulário mostra o rodapé com o envio do convite.
@@ -159,5 +172,5 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha", { exact: true }).fill("OutraSenha123!");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Subtarefas", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Painel", exact: true })).toBeVisible();
 });

@@ -181,6 +181,28 @@ o grupo e a ausência de rolagem lateral a 375 px.
 muda permissão e exige análise aprovada antes. Também dependem de dados novos: grupos "Devolvidas para correção" e "Aguardando conferência",
 envio de comprovantes, pedido de prazo, mensagens e a página de Instruções.
 
+### Painéis e Configurações
+
+**Como funciona.** O **Painel da administradora** (`/painel`, agora a tela inicial) tem quatro indicadores (atrasados, vencem em 7 dias,
+aguardando confirmação e itens em dia) e os cartões "Aguardando sua confirmação" (com Confirmar e Rejeitar), "Atrasados", "Vencem nos
+próximos 7 dias" agrupados por dia e "Projetos em andamento" com progresso. O **Painel do colaborador interno** (mesma rota, também tela
+inicial dele) mostra a semana com as entregas de cada dia, as tarefas atrasadas e as que vencem, "Fazer agora" e "Meus projetos". O
+**Painel do cliente** (`/portal`) mostra o total de tarefas concluídas, os projetos em andamento e concluídos e a lista de projetos com
+progresso, prazo e última atualização. **Configurações** (`/configuracoes`, só administradora) reúne, em abas, o semáforo de prazos
+(com a escala visual) e o envio diário, as notificações por perfil e o atalho para Etiquetas. A caixa de avisos ficou só com os avisos e um
+link "Preferências".
+
+**Detalhes técnicos.** `painel/page.tsx` (administradora), `painel/painel-interno.tsx`, `portal/page.tsx` e `configuracoes/page.tsx`, com
+`src/lib/painel.ts` (separação de atrasados e vencimentos, com teste) e `TELA_INICIAL` e `MENU` em `src/lib/navegacao.ts`. Só usam consultas
+que já existiam e respeitam as mesmas permissões. As expectativas de tela inicial dos testes de navegador, de integração e de smoke foram
+atualizadas de propósito. `tests/browser/colaborador.spec.ts` cobre o painel do interno e o do cliente.
+
+**Pendências desta área e telas não criadas.** *Instruções* do colaborador externo e *Relatórios* do cliente **não foram criadas**: a primeira
+ensina o envio de fotos e comprovantes e a segunda gera PDF e histórico, recursos que ainda não existem, e uma tela que descreve ou oferece o que
+o sistema não faz enganaria o usuário. Também ficaram de fora: busca e "Novo" com mais opções na barra superior, comprovantes para conferir e
+"aguardando outras pessoas" no painel do interno, obrigações por responsável, unidades e trilha de etapas no painel do cliente, e a régua de
+avisos, o escalonamento e o resumo mensal em Configurações. A agenda do colaborador interno depende de decisão de permissão.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -260,6 +282,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Criar o Painel (administradora e colaborador interno), o Painel do cliente e as Configurações, e passar o Painel a tela inicial |
 | 2026-11-13 | este commit | Tela própria de tarefas do colaborador externo, só visual e sem restringir menu nem dados |
 | 2026-11-13 | este commit | Refazer as telas do colaborador interno no padrão dos protótipos (ver [Tarefas](tarefas.md), [Projetos](projetos.md) e [Clientes](clientes.md)) |
 | 2026-11-13 | este commit | Ajustes da conferência visual contra os protótipos: seta pequena nos seletores, botões de 32 px nos cabeçalhos de cartão e nas ações dos avisos, colunas alinhadas nas linhas de tarefa e subtarefa (só em telas largas), ID em negrito na lista de clientes, resumo da ficha sem data repetida, formulário de usuário em duas colunas e correção de um erro de serialização na agenda |

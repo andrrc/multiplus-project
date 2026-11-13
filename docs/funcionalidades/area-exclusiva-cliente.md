@@ -95,3 +95,4 @@ Os cartões de acompanhamento do cliente estão em adaptação visual, mantendo 
 | 2026-10-22 | este commit | Colorir etiquetas de status de projetos e tarefas no portal conforme a identidade visual |
 | 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
+| 2026-11-13 | este commit | Lista do portal vira Painel do cliente, com resumo de tarefas concluídas e projetos em linhas, sem ampliar os dados que o portal entrega |

@@ -17,10 +17,10 @@ acessar.
 
 | Perfil | Tela inicial | Menu |
 |---|---|---|
-| `ADMIN` | Subtarefas | Clientes, Usuários, Projetos, Subtarefas, Agenda, Etiquetas, Notificações, Tarefas, Meu Perfil |
-| `ADMIN_INTERNO` | Minhas Tarefas | Clientes, Meus Projetos, Minhas Tarefas, Meu Perfil |
+| `ADMIN` | Painel (`/painel`) | Painel, Agenda, Avisos, Projetos, Tarefas, Subtarefas, Clientes, Usuários, Etiquetas, Prazos e notificações, Meu perfil |
+| `ADMIN_INTERNO` | Painel (`/painel`) | Painel, Minhas tarefas, Avisos, Meus projetos, Clientes, Meu perfil |
 | `ADMIN_EXTERNO` | Minhas Tarefas | Clientes, Meus Projetos, Minhas Tarefas, Meu Perfil |
-| `CLIENTE` | Acompanhamento (`/portal`) | Acompanhamento, Meu Perfil |
+| `CLIENTE` | Painel (`/portal`) | Painel, Meu perfil |
 
 ---
 
@@ -170,3 +170,4 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 | 2026-10-02 | `b81feaf` | CLIENTE passa a abrir `/portal`; rotas continuam protegidas por perfil e o bloqueio de sessão permanece aplicado ([análise](../analises/area-exclusiva-cliente-sprint-6.md)) |
 | 2026-10-05 | `1339997` | Link de definição de senha copiável na ficha ao criar acesso do cliente ([análise](../analises/link-manual-convite-cliente.md)) |
 | 2026-10-08 | `1339997` | Convite de definição de senha ganha layout visual com marca, botão principal e link alternativo |
+| 2026-11-13 | este commit | Tela inicial da Administradora e do colaborador interno passa a ser o Painel (`/painel`); o item do cliente passa a se chamar Painel |

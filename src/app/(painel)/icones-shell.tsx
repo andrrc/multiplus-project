@@ -24,6 +24,14 @@ function Svg({ children, tamanho = 18 }: { children: ReactNode; tamanho?: number
 }
 
 const ICONES_ROTA: Record<string, ReactNode> = {
+  "/painel": (
+    <>
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </>
+  ),
   "/agenda": (
     <>
       <rect x="3" y="4" width="18" height="17" rx="2" />
@@ -60,6 +68,12 @@ const ICONES_ROTA: Record<string, ReactNode> = {
       <circle cx="9" cy="8" r="4" />
       <path d="M2 21a7 7 0 0 1 14 0" />
       <path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3" />
+    </>
+  ),
+  "/configuracoes": (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
     </>
   ),
   "/etiquetas": (

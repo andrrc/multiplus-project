@@ -62,8 +62,8 @@ describe("RF-039 — revalidação de usuário em sessão existente", () => {
   it("usa o perfil atual e barra uma rota permitida pelo perfil antigo", async () => {
     await ownerDb.usuario.update({ where: { id: usuarioId }, data: { perfil: "ADMIN_INTERNO" } });
 
-    await expect(exigirAcessoARota("/usuarios")).rejects.toThrow("REDIRECT:/minhas-tarefas");
-    expect(redirectMock).toHaveBeenCalledWith("/minhas-tarefas");
+    await expect(exigirAcessoARota("/usuarios")).rejects.toThrow("REDIRECT:/painel");
+    expect(redirectMock).toHaveBeenCalledWith("/painel");
   });
 
   it("aplica permissões recém-concedidas sem exigir uma nova sessão", async () => {

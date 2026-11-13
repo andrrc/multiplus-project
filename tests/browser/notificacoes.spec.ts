@@ -43,7 +43,7 @@ test("Talita recebe resumo inicial, toasts em tempo real e pode abrir a central"
   await page.getByLabel("Nova senha").fill(senha);
   await page.getByLabel("Confirmar senha").fill(senha);
   await page.getByRole("button", { name: "Definir senha e entrar" }).click();
-  await expect(page.getByRole("heading", { name: "Subtarefas", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Painel", exact: true })).toBeVisible();
   expect((await streamConectado).status()).toBe(200);
 
   const resumo = page.getByRole("link", { name: /Você tem 1 notificação nova/ });

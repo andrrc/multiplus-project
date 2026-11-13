@@ -20,12 +20,14 @@ export type ItemMenu = {
  * que a ausência dele.
  */
 export const MENU: ItemMenu[] = [
+  { href: "/painel", rotulo: "Painel", perfis: ["ADMIN", "ADMIN_INTERNO"] },
   { href: "/clientes", rotulo: "Clientes", perfis: ["ADMIN"] },
   { href: "/usuarios", rotulo: "Usuários", perfis: ["ADMIN"] },
   { href: "/projetos", rotulo: "Projetos", perfis: ["ADMIN"] },
   { href: "/subtarefas", rotulo: "Subtarefas", perfis: ["ADMIN"] },
   { href: "/agenda", rotulo: "Agenda", perfis: ["ADMIN"] },
   { href: "/etiquetas", rotulo: "Etiquetas", perfis: ["ADMIN"] },
+  { href: "/configuracoes", rotulo: "Prazos e notificações", perfis: ["ADMIN"] },
   { href: "/notificacoes", rotulo: "Notificações", perfis: ["ADMIN"] },
   { href: "/minhas-notificacoes", rotulo: "Notificações", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },
   { href: "/tarefas", rotulo: "Tarefas", perfis: ["ADMIN"] },
@@ -37,7 +39,7 @@ export const MENU: ItemMenu[] = [
     rotulo: "Meu perfil",
     perfis: ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", "CLIENTE"],
   },
-  { href: "/portal", rotulo: "Acompanhamento", perfis: ["CLIENTE"] },
+  { href: "/portal", rotulo: "Painel", perfis: ["CLIENTE"] },
 ];
 
 export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
@@ -56,8 +58,8 @@ export function menuDoPerfil(perfil: Perfil): ItemMenu[] {
  * logaria numa rota que ainda não existe.
  */
 export const TELA_INICIAL: Record<Perfil, string> = {
-  ADMIN: "/subtarefas",
-  ADMIN_INTERNO: "/minhas-tarefas",
+  ADMIN: "/painel",
+  ADMIN_INTERNO: "/painel",
   ADMIN_EXTERNO: "/minhas-tarefas",
   CLIENTE: "/portal",
 };

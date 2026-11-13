@@ -32,6 +32,7 @@ export async function atualizarPreferenciaAction(formData: FormData) {
     inApp: formData.get("inApp") === "on",
   });
   revalidatePath("/notificacoes");
+  revalidatePath("/configuracoes");
 }
 
 export async function atualizarSemaforoAction(formData: FormData) {
@@ -39,4 +40,5 @@ export async function atualizarSemaforoAction(formData: FormData) {
     diasAmareloAte: Number(formData.get("diasAmareloAte")),
   });
   revalidatePath("/notificacoes");
+  revalidatePath("/configuracoes");
 }

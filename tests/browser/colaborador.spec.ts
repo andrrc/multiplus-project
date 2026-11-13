@@ -16,6 +16,9 @@ let usuarioId: string | undefined;
 let projetoId: string | undefined;
 let tarefaId: string | undefined;
 let externoId: string | undefined;
+let clienteUsuarioId: string | undefined;
+const emailCliente = `cliente-${sufixo}@teste.local`;
+const tokenCliente = randomBytes(32).toString("hex");
 const emailExterno = `externo-${sufixo}@teste.local`;
 const tokenExterno = randomBytes(32).toString("hex");
 
@@ -42,12 +45,19 @@ test.beforeAll(async () => {
     expiraEm: new Date(Date.now() + 3_600_000),
   } });
   await db.atribuicao.create({ data: { usuarioId: externoId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
+  // Cliente do portal: vinculado ao cadastro do cliente.
+  const clienteUsuario = await db.usuario.create({ data: { nome: "Marcos de Teste", email: emailCliente, perfil: "CLIENTE", clienteId } });
+  clienteUsuarioId = clienteUsuario.id;
+  await db.tokenAcesso.create({ data: {
+    usuarioId: clienteUsuarioId, tipo: "DEFINIR_SENHA", tokenHash: createHash("sha256").update(tokenCliente).digest("hex"),
+    expiraEm: new Date(Date.now() + 3_600_000),
+  } });
 });
 
 test.afterAll(async () => {
-  if (clienteId) await db.cliente.delete({ where: { id: clienteId } });
-  if (usuarioId) await db.usuario.delete({ where: { id: usuarioId } });
-  if (externoId) await db.usuario.delete({ where: { id: externoId } });
+  // Os usuários saem primeiro: o do cliente é apagado junto com o cadastro, e a ordem evita apagar duas vezes.
+  await db.usuario.deleteMany({ where: { email: { contains: sufixo } } });
+  if (clienteId) await db.cliente.deleteMany({ where: { id: clienteId } });
   await db.$disconnect();
 });
 
@@ -59,9 +69,11 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
   await page.getByLabel("Nova senha").fill(senha);
   await page.getByLabel("Confirmar senha").fill(senha);
   await page.getByRole("button", { name: "Definir senha e entrar" }).click();
-  await expect(page.getByRole("heading", { name: "Minhas tarefas", level: 1 })).toBeVisible();
+  // A tela inicial do colaborador interno é o painel, com a saudação do dia.
+  await expect(page.getByRole("heading", { name: /^(Bom dia|Boa tarde|Boa noite), Colaborador$/, level: 1 })).toBeVisible();
 
-  const telas: Array<[string, string]> = [
+  const telas: Array<[string, string | RegExp]> = [
+    ["/painel", /^(Bom dia|Boa tarde|Boa noite), Colaborador$/],
     ["/minhas-tarefas", "Minhas tarefas"],
     ["/meus-projetos", "Meus projetos"],
     [`/meus-projetos/${projetoId}`, `Projeto colaborador ${sufixo}`],
@@ -99,4 +111,15 @@ test("colaborador externo vê a tela própria de tarefas e ela cabe no celular",
   // Abrir a tarefa continua levando ao detalhe de sempre.
   await page.getByRole("link", { name: new RegExp(`Tarefa colaborador ${sufixo}`) }).click();
   await expect(page.getByRole("heading", { name: `Tarefa colaborador ${sufixo}`, level: 1 })).toBeVisible();
+});
+
+test("cliente abre o painel do portal e ele cabe no celular", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`/definir-senha?token=${tokenCliente}`);
+  await page.getByLabel("Nova senha").fill(senha);
+  await page.getByLabel("Confirmar senha").fill(senha);
+  await page.getByRole("button", { name: "Definir senha e entrar" }).click();
+  await expect(page.getByRole("heading", { name: "Olá, Marcos", level: 1 })).toBeVisible();
+  await expect(page.getByRole("link", { name: `Projeto colaborador ${sufixo}` })).toBeVisible();
+  expect(await semRolagemLateral(page)).toBe(true);
 });

@@ -7,13 +7,13 @@ import { NavLink } from "./nav-link";
 
 // A organização é visual: a lista de rotas e permissões continua em menuDoPerfil.
 const gruposAdmin = [
-  { titulo: "Dia a dia", rotas: ["/agenda", "/notificacoes"] },
+  { titulo: "Dia a dia", rotas: ["/painel", "/agenda", "/notificacoes"] },
   { titulo: "Trabalho", rotas: ["/projetos", "/tarefas", "/subtarefas"] },
   { titulo: "Cadastros", rotas: ["/clientes", "/usuarios"] },
-  { titulo: "Configurações", rotas: ["/etiquetas"] },
+  { titulo: "Configurações", rotas: ["/etiquetas", "/configuracoes"] },
 ];
 const gruposEquipe = [
-  { titulo: "Dia a dia", rotas: ["/minhas-tarefas", "/minhas-notificacoes"] },
+  { titulo: "Dia a dia", rotas: ["/painel", "/minhas-tarefas", "/minhas-notificacoes"] },
   { titulo: "Trabalho", rotas: ["/meus-projetos", "/meus-clientes"] },
 ];
 
