@@ -1,6 +1,7 @@
 /**
  * Página da rota `src/app/(painel)/minhas-tarefas/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
  */
+import { auth } from "@/server/auth";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarTarefasAtribuidas } from "@/lib/projetos-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
@@ -8,6 +9,7 @@ import { calcularDiasRestantes } from "@/lib/datas";
 import { codigoTarefa } from "@/lib/identificadores-hierarquicos";
 import { contarSituacoes, interpretarSituacao, rotulosSituacao, situacaoDoPrazo } from "@/lib/situacao-prazo";
 import { BotoesSituacao } from "@/ui/botoes-situacao";
+import { TelaTarefasExterno } from "./tela-externo";
 import { CelulaLista, CelulaPrazo, LinhaLista, StatusPonto, TabelaLista, TextoPrincipal, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -26,6 +28,12 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
     listarTarefasAtribuidas(ctx),
     buscarLimitesSemaforo(ctx),
   ]);
+
+  // O colaborador externo tem uma tela própria, pensada para o celular; os dados são os mesmos.
+  if (ctx.perfil === "ADMIN_EXTERNO") {
+    const sessao = await auth();
+    return <TelaTarefasExterno nome={sessao?.user?.name ?? ""} tarefas={tarefas} limites={limites} />;
+  }
 
   // Cada tarefa recebe sua situação de prazo; as contagens dos botões usam a lista inteira.
   const situacaoFiltro = interpretarSituacao(situacaoParametro);

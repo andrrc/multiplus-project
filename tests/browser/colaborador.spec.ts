@@ -15,6 +15,9 @@ let clienteId: string | undefined;
 let usuarioId: string | undefined;
 let projetoId: string | undefined;
 let tarefaId: string | undefined;
+let externoId: string | undefined;
+const emailExterno = `externo-${sufixo}@teste.local`;
+const tokenExterno = randomBytes(32).toString("hex");
 
 test.beforeAll(async () => {
   const usuario = await db.usuario.create({ data: { nome: "Colaborador de teste", email, perfil: "ADMIN_INTERNO" } });
@@ -31,11 +34,20 @@ test.beforeAll(async () => {
   const tarefa = await db.tarefa.create({ data: { projetoId, nome: `Tarefa colaborador ${sufixo}`, prazo: new Date("2030-01-05T00:00:00.000Z"), responsavelUsuarioId: usuarioId } });
   tarefaId = tarefa.id;
   await db.subtarefa.create({ data: { tarefaId, titulo: "Subtarefa do colaborador", atribuidoAUsuarioId: usuarioId } });
+  // Colaborador externo: recebe a tarefa por atribuição.
+  const externo = await db.usuario.create({ data: { nome: "Carlos de Teste", email: emailExterno, perfil: "ADMIN_EXTERNO" } });
+  externoId = externo.id;
+  await db.tokenAcesso.create({ data: {
+    usuarioId: externoId, tipo: "DEFINIR_SENHA", tokenHash: createHash("sha256").update(tokenExterno).digest("hex"),
+    expiraEm: new Date(Date.now() + 3_600_000),
+  } });
+  await db.atribuicao.create({ data: { usuarioId: externoId, entidadeTipo: "TAREFA", entidadeId: tarefaId } });
 });
 
 test.afterAll(async () => {
   if (clienteId) await db.cliente.delete({ where: { id: clienteId } });
   if (usuarioId) await db.usuario.delete({ where: { id: usuarioId } });
+  if (externoId) await db.usuario.delete({ where: { id: externoId } });
   await db.$disconnect();
 });
 
@@ -72,4 +84,19 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
   await expect(page.getByRole("group", { name: "Situação do prazo" })).toBeVisible();
   await page.getByRole("link", { name: `Tarefa colaborador ${sufixo}` }).click();
   await expect(page.getByRole("region", { name: "Resumo da tarefa" })).toBeVisible();
+});
+
+test("colaborador externo vê a tela própria de tarefas e ela cabe no celular", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`/definir-senha?token=${tokenExterno}`);
+  await page.getByLabel("Nova senha").fill(senha);
+  await page.getByLabel("Confirmar senha").fill(senha);
+  await page.getByRole("button", { name: "Definir senha e entrar" }).click();
+  await expect(page.getByRole("heading", { name: "Olá, Carlos", level: 1 })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Para fazer" })).toBeVisible();
+  await expect(page.getByRole("link", { name: new RegExp(`Tarefa colaborador ${sufixo}`) })).toBeVisible();
+  expect(await semRolagemLateral(page)).toBe(true);
+  // Abrir a tarefa continua levando ao detalhe de sempre.
+  await page.getByRole("link", { name: new RegExp(`Tarefa colaborador ${sufixo}`) }).click();
+  await expect(page.getByRole("heading", { name: `Tarefa colaborador ${sufixo}`, level: 1 })).toBeVisible();
 });

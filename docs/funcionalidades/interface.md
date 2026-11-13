@@ -165,6 +165,22 @@ colaborador interno, abre as seis telas e confere que cabem em 1024 e 375 px.
 as contagens "minhas pendências" por pessoa em Meus projetos, comentários no nível da tarefa e "Quem acessa" dependem de dados, regras
 ou permissão novos.
 
+### Tela de tarefas do colaborador externo
+
+**Como funciona.** Quem entra como colaborador externo vê, em Minhas tarefas, uma tela própria feita para o celular: saudação com o
+primeiro nome, pílulas de resumo (atrasadas, vencem em breve e para fazer) e as tarefas em cartões grandes, agrupadas em "Para fazer" e
+"Concluídas". Cada cartão tem uma barra lateral na cor do prazo (vermelho vencido, âmbar próximo, verde no prazo, roxo visita), o nome
+da tarefa e do projeto, a data com o selo de prazo, o andamento das subtarefas e a recorrência. Tocar no cartão abre o detalhe da tarefa.
+
+**Detalhes técnicos.** `minhas-tarefas/page.tsx` escolhe a tela pelo perfil e `minhas-tarefas/tela-externo.tsx` a monta, com os mesmos
+dados de antes. Esta tela é só visual: **o menu e os dados do externo continuam os mesmos do interno** (Meus projetos e Clientes seguem
+no menu, e cliente e projeto aparecem nas tarefas). O teste `tests/browser/colaborador.spec.ts` entra como externo, confere a saudação,
+o grupo e a ausência de rolagem lateral a 375 px.
+
+**Pendências desta área.** A restrição do menu e dos dados do externo (só Minhas tarefas, Avisos e Instruções, sem cliente nem projeto)
+muda permissão e exige análise aprovada antes. Também dependem de dados novos: grupos "Devolvidas para correção" e "Aguardando conferência",
+envio de comprovantes, pedido de prazo, mensagens e a página de Instruções.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -244,6 +260,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Tela própria de tarefas do colaborador externo, só visual e sem restringir menu nem dados |
 | 2026-11-13 | este commit | Refazer as telas do colaborador interno no padrão dos protótipos (ver [Tarefas](tarefas.md), [Projetos](projetos.md) e [Clientes](clientes.md)) |
 | 2026-11-13 | este commit | Ajustes da conferência visual contra os protótipos: seta pequena nos seletores, botões de 32 px nos cabeçalhos de cartão e nas ações dos avisos, colunas alinhadas nas linhas de tarefa e subtarefa (só em telas largas), ID em negrito na lista de clientes, resumo da ficha sem data repetida, formulário de usuário em duas colunas e correção de um erro de serialização na agenda |
 | 2026-11-13 | este commit | Refazer a caixa de avisos e a agenda no padrão dos protótipos (ver [Notificações](notificacoes.md) e [Agenda](agenda.md)) |
