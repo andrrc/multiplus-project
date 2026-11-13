@@ -17,3 +17,11 @@ export const botaoDiscreto = `${BASE} border-transparent bg-transparent text-cin
 
 /** Ação destrutiva: texto e borda vermelhos, fundo claro ao passar o mouse. */
 export const botaoPerigo = `${BASE} border-critico bg-branco text-critico hover:bg-critico-cl`;
+
+const BASE_PEQUENO =
+  "inline-flex h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-controle border px-3 font-[family-name:var(--font-interface)] text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-60 md:h-8";
+
+/** Versões de 32 px (44 px de toque no celular) para ações dentro de cartões e linhas. */
+export const botaoPrimarioPequeno = `${BASE_PEQUENO} border-transparent bg-tinta text-branco hover:bg-tinta2`;
+export const botaoSecundarioPequeno = `${BASE_PEQUENO} border-linha-forte bg-branco text-ink hover:bg-papel`;
+export const botaoDiscretoPequeno = `${BASE_PEQUENO} border-transparent bg-transparent text-cinza hover:bg-papel hover:text-ink`;

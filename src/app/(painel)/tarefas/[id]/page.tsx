@@ -23,9 +23,9 @@ import { EtiquetasSubtarefa } from "@/ui/etiquetas-subtarefa";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { codigoSubtarefa, codigoTarefa } from "@/lib/identificadores-hierarquicos";
-import { botaoPrimario, botaoSecundario } from "@/ui/botoes";
+import { botaoPrimario, botaoPrimarioPequeno, botaoSecundario } from "@/ui/botoes";
 import { BotaoConfirmacao } from "@/ui/botao-confirmacao";
-import { Avatar, BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, ListaChaveValor, NaoInformado, Trilha } from "@/ui/cartao";
+import { Avatar, BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, ListaChaveValor, Trilha } from "@/ui/cartao";
 import { CelulaPrazo, StatusPonto } from "@/ui/lista";
 
 const statuses: Record<string, string> = {
@@ -137,11 +137,11 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           <Cartao
             titulo={<>Subtarefas <span className="rounded-full bg-papel px-2 py-px text-xs font-semibold tabular-nums text-ink">{subtarefasConcluidas}/{t.subtarefas.length}</span></>}
             semMargem
-            acao={t.ativo ? <Link href={`/tarefas/${id}/subtarefas/nova`} className={botaoPrimario}>+ Nova subtarefa</Link> : undefined}
+            acao={t.ativo ? <Link href={`/tarefas/${id}/subtarefas/nova`} className={botaoPrimarioPequeno}>+ Nova subtarefa</Link> : undefined}
           >
             {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-center text-sm text-cinza">Nenhuma subtarefa ainda. Cadastre a primeira etapa para esta tarefa.</p> : t.subtarefas.map(s => (
               <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="group border-t border-linha first:border-t-0">
-                <summary className="grid cursor-pointer list-none gap-2 px-5 py-3.5 hover:bg-cabecalho sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] sm:items-center sm:gap-5 [&::-webkit-details-marker]:hidden">
+                <summary className="grid cursor-pointer list-none gap-2 px-5 py-3.5 hover:bg-cabecalho xl:grid-cols-[minmax(0,1fr)_96px_104px_140px_18px] xl:items-center xl:gap-3 [&::-webkit-details-marker]:hidden">
                   <span className="min-w-0">
                     <span className="block break-words font-medium text-ink">{s.titulo}</span>
                     <span className="mt-px flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-cinza">
@@ -152,7 +152,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                   <span className="truncate text-[13px] text-ink">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? <span className="text-faint">Sem responsável</span>}</span>
                   <CelulaPrazo prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} />
                   <StatusPonto status={s.status}>{statusSubtarefa[s.status]}</StatusPonto>
-                  <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" className="hidden shrink-0 text-cinza transition-transform group-open:rotate-180 sm:block" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m6 9 6 6 6-6" /></svg>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" className="hidden shrink-0 text-cinza transition-transform group-open:rotate-180 xl:block" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m6 9 6 6 6-6" /></svg>
                 </summary>
                 <div className="border-t border-linha bg-cabecalho px-5 py-4">
                   <p className="text-sm leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
@@ -180,7 +180,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
             <ListaChaveValor
               itens={[
                 { rotulo: "Periodicidade", valor: t.periodicidade ? <span className="capitalize">{PERIODICIDADE[t.periodicidade] ?? t.periodicidade}</span> : "Não recorrente" },
-                { rotulo: "Aviso antes do prazo", valor: t.diasAntecedencia ? plural(t.diasAntecedencia, "dia", "dias") : <NaoInformado>Sem aviso extra</NaoInformado> },
+                { rotulo: "Aviso antes do prazo", valor: t.diasAntecedencia ? plural(t.diasAntecedencia, "dia", "dias") : <span className="text-cinza">Sem aviso extra</span> },
                 { rotulo: "Responsável cria subtarefas", valor: t.colaboradorPodeCriarSubtarefas ? "Sim" : "Não" },
               ]}
             />

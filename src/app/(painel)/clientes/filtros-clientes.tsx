@@ -79,7 +79,7 @@ export function FiltrosClientes({
             name="busca"
             value={busca}
             onChange={(event) => setBusca(event.target.value)}
-            placeholder="Buscar por razão social, CNPJ, CPF ou cidade"
+            placeholder="Buscar por nome, CNPJ, CPF ou cidade"
             className={`${filtroClass} pl-9`}
             aria-label="Buscar clientes"
           />

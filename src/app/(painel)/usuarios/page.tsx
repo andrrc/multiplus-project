@@ -4,7 +4,7 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarUsuarios, ROTULO_STATUS, type UsuarioDaListagem } from "@/lib/usuarios";
 import { Etiqueta } from "@/ui/campo";
 import { botaoPrimario } from "@/ui/botoes";
-import { CelulaLista, LinhaLista, StatusPonto, TabelaLista, TextoPrincipal, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
+import { CelulaLista, LinhaLista, StatusPonto, TabelaLista, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
 import {
   BotaoDesativarUsuario,
   BotaoGerarLinkConvite,
@@ -24,11 +24,11 @@ const PERFIS_FILTRAVEIS: Perfil[] = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO"];
 const SITUACOES_FILTRAVEIS = ["ativo", "pendente", "desativado"] as const;
 
 const COLUNAS = [
-  { titulo: "Nome", largura: "28%" },
-  { titulo: "Perfil", largura: "14%" },
+  { titulo: "Nome", largura: "26%" },
+  { titulo: "Perfil", largura: "16%" },
   { titulo: "O que acessa", largura: "20%" },
-  { titulo: "Situação", largura: "16%" },
-  { titulo: "Ações", largura: "22%" },
+  { titulo: "Situação", largura: "15%" },
+  { titulo: "Ações", largura: "23%" },
 ];
 
 /**
@@ -164,7 +164,7 @@ export default async function UsuariosPage({
                 {usuario.cargo && <TextoSecundario>{usuario.cargo}</TextoSecundario>}
                 {usuario.origemPessoaEnvolvida && <TextoSecundario>Pessoa envolvida de {usuario.origemPessoaEnvolvida.cliente}</TextoSecundario>}
               </CelulaLista>
-              <CelulaLista rotulo="Perfil"><TextoPrincipal>{NOME_PERFIL[usuario.perfil]}</TextoPrincipal></CelulaLista>
+              <CelulaLista rotulo="Perfil"><span>{NOME_PERFIL[usuario.perfil]}</span></CelulaLista>
               <CelulaLista rotulo="O que acessa"><Atribuicoes usuario={usuario} /></CelulaLista>
               <CelulaLista rotulo="Situação"><StatusPonto status={usuario.status}>{ROTULO_STATUS[usuario.status]}</StatusPonto></CelulaLista>
               <CelulaLista larga>

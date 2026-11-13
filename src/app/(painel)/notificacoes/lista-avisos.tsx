@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 import type { EventoNotificacao } from "@prisma/client";
 import { formatarDataHoraBrasilia } from "@/lib/datas";
 import { agruparAvisos } from "@/lib/avisos-agrupamento";
-import { botaoDiscreto, botaoSecundario } from "@/ui/botoes";
+import { botaoDiscretoPequeno, botaoSecundarioPequeno } from "@/ui/botoes";
 import { marcarNotificacaoLidaAction } from "./actions";
 
 export const ROTULO_EVENTO: Record<EventoNotificacao, string> = {
@@ -73,10 +73,10 @@ export function ListaAvisos({ itens, filtrado }: { itens: ItemAviso[]; filtrado:
                     <p className="mt-1 text-xs tabular-nums text-faint"><time dateTime={item.criadaEm.toISOString()}>{formatarDataHoraBrasilia(item.criadaEm)}</time></p>
                   </div>
                   <div className="col-span-full flex flex-wrap items-center gap-1.5 sm:col-span-1 sm:col-start-3 sm:justify-end">
-                    {item.url && <Link href={item.url} className={botaoSecundario}>Abrir registro</Link>}
+                    {item.url && <Link href={item.url} className={botaoSecundarioPequeno}>Abrir registro</Link>}
                     {!item.lida && (
                       <form action={marcarNotificacaoLidaAction.bind(null, item.id)}>
-                        <button className={botaoDiscreto}>Marcar como lida</button>
+                        <button className={botaoDiscretoPequeno}>Marcar como lida</button>
                       </form>
                     )}
                   </div>

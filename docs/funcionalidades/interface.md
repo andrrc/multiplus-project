@@ -226,6 +226,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Ajustes da conferência visual contra os protótipos: seta pequena nos seletores, botões de 32 px nos cabeçalhos de cartão e nas ações dos avisos, colunas alinhadas nas linhas de tarefa e subtarefa (só em telas largas), ID em negrito na lista de clientes, resumo da ficha sem data repetida, formulário de usuário em duas colunas e correção de um erro de serialização na agenda |
 | 2026-11-13 | este commit | Refazer a caixa de avisos e a agenda no padrão dos protótipos (ver [Notificações](notificacoes.md) e [Agenda](agenda.md)) |
 | 2026-11-13 | este commit | Refazer lista, cadastro e detalhe de usuários no padrão do protótipo (ver [Usuários](usuarios.md)) |
 | 2026-11-13 | este commit | Refazer o detalhe de projeto e de tarefa no padrão dos protótipos, com confirmação ao desativar (ver [Projetos](projetos.md) e [Tarefas](tarefas.md)) |

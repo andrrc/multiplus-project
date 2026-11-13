@@ -66,7 +66,7 @@ export default async function ClientesPage({
             return (
               <LinhaLista key={cliente.id}>
                 <CelulaLista rotulo="ID">
-                  <span className="tabular-nums text-faint">{numeroCliente(cliente.numeroIdentificacao)}</span>
+                  <span className="font-semibold tabular-nums text-ink">{numeroCliente(cliente.numeroIdentificacao)}</span>
                 </CelulaLista>
                 <CelulaLista larga>
                   <TituloLinha href={`/clientes/${cliente.id}`}>{cliente.razaoSocial}</TituloLinha>

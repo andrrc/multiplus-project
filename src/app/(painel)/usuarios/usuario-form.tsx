@@ -153,7 +153,7 @@ export function UsuarioForm({
           titulo="Identificação"
           descricao="Só nome e e-mail são obrigatórios; o resto ajuda a distinguir quem é quem."
         >
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-x-[18px] gap-y-3.5 sm:grid-cols-2">
             <Campo label="Nome" obrigatorio>
               <input
                 name="nome"
@@ -175,7 +175,7 @@ export function UsuarioForm({
               />
             </Campo>
             {estado.campo === "email" && estado.erro && (
-              <p className="text-[14px] text-critico">{estado.erro}</p>
+              <p className="text-[14px] text-critico sm:col-span-2">{estado.erro}</p>
             )}
 
             <Campo label="Cargo ou função">
@@ -197,7 +197,7 @@ export function UsuarioForm({
               />
             </Campo>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 sm:col-span-2">
               <label className="flex items-center gap-1.5 text-[14px] text-tinta">
                 <input
                   type="radio"
@@ -252,17 +252,19 @@ export function UsuarioForm({
               </Campo>
             )}
             {(estado.campo === "cpf" || estado.campo === "cnpj") && estado.erro && (
-              <p className="text-[14px] text-critico">{estado.erro}</p>
+              <p className="text-[14px] text-critico sm:col-span-2">{estado.erro}</p>
             )}
 
-            <Campo label="Observações">
-              <textarea
-                name="observacoes"
-                rows={3}
-                defaultValue={inicial?.observacoes ?? ""}
-                className={`${inputClass} min-h-[84px] resize-y py-2.5`}
-              />
-            </Campo>
+            <div className="sm:col-span-2">
+              <Campo label="Observações">
+                <textarea
+                  name="observacoes"
+                  rows={3}
+                  defaultValue={inicial?.observacoes ?? ""}
+                  className={`${inputClass} min-h-[84px] resize-y py-2.5`}
+                />
+              </Campo>
+            </div>
           </div>
         </SecaoNumerada>
 

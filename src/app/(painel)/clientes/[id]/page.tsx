@@ -10,7 +10,7 @@ import { formatarDataCadastro } from "@/lib/datas";
 import { documentoCliente, formatarCpf, formatarMoeda, formatarTelefone, numeroCliente } from "@/lib/formatacao";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { Etiqueta } from "@/ui/campo";
-import { botaoDiscreto, botaoPrimario, botaoSecundario } from "@/ui/botoes";
+import { botaoDiscreto, botaoPrimarioPequeno, botaoSecundario } from "@/ui/botoes";
 import { BlocoLateral, Cartao, CartaoLateral, ListaChaveValor, NaoInformado } from "@/ui/cartao";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { CelulaPrazo, StatusPonto } from "@/ui/lista";
@@ -105,7 +105,7 @@ export default async function DetalheClientePage({
           <h1 className="break-words text-[26px]">{cliente.razaoSocial}</h1>
           <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[13.5px] text-cinza">
             <span className="font-medium tabular-nums text-ink">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
-            <span className="tabular-nums">{documentoCliente(cliente)}</span>
+            {documentoCliente(cliente) !== "—" && <span className="tabular-nums">{documentoCliente(cliente)}</span>}
             <span>{cliente.segmento}{cliente.tipo === "PESSOA_JURIDICA" && cliente.porte ? ` · ${cliente.porte}` : ""}</span>
             {cliente.municipio && <span>{cliente.estado ? `${cliente.municipio}/${cliente.estado}` : cliente.municipio}</span>}
             <span className="tabular-nums">
@@ -163,8 +163,9 @@ export default async function DetalheClientePage({
           </div>
         )}
         <div className={celulaResumo}>
-          <p className="text-[12.5px] font-medium text-cinza">Cliente desde</p>
-          <p className="mt-1 text-lg font-semibold tabular-nums">{formatarDataCadastro(cliente.criadoEm)}</p>
+          <p className="text-[12.5px] font-medium text-cinza">Projetos concluídos</p>
+          <p className="mt-1 text-lg font-semibold tabular-nums">{projetos.filter((p) => p.ativo && p.status === "CONCLUIDO").length}</p>
+          <p className="mt-1 text-[12.5px] tabular-nums text-cinza">{projetos.length} no total</p>
         </div>
       </section>
 
@@ -175,7 +176,7 @@ export default async function DetalheClientePage({
             semMargem
             acao={
               souAdmin && cliente.ativo ? (
-                <Link href={`/projetos/novo?clienteId=${encodeURIComponent(id)}`} className={botaoPrimario}>+ Novo projeto</Link>
+                <Link href={`/projetos/novo?clienteId=${encodeURIComponent(id)}`} className={botaoPrimarioPequeno}>+ Novo projeto</Link>
               ) : undefined
             }
           >

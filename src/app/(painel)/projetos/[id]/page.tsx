@@ -15,7 +15,7 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { codigoProjeto, codigoTarefa } from "@/lib/identificadores-hierarquicos";
-import { botaoDiscreto, botaoPrimario, botaoSecundario } from "@/ui/botoes";
+import { botaoDiscretoPequeno, botaoPrimarioPequeno, botaoSecundario } from "@/ui/botoes";
 import { BotaoConfirmacao } from "@/ui/botao-confirmacao";
 import { BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, ListaChaveValor, NaoInformado, Trilha } from "@/ui/cartao";
 import { CelulaPrazo } from "@/ui/lista";
@@ -138,7 +138,7 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
                     );
                   })}
                 </div>
-                <Link href={`/projetos/${id}/tarefas/nova`} className={botaoPrimario}>+ Nova tarefa</Link>
+                <Link href={`/projetos/${id}/tarefas/nova`} className={botaoPrimarioPequeno}>+ Nova tarefa</Link>
               </div>
             }
           >
@@ -166,12 +166,12 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
                           </Link>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:justify-end">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 xl:grid xl:grid-cols-[104px_178px_44px] xl:justify-items-start">
                         <CelulaPrazo prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} />
                         {t.ativo ? (
                           <>
                             <StatusInline status={t.status} label={tarefaStatus[t.status]} opcoes={Object.entries(tarefaStatus).map(([valor, label]) => ({ valor, label }))} action={alterarStatusTarefaAction.bind(null, t.id)} />
-                            <Link href={`/tarefas/${t.id}/editar`} className={botaoDiscreto}>Editar</Link>
+                            <Link href={`/tarefas/${t.id}/editar`} className={botaoDiscretoPequeno}>Editar</Link>
                           </>
                         ) : <Etiqueta tom="apagado">Desativada</Etiqueta>}
                       </div>

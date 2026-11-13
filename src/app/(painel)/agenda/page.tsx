@@ -77,7 +77,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const doDiaSelecionado = diaSelecionado ? porDia.get(diaSelecionado) ?? [] : [];
 
   return <div className="w-full max-w-[1240px]">
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><h1 className="text-2xl">Agenda</h1></div>
+    <div className="mb-6 flex min-h-10 flex-wrap items-end justify-between gap-4"><h1 className="text-2xl">Agenda</h1></div>
 
     <FiltrosAgenda
       key={`${filtros.cliente ?? ""}|${filtros.projeto ?? ""}|${filtros.visitas ?? ""}|${filtros.mes ?? ""}|${visao}`}
@@ -86,8 +86,8 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       clienteInicial={filtros.cliente ?? ""}
       projetoInicial={filtros.projeto ?? ""}
       apenasVisitasInicial={filtros.visitas === "1"}
-      clientes={clientes}
-      projetos={projetos}
+      clientes={clientes.map(({ id, razaoSocial }) => ({ id, razaoSocial }))}
+      projetos={projetos.map(({ id, nome }) => ({ id, nome }))}
     />
 
     <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
