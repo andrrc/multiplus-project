@@ -9,7 +9,7 @@ export const inputClass =
  * resolver. `apagado` marca o registro desativado (RF-039), que continua legível mas sai
  * do primeiro plano.
  */
-type TomEtiqueta = "neutro" | "positivo" | "atencao" | "apagado" | "padrao";
+type TomEtiqueta = "neutro" | "positivo" | "atencao" | "apagado" | "padrao" | "info";
 
 const TONS: Record<TomEtiqueta, string> = {
   neutro: "bg-papel text-ink",
@@ -17,6 +17,7 @@ const TONS: Record<TomEtiqueta, string> = {
   atencao: "bg-ambar-cl text-ambar",
   apagado: "bg-papel text-cinza",
   padrao: "bg-papel text-ink",
+  info: "bg-azul-cl text-azul-esc",
 };
 
 export function Etiqueta({

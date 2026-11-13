@@ -9,6 +9,7 @@ import { obterContexto } from "@/server/auth/contexto";
 import { buscarUsuario, listarAtribuicoesDetalhadas } from "@/lib/usuarios";
 import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
 import { Cartao, Avatar } from "@/ui/cartao";
+import { Etiqueta } from "@/ui/campo";
 import { FormularioDados, FormularioSenha } from "./formularios";
 
 const NOME_PERFIL: Record<Perfil, string> = {
@@ -45,11 +46,7 @@ export default async function MeuPerfilPage() {
             <Avatar nome={usuario.nome} tamanho={52} />
             <div className="min-w-0">
               <p className="truncate font-[family-name:var(--font-interface)] text-lg font-semibold">{usuario.nome}</p>
-              <p className="mt-1">
-                <span className="inline-block rounded-selo bg-azul-cl px-2 py-[3px] font-[family-name:var(--font-interface)] text-xs font-semibold text-azul-esc">
-                  {NOME_PERFIL[usuario.perfil]}
-                </span>
-              </p>
+              <p className="mt-1"><Etiqueta tom="info">{NOME_PERFIL[usuario.perfil]}</Etiqueta></p>
             </div>
           </div>
           <FormularioDados

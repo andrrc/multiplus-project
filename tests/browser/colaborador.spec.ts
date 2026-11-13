@@ -118,6 +118,16 @@ test("colaborador externo vê a tela própria de tarefas e ela cabe no celular",
   await expect(page.getByRole("heading", { name: "O que você acessa", level: 2 })).toBeVisible();
   await expect(page.getByRole("button", { name: "Alterar senha", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Salvar nome" })).toBeDisabled();
+  await page.getByLabel(/^Nome/).fill("Carlos de Teste Silva");
+  await expect(page.getByRole("button", { name: "Salvar nome" })).toBeEnabled();
+  await page.getByLabel(/^Nome/).fill("Carlos de Teste");
+  await expect(page.getByRole("button", { name: "Salvar nome" })).toBeDisabled();
+  await page.getByLabel("Senha atual").fill(senha);
+  await page.locator('input[name="senhaNova"]').fill("NovaSenha123");
+  await page.getByLabel("Confirmar nova senha").fill("NovaSenha123");
+  await expect(page.getByRole("button", { name: "Alterar senha", exact: true })).toBeEnabled();
+  await page.getByLabel("Confirmar nova senha").fill("Diferente123");
+  await expect(page.getByRole("button", { name: "Alterar senha", exact: true })).toBeDisabled();
   expect(await semRolagemLateral(page)).toBe(true);
 });
 

@@ -7,6 +7,7 @@
 import { useActionState, useState } from "react";
 import { Campo, inputClass } from "@/ui/campo";
 import { botaoPrimario } from "@/ui/botoes";
+import { NaoInformado } from "@/ui/cartao";
 import { avaliarSenha } from "@/lib/politica-senha";
 import { alterarSenhaAction, atualizarNomeAction, type EstadoPerfil } from "./actions";
 
@@ -33,7 +34,7 @@ function CampoSomenteLeitura({ rotulo, valor, dica }: { rotulo: string; valor: s
         {dica && <span className="font-normal text-faint"> ({dica})</span>}
       </span>
       <p className="flex min-h-11 items-center break-all rounded-controle border border-linha bg-papel px-3 py-2 text-sm text-cinza md:min-h-10">
-        {valor || "Não informado"}
+        {valor || <NaoInformado />}
       </p>
     </div>
   );
@@ -55,6 +56,8 @@ export function FormularioDados({
   const [estado, formAction, pendente] = useActionState<EstadoPerfil, FormData>(atualizarNomeAction, {});
   const [nomeDigitado, setNomeDigitado] = useState(nome);
   const alterado = nomeDigitado.trim() !== nome && nomeDigitado.trim() !== "";
+  // A administradora corrige estes dados em Usuários; os demais perfis pedem a ela.
+  const dicaEdicao = emailEditavel ? "altere em Usuários" : "só a administradora altera";
 
   return (
     <form action={formAction} className="grid gap-4 sm:grid-cols-2">
@@ -67,13 +70,9 @@ export function FormularioDados({
           className={inputClass}
         />
       </Campo>
-      <CampoSomenteLeitura rotulo="Telefone" valor={telefone} dica="só a administradora altera" />
-      <CampoSomenteLeitura
-        rotulo="E-mail"
-        valor={email}
-        dica={emailEditavel ? "altere em Usuários" : "só a administradora altera"}
-      />
-      <CampoSomenteLeitura rotulo="Cargo ou função" valor={cargo} dica="só a administradora altera" />
+      <CampoSomenteLeitura rotulo="Telefone" valor={telefone} dica={dicaEdicao} />
+      <CampoSomenteLeitura rotulo="E-mail" valor={email} dica={dicaEdicao} />
+      <CampoSomenteLeitura rotulo="Cargo ou função" valor={cargo} dica={dicaEdicao} />
 
       <div className="sm:col-span-2 empty:hidden"><Retorno estado={estado} /></div>
 
