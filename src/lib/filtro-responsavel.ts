@@ -59,7 +59,7 @@ export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListage
 
 /** Preserva os filtros aplicados ao montar o link de exportação da listagem. */
 export function urlExportacaoPdf(
-  rota: "/api/exportacao-pdf/tarefas" | "/api/exportacao-pdf/subtarefas",
+  rota: "/api/exportacao-pdf/tarefas" | "/api/exportacao-pdf/subtarefas" | "/api/exportacao-pdf/projetos",
   filtros: Record<string, string | string[] | undefined>,
 ) {
   const parametros = new URLSearchParams();

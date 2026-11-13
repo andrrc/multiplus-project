@@ -14,9 +14,14 @@ import {
   type FiltrosPrazos,
 } from "@/lib/projetos-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
+import { prepararListaProjetos } from "@/lib/lista-projetos";
+import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
+import { rotulosSituacao } from "@/lib/situacao-prazo";
 import type { ContextoUsuario } from "@/lib/prisma-app";
 
 type TipoLista = "tarefas" | "subtarefas";
+type TipoExportacao = TipoLista | "projetos";
 type TomPrazo = "normal" | "atrasado" | "hoje" | "neutro";
 type Celula = {
   texto: string;
@@ -131,6 +136,13 @@ const STATUS_TAREFA: Record<string, string> = {
   COM_EXIGENCIA_A_CUMPRIR: "Com exigência a cumprir",
   CONCLUIDO: "Concluída",
   CANCELADO: "Cancelada",
+};
+
+const STATUS_PROJETO: Record<string, string> = {
+  A_INICIAR: "A iniciar",
+  EM_ANDAMENTO: "Em andamento",
+  CONCLUIDO: "Concluído",
+  CANCELADO: "Cancelado",
 };
 
 const STATUS_SUBTAREFA: Record<string, string> = {
@@ -376,8 +388,55 @@ function gerarBufferPdf(
   });
 }
 
-export async function gerarExportacaoTarefasPdf(ctx: ContextoUsuario, params: URLSearchParams, tipo: TipoLista) {
+const COLUNAS_PROJETOS = ["Projeto", "Cliente", "Proposta", "ID", "Progresso", "Prazo", "Status"];
+const LARGURAS_PROJETOS = [170, 140, 70, 78, 70, 120, 114];
+
+function valorUnico(params: URLSearchParams, nome: string): string | undefined {
+  const valores = params.getAll(nome);
+  if (valores.length > 1) throw new Error(`O filtro ${nome} foi informado mais de uma vez.`);
+  return valores[0]?.trim() || undefined;
+}
+
+/** Lista de Projetos em PDF, com os mesmos filtros da tela (cliente, busca, situação do prazo e desativados). */
+async function gerarExportacaoProjetosPdf(ctx: ContextoUsuario, params: URLSearchParams) {
+  const clienteId = validarIdParametro(params, "cliente");
+  const busca = valorUnico(params, "busca");
+  if (busca && busca.length > 120) throw new Error("O filtro busca é inválido.");
+  const desativados = valorUnico(params, "desativados") === "1";
+  const [projetos, clientes, limites] = await Promise.all([
+    listarProjetos(ctx, desativados, busca, clienteId),
+    listarClientesParaProjeto(ctx),
+    buscarLimitesSemaforo(ctx),
+  ]);
+  const { situacaoFiltro, visiveis } = prepararListaProjetos(projetos, limites, valorUnico(params, "situacao"));
+  const rotuloSituacao = rotulosSituacao(limites.diasAmareloAte).find(([valor]) => valor === situacaoFiltro)?.[1] ?? "Todos";
+  const resumo = [
+    `Cliente: ${labelFiltro(clienteId, clientes.map(item => ({ id: item.id, nome: item.razaoSocial })), "Todos")}`,
+    `Busca: ${busca ? `"${busca}"` : "Nenhuma"}`,
+    `Situação do prazo: ${rotuloSituacao}`,
+    `Desativados: ${desativados ? "Incluídos" : "Não incluídos"}`,
+  ].join("  ·  ");
+
+  const linhas: Linha[] = visiveis.map(({ projeto: p }) => {
+    const conclusao = calcularPercentualConclusao(p.tarefas);
+    return [
+      { texto: p.nome, negrito: true },
+      { texto: p.cliente.razaoSocial },
+      { texto: p.numeroProposta ?? "—", algarismos: !!p.numeroProposta },
+      { texto: codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal), centralizada: true, algarismos: true },
+      { texto: conclusao.total === 0 ? "—" : `${conclusao.concluidas}/${conclusao.total}`, centralizada: true, algarismos: conclusao.total > 0 },
+      p.ativo
+        ? indicadorPrazo(p.dataPrevistaConclusao, p.status, limites)
+        : { texto: "—", tom: "neutro", detalhe: p.dataPrevistaConclusao ? formatarDataCadastro(p.dataPrevistaConclusao) : undefined, algarismos: !!p.dataPrevistaConclusao },
+      { texto: p.ativo ? STATUS_PROJETO[p.status] ?? p.status : "Desativado" },
+    ];
+  });
+  return gerarBufferPdf("Projetos", `${linhas.length} ${linhas.length === 1 ? "projeto" : "projetos"}`, resumo, COLUNAS_PROJETOS, LARGURAS_PROJETOS, linhas);
+}
+
+export async function gerarExportacaoTarefasPdf(ctx: ContextoUsuario, params: URLSearchParams, tipo: TipoExportacao) {
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
+  if (tipo === "projetos") return gerarExportacaoProjetosPdf(ctx, params);
   const filtros = lerFiltros(params, tipo);
   const filtrosConsulta: FiltrosPrazos = {
     clienteId: filtros.clienteId,

@@ -30,6 +30,19 @@ visível; `colaborador.spec.ts` confere o perfil do externo e do cliente a 375 p
 **Pendências.** Telefone editável pela própria pessoa e a tabela "Avisos que você recebe" do protótipo dependem de dado e de regra
 novos e **não foram criados**.
 
+### Busca geral
+
+**Como funciona.** A barra superior da administração e do colaborador interno tem o campo "Buscar cliente, projeto ou tarefa". Ao enviar,
+abre `/busca?q=` com os resultados agrupados em Clientes, Projetos e Tarefas (até 8 de cada), cada um levando ao registro pela rota do perfil
+(`/clientes`, `/projetos`, `/tarefas` para a administração; `/meus-clientes`, `/meus-projetos`, `/minhas-tarefas` para o interno). A busca começa
+com 2 letras e procura no nome (e na proposta, nos projetos). No celular, a barra mostra um ícone de lupa que leva a `/busca`, onde está o campo.
+O colaborador externo e o cliente não têm busca.
+
+**Detalhes técnicos.** `src/lib/busca-global.ts` roda com o contexto do usuário, então a RLS limita o interno ao escopo dele; só devolve
+identificador e nomes, sem dado cadastral ou financeiro, e recusa os outros perfis. `busca/page.tsx` e `busca/campo-busca.tsx` (formulário GET, que
+funciona sem JavaScript). A rota `/busca` entra no `MENU` para `ADMIN` e `ADMIN_INTERNO` e fica fora da lista do menu lateral. Testes:
+`busca-e-exportacao-projetos.integration.test.ts`, `lista-projetos-busca.unit.test.ts` e as jornadas de navegador.
+
 ### Projeto no portal do cliente
 
 **Como funciona.** O detalhe do projeto (`/portal/[id]`) ganhou a trilha "Painel / Projeto", o título com o código e o status, a faixa
@@ -216,7 +229,7 @@ atualizadas de propósito. `tests/browser/colaborador.spec.ts` cobre o painel do
 
 **Pendências desta área e telas não criadas.** *Instruções* do colaborador externo e *Relatórios* do cliente **não foram criadas**: a primeira
 ensina o envio de fotos e comprovantes e a segunda gera PDF e histórico, recursos que ainda não existem, e uma tela que descreve ou oferece o que
-o sistema não faz enganaria o usuário. Também ficaram de fora: busca e "Novo" com mais opções na barra superior, comprovantes para conferir e
+o sistema não faz enganaria o usuário. Também ficaram de fora: "Novo" com mais opções para o colaborador interno, comprovantes para conferir e
 "aguardando outras pessoas" no painel do interno, obrigações por responsável, unidades e trilha de etapas no painel do cliente, e a régua de
 avisos, o escalonamento e o resumo mensal em Configurações. A agenda do colaborador interno foi aberta em `/minha-agenda` (veja [Agenda](agenda.md)).
 
@@ -299,6 +312,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Busca geral na barra superior (`/busca`), filtro de cliente e Exportar PDF na lista de projetos |
 | 2026-11-13 | este commit | Menu do colaborador externo reduzido a tarefas, avisos e perfil; agenda do interno em `/minha-agenda` |
 | 2026-11-13 | este commit | Rótulo do perfil ADMIN passa a "Administração" (neutro) nas telas; mensagens de erro de domínio não mudaram |
 | 2026-11-13 | este commit | Refazer o Meu perfil (todos os perfis) e o detalhe do projeto no portal do cliente conforme os protótipos |

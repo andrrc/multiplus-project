@@ -18,7 +18,7 @@ const gruposEquipe = [
 ];
 
 /** "Meu perfil" fica no rodapé do menu (ícone ao lado do nome), não na lista de itens. */
-const ROTAS_FORA_DA_LISTA = new Set(["/meu-perfil"]);
+const ROTAS_FORA_DA_LISTA = new Set(["/meu-perfil", "/busca"]);
 
 function Item({ item, naoLidas }: { item: ItemMenu; naoLidas: number }) {
   const avisos = item.href === "/notificacoes" || item.href === "/minhas-notificacoes";

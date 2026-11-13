@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ listagem: string }> },
 ) {
   const { listagem } = await params;
-  if (listagem !== "tarefas" && listagem !== "subtarefas") {
+  if (listagem !== "tarefas" && listagem !== "subtarefas" && listagem !== "projetos") {
     return Response.json({ erro: "Listagem inválida." }, { status: 404 });
   }
 

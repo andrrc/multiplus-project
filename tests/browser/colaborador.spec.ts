@@ -80,6 +80,7 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
     [`/minhas-tarefas/${tarefaId}`, `Tarefa colaborador ${sufixo}`],
     ["/meus-clientes", "Clientes"],
     ["/minha-agenda", "Agenda"],
+    [`/busca?q=${encodeURIComponent(`Projeto colaborador ${sufixo}`)}`, "Busca"],
     [`/meus-clientes/${clienteId}`, nomeCliente],
     ["/meu-perfil", "Meu perfil"],
   ];
@@ -114,7 +115,7 @@ test("colaborador externo vê a tela própria de tarefas e ela cabe no celular",
   await page.getByRole("link", { name: new RegExp(`Tarefa colaborador ${sufixo}`) }).click();
   await expect(page.getByRole("heading", { name: `Tarefa colaborador ${sufixo}`, level: 1 })).toBeVisible();
   // O externo não tem projetos, clientes nem agenda: a URL direta é negada e ele volta às tarefas.
-  for (const rota of ["/meus-projetos", "/meus-clientes", "/minha-agenda"]) {
+  for (const rota of ["/meus-projetos", "/meus-clientes", "/minha-agenda", "/busca"]) {
     await page.goto(rota);
     await expect(page).toHaveURL(/\/minhas-tarefas/);
   }

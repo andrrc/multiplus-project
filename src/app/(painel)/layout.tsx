@@ -5,6 +5,7 @@ import { contarNotificacoesNaoLidas } from "@/lib/notificacoes";
 import { podeGerarToastsDemonstracao } from "@/lib/notificacoes-toasts";
 import Link from "next/link";
 import { BotaoNovo } from "./botao-novo";
+import { CampoBusca } from "./busca/campo-busca";
 import { CascaPainel } from "./casca-painel";
 import { IconePerfil, IconeSair } from "./icones-shell";
 import { NavegacaoPainel } from "./navegacao-painel";
@@ -74,6 +75,7 @@ export default async function PainelLayout({ children }: { children: React.React
         navegacao={<Navegacao perfil={ctx.perfil} naoLidas={naoLidas} />}
         rodape={<BlocoUsuario nome={usuario.name} perfil={ctx.perfil} />}
         acoes={ctx.perfil === "ADMIN" ? <BotaoNovo /> : undefined}
+        busca={ctx.perfil === "ADMIN" || ctx.perfil === "ADMIN_INTERNO" ? <CampoBusca /> : undefined}
       >
         {children}
       </CascaPainel>

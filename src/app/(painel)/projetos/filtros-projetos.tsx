@@ -13,9 +13,10 @@ import type { ContagemSituacoes, FiltroSituacao } from "@/lib/situacao-prazo";
 
 const ESPERA_DA_BUSCA_MS = 350;
 
-function urlProjetos(busca: string, desativados: boolean, situacao: FiltroSituacao) {
+function urlProjetos(busca: string, desativados: boolean, situacao: FiltroSituacao, cliente: string) {
   const parametros = new URLSearchParams();
   if (busca.trim()) parametros.set("busca", busca.trim());
+  if (cliente) parametros.set("cliente", cliente);
   if (situacao !== "todos") parametros.set("situacao", situacao);
   if (desativados) parametros.set("desativados", "1");
   const query = parametros.toString();
@@ -24,6 +25,8 @@ function urlProjetos(busca: string, desativados: boolean, situacao: FiltroSituac
 
 export function FiltrosProjetos({
   buscaInicial,
+  clientes,
+  clienteInicial,
   desativadosInicial,
   situacaoInicial,
   rotulosSituacao,
@@ -31,6 +34,8 @@ export function FiltrosProjetos({
   total,
 }: {
   buscaInicial: string;
+  clientes: Array<{ id: string; razaoSocial: string }>;
+  clienteInicial: string;
   desativadosInicial: boolean;
   situacaoInicial: FiltroSituacao;
   rotulosSituacao: Array<[FiltroSituacao, string]>;
@@ -42,23 +47,24 @@ export function FiltrosProjetos({
   const [busca, setBusca] = useState(buscaInicial);
   const [desativados, setDesativados] = useState(desativadosInicial);
   const [situacao, setSituacao] = useState<FiltroSituacao>(situacaoInicial);
+  const [cliente, setCliente] = useState(clienteInicial);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cancela uma busca agendada se a barra sair da tela.
   useEffect(() => () => { if (temporizador.current) clearTimeout(temporizador.current); }, []);
 
-  function aplicar(proxima: { busca: string; desativados: boolean; situacao: FiltroSituacao }) {
-    startTransition(() => router.push(urlProjetos(proxima.busca, proxima.desativados, proxima.situacao), { scroll: false }));
+  function aplicar(proxima: { busca: string; desativados: boolean; situacao: FiltroSituacao; cliente: string }) {
+    startTransition(() => router.push(urlProjetos(proxima.busca, proxima.desativados, proxima.situacao, proxima.cliente), { scroll: false }));
   }
 
   function alterarBusca(valor: string) {
     setBusca(valor);
     // Espera uma pausa na digitação para não consultar o servidor a cada letra.
     if (temporizador.current) clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(() => aplicar({ busca: valor, desativados, situacao }), ESPERA_DA_BUSCA_MS);
+    temporizador.current = setTimeout(() => aplicar({ busca: valor, desativados, situacao, cliente }), ESPERA_DA_BUSCA_MS);
   }
 
-  const temFiltro = busca.trim() !== "" || situacao !== "todos";
+  const temFiltro = busca.trim() !== "" || situacao !== "todos" || cliente !== "";
 
   return (
     <div className="mt-6" aria-label="Filtros da listagem">
@@ -75,6 +81,22 @@ export function FiltrosProjetos({
             className="h-11 w-full rounded-controle border border-linha-forte bg-branco pl-9 pr-3 font-[family-name:var(--font-interface)] text-sm text-ink focus:border-azul focus:outline-none focus:ring-[3px] focus:ring-azul/15 md:h-[38px]"
           />
         </label>
+        <label className="w-full min-w-0 md:w-auto">
+          <span className="sr-only">Cliente</span>
+          <select
+            name="cliente"
+            value={cliente}
+            disabled={pendente}
+            onChange={(evento) => {
+              setCliente(evento.target.value);
+              aplicar({ busca, desativados, situacao, cliente: evento.target.value });
+            }}
+            className="h-11 w-full min-w-0 rounded-controle border border-linha-forte bg-branco px-3 font-[family-name:var(--font-interface)] text-sm text-ink focus:border-azul focus:outline-none focus:ring-[3px] focus:ring-azul/15 disabled:opacity-60 md:h-[38px] md:w-auto md:max-w-[240px]"
+          >
+            <option value="">Todos os clientes</option>
+            {clientes.map((item) => <option key={item.id} value={item.id}>{item.razaoSocial}</option>)}
+          </select>
+        </label>
       </div>
 
       <div className="mb-3">
@@ -87,7 +109,7 @@ export function FiltrosProjetos({
               disabled={pendente}
               onClick={() => {
                 setSituacao(valor);
-                aplicar({ busca, desativados, situacao: valor });
+                aplicar({ busca, desativados, situacao: valor, cliente });
               }}
               className="h-11 whitespace-nowrap border-l border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] font-medium text-cinza first:border-l-0 hover:bg-papel hover:text-ink aria-pressed:bg-selecionado aria-pressed:font-semibold aria-pressed:text-ink max-md:flex-1 md:h-9"
             >
@@ -111,7 +133,7 @@ export function FiltrosProjetos({
             disabled={pendente}
             onChange={(evento) => {
               setDesativados(evento.target.checked);
-              aplicar({ busca, desativados: evento.target.checked, situacao });
+              aplicar({ busca, desativados: evento.target.checked, situacao, cliente });
             }}
             className="h-4 w-4 accent-tinta"
           />

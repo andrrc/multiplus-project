@@ -27,6 +27,8 @@ export const MENU: ItemMenu[] = [
   { href: "/subtarefas", rotulo: "Subtarefas", perfis: ["ADMIN"] },
   { href: "/agenda", rotulo: "Agenda", perfis: ["ADMIN"] },
   { href: "/etiquetas", rotulo: "Etiquetas", perfis: ["ADMIN"] },
+  // Resultado da busca da barra superior; não aparece como item do menu (ver `ROTAS_FORA_DA_LISTA`).
+  { href: "/busca", rotulo: "Busca", perfis: ["ADMIN", "ADMIN_INTERNO"] },
   { href: "/configuracoes", rotulo: "Prazos e notificações", perfis: ["ADMIN"] },
   { href: "/notificacoes", rotulo: "Notificações", perfis: ["ADMIN"] },
   { href: "/minhas-notificacoes", rotulo: "Notificações", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },

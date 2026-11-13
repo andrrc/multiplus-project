@@ -83,7 +83,7 @@ export async function listarPessoasParaProjeto(ctx: ContextoUsuario, clienteId: 
 }
 
 /** Lista projetos administrativos com busca textual e opção de incluir desativados. */
-export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false, busca?: string) {
+export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = false, busca?: string, clienteId?: string) {
   exigirAdministrador(ctx);
   // Espaços em branco não ativam uma busca que filtraria todos os resultados.
   const termo = busca?.trim();
@@ -91,6 +91,7 @@ export async function listarProjetos(ctx: ContextoUsuario, incluirDesativados = 
     tx.projeto.findMany({
       where: {
         ...(incluirDesativados ? {} : { ativo: true }),
+        ...(clienteId ? { clienteId } : {}),
         ...(termo ? { OR: [
           { nome: { contains: termo, mode: "insensitive" } },
           { numeroProposta: { contains: termo, mode: "insensitive" } },

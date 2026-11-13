@@ -136,6 +136,15 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.setViewportSize({ width: 1024, height: 800 });
 
+  // Lista de projetos: exportação em PDF, filtro por cliente e busca geral da barra superior.
+  await page.goto("/projetos");
+  await expect(page.getByRole("link", { name: "Exportar PDF" })).toHaveAttribute("href", "/api/exportacao-pdf/projetos");
+  await expect(page.getByRole("combobox", { name: "Cliente" })).toBeVisible();
+  await page.getByRole("searchbox", { name: "Buscar no sistema" }).fill("Projeto teste");
+  await page.getByRole("searchbox", { name: "Buscar no sistema" }).press("Enter");
+  await expect(page).toHaveURL(/\/busca\?q=Projeto\+teste/);
+  await expect(page.getByRole("link", { name: /Projeto teste/ }).first()).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.goto("/projetos");
   await page.getByRole("link", { name: "Projeto teste", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Projeto teste", exact: true })).toBeVisible();

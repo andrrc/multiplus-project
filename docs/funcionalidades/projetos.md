@@ -82,14 +82,17 @@ A listagem administrativa de projetos está em adaptação visual aos modelos da
 - **Colunas:** ID do projeto, projeto, cliente (com link para a ficha), proposta, valor, prazo final,
   **Dias restantes** e status.
 - **Tabela larga:** se todas as colunas não couberem na largura disponível, aparece a orientação “Deslize para ver as demais colunas”, que permanece visível durante a rolagem, em texto cinza com uma seta discreta.
-- **Busca:** por projeto ou cliente.
+- **Busca:** por projeto, cliente ou proposta.
+- **Cliente:** o seletor "Todos os clientes" limita a lista a um cliente (13/11/2026).
+- **Exportar PDF:** o botão exporta a lista com os filtros aplicados (cliente, busca, situação do prazo e desativados), em A4 paisagem, com o mesmo padrão visual do PDF de tarefas. Não leva o valor contratado.
 - **Desativados:** "Mostrar desativados" inclui os projetos desativados.
 - **Linhas:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse. Não há cor de fundo por
   situação: o projeto desativado aparece identificado pelo texto "Desativado" no semáforo.
 
 **Detalhes técnicos.**
 - **Rota:** `/projetos`.
-- **Função:** `listarProjetos(ctx, incluirDesativados, busca)`.
+- **Função:** `listarProjetos(ctx, incluirDesativados, busca, clienteId)`. A situação do prazo, as contagens e a ordem vêm de `prepararListaProjetos` (`src/lib/lista-projetos.ts`), usada pela tela e pelo PDF.
+- **PDF:** `GET /api/exportacao-pdf/projetos`, só `ADMIN`, resposta `private, no-store`; filtros validados no servidor (identificador do cliente, busca de até 120 caracteres, parâmetros repetidos recusados). Gerador: `gerarExportacaoTarefasPdf(..., "projetos")`.
 - **ID:** código `PROJ-<cliente>-<sequencial>`, com sequência local por cliente. Na tabela, aparece inteiro em uma linha dentro do contêiner rolável; o cartão móvel mostra o mesmo código junto ao projeto.
 - **Rolagem:** no desktop, a tabela tem altura máxima adaptada à janela, rolagem vertical e cabeçalho fixo; listas curtas ocupam somente a altura necessária.
 - **Acessibilidade:** a área da tabela pode receber foco e ser percorrida pelo teclado.
@@ -193,6 +196,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Lista de projetos com filtro por cliente e exportação em PDF, conforme o protótipo |
 | 2026-11-12 | este commit | Organizar o detalhe de projetos atribuídos |
 | 2026-11-12 | este commit | Adaptar os cartões de projetos atribuídos |
 | 2026-11-11 | este commit | Adaptar a faixa de indicadores no detalhe do projeto |

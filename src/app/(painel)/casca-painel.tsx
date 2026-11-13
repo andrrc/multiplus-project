@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { IconeMenu } from "./icones-shell";
@@ -13,12 +14,15 @@ export function CascaPainel({
   navegacao,
   rodape,
   acoes,
+  busca,
   children,
 }: {
   navegacao: ReactNode;
   rodape: ReactNode;
-  /** Ações da barra superior no desktop. Sem ações, a barra só aparece no celular. */
+  /** Ações da barra superior no desktop. Sem ações nem busca, a barra só aparece no celular. */
   acoes?: ReactNode;
+  /** Campo de busca geral: na barra no desktop; no celular a barra leva um atalho para `/busca`. */
+  busca?: ReactNode;
   children: ReactNode;
 }) {
   const [aberto, setAberto] = useState(false);
@@ -63,7 +67,7 @@ export function CascaPainel({
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className={`sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-linha bg-branco px-4 sm:px-8 ${acoes ? "" : "lg:hidden"}`}>
+        <header className={`sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-linha bg-branco px-4 sm:px-8 ${acoes || busca ? "" : "lg:hidden"}`}>
           <button
             type="button"
             onClick={() => setAberto((atual) => !atual)}
@@ -76,7 +80,13 @@ export function CascaPainel({
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-multiplus.png" alt="Múltiplus" width={125} height={34} className="lg:hidden" />
+          {busca && <div className="hidden w-full max-w-[420px] lg:block">{busca}</div>}
           <span className="flex-1" />
+          {busca && (
+            <Link href="/busca" aria-label="Buscar no sistema" className="flex h-11 w-11 items-center justify-center rounded-controle text-ink hover:bg-papel lg:hidden">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+            </Link>
+          )}
           {acoes}
         </header>
 
