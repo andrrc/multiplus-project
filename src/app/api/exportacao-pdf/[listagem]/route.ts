@@ -24,7 +24,7 @@ export async function GET(
     throw erro;
   }
   if (contexto.perfil !== "ADMIN") {
-    return Response.json({ erro: "Exportação disponível somente para a Administradora." }, { status: 403 });
+    return Response.json({ erro: "Exportação disponível somente para a administração." }, { status: 403 });
   }
 
   try {

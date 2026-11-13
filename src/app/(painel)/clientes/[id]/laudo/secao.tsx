@@ -21,7 +21,7 @@ export async function SecaoLaudo({ ctx, clienteId, clienteAtivo, busca, desativa
   return <section id="laudo-tecnico" aria-label="Laudo técnico" className="min-w-0 scroll-mt-6 rounded-cartao border border-linha bg-branco font-[family-name:var(--font-interface)]">
     <header className="border-b border-linha p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <h2 className="flex flex-wrap items-center gap-2.5 text-base font-semibold">Laudo técnico <span className="inline-flex items-center gap-1.5 rounded-selo bg-papel px-2 py-[3px] text-xs font-semibold text-cinza"><svg aria-hidden="true" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Só a administradora vê</span></h2>
+        <h2 className="flex flex-wrap items-center gap-2.5 text-base font-semibold">Laudo técnico <span className="inline-flex items-center gap-1.5 rounded-selo bg-papel px-2 py-[3px] text-xs font-semibold text-cinza"><svg aria-hidden="true" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Só a administração vê</span></h2>
         {clienteAtivo && <Link href={`/clientes/${clienteId}/editar`} className="inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-azul-esc hover:underline"><IconPencil size={17} aria-hidden="true" />{laudo ? "Editar dados do laudo" : "Cadastrar laudo"}</Link>}
       </div>
       {visivel ? <>

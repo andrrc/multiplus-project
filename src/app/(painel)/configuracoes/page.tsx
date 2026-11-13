@@ -16,7 +16,7 @@ import { Cartao } from "@/ui/cartao";
 import { atualizarPreferenciaAction, atualizarSemaforoAction } from "../notificacoes/actions";
 import { ROTULO_EVENTO } from "../notificacoes/lista-avisos";
 
-const perfilLabel = { ADMIN: "Administrador", ADMIN_INTERNO: "Colaborador interno", ADMIN_EXTERNO: "Colaborador externo", CLIENTE: "Cliente" } as const;
+const perfilLabel = { ADMIN: "Administração", ADMIN_INTERNO: "Colaborador interno", ADMIN_EXTERNO: "Colaborador externo", CLIENTE: "Cliente" } as const;
 const perfis = Object.keys(perfilLabel) as (keyof typeof perfilLabel)[];
 const eventos = Object.values(EventoNotificacao);
 const quando = (data: Date) => formatarDataHoraBrasilia(data);
@@ -41,7 +41,7 @@ export default async function ConfiguracoesPage({ searchParams }: { searchParams
   return (
     <div className="w-full max-w-[1080px]">
       <h1 className="text-2xl">Configurações</h1>
-      <p className="mt-1 text-sm text-cinza">Valem para todo o sistema. Só a administradora acessa esta tela.</p>
+      <p className="mt-1 text-sm text-cinza">Valem para todo o sistema. Só a administração acessa esta tela.</p>
 
       <nav aria-label="Seções das configurações" className="mb-6 mt-6 flex gap-1 overflow-x-auto border-b border-linha">
         {ABAS.map((item) => {

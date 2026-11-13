@@ -23,7 +23,7 @@ import { BotaoRemoverAtribuicao } from "../acoes-usuario";
 import { AdicionarAtribuicao } from "./adicionar-atribuicao";
 
 const NOME_PERFIL: Record<Perfil, string> = {
-  ADMIN: "Administrador",
+  ADMIN: "Administração",
   ADMIN_INTERNO: "Colaborador interno",
   ADMIN_EXTERNO: "Colaborador externo",
   CLIENTE: "Cliente",
@@ -190,7 +190,7 @@ export default async function DetalheUsuarioPage({
 
         {usuario.perfil === "ADMIN" ? (
           <p className="mt-4 rounded-cartao border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">
-            Administrador enxerga todos os clientes, projetos e tarefas sem precisar de
+            A administração enxerga todos os clientes, projetos e tarefas sem precisar de
             atribuição.
           </p>
         ) : (

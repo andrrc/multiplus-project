@@ -99,7 +99,7 @@ aparecem como "Não informado" em âmbar. A ficha tem trilha de navegação, cab
 cidade e "Cliente desde", e um resumo (projetos ativos, próxima conclusão prevista, portal do cliente e data de
 cadastro). Abaixo, projetos, pessoas envolvidas e laudo técnico ocupam a coluna principal; dados da empresa,
 responsável legal, ponto de contato, portal do cliente e documentos ficam na coluna lateral, que no celular vem
-depois. O laudo mostra o selo "Só a administradora vê".
+depois. O laudo mostra o selo "Só a administração vê".
 
 **Detalhes técnicos.** `clientes/page.tsx`, `clientes/filtros-clientes.tsx` e `clientes/[id]/page.tsx`, com
 `src/ui/cartao.tsx` (`Cartao`, `CartaoLateral`, `BlocoLateral`, `ListaChaveValor`, `NaoInformado`) e `src/ui/lista.tsx`.
@@ -299,6 +299,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Rótulo do perfil ADMIN passa a "Administração" (neutro) nas telas; mensagens de erro de domínio não mudaram |
 | 2026-11-13 | este commit | Refazer o Meu perfil (todos os perfis) e o detalhe do projeto no portal do cliente conforme os protótipos |
 | 2026-11-13 | este commit | Criar o Painel (administradora e colaborador interno), o Painel do cliente e as Configurações, e passar o Painel a tela inicial |
 | 2026-11-13 | este commit | Tela própria de tarefas do colaborador externo, só visual e sem restringir menu nem dados |

@@ -19,7 +19,7 @@ export function CamposLaudo({ valor, onChange, responsaveis, disabled = false }:
         <div className="sm:col-span-2"><Campo label="Nome do laudo" obrigatorio><input required value={valor.nome ?? ""} onChange={(e) => onChange({ ...valor, nome: e.target.value })} className={inputClass} /></Campo></div>
         <Campo label="Tipo de laudo" obrigatorio><select required value={valor.tipo ?? ""} onChange={(e) => onChange({ ...valor, tipo: e.target.value as TipoLaudoInput })} className={inputClass}><option value="">Selecione</option>{Object.entries(TIPOS_LAUDO).map(([tipo, nome]) => <option key={tipo} value={tipo}>{nome}</option>)}</select></Campo>
         <Campo label="Responsável pelo laudo" obrigatorio><select required value={valor.responsavelId ?? ""} onChange={(e) => onChange({ ...valor, responsavelId: e.target.value })} className={inputClass}><option value="">Selecione</option>{opcoes.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}{!pessoa.ativo || !["ADMIN", "ADMIN_INTERNO"].includes(pessoa.perfil) ? " (indisponível para novas escolhas)" : ""}</option>)}</select></Campo>
-        <p className="text-[14px] text-cinza sm:col-span-2">Somente a administradora acessa este laudo. A indicação de responsável não concede acesso.</p>
+        <p className="text-[14px] text-cinza sm:col-span-2">Somente a administração acessa este laudo. A indicação de responsável não concede acesso.</p>
       </div>}
       {/* Versão existente sinaliza que desmarcar irá desativar, não apagar, o laudo. */}
       {!valor.possui && valor.versao && <p className="text-[14px] text-cinza">Ao salvar, o laudo ficará desativado. Os dados e as anotações serão preservados.</p>}

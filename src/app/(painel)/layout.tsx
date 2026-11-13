@@ -13,10 +13,10 @@ import { ToastNotifications } from "./toast-notifications";
 /**
  * Rótulos exibidos ao usuário (reunião de aprovação da Sprint 2) — os valores do enum
  * `Perfil` no banco (ADMIN_INTERNO/ADMIN_EXTERNO) não mudam, só o texto na UI/e-mails.
- * O perfil da Talita continua "Administrador".
+ * O perfil da Talita aparece como "Administração" (rótulo neutro, decidido em 13/11/2026).
  */
 const NOME_PERFIL: Record<string, string> = {
-  ADMIN: "Administrador",
+  ADMIN: "Administração",
   ADMIN_INTERNO: "Colaborador interno",
   ADMIN_EXTERNO: "Colaborador externo",
   CLIENTE: "Cliente",

@@ -26,7 +26,7 @@ async function redimensionarImagem(arquivo: File): Promise<File> {
 type UsuarioMencionavel = { id: string; nome: string; perfil: string };
 
 const perfilLabel: Record<string, string> = {
-  ADMIN: "Administradora",
+  ADMIN: "Administração",
   ADMIN_INTERNO: "Equipe interna",
   ADMIN_EXTERNO: "Equipe externa",
   CLIENTE: "Cliente",

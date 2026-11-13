@@ -27,7 +27,7 @@ export type AcaoFormularioUsuario = (
 const PERFIS: { valor: Perfil; rotulo: string; explicacao: string }[] = [
   {
     valor: "ADMIN",
-    rotulo: "Administrador",
+    rotulo: "Administração",
     explicacao: "Acesso total ao sistema — sem atribuição específica.",
   },
   {
@@ -306,7 +306,7 @@ export function UsuarioForm({
           >
             {perfil === "ADMIN" ? (
               <p className="rounded-cartao border border-linha bg-branco px-4 py-3.5 text-[14.5px] text-cinza">
-                Administrador enxerga tudo e não recebe atribuição.
+                A administração enxerga tudo e não recebe atribuição.
               </p>
             ) : perfil === "ADMIN_INTERNO" ? (
               <SelecaoAtribuicoes

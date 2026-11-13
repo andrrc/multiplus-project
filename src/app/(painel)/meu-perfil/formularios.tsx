@@ -56,8 +56,8 @@ export function FormularioDados({
   const [estado, formAction, pendente] = useActionState<EstadoPerfil, FormData>(atualizarNomeAction, {});
   const [nomeDigitado, setNomeDigitado] = useState(nome);
   const alterado = nomeDigitado.trim() !== nome && nomeDigitado.trim() !== "";
-  // A administradora corrige estes dados em Usuários; os demais perfis pedem a ela.
-  const dicaEdicao = emailEditavel ? "altere em Usuários" : "só a administradora altera";
+  // A administração corrige estes dados em Usuários; os demais perfis pedem a ela.
+  const dicaEdicao = emailEditavel ? "altere em Usuários" : "só a administração altera";
 
   return (
     <form action={formAction} className="grid gap-4 sm:grid-cols-2">

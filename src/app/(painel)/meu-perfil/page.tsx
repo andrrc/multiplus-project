@@ -13,7 +13,7 @@ import { Etiqueta } from "@/ui/campo";
 import { FormularioDados, FormularioSenha } from "./formularios";
 
 const NOME_PERFIL: Record<Perfil, string> = {
-  ADMIN: "Administrador",
+  ADMIN: "Administração",
   ADMIN_INTERNO: "Colaborador interno",
   ADMIN_EXTERNO: "Colaborador externo",
   CLIENTE: "Cliente",

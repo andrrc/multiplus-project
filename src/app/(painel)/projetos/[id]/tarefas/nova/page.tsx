@@ -14,7 +14,7 @@ export default async function NovaTarefaPage({ params }: { params: Promise<{ id:
   const projeto = await buscarProjeto(ctx, id);
   if (!projeto) notFound();
   const { pessoas: pessoasCliente, usuarios } = await listarPessoasParaProjeto(ctx, projeto.clienteId);
-  const pessoas = [...pessoasCliente, ...usuarios.map(u => ({ id: `usuario:${u.id}`, nome: `${u.nome} · ${u.perfil === "ADMIN" ? "Administrador" : "Equipe"}`, temAcesso: false }))];
+  const pessoas = [...pessoasCliente, ...usuarios.map(u => ({ id: `usuario:${u.id}`, nome: `${u.nome} · ${u.perfil === "ADMIN" ? "Administração" : "Equipe"}`, temAcesso: false }))];
 
   return <div className="w-full max-w-[820px]">
     <a href={`/projetos/${id}`} className="font-[family-name:var(--font-interface)] text-[14px] text-azul-esc">← {projeto.nome}</a>
