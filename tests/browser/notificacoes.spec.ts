@@ -82,6 +82,9 @@ test("Talita recebe resumo inicial, toasts em tempo real e pode abrir a central"
   } });
   const toast = page.getByRole("link", { name: /Tarefa concluída em tempo real/ });
   await expect(toast).toBeVisible();
+  // O mouse sai da área antes: se ele já estivesse sobre o ponto onde o toast aparece (onde o toast anterior foi fechado),
+  // o hover não geraria `pointerenter` e o toast não pausaria.
+  await page.mouse.move(0, 0);
   await toast.hover({ force: true });
   await expect(toast.locator("xpath=ancestor::article")).toHaveAttribute("data-pausado", "true");
   await page.waitForTimeout(6200);
