@@ -259,6 +259,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 | L2 | A migração assistida de dados (RF-044) e a exclusão por solicitação LGPD (RF-045) não foram implementadas. | — |
 | L5 | A policy RLS de `pessoas_envolvidas` ainda permite consulta contextual por colaboradores vinculados, embora as telas atuais não leiam essa tabela. | Uma consulta direta por função do servidor pode expor os campos permitidos pela policy; rever a policy em análise própria. |
 | L4 | Pasta vazia ``src/app/(painel)/meus-clientes/`[id`]``, resíduo de um comando do PowerShell. | Fora do git e sem efeito. Pode ser apagada. |
+| L6 | A lista e a ficha seguem o protótipo `06-clientes` só no visual (13/11/2026). | Não existem as colunas "Projetos ativos", "Pendências" e "Portal", o filtro de segmento, a situação "Cadastro incompleto", os cartões "Pendências" e "Último acesso" do resumo, "Ver como o cliente", "Exportar resumo" nem a opção de bloquear o portal junto com a desativação: dependem de consultas ou regras novas. |
 
 ## Histórico de alterações
 
@@ -299,3 +300,4 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 | 2026-09-29 | `95589d2` | Controles de acesso exibidos na ficha |
 | 2026-09-29 | `d731f79` | Blocos da ficha voltam a ter o fundo `papel` (cor `fundo` não existia) |
 | 2026-09-30 | `1d88b94` | Máscara e validação de celular para dados de cliente e Pessoas Envolvidas; ver [análise](../analises/formatacao-campos-telefone.md) |
+| 2026-11-13 | este commit | Lista e ficha refeitas no padrão do protótipo `06-clientes`: tabela que vira cartões no celular, ficha em duas colunas com resumo, projetos, pessoas envolvidas e laudo à esquerda e dados, contatos, portal e documentos à direita; campo vazio em âmbar ("Não informado") |

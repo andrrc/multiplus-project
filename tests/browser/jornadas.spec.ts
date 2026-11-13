@@ -86,6 +86,17 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await expect.poll(() => clientes.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   await expect(clientes.getByRole("columnheader", { name: "Cidade" })).toBeVisible();
 
+  // Ficha do cliente: abre pela linha da lista, mostra o resumo e os projetos e cabe nos dois tamanhos.
+  await clientes.getByRole("link", { name: `Cliente teste ${sufixo}` }).click();
+  await expect(page.getByRole("heading", { name: `Cliente teste ${sufixo}`, level: 1 })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Resumo do cliente" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Projeto teste", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByRole("region", { name: "Resumo do cliente" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 1024, height: 800 });
+
   await page.goto("/projetos");
   await page.getByRole("link", { name: "Projeto teste", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Projeto teste", exact: true })).toBeVisible();

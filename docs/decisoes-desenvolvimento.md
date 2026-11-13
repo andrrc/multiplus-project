@@ -146,3 +146,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-13: Adotados os protótipos de `telas-novas/` como fonte da verdade visual e atualizadas as regras de interface; veja [Interface](funcionalidades/interface.md).
 - 2026-11-13: Refeito o shell do painel (menu, barra superior, gaveta no celular) e as telas de senha; veja [Interface](funcionalidades/interface.md).
 - 2026-11-13: Refeitas as listas de projetos, tarefas e subtarefas no padrão dos modelos; veja [Interface](funcionalidades/interface.md).
+- 2026-11-13: Refeitas a lista e a ficha de clientes no padrão dos modelos; veja [Clientes](funcionalidades/clientes.md).

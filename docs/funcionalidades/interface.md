@@ -74,6 +74,22 @@ ficam em `src/ui/botoes.ts` e `calcularDiasRestantes` passou para `src/lib/datas
 colunas, a coluna de etiquetas nas subtarefas e o texto do responsável com seu papel dependem
 de consultas novas e não foram criados. O PDF não aplica a situação do prazo.
 
+### Lista e ficha de clientes
+
+**Como funciona.** A lista de clientes usa a mesma tabela das outras listas (ID em coluna própria, cliente
+com o CNPJ/CPF logo abaixo, segmento, cidade e situação) e vira cartões no celular. Segmento ou cidade vazios
+aparecem como "Não informado" em âmbar. A ficha tem trilha de navegação, cabeçalho com ID, documento, segmento,
+cidade e "Cliente desde", e um resumo (projetos ativos, próxima conclusão prevista, portal do cliente e data de
+cadastro). Abaixo, projetos, pessoas envolvidas e laudo técnico ocupam a coluna principal; dados da empresa,
+responsável legal, ponto de contato, portal do cliente e documentos ficam na coluna lateral, que no celular vem
+depois. O laudo mostra o selo "Só a administradora vê".
+
+**Detalhes técnicos.** `clientes/page.tsx`, `clientes/filtros-clientes.tsx` e `clientes/[id]/page.tsx`, com
+`src/ui/cartao.tsx` (`Cartao`, `CartaoLateral`, `BlocoLateral`, `ListaChaveValor`, `NaoInformado`) e `src/ui/lista.tsx`.
+As permissões e o mascaramento não mudaram: o telefone continua vindo mascarado da consulta e o resumo do portal,
+o laudo e os valores só aparecem para a Administradora. A jornada de `tests/browser/jornadas.spec.ts` abre a ficha
+no desktop e a 375 px e confere que não há rolagem lateral.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -153,6 +169,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer a lista e a ficha de clientes no padrão do protótipo (ver [Clientes](clientes.md)) |
 | 2026-11-13 | este commit | Refazer as listas de projetos, tarefas e subtarefas no padrão dos modelos: tabela que vira cartões no celular, status com ponto, selo de prazo com data e filtro de situação com contagem |
 | 2026-11-13 | este commit | Refazer o shell: menu com rodapé de avatar, barra superior com "Novo" (Administradora), gaveta no celular e telas de senha no padrão do login |
 | 2026-11-13 | este commit | Aplicar a base visual dos protótipos: tokens `ink`, `faint`, `linha-forte` e `ambar-cl`, raios 8/6/5 px, selo de prazo claro ("Em N dias", "Amanhã"), selos e status sem borda, campos com foco em anel azul, fim do lilás em "A iniciar" e das bordas laterais coloridas decorativas |

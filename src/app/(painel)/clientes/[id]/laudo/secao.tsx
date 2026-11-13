@@ -19,20 +19,20 @@ export async function SecaoLaudo({ ctx, clienteId, clienteAtivo, busca, desativa
   const editavel = clienteAtivo && laudo?.ativo;
   const urlPagina = (n: number) => { const p = new URLSearchParams(); if (busca) p.set("laudoBusca", busca); if (mostrar) p.set("laudoDesativados", "1"); if (desativadosCliente) p.set("desativados", desativadosCliente); p.set("laudoPagina", String(n)); return `/clientes/${clienteId}?${p}#laudo-tecnico`; };
   return <section id="laudo-tecnico" aria-label="Laudo técnico" className="min-w-0 scroll-mt-6 rounded-cartao border border-linha bg-branco font-[family-name:var(--font-interface)]">
-    <header className="border-b border-linha p-5 sm:p-8">
+    <header className="border-b border-linha p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <h2 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-cinza">Laudo técnico</h2>
+        <h2 className="flex flex-wrap items-center gap-2.5 text-base font-semibold">Laudo técnico <span className="inline-flex items-center gap-1.5 rounded-selo bg-papel px-2 py-[3px] text-xs font-semibold text-cinza"><svg aria-hidden="true" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Só a administradora vê</span></h2>
         {clienteAtivo && <Link href={`/clientes/${clienteId}/editar`} className="inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-azul-esc hover:underline"><IconPencil size={17} aria-hidden="true" />{laudo ? "Editar dados do laudo" : "Cadastrar laudo"}</Link>}
       </div>
       {visivel ? <>
-        <h3 className="mt-3 break-words text-[26px] leading-tight font-semibold tracking-tight text-tinta sm:text-[34px]">{laudo.nome}</h3>
+        <h3 className="mt-3 break-words text-xl leading-tight font-semibold tracking-tight text-tinta">{laudo.nome}</h3>
         <dl className="mt-5 flex min-w-0 flex-wrap items-center gap-x-6 gap-y-4 text-[14px]">
           <div className="inline-flex min-h-8 items-center gap-2 rounded-selo border border-verde-borda bg-verde-cl px-3 py-1 text-verde-esc"><dt className="sr-only">Tipo</dt><IconLeaf size={17} aria-hidden="true" /><dd>{TIPOS_LAUDO[laudo.tipo]}</dd></div>
           <div className="flex min-w-0 items-start gap-2"><IconUser size={19} className="mt-1 shrink-0 text-cinza" aria-hidden="true" /><div className="min-w-0"><dt className="text-[12px] text-cinza">Responsável</dt><dd className="break-words font-medium">{laudo.responsavel.nome}{!laudo.responsavel.ativo || !["ADMIN", "ADMIN_INTERNO"].includes(laudo.responsavel.perfil) ? <span className="block text-[12px] font-normal text-ambar">Indisponível para novas escolhas</span> : null}</dd></div></div>
         </dl>
       </> : <p className="mt-4 text-[15px] text-cinza">{laudo ? "Laudo desativado. Use Mostrar desativados para consultar o histórico." : "Nenhum laudo técnico cadastrado. Cadastre os dados do laudo para começar o histórico deste cliente."}</p>}
     </header>
-    <div className="min-w-0 p-5 sm:p-8">
+    <div className="min-w-0 p-5">
       {visivel && !editavel && <p className="mb-6 rounded-controle border border-ambar/25 bg-ambar-cl p-3 text-[14px] text-ambar">{!clienteAtivo ? "Cliente desativado." : "Laudo desativado."} Somente leitura. Reative pelo cadastro para fazer alterações.</p>}
       {visivel && <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h4 className="text-[19px] font-semibold tracking-tight">Histórico de anotações</h4><p className="mt-1 text-[13px] text-cinza">Acompanhe os registros e documentos do laudo.</p></div>{editavel && <NovaAnotacaoLaudo clienteId={clienteId} laudoId={laudo.id} />}</div>}
       {laudo && <form method="get" action={`/clientes/${clienteId}#laudo-tecnico`} className="mb-7 flex min-w-0 flex-wrap items-start gap-2">
