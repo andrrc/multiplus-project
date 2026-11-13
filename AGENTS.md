@@ -8,526 +8,90 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Regras de trabalho neste repositório
+# Múltiplus Software
 
-Estas regras valem para qualquer agente (Claude, Codex ou outro) e para qualquer alteração:
-funcionalidade, correção, refatoração, migration ou documentação. Elas existem porque já
-tivemos problemas concretos:
+Next.js (App Router) + Prisma 6 + PostgreSQL com RLS. Responda e comente em português,
+com acentuação correta. Referências do produto: `docs/SRS_Multiplus_Software_v1.0.md` e
+`docs/product-design-multiplus-<modulo>.md`.
 
-- **Funcionalidade duplicada:** branches paralelas e worktrees implementaram a mesma coisa
-  duas vezes.
-- **Conflito de migrations:** duas migrations com o mesmo timestamp.
-- **Código descartado sem revisão:** merges resolvidos em bloco.
-- **CI quebrado por outro módulo:** um push feito sem rodar a suíte completa quebrou o
-  `staging` por um teste de outro módulo.
-- **Funcionalidade pela metade:** entregue sem editar/listar, sem prever permissões e sem
-  pensar no celular.
-- **Interface fora da identidade visual:** telas usando classes de cor que nem existem.
-
-O fluxo de uma alteração é sempre o mesmo, na ordem abaixo:
-
-1. [Sincronizar o `staging`](#1-antes-de-começar-sincronizar) antes de tocar em qualquer arquivo.
-2. [Analisar](#2-análise-antes-de-implementar): prever escopo, ambiguidades e riscos em
-   `docs/analises/`. **Esperar a aprovação do usuário.**
-3. Implementar na [ordem dos 8 passos](#3-ordem-de-implementação-os-8-passos), junto com
-   os [testes](#5-testes) e seguindo as [regras de interface](#6-interface).
-4. Rodar a [verificação completa](#54-verificação-antes-do-commit-e-do-push) localmente.
-5. Atualizar a [documentação do módulo](#7-documentação-das-funcionalidades-e-decisões).
-6. [Commitar e publicar](#4-versionamento) no `origin/staging`.
-7. [Acompanhar o CI e o deploy](#45-depois-do-push) até ficarem verdes.
-8. [Reportar](#8-resposta-final) o que foi feito e testado.
-
----
-
-## 1. Antes de começar: sincronizar
-
-Todo trabalho acontece na branch `staging`, no worktree principal do repositório. Antes da
-primeira edição:
+## Comandos
 
 ```bash
-git fetch origin --prune
-git status                      # precisa estar em "staging" e mostrar o que já existe localmente
-git pull --ff-only origin staging
-```
-
-- **Branch diferente de `staging`:** pare e informe. Não troque de branch se houver
-  alterações locais que não são suas.
-- **`git pull --ff-only` falhou (histórico divergente):** pare e peça orientação. Não
-  resolva com `reset`, rebase forçado ou `merge -X theirs/ours`.
-- **Alterações locais que não são da sua tarefa:** preserve-as. Não faça commit delas,
-  não as descarte (`checkout --`, `restore`, `stash drop`, `clean`) e não as misture nos
-  seus commits.
-
-## 2. Análise antes de implementar
-
-Um pedido curto ("quero uma página de cadastro de X") quase nunca descreve tudo o que a
-entrega precisa. Antes de escrever código, o agente prevê o que está implícito, o que é
-ambíguo e o que pode dar errado. Só programa depois de o usuário aprovar a análise.
-
-### 2.1 Quando é obrigatória
-
-| Tipo de alteração | Análise |
-|---|---|
-| Funcionalidade nova | Obrigatória |
-| Alteração de funcionalidade existente | Obrigatória |
-| Correção de bug fora da camada visual | Obrigatória |
-| Mudança de regra de negócio ou de permissão | Obrigatória |
-| Migration ou mudança de schema | Obrigatória |
-| Somente front-end: layout, estilo, texto, responsividade, sem dado, regra ou permissão nova | Dispensada. A [seção 6](#6-interface) continua valendo. |
-
-Uma mudança "de tela" que passa a exibir um dado que antes não aparecia **não** é só
-front-end. Ela envolve permissão e mascaramento, e exige análise.
-
-### 2.2 Como fazer
-
-1. **Ler o que já está decidido:**
-   - o SRS (`docs/SRS_Multiplus_Software_v1.0.md`) e o PDD do módulo
-     (`docs/product-design-multiplus-<modulo>.md`);
-   - o arquivo do módulo em `docs/funcionalidades/` (o que já existe e as limitações
-     conhecidas), as análises anteriores em `docs/analises/` e a identidade visual.
-2. **Ler o código que será afetado:** procure os usos de cada função, componente, rota e
-   tabela que você pretende mudar, com `grep -rn "nome" src tests prisma`.
-3. **Escrever a análise** em `docs/analises/<funcionalidade>.md` (nome em minúsculas, com
-   hífens, por exemplo `cadastro-fornecedores.md`), seguindo o modelo da seção 2.4.
-   Seções que não se aplicam ficam com "Não se aplica" e o motivo, em vez de serem apagadas.
-4. **Apresentar ao usuário** um resumo com o escopo, as perguntas em aberto e os riscos
-   principais, e o caminho do arquivo. **Pare e espere a aprovação**, mesmo que não haja
-   pergunta em aberto.
-5. **Depois da aprovação:**
-   - registre no arquivo as respostas e ajustes, marque `Status: aprovada em AAAA-MM-DD`
-     e só então comece a implementar;
-   - as decisões vão para o arquivo do módulo em `docs/funcionalidades/` (seção 7);
-   - cada risco vira um teste (seção 5).
-
-O arquivo de análise entra no repositório no mesmo push da implementação. Se o
-comportamento mudar durante o desenvolvimento, atualize a análise.
-
-### 2.3 O que a análise precisa prever
-
-**Ciclo completo da entidade.** Quem pede "cadastro" precisa também de:
-
-- listagem (com busca, filtros, ordenação e o toggle "mostrar desativados");
-- detalhe;
-- edição;
-- desativação e reativação. Aqui **não existe exclusão definitiva**: registros são
-  desativados (RF-039 / ADR-008), com cascata para os dependentes.
-
-Pergunte ao usuário o que fica de fora, em vez de supor.
-
-**Permissões.** Uma matriz com cada perfil (`ADMIN`, `ADMIN_INTERNO`, `ADMIN_EXTERNO`,
-`CLIENTE`) contra cada ação:
-
-- criar, listar, ver detalhe, editar, desativar e reativar;
-- ver campos sensíveis.
-
-Uma célula que o SRS e as decisões não respondem é uma **pergunta em aberto**, não uma
-suposição.
-
-**Dados.**
-
-- Campos, obrigatoriedade, formato e validação, sempre no servidor.
-- Unicidade, por exemplo CPF/CNPJ e números sequenciais.
-- Campos sensíveis que precisam de mascaramento.
-- Migration necessária e o que acontece com os registros que já existem (backfill).
-
-**Impacto em telas e funções existentes.** Liste cada rota, componente e função afetados,
-com base no `grep` do passo 2. Por exemplo:
-
-- onde a entidade aparece: menus, listagens, detalhe de cliente/projeto/tarefa;
-- o que depende dela: notificações, agenda, painel de subtarefas, indicadores e "% em dia";
-- rota renomeada, que precisa de redirecionamento para os links antigos.
-
-**Riscos de segurança e problemas conhecidos.** Percorra a lista abaixo inteira. Ela reúne
-o que já causou erro neste projeto ou é típico do tipo de sistema:
-
-| Risco | Como evitar |
-|---|---|
-| Autorização só na interface (botão escondido, rota acessível) | Checar o perfil na função de `src/lib` ou na server action **e** no RLS |
-| Dado sensível chegando ao navegador, mesmo escondido na tela | Filtrar na query, view ou RLS. Testar que o campo **não vem** na resposta |
-| View sobre tabela com RLS ignorando o RLS | `security_invoker = true` na migration que cria a view |
-| Comparação com `NULL` em trigger ou função de autorização passando batido | Checar `IS NOT NULL` dos dois lados antes de comparar |
-| Trocar o id na URL e acessar registro de outro cliente, projeto ou tarefa (IDOR) | Buscar sempre pelo id **e** pelo vínculo do usuário. Testar com perfil sem vínculo |
-| Action que aceita do formulário campos que o usuário não pode definir (`perfil`, `ativo`, `clienteId` alheio) | Montar os dados explicitamente, campo por campo |
-| Validação só no navegador | Repetir a validação no servidor |
-| Duplicidade por corrida (dois cadastros simultâneos) | Restrição `UNIQUE` no banco, não só verificação prévia |
-| Registro desativado entrando em listas, cálculos, agenda ou notificações | Filtrar `ativo` em cada consulta. Testar o registro desativado |
-| Função SQL redefinida a partir de versão antiga, apagando regra | Partir da migration mais recente (seção 4.4) |
-| Datas deslocadas por fuso | Seguir o padrão do projeto: datas em UTC e formatação com `timeZone: "UTC"` |
-| Link externo (Drive) com `javascript:` ou abrindo sem proteção | Aceitar só `http(s)` e usar `target="_blank" rel="noreferrer"` |
-| Upload (imagem de comentário) sem limite | Validar tipo e tamanho no servidor. Bucket privado |
-| E-mail ou notificação revelando dado a quem não tem acesso | Destinatários calculados pela mesma regra de permissão da tela |
-
-**Casos-limite e estados.**
-
-- Estados de tela: vazio, erro, sem permissão e registro desativado.
-- Campos opcionais nulos.
-- Volume grande: a listagem precisa de paginação?
-- Concorrência: duas pessoas editando o mesmo registro.
-- Comportamento no celular.
-
-### 2.4 Modelo do arquivo de análise
-
-```markdown
-# Análise: <funcionalidade>
-
-- **Data:** AAAA-MM-DD
-- **Pedido original:** <o que o usuário pediu, com as palavras dele>
-- **Status:** aguardando aprovação | aprovada em AAAA-MM-DD
-
-## 1. Escopo previsto
-O que entra (ciclo completo) e o que fica explicitamente de fora.
-
-## 2. Permissões
-| Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
-|---|---|---|---|---|
-
-## 3. Dados
-Campos, validações, unicidade, campos sensíveis, migration e backfill.
-
-## 4. Impacto em telas e funções existentes
-Rotas, componentes e funções afetados (com caminho do arquivo).
-
-## 5. Riscos e segurança
-| Risco | Mitigação | Teste que cobre |
-|---|---|---|
-
-## 6. Casos-limite e estados
-
-## 7. Interface
-Telas, comportamento no celular e componentes existentes reaproveitados.
-
-## 8. Plano de testes
-Unitários, integração e smoke (ver seção 5 do AGENTS.md).
-
-## 9. Perguntas em aberto
-1. <pergunta> — **Resposta:** <preenchida após a conversa, com data>
-```
-
-## 3. Ordem de implementação: os 8 passos
-
-Para cada módulo ou funcionalidade nova, implemente nesta ordem, sem pular nem inverter.
-Em alterações menores, siga os passos que se aplicam, na mesma ordem.
-
-1. **CRUD principal da entidade:** os RFs do núcleo do módulo primeiro.
-2. **Dados relacionados ou derivados:** entidades que dependem da principal (ex.:
-   Responsável Legal e Ponto de Contato do cliente), com atenção às regras de herança
-   de dados.
-3. **Listas e relacionamentos opcionais:** dados dinâmicos e não obrigatórios no cadastro.
-4. **Integrações com módulos auxiliares:** ex.: vínculo de documentos externos (links do
-   Google Drive, sem upload).
-5. **Mascaramento de dados sensíveis:** feito **no backend, na query, na view ou no RLS**,
-   nunca só escondido na interface. Um perfil sem permissão não pode ver o dado abrindo
-   o DevTools e inspecionando a resposta.
-6. **Criação de acesso:** reaproveite os fluxos de autenticação que já existem (convite e
-   definição de senha por e-mail) em vez de duplicar lógica.
-7. **Testes:** unitários (regras), integração (principalmente permissão e RLS,
-   confirmando que o campo mascarado **não vem na resposta**, e não só que a tela não o
-   mostra) e smoke do fluxo completo. Ver seção 5.
-8. **Interface:** as telas por último, seguindo o PDD do módulo e a [seção 6](#6-interface).
-
-### 3.1 Skills técnicas aplicáveis
-
-Antes de implementar ou alterar código, identifique as skills desta tabela que correspondem
-às tecnologias envolvidas e leia seus `SKILL.md`. Aplique apenas as skills pertinentes à
-tarefa; não é necessário carregar skills de tecnologias que não fazem parte da mudança.
-
-| Skill | Quando usar |
-|---|---|
-| `nextjs-app-router-patterns` | Mudanças em aplicações Next.js, especialmente App Router, Server Components, renderização e busca de dados. |
-| `vercel-react-best-practices` | Mudanças em componentes React, páginas ou recursos do Next.js que envolvam padrões de desempenho. |
-| `tailwind-design-system` | Criação ou alteração de estilos, tokens ou componentes com Tailwind CSS. |
-| `postgresql-table-design` | Criação ou revisão de schema, índices, constraints ou recursos específicos do PostgreSQL. |
-| `prisma-client-api` | Escrita ou alteração de queries e operações com Prisma Client. |
-| `multi-stage-dockerfile` | Criação ou alteração de `Dockerfile` multi-stage. |
-| `vitest` | Criação ou alteração de testes, fixtures ou configuração do Vitest. |
-| `tdd` | Correções de bugs ou mudanças desenvolvidas com fluxo test-first, quando aplicável. |
-| `typescript-advanced-types` | Tarefas que envolvam tipos avançados de TypeScript, como generics, tipos condicionais ou utilitários reutilizáveis. |
-
-## 4. Versionamento
-
-### 4.1 Uma branch só: `staging`
-
-- Desenvolva e publique diretamente em `origin/staging`. Cada push nele dispara o CI e,
-  com o CI verde, o deploy automático no ambiente de teste da VPS.
-- **Não crie** branches (`codex/*`, `feature/*` ou qualquer outra) nem worktrees
-  (`git worktree add`). Os worktrees e branches `codex/*` que ainda existem são legados.
-  Não trabalhe neles nem os use como base.
-- **`main` é produção.** Não faça merge, push ou PR para `main` sem pedido explícito
-  do usuário naquela conversa.
-- **Nunca** use `git push --force` / `--force-with-lease` no `staging`, nem reescreva
-  commits que já foram publicados.
-
-### 4.2 Commits
-
-- **Por tema.** Um commit por mudança coesa. Por exemplo, "migration e schema da recorrência",
-  "tela de subtarefas" e "docs" viram três commits, e não um commit "várias alterações".
-- **Adicione arquivos pelo caminho** (`git add caminho/arquivo`). Não use `git add -A`,
-  `git add .` ou `git commit -a`: eles arrastam alterações de outras pessoas e arquivos
-  temporários.
-- **Mensagem no padrão já usado no histórico**, em português: `tipo(escopo): descrição`.
-  - Tipos: `feat`, `fix`, `refactor`, `test`, `docs`, `ci`, `chore`, `ui`.
-  - Escopo: o módulo (`tarefas`, `subtarefas`, `clientes`, `etiquetas`…).
-  - Descrição: no imperativo e com acentuação correta.
-- **Antes de commitar, confira o que entra:** `git status` e `git diff --staged`. Não
-  pode entrar `.env`, arquivo de dump/backup, `*.tgz`, `tsconfig.tsbuildinfo` nem a pasta
-  `report/`.
-
-### 4.3 Integrar com o remoto antes do push
-
-Outra pessoa ou outro agente pode ter publicado no `staging` enquanto você trabalhava:
-
-```bash
-git fetch origin
-git rebase origin/staging        # só reaplica os SEUS commits ainda não publicados
-```
-
-- **Conflito:** resolva arquivo por arquivo, lendo os dois lados e mantendo o
-  comportamento de ambos. **Nunca** resolva em bloco (`-X theirs`, `-X ours`,
-  `checkout --theirs .`).
-- **Não sabe qual lado vale:** aborte (`git rebase --abort`) e pergunte.
-- **Depois de resolver:** rode de novo a verificação completa da seção 5.4. Um conflito
-  resolvido é código novo.
-
-### 4.4 Migrations (Prisma + SQL)
-
-- **Nome:** o timestamp da migration nova precisa ser **posterior à última migration do
-  `origin/staging`**. Confira com `ls prisma/migrations` depois do `fetch`/`rebase`.
-  Duas migrations com o mesmo timestamp ou fora de ordem quebram o `migrate deploy`.
-- **Commit:** `prisma/schema.prisma` e a pasta da migration vão **no mesmo commit**.
-- **Migration publicada é imutável.** Se ela já está no `origin/staging`, já foi aplicada
-  na VPS, e o Prisma recusa migration alterada. Corrija com uma migration nova.
-- **Funções SQL (`CREATE OR REPLACE FUNCTION`, como `concluir_tarefa`):** parta sempre do
-  corpo que está na **migration mais recente** que redefine aquela função. Procure com
-  `grep -l "FUNCTION nome" prisma/migrations/*/migration.sql`. Partir de uma versão antiga
-  apaga silenciosamente a regra que outra migration acrescentou.
-- **RLS e permissões:** migration que cria tabela, view ou função precisa ter a policy ou o
-  `GRANT` correspondente. Ela também precisa de teste de integração que prove o acesso
-  permitido **e** o negado (ver seção 5.2).
-- **Na VPS:** `ops/deploy.sh` aplica as migrations sozinho. Não rode migration à mão.
-  O acesso `ssh vps` é para diagnóstico somente de leitura, como consultar
-  `_prisma_migrations`, `docker ps` e logs. Qualquer alteração manual na VPS exige pedido
-  explícito.
-
-### 4.5 Depois do push
-
-```bash
-git push origin staging
-gh run watch                     # ou: gh run list --branch staging --limit 3
-```
-
-- **A tarefa só termina com o CI verde** (typecheck, lint, suíte completa e deploy com
-  `/api/health` respondendo 200).
-- **CI vermelho:** investigue o log (`gh run view <id> --log-failed`) e publique a correção
-  como **novo commit** o quanto antes. O `staging` quebrado bloqueia o trabalho de todos.
-  Não use `revert` nem force-push sem combinar com o usuário.
-
-## 5. Testes
-
-O padrão completo está em [`docs/padrao-testes-por-sprint-multiplus.md`](docs/padrao-testes-por-sprint-multiplus.md).
-Esta seção resume o que é obrigatório em cada alteração.
-
-### 5.1 Ambiente
-
-Os testes de integração e de smoke usam um Postgres real, em um banco separado
-(`multiplus_test`), que o `globalSetup` cria e migra sozinho. O banco de desenvolvimento
-nunca é tocado.
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres
-```
-
-- **Configuração:** exige `TEST_DATABASE_URL` e `TEST_APP_DATABASE_URL` no `.env` (ver
-  `.env.example`).
-- **Senha da role:** a role `multiplus_app` precisa de senha no banco de teste.
-- **Postgres indisponível:** **não publique.** Informe o usuário. A seção 5.4 não pode ser
-  pulada.
-
-### 5.2 Que teste escrever
-
-| O que mudou | Tipo | Onde |
-|---|---|---|
-| Regra pura (cálculo de prazo, recorrência, máscara, validação, indicador) | Unitário | `tests/unit/<modulo>.unit.test.ts` |
-| Função de `src/lib`, server action, RLS, trigger, função SQL, permissão por perfil | Integração | `tests/integration/<modulo>.integration.test.ts` |
-| Fluxo crítico ponta a ponta (login, convite, recuperação de senha, acesso) | Smoke | `tests/smoke/<modulo>.smoke.test.ts` |
-
-- **Cabeçalho:** todo arquivo de teste começa com um comentário citando o RF/RN coberto.
-- **Riscos da análise:** cada risco listado na análise (seção 2) tem um teste
-  correspondente.
-- **Correção de bug:** primeiro escreva o teste que reproduz o bug e falha. Depois
-  corrija o código.
-- **Permissão e RLS:** teste os dois lados. O perfil autorizado consegue, e cada perfil
-  não autorizado recebe erro. Em asserções de erro, use a mensagem esperada
-  (`toThrow(/RN-007/)`), não apenas `toThrow()`.
-- **Mudança de regra, validação ou mensagem de erro:** procure todos os testes que dependem
-  dela antes de publicar (`grep -rn "trecho" tests/`). Foi assim que o `staging` quebrou em
-  28/09: mudou a paleta de etiquetas e um teste de outro arquivo usava uma cor que deixou
-  de existir.
-
-### 5.3 O que é proibido para "fazer o teste passar"
-
-- **Afrouxar asserções:** trocar `toThrow(/mensagem/)` por `toThrow()`, `toEqual` por
-  `toBeDefined`, ou remover `expect`.
-- **Pular testes:** usar `it.skip`, `describe.skip`, `it.only`, `.todo`, ou comentar e
-  apagar o teste.
-- **Relaxar a configuração:** aumentar timeout ou desligar `fileParallelism` para esconder
-  uma falha intermitente.
-
-Se o comportamento mudou **de propósito**, atualize o teste para o novo comportamento
-esperado, com a mesma precisão de antes. Registre também a mudança no arquivo do módulo
-em `docs/funcionalidades/` (seção 7).
-
-### 5.4 Verificação antes do commit e do push
-
-- **Durante o desenvolvimento:** rode os testes do módulo que está mexendo, por exemplo
-  `npx vitest run tests/integration/tarefas-rn006.integration.test.ts`.
-- **Antes do push:** rode **exatamente o que o CI roda**, sempre com a suíte completa e
-  não só a do módulo:
-
-```bash
-npx prisma generate
+npm run dev            # servidor local
 npm run typecheck
 npm run lint
-npm test                         # integração + smoke + unitários
+npm test               # integração + smoke + unitários (precisa do Postgres de teste)
+npm run test:unit      # só unitários, não precisa de banco
 ```
 
-Alterações só em `docs/` ou em arquivos `.md` dispensam a suíte local. O CI continua
-precisando ficar verde depois do push.
+Os testes de integração e smoke usam o banco `multiplus_test`, criado e migrado pelo
+`globalSetup`. Suba o Postgres com
+`docker compose -f docker-compose.yml -f docker-compose.local.yml up -d postgres`
+e configure `TEST_DATABASE_URL` e `TEST_APP_DATABASE_URL` no `.env`.
 
-Tudo precisa passar. Se algum teste falhar por motivo alheio à sua alteração,
-confira se ele também falha no `origin/staging` sem as suas mudanças. Depois informe
-o usuário antes de publicar. Não publique com teste vermelho.
+## Git
 
-## 6. Interface
+- Trabalhe direto na branch `staging`. Não crie branches nem worktrees.
+- `main` é produção: não faça merge, push nem PR para ela sem pedido explícito.
+- Nunca use `git push --force` nem reescreva commits já publicados.
+- Adicione arquivos pelo caminho (`git add caminho`), nunca `git add -A`, `.` ou `commit -a`.
+  Não deixe entrar `.env`, dumps, `*.tgz`, `tsconfig.tsbuildinfo` nem `report/`.
+- Se houver alterações locais que não são da sua tarefa, preserve-as: não commite, não
+  descarte e não misture nos seus commits.
+- Mensagem no padrão do histórico, em português: `tipo(escopo): descrição`
+  (`feat`, `fix`, `refactor`, `test`, `docs`, `ci`, `chore`, `ui`).
+- Antes do push: `git fetch origin && git rebase origin/staging`. Em conflito, leia os
+  dois lados e resolva arquivo por arquivo. Nunca use `-X theirs` / `-X ours`.
+- Depois do push, apenas informe que foi publicado. Não fique esperando o CI.
 
-Vale para toda alteração de tela, inclusive as que dispensam análise.
+## Banco e migrations
 
-### 6.1 Identidade visual
+- O timestamp de uma migration nova precisa ser posterior à última do `origin/staging`.
+- Migration já publicada é imutável: corrija com uma migration nova.
+- Ao redefinir uma função SQL, parta do corpo da migration mais recente que a define
+  (`grep -l "FUNCTION nome" prisma/migrations/*/migration.sql`).
+- Tabela, view ou função nova precisa de policy RLS ou `GRANT`. Views sobre tabelas com
+  RLS usam `security_invoker = true`.
+- Não rode migration na VPS à mão: `ops/deploy.sh` faz isso.
 
-Leia [`docs/Identidade_Visual_Multiplus.md`](docs/Identidade_Visual_Multiplus.md) antes de
-criar ou alterar uma tela. Também leia o PDD do módulo
-(`docs/product-design-multiplus-<modulo>.md`) para a estrutura da tela.
+## Segurança e regras do domínio
 
-**Fonte da verdade visual: os protótipos de `telas-novas/`** (entregues pela cliente em
-07-10/11/2026, com a especificação `00-especificacao*.md` de cada pasta). A meta é copiar o
-visual deles por inteiro. Quando um protótipo contradisser uma regra desta seção, vale o
-protótipo e a regra é corrigida aqui. Dados, textos e números dos protótipos são fictícios:
-o que o sistema ainda não tem fica como pendência em `docs/funcionalidades/interface.md`, nunca
-como número inventado na tela.
+- Permissão se checa no servidor (função de `src/lib` ou server action) e no RLS, nunca só
+  escondendo o botão na tela.
+- Dado sensível é mascarado na query, view ou RLS. O campo não pode chegar ao navegador.
+- Valide tudo no servidor. Em server actions, monte os dados campo a campo: não repasse o
+  formulário inteiro (`perfil`, `ativo` e `clienteId` não podem vir do cliente).
+- Não existe exclusão definitiva: registros são desativados (RF-039 / ADR-008). Consultas
+  filtram `ativo`.
+- Datas em UTC, formatadas com `timeZone: "UTC"`.
 
-- **Cores só pelos tokens de `src/app/globals.css`.** Os disponíveis são `azul`,
-  `azul-esc`, `verde`, `verde-esc`, `tinta`, `tinta2`, `papel`, `branco`, `cinza`, `linha`,
-  `ambar`, `critico`, `critico-cl`, `azul-cl`, `verde-cl`, `verde-borda` e os `menu-*`.
-  Os tokens `ink`, `faint`, `linha-forte` e `ambar-cl` (texto principal `#0E3240`, texto
-  discreto, borda forte e fundo âmbar claro) foram acrescentados na migração para os
-  protótipos.
-  - Não use hex fixo (`bg-[#...]`, `style={{ color: "#..." }}`) nem a paleta padrão do
-    Tailwind (`red-500`, `gray-100`…).
-- **Confira se o token existe antes de usá-lo:**
-  `grep -- "--color-<nome>:" src/app/globals.css`. Classe com cor inexistente **não dá
-  erro**: o Tailwind simplesmente não gera o estilo e a cor some da tela.
-  - O teste `tests/unit/identidade-visual-tokens.unit.test.ts` falha se alguma classe de
-    cor usar um token inexistente. Em 29/09, 33 usos de `vermelho`, `vermelho-cl` e
-    `azul-cl` estavam invisíveis por esse motivo.
-  - Se precisar de uma cor nova, pergunte ao usuário. Depois adicione-a ao `globals.css`
-    **e** ao documento de identidade visual, e registre a decisão.
-- **A cor codifica informação:**
-  - `critico` (vermelho terra) = prazo vencido ou erro;
-  - `ambar` = pendência ou atenção;
-  - `azul` = questão estrutural ou link;
-  - `verde` = solução, entrega ou detalhe da marca (item ativo do menu, "em dia"). O botão
-    principal é azul-escuro (`tinta`), não verde.
-  - Cor decorativa não existe: bordas laterais coloridas em cartões e comentários saíram.
-- **Tipografia:**
-  - uma fonte só, **IBM Plex Sans** (400, 500 e 600), carregada em `src/app/layout.tsx`.
-    `--font-interface` e `--font-leitura` apontam para ela, então as classes
-    `font-[family-name:var(--font-interface)]` continuam válidas. Não há mais fonte serifada;
-  - `tabular-nums` em números e datas em coluna;
-  - caixa alta só em rótulos curtos.
-- **Forma (medidas dos protótipos):**
-  - raio: 8 px em cartões, 6 px em botões e campos, 5 px em selos, 10 px em modais;
-  - **sombras só em camadas flutuantes** (modais, menus suspensos e o realce de um KPI ao
-    passar o mouse). Cartões e tabelas se separam por borda de 1 px em `linha`;
-  - gradiente institucional só em destaque pontual.
-- **Não copie o estilo de uma tela existente sem conferir com o documento.** O documento
-  prevalece sobre o código.
+## Testes
 
-### 6.2 Responsividade (celular)
+- Rode `typecheck`, `lint` e os testes do módulo que você alterou. Se mudou regra, validação
+  ou mensagem de erro, procure outros testes que dependem dela (`grep -rn "trecho" tests/`).
+  A suíte completa roda no CI.
+- Mudança de regra ou permissão leva teste: unitário em `tests/unit/`, integração em
+  `tests/integration/` (RLS e permissão, testando o perfil permitido e o negado), smoke em
+  `tests/smoke/`.
+- Correção de bug: escreva primeiro o teste que falha.
+- Não afrouxe asserções, não use `skip`/`only`/`todo` e não aumente timeout para fazer
+  teste passar.
 
-Toda tela nova ou alterada funciona em **375 px de largura** e no desktop.
+## Interface
 
-- **Sem rolagem horizontal da página:** conteúdo e formulários ficam em uma coluna no
-  celular.
-- **Tabelas:** no celular viram lista ou cartões. O padrão do projeto é tabela com
-  `hidden md:block` mais lista com `md:hidden`, como em `src/app/(painel)/subtarefas/page.tsx`.
-- **Toque:** botões e campos têm 40 px de altura no desktop, como nos protótipos. No celular
-  a área de toque de botões, links e campos é de pelo menos 44 px (`min-h-11`).
-- **Textos longos** (razão social, nome de tarefa) quebram ou truncam sem estourar o layout.
-- **Verificar de verdade:** abra a tela em 375 px e em desktop (navegador ou DevTools)
-  antes de concluir. Se não for possível, diga isso na resposta final.
+- Identidade visual: `docs/Identidade_Visual_Multiplus.md`. A referência são os protótipos
+  de `telas-novas/`.
+- Cores só pelos tokens de `src/app/globals.css`. Sem hex fixo nem paleta padrão do Tailwind.
+  Classe com token inexistente não dá erro, a cor só some: confira com
+  `grep -- "--color-<nome>:" src/app/globals.css`.
+- A tela precisa funcionar em 375 px e no desktop, sem rolagem horizontal. Tabelas viram
+  lista no celular (padrão em `src/app/(painel)/subtarefas/page.tsx`).
+- Ao mudar componente de `src/ui/` ou função de `src/lib/`, procure todos os usos
+  (`grep -rn "Nome" src`).
+- Ao renomear uma rota, atualize `src/lib/navegacao.ts` e deixe redirecionamento da antiga.
 
-### 6.3 Impacto em telas existentes
+## Edição de arquivos
 
-- **Alterar componente de `src/ui/`, função de `src/lib/` ou tipo compartilhado:** liste
-  todos os usos (`grep -rn "Nome" src`) e confira cada tela afetada, não só a que motivou
-  a mudança.
-- **Renomear ou remover rota:** atualize menu (`src/lib/navegacao.ts`), links internos,
-  `revalidatePath`, notificações e tela inicial por perfil. Deixe redirecionamento para
-  a rota antiga, como foi feito de `/prazos` para `/subtarefas`.
-- **Mudar formato de dado exibido** (datas, status, rótulos): procure todas as telas que
-  mostram aquele dado, para manter a consistência.
-
-## 7. Documentação das funcionalidades e decisões
-
-O que o sistema faz fica documentado **por módulo** em
-[`docs/funcionalidades/`](docs/funcionalidades/README.md). O formato está no `README.md`
-da pasta, e `tarefas.md` é o exemplo de referência. Toda funcionalidade, correção ou
-alteração de código atualiza o arquivo do módulo **no mesmo commit do código**:
-
-1. **Seção da funcionalidade:** crie ou ajuste a seção nos dois blocos.
-   - **Como funciona:** linguagem de negócio, para quem usa o sistema.
-   - **Detalhes técnicos:** RF/RN, rotas, funções principais e testes que cobrem.
-2. **Tabela "Quem pode fazer o quê":** atualize-a se a permissão mudou.
-3. **Limitações e pendências conhecidas:** registre o que ficou de fora, e remova o que
-   foi resolvido.
-4. **Histórico de alterações:** acrescente uma linha com a data, o commit e o resumo. Se
-   houve análise, inclua o link para `docs/analises/<funcionalidade>.md`.
-5. **Módulo sem arquivo ainda:** crie o arquivo no formato padrão e registre-o no índice
-   do `README.md`.
-
-Além disso, acrescente uma linha ao índice cronológico
-[`docs/decisoes-desenvolvimento.md`](docs/decisoes-desenvolvimento.md), apontando para o
-módulo. O detalhe da decisão fica no arquivo do módulo, não no índice.
-
-- **Diferença entre os documentos:** a análise (`docs/analises/`) registra o que foi
-  previsto **antes** de implementar. O arquivo do módulo descreve o comportamento que
-  ficou valendo.
-- **Decisão alterada depois:** atualize a seção da funcionalidade para o comportamento
-  **atual** e registre a mudança no histórico.
-- **Sem invenção:** não registre decisões que não foram discutidas. Se faltar uma
-  decisão necessária para implementar, pergunte ao usuário **antes** de implementar.
-  Comportamento de intenção incerta vai para "Limitações e pendências" como pergunta.
-
-## 8. Resposta final
-
-Ao concluir, informe:
-
-1. **Documentação:** o caminho da análise em `docs/analises/`, se houve, e o arquivo de
-   módulo atualizado em `docs/funcionalidades/`.
-2. **Commits:** o hash e a mensagem de cada commit publicado no `staging`.
-3. **Testes:** os comandos executados e o resultado de cada um (ex.: `npm test` →
-   `312 passed`).
-4. **Testes criados ou alterados:** quais foram e o que cobrem.
-5. **Interface:** se foi conferida em 375 px e em desktop.
-6. **CI e deploy:** o status do run e do healthcheck do `staging`.
-7. **Pendências:** o que não foi possível verificar e por quê. Isso inclui testes não
-   executados, CI ainda rodando e decisões pendentes com o usuário.
-
-## 9. Edição de arquivos
-
-- **Codificação:** os arquivos são UTF-8, com texto em português acentuado. Depois de
-  editar por shell, confira se a acentuação continua íntegra (`Seção`, não `SeÃ§Ã£o`).
-- **Quebras de linha:** o repositório mistura CRLF e LF. Preserve a quebra de linha de cada
-  arquivo e não converta arquivos inteiros. Um diff que troca todas as linhas esconde a
-  mudança real.
-- **Arquivos gerados:** não edite à mão código gerado (`node_modules`, `.next`, cliente
-  Prisma).
+- Arquivos em UTF-8. Depois de editar por shell, confira se a acentuação continuou íntegra.
+- O repositório mistura CRLF e LF: preserve a quebra de linha de cada arquivo.
+- Não edite código gerado (`node_modules`, `.next`, cliente Prisma).
