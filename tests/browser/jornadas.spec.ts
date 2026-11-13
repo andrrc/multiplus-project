@@ -100,8 +100,19 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.goto("/projetos");
   await page.getByRole("link", { name: "Projeto teste", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Projeto teste", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Resumo do projeto" })).toBeVisible();
+  // Desativar pede confirmação: cancelar fecha a janela sem alterar o projeto.
+  await page.getByRole("button", { name: "Desativar", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: /Desativar o projeto/ })).toBeVisible();
+  await page.getByRole("button", { name: "Cancelar" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByRole("link", { name: "Tarefa teste", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Tarefa teste", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Resumo da tarefa" })).toBeVisible();
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByRole("region", { name: "Resumo da tarefa" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 1024, height: 800 });
 
   await page.goto("/subtarefas");
   await page.setViewportSize({ width: 375, height: 812 });

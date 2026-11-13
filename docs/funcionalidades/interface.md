@@ -90,6 +90,28 @@ As permissões e o mascaramento não mudaram: o telefone continua vindo mascarad
 o laudo e os valores só aparecem para a Administradora. A jornada de `tests/browser/jornadas.spec.ts` abre a ficha
 no desktop e a 375 px e confere que não há rolagem lateral.
 
+### Detalhe de projeto e de tarefa
+
+**Como funciona.** As duas páginas seguem o mesmo desenho: trilha de navegação, cabeçalho com o status em botão com
+menu, "Editar" e "Desativar", uma faixa de resumo e duas colunas. No projeto, o resumo mostra prazo, progresso com
+barra, pendências (itens atrasados e tarefas que vencem dentro do limite do semáforo) e valor contratado; as tarefas
+abrem filtradas em "Abertas", com "Todas" a um clique. Na tarefa, o resumo mostra prazo, responsável, subtarefas e
+recorrência, e as subtarefas são linhas expansíveis dentro de um cartão. Os comentários ficam em um cartão com
+avatar, e a coluna lateral reúne descrição, documentos, configuração e registro. Desativar o projeto ou a tarefa
+agora abre uma janela de confirmação; a tarefa deixou de ter o botão "Excluir tarefa" (a ação sempre foi a
+desativação, que é reversível).
+
+**Detalhes técnicos.** `projetos/[id]/page.tsx`, `tarefas/[id]/page.tsx`, `projetos/comentarios.tsx`,
+`src/ui/cartao.tsx` (`Trilha`, `FaixaResumo`, `CelulaResumo`, `Avatar`), `src/ui/botao-confirmacao.tsx` (janela
+`<dialog>` com a ação do servidor) e `src/ui/status-inline.tsx`. `StatusPonto` ficou em `src/ui/status-ponto.tsx`, sem
+importar código de servidor, porque o menu de status é um componente de cliente. As ações, permissões e dados não
+mudaram. A jornada de `tests/browser/jornadas.spec.ts` abre as duas páginas, cancela a confirmação e confere a
+tarefa a 375 px.
+
+**Pendências desta área.** "Quem acessa este projeto", histórico automático junto dos comentários, comprovantes das
+subtarefas, "Cobrar responsável", rejeição com motivo, duplicar e exportar PDF do projeto, "Próxima ocorrência" da
+tarefa e o texto de "Atribuição pendente" no cabeçalho dependem de dados ou regras novas.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -169,6 +191,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer o detalhe de projeto e de tarefa no padrão dos protótipos, com confirmação ao desativar (ver [Projetos](projetos.md) e [Tarefas](tarefas.md)) |
 | 2026-11-13 | este commit | Refazer a lista e a ficha de clientes no padrão do protótipo (ver [Clientes](clientes.md)) |
 | 2026-11-13 | este commit | Refazer as listas de projetos, tarefas e subtarefas no padrão dos modelos: tabela que vira cartões no celular, status com ponto, selo de prazo com data e filtro de situação com contagem |
 | 2026-11-13 | este commit | Refazer o shell: menu com rodapé de avatar, barra superior com "Novo" (Administradora), gaveta no celular e telas de senha no padrão do login |

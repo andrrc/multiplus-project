@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import type { LimitesSemaforo } from "@/lib/semaforo";
+import { StatusPonto } from "@/ui/status-ponto";
 
 /**
  * Peças das listas de Projetos, Tarefas e Subtarefas (protótipo 03-listas-projetos-tarefas):
@@ -121,28 +122,8 @@ export function Vazio({ titulo, descricao }: { titulo: string; descricao: string
   );
 }
 
-/** Cores dos pontos de status, pelos tokens `ponto-*`. */
-const COR_PONTO: Record<string, string> = {
-  A_INICIAR: "bg-ponto-inicio",
-  EM_ANDAMENTO: "bg-ponto-andamento",
-  AGUARDANDO_DOCUMENTO_CLIENTE: "bg-ponto-espera",
-  VISITA_REUNIAO_AGENDADA: "bg-ponto-visita",
-  PROTOCOLADO: "bg-ponto-orgao",
-  SOB_ANALISE_ORGAO_AMBIENTAL: "bg-ponto-orgao",
-  COM_EXIGENCIA_A_CUMPRIR: "bg-ponto-exigencia",
-  CONCLUIDO: "bg-verde",
-  CANCELADO: "bg-cinza",
-};
-
-/** Status como texto com um ponto colorido à esquerda, sem caixa nem borda. */
-export function StatusPonto({ status, children }: { status: string; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-baseline gap-[7px] text-[13px] leading-snug text-ink">
-      <span aria-hidden="true" className={`size-2 shrink-0 -translate-y-px rounded-full ${COR_PONTO[status] ?? "bg-ponto-inicio"}`} />
-      <span>{children}</span>
-    </span>
-  );
-}
+// `StatusPonto` vive em `status-ponto.tsx` (sem dependências de servidor) e é reexportado aqui.
+export { StatusPonto };
 
 const formatarData = (data: Date) => new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(data);
 

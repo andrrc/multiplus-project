@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { criarComentarioAction } from "./actions";
 import { inputClass } from "@/ui/campo";
+import { botaoPrimario } from "@/ui/botoes";
 
 async function redimensionarImagem(arquivo: File): Promise<File> {
   if (arquivo.type === "image/webp" && arquivo.size <= 10 * 1024 * 1024) return arquivo;
@@ -122,7 +123,7 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
     : `${(anexo.tamanho / 1024 / 1024).toFixed(1)} MB`);
 
   return (
-    <form ref={formRef} action={enviar} className="mt-4 rounded-cartao border border-linha bg-branco p-4">
+    <form ref={formRef} action={enviar} className="border-b border-linha px-5 py-4">
       <input type="hidden" name="nivel" value={nivel} />
       <input type="hidden" name="entidadeId" value={entidadeId} />
       {tarefaId && <input type="hidden" name="tarefaId" value={tarefaId} />}
@@ -158,7 +159,7 @@ export function FormularioComentario({ nivel, entidadeId, tarefaId, usuariosMenc
 
       {erro && <p role="alert" className="mt-2 text-[13px] text-critico">{erro}</p>}
       {sucesso && <p role="status" className="mt-2 text-[13px] text-verde-esc">Comentário publicado.</p>}
-      <button disabled={enviando} className="mt-3 min-h-10 rounded-controle bg-tinta px-4 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:opacity-60">{enviando ? "Publicando…" : "Publicar comentário"}</button>
+      <button disabled={enviando} className={`mt-3 ${botaoPrimario}`}>{enviando ? "Publicando…" : "Publicar comentário"}</button>
     </form>
   );
 }

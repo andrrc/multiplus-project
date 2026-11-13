@@ -228,6 +228,7 @@ Descritos em `comentarios-mencoes.md`.
 | 2026-09-29 | `8b66162` | Semáforo de prazo em dias úteis |
 | 2026-09-29 | `82cfccf`, `c229dfc` | Listagem mostra "Dias restantes" mantendo as cores do semáforo (ver abaixo) |
 | 2026-09-29 | `d731f79` | Correção das cores inexistentes na identidade visual |
+| 2026-11-13 | este commit | Detalhe do projeto no padrão do protótipo `04-projeto`: trilha, resumo com pendências, tarefas com abas Abertas/Todas, comentários em cartão e coluna lateral; Desativar pede confirmação |
 
 ### Decisão de 2026-09-29: dias restantes na listagem
 

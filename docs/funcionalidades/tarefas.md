@@ -214,7 +214,7 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 **Como funciona.**
 - **Nada é apagado de fato:** a tarefa desativada some das listas e dos cálculos, e pode
   ser reativada pela Administradora.
-- **Na tela:** o botão aparece como **"Excluir"** (ver limitações).
+- **Na tela:** o botão aparece como **"Desativar"** e pede confirmação antes de desativar a tarefa.
 
 **Detalhes técnicos.**
 - **Código:** `excluirTarefaAction` → `definirAtivoTarefaAction(id, false)` →
@@ -304,7 +304,6 @@ registro de quem criou e quando.
 | # | Situação | Efeito |
 |---|---|---|
 | L1 | O código do job e o script de cron estão prontos, mas a linha ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão enviados automaticamente até ativar o cron e confirmar a primeira execução. |
-| L3 | O botão de desativação diz "Excluir", mas a ação é reversível. | O rótulo contradiz o RF-039 ("desativar", nunca excluir). |
 | L4 | A listagem `/tarefas` só mostra tarefas ativas e não tem "Mostrar desativadas" (RF-039). | Uma tarefa desativada só é encontrada pela URL direta, então na prática não dá para reativá-la pela interface. |
 | L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
 | L6 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
@@ -353,3 +352,4 @@ registro de quem criou e quando.
 | 2026-09-28 | `9969bff` | Escolha do dia da semana na recorrência semanal |
 | 2026-09-29 | `d731f79` | O botão de desativação e as tarefas atrasadas na agenda voltam a aparecer em vermelho terra (correção de cores inexistentes) |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
+| 2026-11-13 | este commit | Detalhe da tarefa no padrão do protótipo `05-tarefa`: trilha, resumo, subtarefas expansíveis em cartão, coluna lateral com descrição, configuração e registro; "Excluir tarefa" passa a "Desativar" com confirmação, resolvendo a L3 |

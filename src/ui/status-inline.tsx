@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import { Etiqueta } from "@/ui/campo";
+import { botaoSecundario } from "@/ui/botoes";
+import { StatusPonto } from "@/ui/status-ponto";
 import { useFecharAoClicarFora } from "@/ui/use-fechar-ao-clicar-fora";
 
 type Opcao = { valor: string; label: string };
@@ -35,9 +36,11 @@ function MenuStatus({
   // O menu só é montado quando aberto; cada opção envia o novo status pela action do servidor.
   return <div ref={containerRef} className={classeContainer}>
     <button ref={botaoRef} type="button" aria-haspopup="menu" aria-expanded={aberto} onClick={() => setAberto(atual => !atual)} className={`cursor-pointer text-left ${classeGatilho}`}>{gatilho}</button>
-    {aberto && <div role="menu" className={`absolute ${alinhar === "esquerda" ? "left-0" : "right-0"} z-10 mt-2 min-w-48 rounded-cartao border border-linha bg-branco p-2 shadow-lg`}>{opcoes.map(opcao => <form action={action} onSubmit={fechar} key={opcao.valor}><button role="menuitem" name="status" value={opcao.valor} className={`flex min-h-11 w-full items-center rounded-controle px-3 text-left text-[13px] hover:bg-verde-cl ${opcao.valor === status ? "font-semibold" : "font-normal"}`}>{opcao.label}</button></form>)}</div>}
+    {aberto && <div role="menu" className={`absolute ${alinhar === "esquerda" ? "left-0" : "right-0"} z-10 mt-2 min-w-52 rounded-cartao border border-linha bg-branco p-1.5 shadow-xl`}>{opcoes.map(opcao => <form action={action} onSubmit={fechar} key={opcao.valor}><button role="menuitem" name="status" value={opcao.valor} className={`flex min-h-11 w-full items-center rounded-controle px-3 text-left text-[13px] text-ink hover:bg-papel md:min-h-9 ${opcao.valor === status ? "font-semibold" : "font-normal"}`}><StatusPonto status={opcao.valor}>{opcao.label}</StatusPonto></button></form>)}</div>}
   </div>;
 }
+
+const SETA = <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" className="shrink-0 text-cinza" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>;
 
 export function StatusInline({
   status,
@@ -52,13 +55,11 @@ export function StatusInline({
   action: (formData: FormData) => Promise<void>;
   alinhar?: "direita" | "esquerda";
 }) {
-  // Em tabelas e linhas compactas, o status é apresentado como etiqueta clicável.
-  return <MenuStatus classeContainer="relative inline-block" classeGatilho="inline-flex" status={status} opcoes={opcoes} action={action} alinhar={alinhar} gatilho={<Etiqueta tom={status === "CONCLUIDO" ? "positivo" : status === "CANCELADO" ? "apagado" : undefined}>{label} ▾</Etiqueta>} />;
+  // Em linhas compactas, o status é um texto com ponto colorido que abre o menu ao clicar.
+  return <MenuStatus classeContainer="relative inline-block" classeGatilho="inline-flex min-h-11 items-center gap-1.5 rounded-controle px-1.5 hover:bg-papel md:min-h-8" status={status} opcoes={opcoes} action={action} alinhar={alinhar} gatilho={<><StatusPonto status={status}>{label}</StatusPonto>{SETA}</>} />;
 }
 
 export function StatusCardInline({ status, label, opcoes, action }: { status: string; label: string; opcoes: Opcao[]; action: (formData: FormData) => Promise<void> }) {
-  // O ponto e o rótulo comunicam o estado sem substituir o texto.
-  const estilo: Record<string, string> = { A_INICIAR: "bg-papel text-tinta", EM_ANDAMENTO: "bg-azul/8 text-azul-esc", CONCLUIDO: "bg-verde-cl text-verde-esc", CANCELADO: "bg-critico/8 text-critico" };
-  // Reaproveita o mesmo menu, mudando apenas a apresentação do controle que o aciona.
-  return <MenuStatus status={status} opcoes={opcoes} action={action} classeGatilho={`inline-flex min-h-[68px] max-w-full items-center gap-3 rounded-controle border border-linha px-4 py-3 ${estilo[status] ?? estilo.A_INICIAR}`} gatilho={<><span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${status === "CONCLUIDO" ? "bg-verde-esc" : status === "CANCELADO" ? "bg-critico" : status === "EM_ANDAMENTO" ? "bg-azul-esc" : "bg-cinza"}`} /><span><span className="block font-[family-name:var(--font-interface)] text-[11px] font-medium leading-4 text-cinza">Status do projeto</span><span className="block font-[family-name:var(--font-interface)] text-[16px] font-semibold leading-5">{label} ▾</span></span></>} />;
+  // No cabeçalho da página, o status é um botão secundário com o ponto colorido e uma seta.
+  return <MenuStatus status={status} opcoes={opcoes} action={action} classeGatilho={botaoSecundario} gatilho={<><StatusPonto status={status}>{label}</StatusPonto>{SETA}</>} />;
 }
