@@ -101,6 +101,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Aplicar a base visual dos protótipos: tokens `ink`, `faint`, `linha-forte` e `ambar-cl`, raios 8/6/5 px, selo de prazo claro ("Em N dias", "Amanhã"), selos e status sem borda, campos com foco em anel azul, fim do lilás em "A iniciar" e das bordas laterais coloridas decorativas |
 | 2026-11-13 | este commit | Adotar os protótipos de `telas-novas/` como fonte da verdade visual: regras de `AGENTS.md` §6 e da [identidade visual](../Identidade_Visual_Multiplus.md) atualizadas (raios 8/6/5 px, sombras só em camadas flutuantes, botão azul-escuro, IBM Plex Sans) e [mapa das telas](../mapeamento-telas-talita.md) corrigido |
 | 2026-11-10 | este commit | Adaptar a apresentação da tela compartilhada de perfil |
 | 2026-11-10 | este commit | Iniciar adaptação da identidade visual pela tipografia compartilhada |

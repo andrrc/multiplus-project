@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 export const inputClass =
-  "min-h-11 w-full rounded-[3px] border border-linha bg-branco px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] text-tinta focus:border-azul disabled:bg-papel disabled:text-cinza";
+  "min-h-11 w-full rounded-controle border border-linha-forte bg-branco px-3 py-2 font-[family-name:var(--font-interface)] text-sm text-ink focus:border-azul focus:outline-none focus:ring-[3px] focus:ring-azul/15 disabled:bg-papel disabled:text-cinza md:min-h-10";
 
 /**
  * `atencao` existe para o que o RF-040 chama de sinalização visual: um usuário pendente de
@@ -12,11 +12,11 @@ export const inputClass =
 type TomEtiqueta = "neutro" | "positivo" | "atencao" | "apagado" | "padrao";
 
 const TONS: Record<TomEtiqueta, string> = {
-  neutro: "border-linha bg-branco text-tinta",
-  positivo: "border-verde-borda bg-verde-cl text-verde-esc",
-  atencao: "border-ambar/30 bg-ambar/8 text-ambar",
-  apagado: "border-linha bg-papel text-cinza",
-  padrao: "border-linha bg-branco text-tinta",
+  neutro: "bg-papel text-ink",
+  positivo: "bg-verde-cl text-verde-esc",
+  atencao: "bg-ambar-cl text-ambar",
+  apagado: "bg-papel text-cinza",
+  padrao: "bg-papel text-ink",
 };
 
 export function Etiqueta({
@@ -32,7 +32,7 @@ export function Etiqueta({
 
   return (
     <span
-      className={`inline-block rounded-[2px] border px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-medium ${TONS[tomFinal]}`}
+      className={`inline-block rounded-selo px-2 py-[3px] font-[family-name:var(--font-interface)] text-xs font-semibold ${TONS[tomFinal]}`}
     >
       {children}
     </span>
@@ -50,7 +50,7 @@ export function Campo({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">
+      <span className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-ink">
         {label}
         {obrigatorio && <span className="text-cinza"> *</span>}
       </span>

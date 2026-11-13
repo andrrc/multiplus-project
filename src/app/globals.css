@@ -10,13 +10,17 @@
   --verde-esc: #17733a;
 
   --tinta: #0b2530;
-  --tinta2: #12394a;
+  --tinta2: #12384a;
+  --ink: #0e3240;
+  --faint: #8a9ba3;
+  --linha-forte: #cfd9dd;
   --papel: #f4f7f8;
   --branco: #ffffff;
   --cinza: #5b6f78;
   --linha: #e1e8eb;
 
   --ambar: #8a5300;
+  --ambar-cl: #fff4de;
   --critico: #b42318;
   --critico-cl: #fdedeb;
   --azul-cl: #e8f4fc;
@@ -29,7 +33,7 @@
   --menu-ativo: #103647;
 
   --background: var(--papel);
-  --foreground: var(--tinta);
+  --foreground: var(--ink);
 }
 
 @theme inline {
@@ -42,6 +46,10 @@
   --color-verde-esc: var(--verde-esc);
   --color-tinta: var(--tinta);
   --color-tinta2: var(--tinta2);
+  --color-ink: var(--ink);
+  --color-faint: var(--faint);
+  --color-linha-forte: var(--linha-forte);
+  --color-ambar-cl: var(--ambar-cl);
   --color-papel: var(--papel);
   --color-branco: var(--branco);
   --color-cinza: var(--cinza);
@@ -58,6 +66,12 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Raios dos protótipos: `rounded-cartao`, `rounded-controle`, `rounded-selo` e `rounded-modal`. */
+  --radius-cartao: 8px;
+  --radius-controle: 6px;
+  --radius-selo: 5px;
+  --radius-modal: 10px;
 
   --font-interface: var(--font-sistema);
   --font-leitura: var(--font-sistema);

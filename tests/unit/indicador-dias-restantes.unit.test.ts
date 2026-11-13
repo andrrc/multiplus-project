@@ -20,11 +20,11 @@ describe("IndicadorSemaforoProjeto", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-09-28T15:00:00.000Z"));
 
-    expect(renderizar("2026-10-02")).toContain("4 dias");
-    expect(renderizar("2026-10-02")).toContain("bg-ambar/8");
-    expect(renderizar("2026-10-03")).toContain("5 dias");
-    expect(renderizar("2026-10-03")).toContain("bg-ambar/8");
-    expect(renderizar("2026-10-04")).toContain("6 dias");
+    expect(renderizar("2026-10-02")).toContain("Em 4 dias");
+    expect(renderizar("2026-10-02")).toContain("bg-ambar-cl");
+    expect(renderizar("2026-10-03")).toContain("Em 5 dias");
+    expect(renderizar("2026-10-03")).toContain("bg-ambar-cl");
+    expect(renderizar("2026-10-04")).toContain("Em 6 dias");
     expect(renderizar("2026-10-04")).toContain("bg-verde-cl");
   });
 
@@ -41,9 +41,9 @@ describe("IndicadorSemaforoProjeto", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-09-28T15:00:00.000Z"));
 
-    expect(renderizar("2026-09-30", { diasAmareloAte: 2 })).toContain("bg-ambar/8");
+    expect(renderizar("2026-09-30", { diasAmareloAte: 2 })).toContain("bg-ambar-cl");
     expect(renderizar("2026-10-01", { diasAmareloAte: 2 })).toContain("bg-verde-cl");
-    expect(renderizar("2026-09-28", { diasAmareloAte: 0 })).toContain("bg-ambar/8");
+    expect(renderizar("2026-09-28", { diasAmareloAte: 0 })).toContain("bg-ambar-cl");
     expect(renderizar("2026-09-29", { diasAmareloAte: 0 })).toContain("bg-verde-cl");
   });
 
@@ -52,11 +52,11 @@ describe("IndicadorSemaforoProjeto", () => {
     vi.setSystemTime(new Date("2026-09-28T15:00:00.000Z"));
     const venceHoje = renderizar("2026-09-28");
     expect(venceHoje).toContain("Vence hoje");
-    expect(venceHoje).toContain("bg-ambar/8");
+    expect(venceHoje).toContain("bg-ambar-cl");
 
     vi.setSystemTime(new Date("2026-10-02T15:00:00.000Z"));
     const venceNoSabado = renderizar("2026-10-03");
-    expect(venceNoSabado).toContain("1 dia<");
+    expect(venceNoSabado).toContain("Amanhã<");
     expect(venceNoSabado).not.toContain("fim de semana");
   });
 
@@ -67,13 +67,15 @@ describe("IndicadorSemaforoProjeto", () => {
     expect(calcularDiasRestantes(new Date("2026-09-29T00:00:00.000Z"), hoje)).toBe(1);
   });
 
-  it("exibe atraso em dias corridos, com caixa vermelha sólida", () => {
+  it("exibe atraso em dias corridos, com texto vermelho sobre fundo claro", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-09-29T15:00:00.000Z"));
 
     const html = renderizar("2026-09-25");
     expect(html).toContain("Atrasado 4 dias");
-    expect(html).toContain("border-critico bg-critico text-branco");
+    expect(html).toContain("bg-critico-cl text-critico");
+    // O vermelho sólido com texto branco saiu: os protótipos usam só fundo claro.
+    expect(html).not.toContain("text-branco");
   });
 
   it("usa o singular para um dia de atraso", () => {

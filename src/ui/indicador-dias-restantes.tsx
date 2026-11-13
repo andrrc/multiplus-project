@@ -11,6 +11,12 @@ export function calcularDiasRestantes(prazo: Date, hoje = new Date()) {
   return Math.round((prazoUTC - dataDeHojeEmSaoPaulo(hoje)) / DIA_MS);
 }
 
+/** Cores do selo: texto escuro sobre fundo claro, sem borda (padrão dos protótipos). */
+const COR_NEUTRA = "bg-papel text-cinza";
+const COR_VENCIDO = "bg-critico-cl text-critico";
+const COR_ATENCAO = "bg-ambar-cl text-ambar";
+const COR_EM_DIA = "bg-verde-cl text-verde-esc";
+
 export function IndicadorSemaforoProjeto({
   prazo,
   status,
@@ -28,35 +34,37 @@ export function IndicadorSemaforoProjeto({
 
   if (!ativo) {
     texto = "Desativado";
-    cores = "border-linha bg-papel text-cinza";
+    cores = COR_NEUTRA;
   } else if (status === "CONCLUIDO") {
     texto = "Concluído";
-    cores = "border-verde-borda bg-verde-cl text-verde-esc";
+    cores = COR_EM_DIA;
   } else if (status === "CANCELADO") {
     texto = "Cancelado";
-    cores = "border-linha bg-papel text-cinza";
+    cores = COR_NEUTRA;
   } else if (!prazo) {
     texto = "Sem prazo";
-    cores = "border-linha bg-branco text-cinza";
+    cores = COR_NEUTRA;
   } else {
     // Prazos ativos têm os dias restantes avaliados contra o limite global configurável.
     const dias = calcularDiasRestantes(prazo);
     // Vermelho só para prazo vencido; do dia do prazo até o limite configurado, âmbar.
     cores = dias < 0
-      ? "border-critico bg-critico text-branco"
+      ? COR_VENCIDO
       : dias <= limites.diasAmareloAte
-        ? "border-ambar/30 bg-ambar/8 text-ambar"
-        : "border-verde-borda bg-verde-cl text-verde-esc";
+        ? COR_ATENCAO
+        : COR_EM_DIA;
     texto = dias < 0
       ? `Atrasado ${Math.abs(dias)} ${Math.abs(dias) === 1 ? "dia" : "dias"}`
       : dias === 0
         ? "Vence hoje"
-        : `${dias} ${dias === 1 ? "dia" : "dias"}`;
+        : dias === 1
+          ? "Amanhã"
+          : `Em ${dias} dias`;
   }
 
   // Exibe a quantidade com algarismos alinhados e as cores definidas para o semáforo.
   return (
-    <span className={`inline-flex items-center rounded-[3px] border px-2.5 py-1 font-[family-name:var(--font-interface)] text-[13px] font-semibold tabular-nums ${cores}`}>
+    <span className={`inline-block whitespace-nowrap rounded-selo px-2 py-[3px] font-[family-name:var(--font-interface)] text-xs font-semibold tabular-nums ${cores}`}>
       {texto}
     </span>
   );
