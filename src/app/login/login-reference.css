@@ -123,4 +123,15 @@
   .mobile-support .placeholder{color:var(--blue-dark)}
   .mobile-support strong{color:var(--navy-ink);font-weight:600}
 
+  /* Telas de recuperar e definir senha, que reaproveitam a estrutura do login */
+  .notice{padding:12px 14px;border-radius:var(--radius);background:#E8F5EC;border:1px solid #BFE3C6;color:#17733A;font-size:14px;line-height:1.45}
+  .reqs{list-style:none;display:grid;gap:6px;font-size:13px;color:var(--muted)}
+  .reqs li{display:flex;align-items:center;gap:8px}
+  .reqs li.ok{color:#17733A}
+  .reqs .mark{width:14px;flex:none;text-align:center}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .back-link{text-align:center;font-size:14px}
+  a.btn{display:flex;align-items:center;justify-content:center;text-decoration:none}
+  a.btn:hover{text-decoration:none}
+
 }

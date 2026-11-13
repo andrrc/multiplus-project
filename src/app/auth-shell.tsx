@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
+import "./login/login-reference.css";
 
+/**
+ * Estrutura das telas públicas de autenticação (recuperar e definir senha), igual à do login:
+ * painel com foto ao lado e formulário centralizado. O CSS é o do login (`.login-reference`),
+ * por isso os formulários filhos usam as classes dele (`.field`, `.btn`, `.alert`, `.notice`).
+ */
 export function AuthShell({
   titulo,
   subtitulo,
@@ -9,29 +15,41 @@ export function AuthShell({
   subtitulo: string;
   children: ReactNode;
 }) {
-  // Reaproveita a composição das telas públicas de autenticação, recebendo texto e formulário por props.
   return (
-    <main className="flex min-h-screen">
-      {/* Marca e explicação institucional aparecem apenas em telas largas. */}
-      <div
-        className="hidden w-[420px] shrink-0 flex-col justify-between px-12 py-14 lg:flex"
-        style={{ background: "linear-gradient(112deg, #0B2530 0%, #14485C 58%, #12703F 130%)" }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-multiplus.png" alt="Múltiplus" width={186} height={51} />
-        <p className="max-w-[30ch] text-[17px] leading-[1.62] text-[#C4DCE4]">
-          Controle de clientes, projetos e prazos ambientais da Múltiplus Ambiental.
-        </p>
+    <div className="login-reference">
+      <div className="page">
+        {/* O painel com a foto aparece só em telas largas. */}
+        <aside className="panel" aria-label="Apresentação e suporte">
+          <div className="panel-text">
+            <div className="rule" />
+            <h2>Prazos, responsáveis e documentos ambientais organizados em um só lugar.</h2>
+            <p>Acesso da equipe Múltiplus, dos clientes e dos responsáveis designados em cada empresa.</p>
+          </div>
+          <div className="support">
+            <h3>Suporte</h3>
+            <p className="hours">Precisa de ajuda para acessar? Entre em contato com a equipe Múltiplus.</p>
+          </div>
+        </aside>
+        <main className="main">
+          <div className="form-area">
+            <div className="form-box">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="brand" src="/login-logo-referencia.png" alt="Múltiplus Ambiental" />
+              <h1>{titulo}</h1>
+              <p className="lead">{subtitulo}</p>
+              {children}
+              <div className="mobile-support">
+                <strong>Precisa de ajuda para acessar?</strong>
+                <br />
+                Entre em contato com a equipe Múltiplus.
+              </div>
+            </div>
+          </div>
+          <footer className="footer">
+            <span>© 2026 Múltiplus Ambiental</span>
+          </footer>
+        </main>
       </div>
-
-      {/* Em celular, o formulário ocupa a tela; em desktop, fica centralizado ao lado da marca. */}
-      <div className="flex flex-1 items-center justify-center bg-papel px-5 py-10 sm:px-6">
-        <div className="w-full max-w-sm">
-          <h1 className="text-[22px]">{titulo}</h1>
-          <p className="mt-1.5 text-[15px] text-cinza">{subtitulo}</p>
-          <div className="mt-7">{children}</div>
-        </div>
-      </div>
-    </main>
+    </div>
   );
 }

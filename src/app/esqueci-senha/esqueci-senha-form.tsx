@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import { inputClass } from "@/ui/campo";
 import { esqueciSenhaAction } from "./actions";
 
 export function EsqueciSenhaForm() {
@@ -11,45 +10,27 @@ export function EsqueciSenhaForm() {
   if (estado.mensagem) {
     // Após o envio, mostra apenas confirmação genérica e remove o formulário.
     return (
-      <p className="rounded-cartao border border-verde-borda bg-verde-cl px-4 py-3 text-[14.5px] text-verde-esc">
-        {estado.mensagem}
-      </p>
+      <form>
+        <p className="notice" role="status">{estado.mensagem}</p>
+        <a href="/login" className="back-link">Voltar para o login</a>
+      </form>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta">
-          E-mail
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className={inputClass}
-        />
+    <form action={formAction}>
+      <div className="field">
+        <label htmlFor="email">E-mail</label>
+        <input id="email" name="email" type="email" required autoComplete="email" placeholder="nome@empresa.com.br" />
       </div>
 
-      {estado.erro && (
-        <p className="rounded-cartao border border-critico/25 bg-critico-cl px-3.5 py-2.5 text-[14px] text-critico">
-          {estado.erro}
-        </p>
-      )}
+      {estado.erro && <div className="alert" role="alert">{estado.erro}</div>}
 
-      <button
-        type="submit"
-        disabled={pendente}
-        className="mt-2 min-h-11 rounded-controle bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
-      >
+      <button className="btn" type="submit" disabled={pendente}>
         {pendente ? "Enviando…" : "Enviar link de redefinição"}
       </button>
 
-      <a href="/login" className="text-center text-[14px] text-cinza hover:text-azul-esc hover:underline">
-        Voltar para o login
-      </a>
+      <a href="/login" className="back-link">Voltar para o login</a>
     </form>
   );
 }

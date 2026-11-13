@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { inputClass } from "@/ui/campo";
+import { useActionState, useRef, useState } from "react";
 import { avaliarSenha } from "@/lib/politica-senha";
 import { definirSenhaAction, type EstadoDefinirSenha } from "./actions";
 
@@ -14,15 +13,10 @@ const ESTADO_INICIAL: EstadoDefinirSenha = {};
  */
 function Requisitos({ senha }: { senha: string }) {
   return (
-    <ul className="flex flex-col gap-1.5">
+    <ul className="reqs">
       {avaliarSenha(senha).map((requisito) => (
-        <li
-          key={requisito.id}
-          className={`flex items-center gap-2 text-[13.5px] ${
-            requisito.ok ? "text-verde-esc" : "text-cinza"
-          }`}
-        >
-          <span aria-hidden className="w-3.5 shrink-0 text-center">
+        <li key={requisito.id} className={requisito.ok ? "ok" : undefined}>
+          <span aria-hidden className="mark">
             {requisito.ok ? "✓" : "•"}
           </span>
           {requisito.descricao}
@@ -33,76 +27,84 @@ function Requisitos({ senha }: { senha: string }) {
   );
 }
 
+/** Ícone do botão Mostrar/Ocultar, o mesmo do login. */
+function IconeOlho({ aberto }: { aberto: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {aberto ? (
+        <>
+          <path d="M3 3l18 18" />
+          <path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.8 0 3.4-.5 4.8-1.3" />
+          <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+        </>
+      ) : (
+        <>
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export function DefinirSenhaForm({ token }: { token: string }) {
   // A tela mantém senha e preferência de exibição no cliente; política e gravação ficam no servidor.
   const [estado, formAction, pendente] = useActionState(definirSenhaAction, ESTADO_INICIAL);
   const [senha, setSenha] = useState("");
   const [exibirSenha, setExibirSenha] = useState(false);
+  const senhaRef = useRef<HTMLInputElement>(null);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction}>
       {/* O token retorna à action para uma nova validação antes de alterar a conta. */}
       <input type="hidden" name="token" value={token} />
 
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between gap-3">
-          <label
-            htmlFor="senha"
-            className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta"
-          >
-            Nova senha
-          </label>
+      <div className="field">
+        <label htmlFor="senha">Nova senha</label>
+        <div className="input-wrap has-toggle">
+          <input
+            ref={senhaRef}
+            id="senha"
+            name="senha"
+            type={exibirSenha ? "text" : "password"}
+            required
+            autoComplete="new-password"
+            value={senha}
+            onChange={(evento) => setSenha(evento.target.value)}
+          />
           <button
             type="button"
-            onClick={() => setExibirSenha((atual) => !atual)}
-            className="font-[family-name:var(--font-interface)] text-[12.5px] font-medium text-cinza hover:text-azul-esc"
+            className="toggle"
+            aria-controls="senha"
+            aria-pressed={exibirSenha}
+            onClick={() => {
+              setExibirSenha((atual) => !atual);
+              senhaRef.current?.focus();
+            }}
           >
-            {exibirSenha ? "Ocultar" : "Exibir"}
+            <IconeOlho aberto={exibirSenha} />
+            <span>{exibirSenha ? "Ocultar" : "Mostrar"}</span>
           </button>
         </div>
-        <input
-          id="senha"
-          name="senha"
-          type={exibirSenha ? "text" : "password"}
-          required
-          autoComplete="new-password"
-          value={senha}
-          onChange={(evento) => setSenha(evento.target.value)}
-          className={inputClass}
-        />
       </div>
 
       {/* A mesma política do servidor dá retorno imediato durante a digitação. */}
       <Requisitos senha={senha} />
 
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="confirmarSenha"
-          className="font-[family-name:var(--font-interface)] text-[13px] font-medium text-tinta"
-        >
-          Confirmar senha
-        </label>
+      <div className="field">
+        <label htmlFor="confirmarSenha">Confirmar senha</label>
         <input
           id="confirmarSenha"
           name="confirmarSenha"
           type={exibirSenha ? "text" : "password"}
           required
           autoComplete="new-password"
-          className={inputClass}
         />
       </div>
 
-      {estado.erro && (
-        <p className="rounded-cartao border border-critico/25 bg-critico-cl px-3.5 py-2.5 text-[14px] text-critico">
-          {estado.erro}
-        </p>
-      )}
+      {estado.erro && <div className="alert" role="alert">{estado.erro}</div>}
 
-      <button
-        type="submit"
-        disabled={pendente}
-        className="mt-2 min-h-11 rounded-controle bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2 disabled:opacity-60"
-      >
+      <button className="btn" type="submit" disabled={pendente}>
         {/* O estado pendente evita envios duplicados enquanto a action processa o token. */}
         {pendente ? "Entrando…" : "Definir senha e entrar"}
       </button>

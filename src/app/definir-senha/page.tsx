@@ -14,17 +14,12 @@ export const metadata: Metadata = { title: "Definir senha" };
  */
 function LinkInvalido({ mensagem }: { mensagem: string }) {
   return (
-    <div className="flex flex-col gap-4">
-      <p className="rounded-cartao border border-critico/25 bg-critico-cl px-4 py-3 text-[14.5px] text-critico">
-        {mensagem}
-      </p>
-      <a
-        href="/esqueci-senha"
-        className="flex min-h-11 items-center justify-center rounded-controle bg-tinta px-3.5 py-2.5 font-[family-name:var(--font-interface)] text-[14.5px] font-semibold text-branco hover:bg-tinta2"
-      >
+    <form>
+      <div className="alert" role="alert">{mensagem}</div>
+      <a href="/esqueci-senha" className="btn">
         Solicitar um novo link
       </a>
-    </div>
+    </form>
   );
 }
 
