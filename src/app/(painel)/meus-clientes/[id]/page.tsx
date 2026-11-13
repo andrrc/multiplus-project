@@ -53,13 +53,6 @@ export default async function MeuClienteDetalhePage({ params }: { params: Promis
             itens={[
               { rotulo: "Atividade principal", valor: ouNaoInformado(cliente.atividadePrincipal) },
               ...(cliente.tipo === "PESSOA_JURIDICA" ? [{ rotulo: "Porte", valor: ouNaoInformado(cliente.porte) }] : []),
-              ...(cliente.tipo === "PESSOA_FISICA"
-                ? [
-                    { rotulo: "RG", valor: ouNaoInformado(cliente.rg) },
-                    { rotulo: "CEP", valor: ouNaoInformado(cliente.cep) },
-                  ]
-                : []),
-              { rotulo: "Endereço", valor: ouNaoInformado(cliente.endereco) },
               { rotulo: "Município", valor: ouNaoInformado(cliente.municipio ? (cliente.estado ? `${cliente.municipio} - ${cliente.estado}` : cliente.municipio) : null) },
               { rotulo: "Origem do contato", valor: ouNaoInformado(cliente.origemContato) },
             ]}

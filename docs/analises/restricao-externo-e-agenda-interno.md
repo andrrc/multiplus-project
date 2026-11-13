@@ -2,7 +2,7 @@
 
 - **Data:** 2026-11-13
 - **Pedido original:** concluir os itens que a migração visual deixou pendentes por dependerem de decisão de permissão: (1) o protótipo do colaborador externo mostra só Minhas tarefas, Avisos, Instruções e Perfil, mas o sistema entrega a ele o mesmo menu do colaborador interno; (2) o protótipo do colaborador interno traz uma Agenda (`telas-novas/colaborador-interno/07-agenda.html`), que hoje só a administração acessa.
-- **Status:** aguardando aprovação. Nenhum código, menu, rota ou política de banco foi alterado.
+- **Status:** aprovada em 2026-11-13, com todas as recomendações; implementada no mesmo dia.
 
 ## 1. Escopo previsto
 
@@ -78,8 +78,8 @@ Menu do externo segue o protótipo: Minhas tarefas, Avisos, Meu perfil (Instruç
 
 ## 10. Perguntas em aberto
 
-1. **Restringir o externo às rotas?** Recomendação: sim, tirar `/meus-projetos` e `/meus-clientes` do perfil dele, como no protótipo. — **Resposta:** pendente.
-2. **Nome do projeto e do cliente dentro da tarefa do externo:** manter (ele precisa saber de qual cliente é o trabalho) ou mostrar só o nome da tarefa? Recomendação: manter só os nomes, sem link. — **Resposta:** pendente.
-3. **Cadastro do cliente para o interno** (`/meus-clientes/[id]`): cumprir o comentário original (só nome e projetos) ou manter CPF/RG/endereço/documentos, que ele vê hoje? Recomendação: tirar RG, endereço e CEP e manter o que o trabalho exige; confirmar o que a Talita quer que o interno veja. — **Resposta:** pendente.
-4. **Agenda do externo:** o protótipo não tem. Recomendação: não incluir. — **Resposta:** pendente.
-5. **Rota da agenda do interno:** abrir `/agenda` também ao interno ou criar `/minha-agenda`? Recomendação: `/minha-agenda`, para a guarda de `/agenda` continuar só de ADMIN e a consulta ser separada. — **Resposta:** pendente.
+1. **Restringir o externo às rotas?** Recomendação: sim, tirar `/meus-projetos` e `/meus-clientes` do perfil dele, como no protótipo. — **Resposta:** em 2026-11-13, aprovada a recomendação.
+2. **Nome do projeto e do cliente dentro da tarefa do externo:** manter (ele precisa saber de qual cliente é o trabalho) ou mostrar só o nome da tarefa? Recomendação: manter só os nomes, sem link. — **Resposta:** em 2026-11-13, aprovada a recomendação.
+3. **Cadastro do cliente para o interno** (`/meus-clientes/[id]`): cumprir o comentário original (só nome e projetos) ou manter CPF/RG/endereço/documentos, que ele vê hoje? Recomendação: tirar RG, endereço e CEP e manter o que o trabalho exige; confirmar o que a Talita quer que o interno veja. — **Resposta:** em 2026-11-13, aprovada a recomendação.
+4. **Agenda do externo:** o protótipo não tem. Recomendação: não incluir. — **Resposta:** em 2026-11-13, aprovada a recomendação.
+5. **Rota da agenda do interno:** abrir `/agenda` também ao interno ou criar `/minha-agenda`? Recomendação: `/minha-agenda`, para a guarda de `/agenda` continuar só de ADMIN e a consulta ser separada. — **Resposta:** em 2026-11-13, aprovada a recomendação.

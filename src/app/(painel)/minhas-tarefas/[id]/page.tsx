@@ -35,9 +35,11 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
   const tarefaAberta = t.status !== "CONCLUIDO" && t.status !== "CANCELADO";
   const podeSolicitar = t.podeConcluirTarefa && tarefaAberta;
   const solicitacao = t.solicitacaoConclusao;
+  // Só o colaborador interno tem a tela de projetos; o externo vê apenas o nome.
+  const podeAbrirProjeto = ctx.perfil === "ADMIN_INTERNO";
 
   return <div className="w-full max-w-[1280px]">
-    <Trilha itens={[{ rotulo: "Minhas tarefas", href: "/minhas-tarefas" }, { rotulo: t.projeto.nome, href: `/meus-projetos/${t.projeto.id}` }]} />
+    <Trilha itens={[{ rotulo: "Minhas tarefas", href: "/minhas-tarefas" }, { rotulo: t.projeto.nome, href: podeAbrirProjeto ? `/meus-projetos/${t.projeto.id}` : undefined }]} />
 
     <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div className="min-w-0">
@@ -78,7 +80,9 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
         <span className="text-[13px] font-normal text-cinza">concluídas</span>
       </CelulaResumo>
       <CelulaResumo rotulo="Projeto">
-        <Link href={`/meus-projetos/${t.projeto.id}`} className="truncate text-base hover:text-azul-esc">{t.projeto.nome}</Link>
+        {podeAbrirProjeto
+          ? <Link href={`/meus-projetos/${t.projeto.id}`} className="truncate text-base hover:text-azul-esc">{t.projeto.nome}</Link>
+          : <span className="truncate text-base">{t.projeto.nome}</span>}
       </CelulaResumo>
     </FaixaResumo>
 

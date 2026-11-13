@@ -42,6 +42,13 @@ export function rotaDoRegistroParaPerfil(url: string | null | undefined, perfil:
     }
   }
 
+  // O colaborador externo não tem projetos nem clientes: avisos antigos com esses links levam às tarefas dele.
+  if (perfil === "ADMIN_EXTERNO" && /^\/meus-(projetos|clientes)(\/|$)/.test(parsed.pathname)) {
+    parsed.pathname = "/minhas-tarefas";
+    parsed.search = "";
+    parsed.hash = "";
+  }
+
   // Reconstrói o link sem acrescentar domínio a caminhos relativos.
   const caminho = `${parsed.pathname}${parsed.search}${parsed.hash}`;
   return absoluta ? `${parsed.origin}${caminho}` : caminho;

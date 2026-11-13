@@ -31,8 +31,10 @@ export const MENU: ItemMenu[] = [
   { href: "/notificacoes", rotulo: "Notificações", perfis: ["ADMIN"] },
   { href: "/minhas-notificacoes", rotulo: "Notificações", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },
   { href: "/tarefas", rotulo: "Tarefas", perfis: ["ADMIN"] },
-  { href: "/meus-clientes", rotulo: "Clientes", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },
-  { href: "/meus-projetos", rotulo: "Meus projetos", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },
+  // O colaborador externo trabalha só pelas tarefas atribuídas: sem lista de clientes nem de projetos.
+  { href: "/meus-clientes", rotulo: "Clientes", perfis: ["ADMIN_INTERNO"] },
+  { href: "/meus-projetos", rotulo: "Meus projetos", perfis: ["ADMIN_INTERNO"] },
+  { href: "/minha-agenda", rotulo: "Agenda", perfis: ["ADMIN_INTERNO"] },
   { href: "/minhas-tarefas", rotulo: "Minhas tarefas", perfis: ["ADMIN_INTERNO", "ADMIN_EXTERNO"] },
   {
     href: "/meu-perfil",

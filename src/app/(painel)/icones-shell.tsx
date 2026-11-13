@@ -88,6 +88,7 @@ const ICONES_ROTA: Record<string, ReactNode> = {
 /** Chave do ícone de cada rota do menu (rotas "meus-*" usam o mesmo desenho das de admin). */
 function chaveDoIcone(href: string) {
   if (href === "/notificacoes" || href === "/minhas-notificacoes") return "avisos";
+  if (href === "/agenda" || href === "/minha-agenda") return "/agenda";
   if (href === "/projetos" || href === "/meus-projetos") return "projetos";
   if (href === "/tarefas" || href === "/minhas-tarefas") return "tarefas";
   if (href === "/clientes" || href === "/meus-clientes") return "clientes";

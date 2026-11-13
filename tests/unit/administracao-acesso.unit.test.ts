@@ -157,11 +157,26 @@ describe("RF-043 — guarda de rota", () => {
 
   it("colaboradores podem abrir as listas contextuais de tarefas e projetos", () => {
     expect(perfilPodeAcessar("ADMIN_INTERNO", "/minhas-tarefas")).toBe(true);
-    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-projetos")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/minhas-tarefas")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/meus-projetos")).toBe(true);
     expect(perfilPodeAcessar("ADMIN_INTERNO", "/meus-clientes")).toBe(true);
-    expect(perfilPodeAcessar("ADMIN_EXTERNO", "/meus-clientes")).toBe(true);
     expect(perfilPodeAcessar("ADMIN_INTERNO", "/minhas-tarefas/tarefa-1/subtarefas/nova")).toBe(true);
     expect(perfilPodeAcessar("ADMIN_EXTERNO", "/tarefas/tarefa-1/subtarefas/nova")).toBe(false);
+  });
+
+  it("o colaborador externo não acessa projetos, clientes nem agenda, nem por URL direta", () => {
+    for (const rota of ["/meus-projetos", "/meus-projetos/p-1", "/meus-clientes", "/meus-clientes/c-1", "/minha-agenda", "/agenda"]) {
+      expect(perfilPodeAcessar("ADMIN_EXTERNO", rota), rota).toBe(false);
+    }
+    expect(menuDoPerfil("ADMIN_EXTERNO").map((item) => item.href)).toEqual(["/minhas-notificacoes", "/minhas-tarefas", "/meu-perfil"]);
+  });
+
+  it("a agenda do colaborador interno é só dele; a da administração continua só da administração", () => {
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/minha-agenda")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN_INTERNO", "/agenda")).toBe(false);
+    expect(perfilPodeAcessar("ADMIN", "/agenda")).toBe(true);
+    expect(perfilPodeAcessar("ADMIN", "/minha-agenda")).toBe(false);
+    expect(perfilPodeAcessar("CLIENTE", "/minha-agenda")).toBe(false);
   });
 });
 

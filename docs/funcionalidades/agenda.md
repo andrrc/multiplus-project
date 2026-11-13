@@ -14,7 +14,8 @@ hora, para a Administradora planejar o mês.
 
 | Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
 |---|---|---|---|---|
-| Ver a agenda | Sim | Não | Não | Não |
+| Ver a agenda de todos os projetos (`/agenda`) | Sim | Não | Não | Não |
+| Ver a agenda dos prazos do próprio escopo (`/minha-agenda`) | Não se aplica | Sim | Não | Não |
 
 ---
 
@@ -67,18 +68,32 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
 
 **Detalhes técnicos.** `dataDeHojeEmSaoPaulo` determina o dia civil usado por `/agenda`, com o mesmo instante usado para avaliar atrasos. Cobertura em `agenda.unit.test.ts` e `datas.unit.test.ts`.
 
+### G4. Agenda do colaborador interno (13/11/2026)
+
+**Como funciona.** O colaborador interno tem a própria agenda (`/minha-agenda`, protótipo interno/07) com os prazos das tarefas dos projetos
+a que tem acesso. É só de leitura, sem os filtros de cliente, projeto e visita da administração, e cada prazo abre a tarefa em `/minhas-tarefas`.
+O colaborador externo não tem agenda.
+
+**Detalhes técnicos.**
+- **Função:** `listarItensAgendaColaborador` (`src/lib/projetos-tarefas.ts`) roda com o contexto do usuário, então a RLS entrega só as tarefas do escopo
+  dele, e recusa qualquer perfil que não seja `ADMIN_INTERNO`. A montagem dos itens e a projeção de recorrências são as mesmas da administração
+  (`montarItensAgenda`).
+- **Tela:** `agenda/visao-agenda.tsx` é a apresentação compartilhada; `/agenda` e `/minha-agenda` informam a rota base e o destino do link da tarefa.
+- **Teste:** `agenda-colaborador.integration.test.ts` (isolamento por projeto e recusa dos demais perfis) e a jornada de `colaborador.spec.ts`.
+
 ## Limitações e pendências conhecidas
 
 | # | Situação | Efeito |
 |---|---|---|
 | L1 | Itens com o mesmo projeto, nome e data são unificados na tela. | Duas tarefas distintas com o mesmo nome e prazo no mesmo projeto aparecem como uma só. |
 | L2 | A agenda mostra só tarefas. | Prazos de subtarefas não aparecem. |
-| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam a faixa de atrasados de meses anteriores, o filtro por responsável, "Exportar PDF", os prazos de subtarefas e de projeto e a abertura da agenda ao colaborador interno: dependem de dados, regras e permissão novos. |
+| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam a faixa de atrasados de meses anteriores, o filtro por responsável, "Exportar PDF", os prazos de subtarefas e de projeto dependem de dados e regras novos. A agenda do colaborador interno foi aberta em `/minha-agenda` (G4). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Agenda do colaborador interno (`/minha-agenda`), com consulta própria limitada ao escopo dele ([análise](../analises/restricao-externo-e-agenda-interno.md)) |
 | 2026-11-13 | este commit | Agenda no padrão do protótipo: itens coloridos pelo semáforo (visitas em roxo, recorrentes tracejadas), painel do dia ao lado, visualização Mês/Lista e filtros aplicados na hora |
 | 2026-11-12 | este commit | Agrupar os itens da agenda por dia no celular |
 | 2026-11-10 | este commit | Iniciar adaptação visual da agenda |

@@ -218,7 +218,7 @@ atualizadas de propósito. `tests/browser/colaborador.spec.ts` cobre o painel do
 ensina o envio de fotos e comprovantes e a segunda gera PDF e histórico, recursos que ainda não existem, e uma tela que descreve ou oferece o que
 o sistema não faz enganaria o usuário. Também ficaram de fora: busca e "Novo" com mais opções na barra superior, comprovantes para conferir e
 "aguardando outras pessoas" no painel do interno, obrigações por responsável, unidades e trilha de etapas no painel do cliente, e a régua de
-avisos, o escalonamento e o resumo mensal em Configurações. A agenda do colaborador interno depende de decisão de permissão.
+avisos, o escalonamento e o resumo mensal em Configurações. A agenda do colaborador interno foi aberta em `/minha-agenda` (veja [Agenda](agenda.md)).
 
 ### Recuperar e definir senha
 
@@ -299,6 +299,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Menu do colaborador externo reduzido a tarefas, avisos e perfil; agenda do interno em `/minha-agenda` |
 | 2026-11-13 | este commit | Rótulo do perfil ADMIN passa a "Administração" (neutro) nas telas; mensagens de erro de domínio não mudaram |
 | 2026-11-13 | este commit | Refazer o Meu perfil (todos os perfis) e o detalhe do projeto no portal do cliente conforme os protótipos |
 | 2026-11-13 | este commit | Criar o Painel (administradora e colaborador interno), o Painel do cliente e as Configurações, e passar o Painel a tela inicial |

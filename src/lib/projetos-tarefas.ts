@@ -13,7 +13,7 @@ import {
 } from "@prisma/client";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
-import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas } from "@/lib/regras-projetos-tarefas";
+import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 import { validarUrlHttp } from "@/lib/validacao-url";
@@ -382,20 +382,44 @@ export type ItemAgenda = {
 export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim: Date, filtros: { projetoId?: string; clienteId?: string; visitas?: boolean } = {}): Promise<ItemAgenda[]> {
   // Reaproveita as mesmas regras de listagem e autorização usadas pelo painel de prazos.
   const tarefas = await listarPrazos(ctx, { projetoId: filtros.projetoId, clienteId: filtros.clienteId, pendentes: false });
+  return montarItensAgenda(tarefas, inicio, fim, filtros.visitas);
+}
+
+/**
+ * Agenda do colaborador interno: prazos das tarefas que ele alcança. A consulta roda com o contexto do usuário,
+ * então a RLS entrega só as tarefas dos projetos atribuídos a ele; não há dado financeiro nem cadastral aqui.
+ * O externo não tem agenda (decisão de permissão de 13/11/2026), então a função recusa qualquer outro perfil.
+ */
+export async function listarItensAgendaColaborador(ctx: ContextoUsuario, inicio: Date, fim: Date): Promise<ItemAgenda[]> {
+  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Agenda disponível somente para o colaborador interno.");
+  const tarefas = await comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
+    where: { ativo: true, projeto: { ativo: true } },
+    include: {
+      projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
+      responsavel: { select: { nome: true } },
+      responsavelUsuario: { select: { nome: true } },
+    },
+    orderBy: [{ prazo: "asc" }, { nome: "asc" }],
+  }));
+  return montarItensAgenda(tarefas, inicio, fim, false);
+}
+
+/** Transforma tarefas em itens da agenda: ocorrências gravadas no período mais as futuras projetadas. */
+function montarItensAgenda<T extends TarefaParaProjecao & { nome: string; prazo: Date | null; status: StatusTarefa; periodicidade: Periodicidade | null; projeto: ItemAgenda["projeto"]; responsavel: { nome: string } | null; responsavelUsuario: { nome: string } | null }>(tarefas: T[], inicio: Date, fim: Date, apenasVisitas: boolean | undefined): ItemAgenda[] {
   // O predicado também atua como proteção de tipo para prazos nulos.
   const noPeriodo = (prazo: Date | null): prazo is Date => Boolean(prazo && prazo >= inicio && prazo <= fim);
   const itens: ItemAgenda[] = [];
   const materializadas = tarefas.map((t) => ({ serieId: t.serieId, prazo: t.prazo ?? inicio }));
   for (const tarefa of tarefas) {
     // Inclui a ocorrência gravada quando está no período e corresponde ao filtro de visita.
-    if (noPeriodo(tarefa.prazo) && (!filtros.visitas || tarefa.status === StatusTarefa.VISITA_REUNIAO_AGENDADA)) {
+    if (noPeriodo(tarefa.prazo) && (!apenasVisitas || tarefa.status === StatusTarefa.VISITA_REUNIAO_AGENDADA)) {
       itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: false });
     }
     // Tarefas sem recorrência ou prazo não geram ocorrências futuras.
     if (!tarefa.periodicidade || !tarefa.prazo) continue;
     // Projeta recorrências somente para a janela solicitada e marca-as como virtuais.
     for (const prazo of projetarOcorrenciasFuturas(tarefa, inicio, fim, materializadas)) {
-      if (filtros.visitas && tarefa.status !== StatusTarefa.VISITA_REUNIAO_AGENDADA) continue;
+      if (apenasVisitas && tarefa.status !== StatusTarefa.VISITA_REUNIAO_AGENDADA) continue;
       itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: true });
     }
   }

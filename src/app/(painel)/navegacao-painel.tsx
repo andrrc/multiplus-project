@@ -13,7 +13,7 @@ const gruposAdmin = [
   { titulo: "Configurações", rotas: ["/etiquetas", "/configuracoes"] },
 ];
 const gruposEquipe = [
-  { titulo: "Dia a dia", rotas: ["/painel", "/minhas-tarefas", "/minhas-notificacoes"] },
+  { titulo: "Dia a dia", rotas: ["/painel", "/minha-agenda", "/minhas-tarefas", "/minhas-notificacoes"] },
   { titulo: "Trabalho", rotas: ["/meus-projetos", "/meus-clientes"] },
 ];
 

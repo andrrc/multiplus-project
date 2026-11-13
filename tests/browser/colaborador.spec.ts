@@ -79,6 +79,7 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
     [`/meus-projetos/${projetoId}`, `Projeto colaborador ${sufixo}`],
     [`/minhas-tarefas/${tarefaId}`, `Tarefa colaborador ${sufixo}`],
     ["/meus-clientes", "Clientes"],
+    ["/minha-agenda", "Agenda"],
     [`/meus-clientes/${clienteId}`, nomeCliente],
     ["/meu-perfil", "Meu perfil"],
   ];
@@ -112,6 +113,11 @@ test("colaborador externo vê a tela própria de tarefas e ela cabe no celular",
   // Abrir a tarefa continua levando ao detalhe de sempre.
   await page.getByRole("link", { name: new RegExp(`Tarefa colaborador ${sufixo}`) }).click();
   await expect(page.getByRole("heading", { name: `Tarefa colaborador ${sufixo}`, level: 1 })).toBeVisible();
+  // O externo não tem projetos, clientes nem agenda: a URL direta é negada e ele volta às tarefas.
+  for (const rota of ["/meus-projetos", "/meus-clientes", "/minha-agenda"]) {
+    await page.goto(rota);
+    await expect(page).toHaveURL(/\/minhas-tarefas/);
+  }
   // Perfil: dados, senha e o que a pessoa acessa; o botão de senha só habilita com os requisitos atendidos.
   await page.goto("/meu-perfil");
   await expect(page.getByRole("heading", { name: "Meu perfil", level: 1 })).toBeVisible();

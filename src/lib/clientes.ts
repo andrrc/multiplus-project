@@ -292,8 +292,8 @@ export async function buscarClienteDetalheSeguro(
 }
 
 /**
- * Visão contextual para colaboradores: expõe somente o nome do cliente e os projetos
- * em que o usuário possui acesso. Não selecione CNPJ/CPF, endereço, e-mail, telefone,
+ * Visão contextual para colaboradores: expõe o nome e a identificação do cliente e os projetos
+ * em que o usuário possui acesso. Não selecione RG, endereço, CEP, e-mail, telefone,
  * pessoas envolvidas, documentos ou valores nesta função.
  */
 export async function listarClientesContextuais(ctx: ContextoUsuario) {
@@ -324,7 +324,7 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
   );
 }
 
-/** Dados cadastrais não financeiros para o detalhe contextual do colaborador. */
+/** Dados cadastrais mínimos (sem RG, endereço e CEP) e documentos para o detalhe contextual do colaborador. */
 export async function buscarClienteContextual(ctx: ContextoUsuario, clienteId: string) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") {
     throw new Error("Visão exclusiva de colaboradores.");
@@ -340,9 +340,6 @@ export async function buscarClienteContextual(ctx: ContextoUsuario, clienteId: s
         razaoSocial: true,
         cnpj: true,
         cpf: true,
-        rg: true,
-        endereco: true,
-        cep: true,
         municipio: true,
         estado: true,
         atividadePrincipal: true,

@@ -217,7 +217,7 @@ export async function dispararNotificacaoAtribuicaoRecebida(usuarioId: string, e
     const nome = "nome" in registro ? registro.nome : registro.titulo;
     let url: string;
     if (entidadeTipo === "PROJETO") {
-      url = `${usuario.perfil === "ADMIN" ? "/projetos" : "/meus-projetos"}/${entidadeId}`;
+      url = usuario.perfil === "ADMIN" ? `/projetos/${entidadeId}` : usuario.perfil === "ADMIN_EXTERNO" ? "/minhas-tarefas" : `/meus-projetos/${entidadeId}`;
     } else if (entidadeTipo === "TAREFA") {
       url = `${usuario.perfil === "ADMIN" ? "/tarefas" : "/minhas-tarefas"}/${entidadeId}`;
     } else {

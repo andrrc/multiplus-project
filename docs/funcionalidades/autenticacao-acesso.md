@@ -18,8 +18,8 @@ acessar.
 | Perfil | Tela inicial | Menu |
 |---|---|---|
 | `ADMIN` | Painel (`/painel`) | Painel, Agenda, Avisos, Projetos, Tarefas, Subtarefas, Clientes, Usuários, Etiquetas, Prazos e notificações, Meu perfil |
-| `ADMIN_INTERNO` | Painel (`/painel`) | Painel, Minhas tarefas, Avisos, Meus projetos, Clientes, Meu perfil |
-| `ADMIN_EXTERNO` | Minhas Tarefas | Clientes, Meus Projetos, Minhas Tarefas, Meu Perfil |
+| `ADMIN_INTERNO` | Painel (`/painel`) | Painel, Agenda (`/minha-agenda`), Minhas tarefas, Avisos, Meus projetos, Clientes, Meu perfil |
+| `ADMIN_EXTERNO` | Minhas tarefas | Minhas tarefas, Avisos, Meu perfil. Sem Meus projetos e Clientes: as duas rotas respondem "negado" também por URL direta (decisão de 13/11/2026, [análise](../analises/restricao-externo-e-agenda-interno.md)) |
 | `CLIENTE` | Painel (`/portal`) | Painel, Meu perfil |
 
 ---
