@@ -34,7 +34,7 @@ acessar.
 
 **Detalhes técnicos.**
 - **Rota:** `/login`.
-- **Identificação:** a tela apresenta o nome “Sistema de Gestão Múltiplus”, a marca e um painel institucional em telas largas, conforme a referência visual do login. O formulário permite mostrar ou ocultar a senha, avisa sobre Caps Lock e mantém o acesso à recuperação de senha. Contatos de suporte e política de privacidade exibem os textos provisórios da referência, ainda sem destinos reais.
+- **Identificação:** a tela apresenta o nome “Sistema de Gestão Múltiplus”, a marca e um painel institucional em telas largas, conforme a referência visual do login. O formulário permite mostrar ou ocultar a senha, avisa sobre Caps Lock e mantém o acesso à recuperação de senha. A tela orienta a procurar a equipe para suporte; contatos e política de privacidade aguardam dados e destino reais.
 - **Funções:** `autenticarComCredenciais` (`src/server/auth/credentials.ts`) e Auth.js,
   com sessão JWT (`src/server/auth/config.ts`).
 - **Senha:** hash com bcrypt (`src/lib/senha.ts`).
@@ -148,6 +148,7 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-12 | este commit | Retirar dados provisórios de suporte e política do login |
 | 2026-11-10 | este commit | Reproduzir os detalhes visuais do login conforme o HTML fornecido |
 | 2026-11-10 | este commit | Adaptar a tela de login à referência visual recebida |
 | 2026-11-03 | este commit | Corrigir espera por conexão ao revalidar sessão ([análise](../analises/erro-transacao-revalidacao-sessao.md)) |

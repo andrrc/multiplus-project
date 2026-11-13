@@ -8,7 +8,7 @@
 
 | Referência em `telas-novas/sistema-gestao-multiplus/` | Área existente | Observação |
 |---|---|---|
-| `01-login.html` | `/login` | Adaptação local em andamento; suporte e política são dados provisórios. |
+| `01-login.html` | `/login` | Login adaptado; contatos de suporte e destino da política ainda precisam ser fornecidos. |
 | `02-painel.html` | `/subtarefas` é a página inicial atual | Painel proposto não equivale integralmente à visão atual; indicadores novos dependem de análise. |
 | `03-listas-projetos-tarefas.html` | `/projetos`, `/tarefas`, `/subtarefas` | Um protótipo reúne três listas distintas. |
 | `04-projeto.html` | `/projetos/[id]` | Preservar todas as ações e dados autorizados existentes. |
