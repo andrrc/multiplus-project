@@ -86,11 +86,22 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 - Telas internas precisam de conferência visual com sessão autenticada.
 - As telas individuais ainda precisam ser conferidas após a mudança da escala compartilhada.
 - E-mails e materiais impressos usam suas próprias escalas.
+- **Migração para os protótipos de `telas-novas/` (iniciada em 13/11/2026).** A meta é copiar o
+  visual por inteiro. O mapa de cada protótipo, a página real e a situação está em
+  [mapeamento](../mapeamento-telas-talita.md). Ficam como pendência, por exigirem dado, regra ou
+  permissão: comprovantes (envio, confirmação e rejeição), cobrança de responsável, histórico
+  automático, régua de avisos, resumo mensal, PDF de relatório do cliente, unidades e Drive do
+  cliente, vídeo e contatos das Instruções, "Ver como cliente", último acesso, duplicar e
+  exportar projeto, pausa de prazo, status "A iniciar" de subtarefa e pedidos de prazo do
+  colaborador externo.
+- A restrição de menu e de dados do colaborador externo e a liberação da agenda ao colaborador
+  interno mudam permissão e exigem análise aprovada antes de aplicar.
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Adotar os protótipos de `telas-novas/` como fonte da verdade visual: regras de `AGENTS.md` §6 e da [identidade visual](../Identidade_Visual_Multiplus.md) atualizadas (raios 8/6/5 px, sombras só em camadas flutuantes, botão azul-escuro, IBM Plex Sans) e [mapa das telas](../mapeamento-telas-talita.md) corrigido |
 | 2026-11-10 | este commit | Adaptar a apresentação da tela compartilhada de perfil |
 | 2026-11-10 | este commit | Iniciar adaptação da identidade visual pela tipografia compartilhada |
 | 2026-11-03 | este commit | Remover a dica “Deslize para ver as demais colunas” das tabelas com rolagem horizontal |

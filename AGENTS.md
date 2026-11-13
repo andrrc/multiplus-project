@@ -407,9 +407,19 @@ Leia [`docs/Identidade_Visual_Multiplus.md`](docs/Identidade_Visual_Multiplus.md
 criar ou alterar uma tela. Também leia o PDD do módulo
 (`docs/product-design-multiplus-<modulo>.md`) para a estrutura da tela.
 
+**Fonte da verdade visual: os protótipos de `telas-novas/`** (entregues pela cliente em
+07-10/11/2026, com a especificação `00-especificacao*.md` de cada pasta). A meta é copiar o
+visual deles por inteiro. Quando um protótipo contradisser uma regra desta seção, vale o
+protótipo e a regra é corrigida aqui. Dados, textos e números dos protótipos são fictícios:
+o que o sistema ainda não tem fica como pendência em `docs/funcionalidades/interface.md`, nunca
+como número inventado na tela.
+
 - **Cores só pelos tokens de `src/app/globals.css`.** Os disponíveis são `azul`,
   `azul-esc`, `verde`, `verde-esc`, `tinta`, `tinta2`, `papel`, `branco`, `cinza`, `linha`,
   `ambar`, `critico`, `critico-cl`, `azul-cl`, `verde-cl`, `verde-borda` e os `menu-*`.
+  Os tokens `ink`, `faint`, `linha-forte` e `ambar-cl` (texto principal `#0E3240`, texto
+  discreto, borda forte e fundo âmbar claro) foram acrescentados na migração para os
+  protótipos.
   - Não use hex fixo (`bg-[#...]`, `style={{ color: "#..." }}`) nem a paleta padrão do
     Tailwind (`red-500`, `gray-100`…).
 - **Confira se o token existe antes de usá-lo:**
@@ -424,17 +434,19 @@ criar ou alterar uma tela. Também leia o PDD do módulo
   - `critico` (vermelho terra) = prazo vencido ou erro;
   - `ambar` = pendência ou atenção;
   - `azul` = questão estrutural ou link;
-  - `verde` = solução, entrega ou ação principal.
+  - `verde` = solução, entrega ou detalhe da marca (item ativo do menu, "em dia"). O botão
+    principal é azul-escuro (`tinta`), não verde.
+  - Cor decorativa não existe: bordas laterais coloridas em cartões e comentários saíram.
 - **Tipografia:**
-  - `font-[family-name:var(--font-interface)]` (Archivo) para títulos, tabelas, valores,
-    prazos, etiquetas e botões;
-  - `font-[family-name:var(--font-leitura)]` (Source Serif 4) para texto corrido;
+  - uma fonte só, **IBM Plex Sans** (400, 500 e 600), carregada em `src/app/layout.tsx`.
+    `--font-interface` e `--font-leitura` apontam para ela, então as classes
+    `font-[family-name:var(--font-interface)]` continuam válidas. Não há mais fonte serifada;
   - `tabular-nums` em números e datas em coluna;
   - caixa alta só em rótulos curtos.
-- **Forma:**
-  - raio pequeno: 3 px em cartões e botões, 2 px em etiquetas;
-  - **sem sombras**: a separação vem de borda de 1 px em `linha`. A única exceção são
-    as camadas flutuantes sobre o conteúdo (modais e menus suspensos);
+- **Forma (medidas dos protótipos):**
+  - raio: 8 px em cartões, 6 px em botões e campos, 5 px em selos, 10 px em modais;
+  - **sombras só em camadas flutuantes** (modais, menus suspensos e o realce de um KPI ao
+    passar o mouse). Cartões e tabelas se separam por borda de 1 px em `linha`;
   - gradiente institucional só em destaque pontual.
 - **Não copie o estilo de uma tela existente sem conferir com o documento.** O documento
   prevalece sobre o código.
@@ -447,7 +459,8 @@ Toda tela nova ou alterada funciona em **375 px de largura** e no desktop.
   celular.
 - **Tabelas:** no celular viram lista ou cartões. O padrão do projeto é tabela com
   `hidden md:block` mais lista com `md:hidden`, como em `src/app/(painel)/subtarefas/page.tsx`.
-- **Toque:** botões, links e campos com área mínima de 44 px (`min-h-11`).
+- **Toque:** botões e campos têm 40 px de altura no desktop, como nos protótipos. No celular
+  a área de toque de botões, links e campos é de pelo menos 44 px (`min-h-11`).
 - **Textos longos** (razão social, nome de tarefa) quebram ou truncam sem estourar o layout.
 - **Verificar de verdade:** abra a tela em 375 px e em desktop (navegador ou DevTools)
   antes de concluir. Se não for possível, diga isso na resposta final.

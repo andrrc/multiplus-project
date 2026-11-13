@@ -15,6 +15,34 @@ Os tokens ativos do sistema usam azul `#0A8FE0`, azul de links `#0776BA`, verde
 As tabelas seguintes registram a paleta dos materiais comerciais que originaram
 esta identidade e não substituem os valores dos tokens ativos do sistema web.
 
+### Sistema web — medidas dos protótipos de `telas-novas/`
+
+A partir de 13/11/2026 o visual do sistema web segue os protótipos entregues pela cliente
+(`telas-novas/`, com a especificação de cada perfil). Onde este documento disser diferente
+para o sistema web, vale o que está abaixo.
+
+| Item | Medida |
+|---|---|
+| Fonte | IBM Plex Sans 400, 500 e 600, em toda a interface. Sem fonte serifada |
+| Texto principal | `#0E3240` (token `ink`); títulos e botão principal `#0B2530` (`tinta`) |
+| Texto discreto | `#5B6F78` (`cinza`) e `#8A9BA3` (`faint`) |
+| Botão principal | Azul-escuro `#0B2530`, hover `#12384A`, raio 6 px, 40 px de altura |
+| Verde | Detalhe da marca: item ativo do menu (`#1E9E4A`), "em dia". Não é cor de botão |
+| Cartões | Fundo branco, borda 1 px `#E1E8EB`, raio 8 px |
+| Campos e botões | Raio 6 px, 40 px de altura (44 px de área de toque no celular) |
+| Selos e status | Raio 5 px, 12 px/600. Status em texto com ponto colorido |
+| Selo de prazo | Vencido `#B42318` sobre `#FDEDEB`; atenção `#8A5300` sobre `#FFF4DE`; em dia `#17733A` sobre `#E8F5EC` |
+| Modais | Raio 10 px, sombra, fundo `rgba(11,37,48,.45)` |
+| Sombras | Só em modais, menus suspensos e no realce de um KPI. Cartões e tabelas usam borda |
+| Borda forte | `#CFD9DD` (`linha-forte`) |
+| Cor decorativa | Não há: sem borda lateral colorida em cartões e comentários |
+| Menu lateral | 248 px, fundo `#0B2530`, item ativo com barra verde de 3 px |
+| Barra superior | 64 px, branca, com busca e ações do perfil |
+| Breakpoints | 900 px e 1100 px nos protótipos (o sistema usa os do Tailwind) |
+
+As seções 2, 3 e 4 abaixo (Archivo, Source Serif 4, raios pequenos e "achado com tarja
+lateral") descrevem os materiais comerciais e **não valem para o sistema web**.
+
 ### Cores da marca
 
 Extraídas do gradiente da logomarca.

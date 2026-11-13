@@ -4,6 +4,59 @@
 - **Escopo:** adaptação visual de funcionalidades existentes. A referência é protótipo com dados fictícios; recursos, dados e permissões novos dependem de análise e aprovação próprias.
 - **Situação:** mapeamento inicial; rotas propostas ou sem correspondência estão indicadas abaixo. Não pressupõe que o conteúdo dos protótipos já exista no servidor.
 
+## Mapa corrigido e estado real (2026-11-13)
+
+Conferência feita lendo cada protótipo e a página real correspondente. A meta passou a ser copiar
+**100% do visual** dos protótipos; dados que o sistema não tem ficam como pendência, sem números
+inventados. As tabelas por perfil abaixo continuam valendo como histórico; esta seção prevalece.
+
+Situação: **Fiel** = igual ao protótipo; **Quase** = faltam detalhes; **Parcial** = estrutura
+parecida, visual diferente; **Nada** = não existe ou está no design antigo.
+
+| Protótipo | Página real | Situação |
+|---|---|---|
+| Admin 01 login | `/login` | Quase (suporte e política dependem de dado) |
+| Admin 02 painel | não existe (`/` redireciona para `/subtarefas`) | Nada |
+| Admin 03 listas | `/projetos`, `/tarefas`, `/subtarefas` | Parcial |
+| Admin 04 projeto | `/projetos/[id]` | Parcial |
+| Admin 05 tarefa | `/tarefas/[id]` | Parcial |
+| Admin 06 clientes | `/clientes` (parcial), `/clientes/[id]` (nada) | Parcial / Nada |
+| Admin 07 usuários | `/usuarios`, `/usuarios/novo` | Parcial |
+| Admin 08 configurações | `/notificacoes` + `/etiquetas`; `/configuracoes` não existe | Nada |
+| Admin 09 agenda | `/agenda` | Parcial |
+| Admin 10 avisos | `/notificacoes` | Parcial |
+| Interno 01 painel | não existe | Nada |
+| Interno 02 minhas tarefas | `/minhas-tarefas` | Parcial |
+| Interno 03 meus projetos | `/meus-projetos` | Parcial |
+| Interno 04 projeto | `/meus-projetos/[id]` | Parcial |
+| Interno 05 tarefa | `/minhas-tarefas/[id]` | Parcial |
+| Interno 06 clientes | `/meus-clientes`, `/meus-clientes/[id]` | Parcial |
+| Interno 07 agenda | `/agenda` (só ADMIN hoje) | Nada |
+| Interno 08 avisos | `/minhas-notificacoes` | Parcial |
+| Interno 09 perfil | `/meu-perfil` | Parcial |
+| Externo 01 minhas tarefas | `/minhas-tarefas` (tela própria no protótipo) | Nada |
+| Externo 02 avisos | `/minhas-notificacoes` | Parcial |
+| Externo 03 instruções | não existe (`/instrucoes`) | Nada |
+| Externo 04 perfil | `/meu-perfil` | Parcial |
+| Cliente 01 painel | não existe (`/portal` é só a lista) | Nada |
+| Cliente 02 projetos | `/portal`, `/portal/[id]` | Parcial |
+| Cliente 03 relatórios | não existe (`/portal/relatorios`) | Nada |
+| Cliente 04 perfil | `/meu-perfil` | Parcial |
+
+Correções ao mapeamento anterior:
+
+- O colaborador externo hoje usa o mesmo menu e as mesmas telas do interno, incluindo
+  Meus projetos e Clientes; o protótipo dele é uma tela própria e restrita.
+- `03-instrucoes` do externo exige rota nova (`/instrucoes`).
+- O shell (menu lateral, rodapé do menu, barra superior com busca e "Novo", gaveta no celular)
+  ainda não segue os protótipos em nenhum perfil. A barra superior não existe.
+- `/esqueci-senha` e `/definir-senha` estão no design antigo (`src/app/auth-shell.tsx`).
+- A fonte já é IBM Plex Sans. Raios, selo de prazo, status, modais e botões ainda divergem.
+
+Decisões de 13/11/2026: telas sem página real recebem só a casca visual com dados existentes;
+as regras de `AGENTS.md` §6 e da identidade visual passam a seguir os protótipos; a restrição de
+dados e de permissão do colaborador externo exige análise e confirmação antes de aplicar.
+
 ## Administradora
 
 | Referência em `telas-novas/sistema-gestao-multiplus/` | Área existente | Observação |
