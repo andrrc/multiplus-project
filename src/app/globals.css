@@ -21,6 +21,14 @@
 
   --ambar: #8a5300;
   --ambar-cl: #fff4de;
+  --cabecalho: #f8fafb;
+  --selecionado: #e6eef1;
+  --ponto-inicio: #9aaab1;
+  --ponto-andamento: #1f7fc1;
+  --ponto-espera: #d08a00;
+  --ponto-visita: #6b5bd2;
+  --ponto-orgao: #138a8a;
+  --ponto-exigencia: #d0461f;
   --critico: #b42318;
   --critico-cl: #fdedeb;
   --azul-cl: #e8f4fc;
@@ -52,6 +60,14 @@
   --color-faint: var(--faint);
   --color-linha-forte: var(--linha-forte);
   --color-ambar-cl: var(--ambar-cl);
+  --color-cabecalho: var(--cabecalho);
+  --color-selecionado: var(--selecionado);
+  --color-ponto-inicio: var(--ponto-inicio);
+  --color-ponto-andamento: var(--ponto-andamento);
+  --color-ponto-espera: var(--ponto-espera);
+  --color-ponto-visita: var(--ponto-visita);
+  --color-ponto-orgao: var(--ponto-orgao);
+  --color-ponto-exigencia: var(--ponto-exigencia);
   --color-papel: var(--papel);
   --color-branco: var(--branco);
   --color-cinza: var(--cinza);

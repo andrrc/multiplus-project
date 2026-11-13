@@ -47,6 +47,33 @@ tarefas", "Meu perfil"). A paleta de tokens e a tipografia estão na
 ainda não decididos e não foram criados. O item Painel e a página de Configurações dependem
 de rotas novas.
 
+### Listas de projetos, tarefas e subtarefas
+
+**Como funciona.** As três listas seguem o mesmo padrão dos modelos. No desktop, cada uma é
+uma tabela dentro de um cartão e a linha inteira abre o registro. No celular cada linha vira
+um cartão, sem rolagem lateral. O status aparece como texto com um ponto colorido e o prazo
+mostra a data com o selo de situação ("Atrasado N dias", "Vence hoje", "Amanhã", "Em N dias").
+Acima da tabela há os filtros, os botões de situação do prazo com contagem (Todos, Atrasados,
+Vencem em até N dias, No prazo, Sem prazo), a linha com o total de resultados e o link
+"Limpar filtros". As contagens dos botões consideram os demais filtros e não o botão de
+situação. Em Projetos a busca é aplicada enquanto se digita, sem botão "Filtrar". Em
+Subtarefas continuam o indicador "Em dia", as conclusões aguardando confirmação e o filtro
+"Mostrar concluídas e canceladas". Itens abertos aparecem antes dos concluídos e cancelados.
+
+**Detalhes técnicos.** `src/ui/lista.tsx` reúne as peças da tabela responsiva (`TabelaLista`,
+`LinhaLista`, `CelulaLista`, `TituloLinha` com link esticado, `StatusPonto`, `CelulaPrazo`,
+`ProgressoBarra`). A situação do prazo é decidida por `src/lib/situacao-prazo.ts`, com o mesmo
+limite de dias do semáforo, e vai na URL como `situacao`. `filtros-listagens.tsx` (tarefas e
+subtarefas) e `projetos/filtros-projetos.tsx` atualizam a URL e a página refaz a consulta no
+servidor. O PDF de tarefas e subtarefas ignora o filtro de situação. As classes de botão
+ficam em `src/ui/botoes.ts` e `calcularDiasRestantes` passou para `src/lib/datas.ts`
+(reexportado por `indicador-dias-restantes.tsx`). Testes: `tests/unit/situacao-prazo.unit.test.ts`,
+`tests/unit/filtro-responsavel.unit.test.ts` e a jornada de `tests/browser/jornadas.spec.ts`.
+
+**Pendências desta área.** Busca por texto em Tarefas e Subtarefas, ordenação clicável nas
+colunas, a coluna de etiquetas nas subtarefas e o texto do responsável com seu papel dependem
+de consultas novas e não foram criados. O PDF não aplica a situação do prazo.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -126,6 +153,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer as listas de projetos, tarefas e subtarefas no padrão dos modelos: tabela que vira cartões no celular, status com ponto, selo de prazo com data e filtro de situação com contagem |
 | 2026-11-13 | este commit | Refazer o shell: menu com rodapé de avatar, barra superior com "Novo" (Administradora), gaveta no celular e telas de senha no padrão do login |
 | 2026-11-13 | este commit | Aplicar a base visual dos protótipos: tokens `ink`, `faint`, `linha-forte` e `ambar-cl`, raios 8/6/5 px, selo de prazo claro ("Em N dias", "Amanhã"), selos e status sem borda, campos com foco em anel azul, fim do lilás em "A iniciar" e das bordas laterais coloridas decorativas |
 | 2026-11-13 | este commit | Adotar os protótipos de `telas-novas/` como fonte da verdade visual: regras de `AGENTS.md` §6 e da [identidade visual](../Identidade_Visual_Multiplus.md) atualizadas (raios 8/6/5 px, sombras só em camadas flutuantes, botão azul-escuro, IBM Plex Sans) e [mapa das telas](../mapeamento-telas-talita.md) corrigido |

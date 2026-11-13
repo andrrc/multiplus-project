@@ -26,13 +26,38 @@ describe("responsável na URL", () => {
     expect(urlFiltrosListagens("/subtarefas", valores, true)).toBe("/subtarefas?cliente=c1&projeto=p1&tarefa=t1&responsavel=usuario%3Au1&todos=1");
     expect(urlFiltrosListagens("/tarefas", { ...valores, cliente: "c2", projeto: "", tarefa: "" }, false)).toBe("/tarefas?cliente=c2&responsavel=usuario%3Au1");
     expect(urlFiltrosListagens("/tarefas", { ...valores, cliente: "", projeto: "", tarefa: "", responsavel: "" }, false)).toBe("/tarefas");
+  });  it("inclui a situação do prazo na URL e omite 'todos'", () => {
+    const base = { cliente: "", projeto: "", tarefa: "", responsavel: "", mostrarConcluidas: false };
+    expect(urlFiltrosListagens("/tarefas", { ...base, situacao: "atrasado" }, false)).toBe("/tarefas?situacao=atrasado");
+    expect(urlFiltrosListagens("/tarefas", { ...base, situacao: "todos" }, false)).toBe("/tarefas");
+    expect(urlFiltrosListagens("/subtarefas", { ...base, cliente: "c1", situacao: "proximo", mostrarConcluidas: true }, true)).toBe("/subtarefas?cliente=c1&situacao=proximo&todos=1");
   });
 });
 
-it("mostra responsável da equipe tanto na tabela quanto no cartão de tarefas", async () => {
+describe("situação do prazo na lista de tarefas", () => {
+  it("filtra pela situação e mantém as contagens da lista inteira", async () => {
+    const { default: Page } = await import("@/app/(painel)/tarefas/page");
+    // A tarefa do mock não tem prazo, então pertence a "Sem prazo".
+    const semPrazo = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ situacao: "sem" }) }));
+    expect(semPrazo).toContain("Tarefa da equipe");
+    const atrasadas = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ situacao: "atrasado" }) }));
+    expect(atrasadas).not.toContain("Tarefa da equipe");
+    expect(atrasadas).toContain("Nenhuma tarefa nesta seleção.");
+    // Os botões continuam contando a lista inteira: 1 tarefa sem prazo, 0 atrasadas.
+    expect(atrasadas).toMatch(/Sem prazo<span[^>]*>1<\/span>/);
+    expect(atrasadas).toMatch(/Atrasados<span[^>]*>0<\/span>/);
+  });
+  it("ignora situação desconhecida em vez de esvaziar a lista", async () => {
+    const { default: Page } = await import("@/app/(painel)/tarefas/page");
+    const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ situacao: "qualquer" }) }));
+    expect(html).toContain("Tarefa da equipe");
+  });
+});
+
+it("mostra o responsável da equipe na linha da tarefa (tabela única, que vira cartão no celular)", async () => {
   const { default: Page } = await import("@/app/(painel)/tarefas/page");
   const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
-  expect(html.match(/Responsável da equipe/g)).toHaveLength(2);
+  expect(html.match(/Responsável da equipe/g)).toHaveLength(1);
 });
 
 it("preserva a seleção ausente nas opções para permitir limpar o filtro", async () => {
@@ -45,14 +70,14 @@ it("preserva a seleção ausente nas opções para permitir limpar o filtro", as
 
 
 describe("progresso ao filtrar responsável (RF-008/RF-039)", () => {
-  it.each(["pessoa:p1", "usuario:u1", "sem"])("mostra 2/6 na tabela e no cartão ao selecionar %s", async responsavel => {
+  it.each(["pessoa:p1", "usuario:u1", "sem"])("mostra 2/6 na linha da tarefa ao selecionar %s", async responsavel => {
     const { default: Page } = await import("@/app/(painel)/tarefas/page");
     const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ responsavel }) }));
     const { listarPrazos } = await import("@/lib/projetos-tarefas");
     expect(listarPrazos).toHaveBeenLastCalledWith({ usuarioId: "admin", perfil: "ADMIN" }, expect.objectContaining({ responsavel }), true);
-    expect(html.match(/Subtarefas: /g)).toHaveLength(2);
-    expect(html.match(/aria-label="2 de 6 subtarefas concluídas"/g)).toHaveLength(2);
-    expect(html.match(/2[/]6/g)).toHaveLength(2);
+    expect(html.match(/Subtarefas: /g)).toHaveLength(1);
+    expect(html.match(/aria-label="2 de 6 subtarefas concluídas"/g)).toHaveLength(1);
+    expect(html.match(/2[/]6/g)).toHaveLength(1);
     expect(html).toContain("concluídas");
   });
   it.each([undefined, "", "invalido", ["sem", "usuario:u1"]])("oculta progresso sem seleção válida (%j)", async responsavel => {

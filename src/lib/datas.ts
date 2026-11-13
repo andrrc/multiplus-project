@@ -40,3 +40,13 @@ export function formatarDataHoraBrasilia(instante: Date): string {
     hourCycle: "h23",
   }).format(instante);
 }
+
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+/** Conta dias corridos entre hoje (no fuso de São Paulo) e o prazo; negativo quando já venceu. */
+export function calcularDiasRestantes(prazo: Date, hoje = new Date()) {
+  // Normaliza o prazo para meia-noite UTC para comparar somente o dia civil.
+  const prazoUTC = Date.UTC(prazo.getUTCFullYear(), prazo.getUTCMonth(), prazo.getUTCDate());
+  // O dia atual é obtido no fuso de São Paulo, igual às regras de prazo do servidor.
+  return Math.round((prazoUTC - dataDeHojeEmSaoPaulo(hoje)) / DIA_MS);
+}

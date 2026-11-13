@@ -39,6 +39,8 @@ export type ValoresFiltrosListagens = {
   tarefa: string;
   responsavel: string;
   mostrarConcluidas: boolean;
+  /** Situação do prazo (`atrasado`, `proximo`, `prazo`, `sem`); vazio ou `todos` não filtra. */
+  situacao?: string;
 };
 
 export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListagens, incluirConcluidas: boolean) {
@@ -47,6 +49,7 @@ export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListage
   for (const campo of ["cliente", "projeto", "tarefa", "responsavel"] as const) {
     if (valores[campo]) parametros.set(campo, valores[campo]);
   }
+  if (valores.situacao && valores.situacao !== "todos") parametros.set("situacao", valores.situacao);
   // O sinalizador só existe em telas que permitem incluir itens concluídos.
   if (incluirConcluidas && valores.mostrarConcluidas) parametros.set("todos", "1");
   // Evita o ponto de interrogação quando nenhum filtro foi selecionado.
