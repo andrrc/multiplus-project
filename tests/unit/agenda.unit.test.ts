@@ -2,6 +2,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 vi.mock("@/server/auth/contexto", () => ({ exigirAcessoARota: vi.fn(async () => ({ usuarioId: "admin", perfil: "ADMIN" })) }));
+// Os filtros são um componente de cliente e usam o roteador do Next, que não existe fora do app.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("@/lib/semaforo", () => ({ buscarLimitesSemaforo: vi.fn(async () => ({ diasAmareloAte: 5 })) }));
 vi.mock("@/lib/projetos-tarefas", () => ({
   listarClientesParaProjeto: vi.fn(async () => []), listarProjetos: vi.fn(async () => []),
   listarItensAgenda: vi.fn(async () => []),
@@ -19,7 +22,8 @@ describe("agenda no horário de Brasília", () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date(instante));
     const html = renderToStaticMarkup(await AgendaPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain(`${mes} ${ano}`);
-    expect(html).toMatch(new RegExp(`bg-verde px-2 py-1 font-semibold[^>]*>${dia}</span>`));
+    // Hoje é o dia civil de Brasília e fica com o número em destaque (fundo azul-escuro).
+    expect(html).toMatch(new RegExp(`aria-label="Ver o dia ${dia}" class="[^"]*bg-tinta[^"]*" href="[^"]*">${dia}</a>`));
     expect(listarItensAgenda).toHaveBeenCalledWith(expect.anything(), new Date(Date.UTC(ano, indiceMes, 1)), expect.any(Date), expect.anything());
   });
   it("mantém um prazo de meia-noite UTC no dia civil cadastrado", async () => {
@@ -30,7 +34,7 @@ describe("agenda no horário de Brasília", () => {
       projeto: { id: "projeto", nome: "Projeto", cliente: { id: "cliente", razaoSocial: "Cliente" } },
     }]);
     const html = renderToStaticMarkup(await AgendaPage({ searchParams: Promise.resolve({ mes: "2026-10" }) }));
-    expect(html).toMatch(/bg-verde px-2 py-1 font-semibold[^>]*>20<\/span>.*?href="\/tarefas\/prazo-civil"/);
+    expect(html).toMatch(/aria-label="Ver o dia 20" class="[^"]*bg-tinta[^"]*" href="[^"]*">20<\/a>.*?href="\/tarefas\/prazo-civil"/);
   });
 
 });

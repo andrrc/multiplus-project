@@ -165,6 +165,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | L1 | O código do agendador e o script estão prontos, mas a linha de cron ainda precisa ser instalada na VPS pelo usuário. | Avisos não serão disparados automaticamente até a ativação e confirmação da primeira execução. Ver [procedimento](../../ops/README.md#avisos-diários-de-prazo) e L1 em `tarefas.md`. |
 | L2 | CLIENTE ainda não tem uma caixa própria para notificações in-app. | Se o canal in-app for ligado para CLIENTE, o aviso é gravado, mas não aparece numa página do cliente; e-mail permanece funcional. |
 | L3 | O botão local de demonstração é temporário e continua no código até a revisão pré-produção. | Não aparece quando `NODE_ENV=production`; remover botão, evento e amostras antes do lançamento da VPS. |
+| L4 | A caixa de avisos segue o protótipo `10-avisos` só no visual (13/11/2026). | Faltam "Marcar como não lido", "Ver comprovantes", "Cobrar responsável", o contexto (cliente e projeto) em cada aviso, o arquivamento após 90 dias e a página própria de preferências (as preferências continuam ao lado da lista). |
 
 ## Histórico de alterações
 
@@ -197,3 +198,4 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | 2026-09-17 | `022fec0`, `d6ed6d1`, `dc16183` | Disparo de notificações, templates de e-mail e central de notificações (Sprint 4B) |
 | 2026-09-18 | `a567583` | Correção do modelo de preferências |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
+| 2026-11-13 | este commit | Caixa de avisos no padrão do protótipo: avisos agrupados por período (Hoje, Ontem, Esta semana, Anteriores), ícone por tipo, filtros Todos/Não lidos e por tipo |

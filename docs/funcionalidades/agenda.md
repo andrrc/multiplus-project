@@ -73,11 +73,13 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
 |---|---|---|
 | L1 | Itens com o mesmo projeto, nome e data são unificados na tela. | Duas tarefas distintas com o mesmo nome e prazo no mesmo projeto aparecem como uma só. |
 | L2 | A agenda mostra só tarefas. | Prazos de subtarefas não aparecem. |
+| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam a faixa de atrasados de meses anteriores, o filtro por responsável, "Exportar PDF", os prazos de subtarefas e de projeto e a abertura da agenda ao colaborador interno: dependem de dados, regras e permissão novos. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Agenda no padrão do protótipo: itens coloridos pelo semáforo (visitas em roxo, recorrentes tracejadas), painel do dia ao lado, visualização Mês/Lista e filtros aplicados na hora |
 | 2026-11-12 | este commit | Agrupar os itens da agenda por dia no celular |
 | 2026-11-10 | este commit | Iniciar adaptação visual da agenda |
 | 2026-09-17 | `ddec7eb` | Agenda mensal com ocorrências projetadas (Sprint 4B) |

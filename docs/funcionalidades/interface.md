@@ -128,6 +128,25 @@ abre a lista e o cadastro no desktop e a 375 px.
 **Pendências desta área.** Lista única com clientes e externos, filtro por empresa, "Último acesso" e escolha da empresa antes
 do perfil no cadastro.
 
+### Avisos e agenda
+
+**Como funciona.** Os avisos aparecem agrupados por período (Hoje, Ontem, Esta semana e Anteriores), cada um com ícone do tipo,
+título, mensagem e horário; os não lidos ganham fundo azul claro e um ponto. Há os botões "Todos" e "Não lidos", com contagem,
+e um seletor de tipo. A mesma lista serve à Administradora e aos colaboradores. A agenda mostra o mês com os prazos coloridos
+pelo semáforo (atrasado, vence em breve e no prazo), visitas e reuniões em roxo e a próxima ocorrência de tarefa recorrente
+tracejada. Clicar no número do dia abre os prazos dele no painel ao lado; é possível alternar entre Mês e Lista, e os filtros de
+cliente, projeto e tipo valem na hora. No celular a agenda mostra a lista de prazos por dia.
+
+**Detalhes técnicos.** `notificacoes/lista-avisos.tsx`, `notificacoes/filtros-avisos.tsx`, `notificacoes/page.tsx`,
+`minhas-notificacoes/page.tsx`, `src/lib/avisos-agrupamento.ts` (período pelo dia civil em Brasília),
+`agenda/page.tsx`, `agenda/filtros-agenda.tsx` e `src/lib/agenda-itens.ts` (classe de cor de cada item, com o limite do semáforo).
+Testes: `tests/unit/avisos-agrupamento.unit.test.ts`, `tests/unit/agenda-itens.unit.test.ts` e a jornada de
+`tests/browser/jornadas.spec.ts`. Na caixa da Administradora, o status do envio de prazos, o semáforo e as preferências por perfil
+continuam ao lado da lista até existir a página de Configurações.
+
+**Pendências desta área.** "Marcar como não lido", ações diretas nos avisos (ver comprovantes, cobrar responsável), contexto de
+cada aviso, faixa de atrasados de meses anteriores, "Exportar PDF" da agenda e filtro por responsável.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -207,6 +226,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer a caixa de avisos e a agenda no padrão dos protótipos (ver [Notificações](notificacoes.md) e [Agenda](agenda.md)) |
 | 2026-11-13 | este commit | Refazer lista, cadastro e detalhe de usuários no padrão do protótipo (ver [Usuários](usuarios.md)) |
 | 2026-11-13 | este commit | Refazer o detalhe de projeto e de tarefa no padrão dos protótipos, com confirmação ao desativar (ver [Projetos](projetos.md) e [Tarefas](tarefas.md)) |
 | 2026-11-13 | este commit | Refazer a lista e a ficha de clientes no padrão do protótipo (ver [Clientes](clientes.md)) |

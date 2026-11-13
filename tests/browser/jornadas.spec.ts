@@ -97,6 +97,18 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.setViewportSize({ width: 1024, height: 800 });
 
+  // Avisos e agenda: filtros presentes, e a agenda alterna entre o calendário e a lista.
+  await page.goto("/notificacoes");
+  await expect(page.getByRole("heading", { name: "Avisos", level: 1 })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Lidos" })).toBeVisible();
+  await page.goto("/agenda?mes=2026-11");
+  await expect(page.getByRole("heading", { name: "Agenda", level: 1 })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Visualização" })).toBeVisible();
+  await page.getByRole("link", { name: "Lista", exact: true }).click();
+  await expect(page).toHaveURL(/visao=lista/);
+  await expect(page.getByRole("link", { name: "Prazo de exemplo" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
   // Usuários: a lista cabe na largura e o formulário mostra o rodapé com o envio do convite.
   await page.goto("/usuarios");
   const usuarios = page.getByRole("region", { name: "Usuários e acessos" });

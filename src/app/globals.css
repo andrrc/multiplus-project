@@ -23,6 +23,8 @@
   --ambar-cl: #fff4de;
   --cabecalho: #f8fafb;
   --selecionado: #e6eef1;
+  --visita: #4b3fa0;
+  --visita-cl: #efedfb;
   --ponto-inicio: #9aaab1;
   --ponto-andamento: #1f7fc1;
   --ponto-espera: #d08a00;
@@ -62,6 +64,8 @@
   --color-ambar-cl: var(--ambar-cl);
   --color-cabecalho: var(--cabecalho);
   --color-selecionado: var(--selecionado);
+  --color-visita: var(--visita);
+  --color-visita-cl: var(--visita-cl);
   --color-ponto-inicio: var(--ponto-inicio);
   --color-ponto-andamento: var(--ponto-andamento);
   --color-ponto-espera: var(--ponto-espera);
