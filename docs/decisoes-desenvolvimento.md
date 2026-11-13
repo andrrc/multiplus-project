@@ -148,3 +148,4 @@ Como registrar: ver a seção 7 do `AGENTS.md`.
 - 2026-11-13: Refeitas as listas de projetos, tarefas e subtarefas no padrão dos modelos; veja [Interface](funcionalidades/interface.md).
 - 2026-11-13: Refeitas a lista e a ficha de clientes no padrão dos modelos; veja [Clientes](funcionalidades/clientes.md).
 - 2026-11-13: Refeito o detalhe de projeto e de tarefa no padrão dos modelos, com confirmação ao desativar; veja [Projetos](funcionalidades/projetos.md) e [Tarefas](funcionalidades/tarefas.md).
+- 2026-11-13: Refeitos lista, cadastro e detalhe de usuários no padrão dos modelos; veja [Usuários](funcionalidades/usuarios.md).

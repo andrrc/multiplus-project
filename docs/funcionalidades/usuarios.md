@@ -35,7 +35,10 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 ### U1. Listar usuários (RF-040)
 
 **Como funciona.**
-- **Colunas:** nome, perfil, situação do acesso e alcance.
+- **Colunas:** nome (com e-mail e cargo), perfil, o que acessa, situação do acesso e ações. A linha inteira abre o
+  usuário e vira cartão no celular.
+- **Filtros:** busca enquanto se digita, botões de perfil com contagem, situação do acesso e "Mostrar desativados".
+  A contagem dos botões considera a busca e a situação escolhidas.
 - **Situação do acesso:** Ativo, Pendente de ativação ou Desativado.
 - **Alcance:** "Acesso total" para a Administradora, ou as atribuições do colaborador.
 - **Alertas:** colaborador sem nenhuma atribuição aparece com o aviso "não vê nada ao
@@ -43,7 +46,9 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 
 **Detalhes técnicos.**
 - **Rota:** `/usuarios`.
-- **Funções:** `listarUsuarios` e `statusAcesso` (`src/lib/usuarios.ts`).
+- **Funções:** `listarUsuarios` e `statusAcesso` (`src/lib/usuarios.ts`). A página traz a equipe toda e aplica o perfil
+  e a situação no servidor da página, para contar cada perfil.
+- **Telas:** `usuarios/page.tsx`, `usuarios/filtros-usuarios.tsx` e `src/ui/lista.tsx`.
 - **Teste:** `administracao-acesso.unit.test.ts`, com os casos da situação do acesso.
 
 ### U2. Criar usuário e enviar convite (RF-030)
@@ -129,6 +134,7 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 | # | Situação | Efeito |
 |---|---|---|
 | — | Não há limitação conhecida para desativação ou atualização de perfil durante uma sessão aberta. | — |
+| L1 | A lista e o cadastro seguem o protótipo `07-usuarios` só no visual (13/11/2026). | Faltam a lista única que inclui clientes e colaboradores externos, os filtros por empresa, a coluna "Último acesso" e a escolha da empresa antes do perfil no cadastro: dependem de dados e regras novas. |
 
 ## Histórico de alterações
 
@@ -146,3 +152,4 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 | 2026-09-18 | `6afd91d` | Organização das ações na lista de usuários |
 | 2026-09-30 | `1d88b94` | Máscara e validação do telefone celular; ver [análise](../analises/formatacao-campos-telefone.md) |
 | 2026-10-01 | `9bce2c0` | Sessões passam a respeitar a desativação e o perfil atual ([análise](../analises/revalidacao-sessao-usuarios.md)) |
+| 2026-11-13 | este commit | Lista, cadastro e detalhe no padrão do protótipo `07-usuarios`: tabela que vira cartões, filtros com contagem, perfis em cartões e rodapé fixo no cadastro |

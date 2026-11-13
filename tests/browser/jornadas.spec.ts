@@ -97,6 +97,20 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.setViewportSize({ width: 1024, height: 800 });
 
+  // Usuários: a lista cabe na largura e o formulário mostra o rodapé com o envio do convite.
+  await page.goto("/usuarios");
+  const usuarios = page.getByRole("region", { name: "Usuários e acessos" });
+  await expect(usuarios).toBeVisible();
+  await expect(usuarios.getByRole("columnheader", { name: "Situação" })).toBeVisible();
+  await expect.poll(() => usuarios.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await page.goto("/usuarios/novo");
+  await expect(page.getByRole("heading", { name: "Novo usuário", level: 1 })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Salvar e enviar convite" })).toBeVisible();
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByRole("button", { name: "Salvar e enviar convite" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 1024, height: 800 });
+
   await page.goto("/projetos");
   await page.getByRole("link", { name: "Projeto teste", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Projeto teste", exact: true })).toBeVisible();

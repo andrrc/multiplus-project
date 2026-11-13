@@ -59,6 +59,7 @@ export function Campo({
   );
 }
 
+/** Etapa de um formulário longo: cartão com o número, o título, uma dica à direita e os campos. */
 export function SecaoNumerada({
   numero,
   titulo,
@@ -71,17 +72,13 @@ export function SecaoNumerada({
   children: ReactNode;
 }) {
   return (
-    <section className="border-t border-linha pt-8 first:border-t-0 first:pt-0">
-      <div className="flex items-start gap-3.5">
-        <span className="flex h-[27px] w-[27px] shrink-0 items-center justify-center rounded-full bg-verde font-[family-name:var(--font-interface)] text-[13px] font-semibold text-tinta">
-          {numero}
-        </span>
-        <div>
-          <h2 className="text-[19px]">{titulo}</h2>
-          {descricao && <p className="mt-1 text-[15px] text-cinza">{descricao}</p>}
-        </div>
-      </div>
-      <div className="mt-5 pl-0 sm:pl-[42px]">{children}</div>
+    <section className="rounded-cartao border border-linha bg-branco">
+      <header className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1 border-b border-linha px-5 py-4">
+        <span className="font-[family-name:var(--font-interface)] text-xs font-semibold tabular-nums text-faint">{numero}</span>
+        <h2 className="text-base font-semibold">{titulo}</h2>
+        {descricao && <p className="w-full text-[13px] text-cinza sm:ml-auto sm:w-auto">{descricao}</p>}
+      </header>
+      <div className="px-5 py-[18px]">{children}</div>
     </section>
   );
 }

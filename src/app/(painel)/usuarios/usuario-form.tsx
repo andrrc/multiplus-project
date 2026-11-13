@@ -10,6 +10,8 @@ import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
 import { CampoTelefone } from "@/ui/campo-telefone";
 import type { OpcaoAtribuicao } from "@/lib/usuarios";
 import { mascararCnpj, mascararCpf } from "@/lib/formatacao";
+import { botaoDiscreto, botaoPrimario } from "@/ui/botoes";
+import { Trilha } from "@/ui/cartao";
 
 export type EstadoFormularioUsuario = {
   erro?: string;
@@ -81,7 +83,7 @@ function SelecaoAtribuicoes({
                 name="atribuicoes"
                 value={`${opcao.entidadeTipo}:${opcao.entidadeId}`}
                 defaultChecked={selecionadas.includes(opcao.entidadeId)}
-                className="h-4 w-4 accent-verde"
+                className="h-4 w-4 accent-tinta"
               />
               {opcao.nome}
             </label>
@@ -136,15 +138,16 @@ export function UsuarioForm({
   const descricaoPerfil = PERFIS.find((p) => p.valor === perfil)?.explicacao;
 
   return (
-    <div className="w-full max-w-[720px]">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[24px] sm:text-[28px]">{titulo}</h1>
-        <Link href="/usuarios" className="text-[14px] text-cinza hover:text-tinta">
-          Cancelar
-        </Link>
+    <div className="w-full max-w-[860px]">
+      <Trilha itens={[{ rotulo: "Usuários", href: "/usuarios" }, { rotulo: titulo }]} />
+      <div className="mb-5">
+        <h1 className="text-2xl">{titulo}</h1>
+        <p className="mt-1 text-sm text-cinza">
+          {inicial ? "Altere os dados de cadastro desta pessoa." : "A pessoa recebe um convite por e-mail para criar a senha."}
+        </p>
       </div>
 
-      <form action={formAction} className="mt-8 flex flex-col gap-8">
+      <form action={formAction} className="flex flex-col gap-4">
         <SecaoNumerada
           numero={1}
           titulo="Identificação"
@@ -202,7 +205,7 @@ export function UsuarioForm({
                   value="PESSOA"
                   checked={tipoPessoa === "PESSOA"}
                   onChange={() => setTipoPessoa("PESSOA")}
-                  className="accent-verde"
+                  className="accent-tinta"
                 />
                 Pessoa física
               </label>
@@ -213,7 +216,7 @@ export function UsuarioForm({
                   value="EMPRESA"
                   checked={tipoPessoa === "EMPRESA"}
                   onChange={() => setTipoPessoa("EMPRESA")}
-                  className="accent-verde"
+                  className="accent-tinta"
                 />
                 Pessoa jurídica
               </label>
@@ -268,21 +271,28 @@ export function UsuarioForm({
           titulo="Perfil de acesso"
           descricao="Define a granularidade do que a pessoa enxerga."
         >
-          <div className="flex flex-col gap-2.5">
+          <div className="grid gap-2.5 sm:grid-cols-2">
             {PERFIS.map((opcao) => (
-              <label key={opcao.valor} className="flex items-center gap-2 text-[14.5px] text-tinta">
+              <label
+                key={opcao.valor}
+                className={`flex min-h-11 cursor-pointer items-start gap-3 rounded-controle border px-3.5 py-3 text-sm ${
+                  perfil === opcao.valor ? "border-azul bg-azul-cl" : "border-linha-forte bg-branco hover:bg-papel"
+                }`}
+              >
                 <input
                   type="radio"
                   name="perfil"
                   value={opcao.valor}
                   checked={perfil === opcao.valor}
                   onChange={() => setPerfil(opcao.valor)}
-                  className="accent-verde"
+                  className="mt-0.5 accent-tinta"
                 />
-                {opcao.rotulo}
+                <span>
+                  <span className="block font-semibold text-ink">{opcao.rotulo}</span>
+                  <span className="mt-0.5 block text-[13px] text-cinza">{opcao.explicacao}</span>
+                </span>
               </label>
             ))}
-            {descricaoPerfil && <p className="mt-1 text-[14px] text-cinza">{descricaoPerfil}</p>}
           </div>
         </SecaoNumerada>
 
@@ -313,25 +323,22 @@ export function UsuarioForm({
         )}
 
         {estado.erro && !estado.campo && (
-          <p className="rounded-cartao border border-critico/25 bg-critico-cl px-4 py-3 text-[14.5px] text-critico">
+          <p role="alert" className="rounded-cartao border border-critico/25 bg-critico-cl px-4 py-3 text-sm text-critico">
             {estado.erro}
           </p>
         )}
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            disabled={pendente}
-            className="min-h-11 rounded-controle bg-tinta px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-semibold text-branco hover:bg-tinta2 hover:text-branco disabled:opacity-60"
-          >
-            {pendente ? "Salvando…" : rotuloEnvio}
-          </button>
-          <Link
-            href="/usuarios"
-            className="flex min-h-11 items-center px-4 text-[14px] text-cinza hover:text-tinta"
-          >
+        <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-3 rounded-cartao border border-linha bg-branco px-5 py-3.5 shadow-lg">
+          <p className="mr-auto w-full text-[13.5px] sm:w-auto">
+            <b className="font-semibold">{PERFIS.find((p) => p.valor === perfil)?.rotulo}</b>
+            {descricaoPerfil && <span className="text-cinza"> · {descricaoPerfil}</span>}
+          </p>
+          <Link href="/usuarios" className={botaoDiscreto}>
             Cancelar
           </Link>
+          <button type="submit" disabled={pendente} className={botaoPrimario}>
+            {pendente ? "Salvando…" : rotuloEnvio}
+          </button>
         </div>
       </form>
     </div>

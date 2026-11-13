@@ -16,6 +16,9 @@ import {
 } from "@/lib/usuarios";
 import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
 import { Etiqueta } from "@/ui/campo";
+import { botaoSecundario } from "@/ui/botoes";
+import { Avatar, Trilha } from "@/ui/cartao";
+import { StatusPonto } from "@/ui/status-ponto";
 import { BotaoRemoverAtribuicao } from "../acoes-usuario";
 import { AdicionarAtribuicao } from "./adicionar-atribuicao";
 
@@ -112,29 +115,25 @@ export default async function DetalheUsuarioPage({
 
   return (
     <div className="w-full max-w-[1000px]">
-      <Link href="/usuarios" className="text-[14px] text-cinza hover:text-tinta">
-        ← Usuários
-      </Link>
+      <Trilha itens={[{ rotulo: "Usuários", href: "/usuarios" }, { rotulo: usuario.nome }]} />
 
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[24px] sm:text-[28px]">{usuario.nome}</h1>
-          <p className="mt-1.5 text-[15px] text-cinza">{usuario.email}</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3.5">
+          <Avatar nome={usuario.nome} tamanho={44} />
+          <div className="min-w-0">
+            <h1 className="break-words text-[26px]">{usuario.nome}</h1>
+            <p className="mt-0.5 break-all text-sm text-cinza">{usuario.email}</p>
+          </div>
         </div>
-        <Link
-          href={`/usuarios/${id}/editar`}
-          className="flex min-h-11 shrink-0 items-center rounded-controle border border-linha px-5 py-2.5 font-[family-name:var(--font-interface)] text-[14px] font-medium text-tinta hover:border-azul"
-        >
+        <Link href={`/usuarios/${id}/editar`} className={botaoSecundario}>
           Editar
         </Link>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <Etiqueta>{NOME_PERFIL[usuario.perfil]}</Etiqueta>
-        <Etiqueta tom={status === "ATIVO" ? "positivo" : status === "PENDENTE" ? "atencao" : "apagado"}>
-          {ROTULO_STATUS[status]}
-        </Etiqueta>
-        <span className="text-[14px] text-cinza">{GRANULARIDADE[usuario.perfil]}</span>
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <span className="text-sm font-medium text-ink">{NOME_PERFIL[usuario.perfil]}</span>
+        <StatusPonto status={status}>{ROTULO_STATUS[status]}</StatusPonto>
+        <span className="text-[13.5px] text-cinza">{GRANULARIDADE[usuario.perfil]}</span>
       </div>
 
       {(usuario.cargo ||
@@ -142,8 +141,8 @@ export default async function DetalheUsuarioPage({
         usuario.cpf ||
         usuario.cnpj ||
         usuario.observacoes) && (
-        <section className="mt-7 rounded-cartao border border-linha bg-branco px-5 py-[22px] sm:px-6">
-          <h2 className="text-[16px]">Dados de cadastro</h2>
+        <section className="mt-6 rounded-cartao border border-linha bg-branco px-5 py-4">
+          <h2 className="text-base font-semibold">Dados de cadastro</h2>
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {usuario.cargo && <DadoCadastral rotulo="Cargo ou função" valor={usuario.cargo} />}
             {usuario.telefone && (
@@ -186,8 +185,8 @@ export default async function DetalheUsuarioPage({
         </p>
       )}
 
-      <section className="mt-9">
-        <h2 className="text-[19px]">Atribuições</h2>
+      <section className="mt-6">
+        <h2 className="text-base font-semibold">Atribuições</h2>
 
         {usuario.perfil === "ADMIN" ? (
           <p className="mt-4 rounded-cartao border border-linha bg-branco px-5 py-4 text-[14.5px] text-cinza">

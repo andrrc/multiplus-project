@@ -112,6 +112,22 @@ tarefa a 375 px.
 subtarefas, "Cobrar responsável", rejeição com motivo, duplicar e exportar PDF do projeto, "Próxima ocorrência" da
 tarefa e o texto de "Atribuição pendente" no cabeçalho dependem de dados ou regras novas.
 
+### Lista, cadastro e detalhe de usuários
+
+**Como funciona.** A lista de usuários usa a mesma tabela das outras listas (nome com e-mail e cargo, perfil, o que acessa,
+situação com ponto colorido e as ações de cada pessoa) e vira cartões no celular. Acima dela há a busca, a situação do
+acesso e botões de perfil com contagem. O cadastro tem etapas em cartões numerados (identificação, perfil de acesso,
+atribuições), perfis como cartões selecionáveis e um rodapé fixo que resume o que a pessoa vai ver, com Cancelar e o envio
+do convite. O detalhe tem trilha, avatar e a situação em texto com ponto. As etapas numeradas dos formulários de cliente,
+projeto e tarefa passaram a usar o mesmo cartão.
+
+**Detalhes técnicos.** `usuarios/page.tsx`, `usuarios/filtros-usuarios.tsx`, `usuarios/usuario-form.tsx`, `usuarios/[id]/page.tsx`
+e `SecaoNumerada` em `src/ui/campo.tsx`. As permissões e as ações não mudaram. A jornada de `tests/browser/jornadas.spec.ts`
+abre a lista e o cadastro no desktop e a 375 px.
+
+**Pendências desta área.** Lista única com clientes e externos, filtro por empresa, "Último acesso" e escolha da empresa antes
+do perfil no cadastro.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -191,6 +207,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer lista, cadastro e detalhe de usuários no padrão do protótipo (ver [Usuários](usuarios.md)) |
 | 2026-11-13 | este commit | Refazer o detalhe de projeto e de tarefa no padrão dos protótipos, com confirmação ao desativar (ver [Projetos](projetos.md) e [Tarefas](tarefas.md)) |
 | 2026-11-13 | este commit | Refazer a lista e a ficha de clientes no padrão do protótipo (ver [Clientes](clientes.md)) |
 | 2026-11-13 | este commit | Refazer as listas de projetos, tarefas e subtarefas no padrão dos modelos: tabela que vira cartões no celular, status com ponto, selo de prazo com data e filtro de situação com contagem |
