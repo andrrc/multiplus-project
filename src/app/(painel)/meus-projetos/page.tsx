@@ -1,17 +1,16 @@
-/**
- * Página da rota `src/app/(painel)/meus-projetos/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
- */
 import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarProjetosAtribuidos } from "@/lib/projetos-tarefas";
-import { Etiqueta } from "@/ui/campo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
-import { IndicadorConclusao } from "@/ui/indicador-conclusao";
+import { calcularDiasRestantes } from "@/lib/datas";
 import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
+import { AnelProgresso, StatusPonto, Vazio } from "@/ui/lista";
+
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
-const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(v) : "Não informada";
+const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(v) : null;
+const emAberto = (t: { ativo: boolean; status: string }) => t.ativo && t.status !== "CONCLUIDO" && t.status !== "CANCELADO";
 
 export default async function MeusProjetosPage() {
   const ctx = await exigirAcessoARota("/meus-projetos");
@@ -19,34 +18,63 @@ export default async function MeusProjetosPage() {
 
   return (
     <div className="w-full max-w-[1280px]">
-      <h1 className="text-[24px] sm:text-[28px]">Meus projetos</h1>
-      <p className="mt-1.5 text-[15px] text-cinza">Projetos em que você possui uma tarefa ou subtarefa atribuída.</p>
+      <h1 className="text-2xl">Meus projetos</h1>
+      <p className="mt-1 text-sm text-cinza">Projetos em que você tem uma tarefa ou subtarefa atribuída.</p>
+      <p className="mb-2.5 mt-5 text-[13px] tabular-nums text-cinza">{projetos.length} {projetos.length === 1 ? "projeto" : "projetos"}</p>
+
       {projetos.length === 0 ? (
-        <div className="mt-7 rounded-cartao border border-linha bg-branco px-6 py-14 text-center text-[15px] text-cinza">Nenhum projeto com tarefa ou subtarefa atribuída a você ainda.</div>
+        <Vazio titulo="Nenhum projeto por enquanto." descricao="Quando uma tarefa ou subtarefa for atribuída a você, o projeto aparece aqui." />
       ) : (
-        <div className="mt-7 grid gap-4 md:grid-cols-2">
+        <ul className="grid gap-4 md:grid-cols-2">
           {projetos.map((p) => {
             const conclusao = calcularPercentualConclusao(p.tarefas);
+            const abertas = p.tarefas.filter(emAberto);
+            const atrasadas = abertas.filter((t) => t.prazo && calcularDiasRestantes(t.prazo) < 0).length;
+            // A próxima entrega é a tarefa em aberto com o prazo mais próximo.
+            const proxima = abertas.filter((t) => t.prazo).sort((a, b) => a.prazo!.getTime() - b.prazo!.getTime())[0];
             return (
-            <Link key={p.id} href={`/meus-projetos/${p.id}`} className="block min-w-0 rounded-controle border border-linha bg-branco p-5 hover:border-azul-esc">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="break-words text-[17px] font-semibold text-tinta">{p.nome}</h2>
-                  <p className="mt-1 break-all text-[12px] tabular-nums text-cinza">ID {codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</p>
-                  <p className="mt-1 break-words text-[14px] text-cinza">{p.cliente.razaoSocial}</p>
+              <li key={p.id} className="relative min-w-0 rounded-cartao border border-linha bg-branco hover:border-linha-forte">
+                <div className="flex items-start justify-between gap-4 px-5 pt-[18px]">
+                  <div className="min-w-0">
+                    <p className="flex flex-wrap items-center gap-x-2.5 text-[13px] text-cinza">
+                      <span className="truncate">{p.cliente.razaoSocial}</span>
+                      <StatusPonto status={p.status}>{status[p.status] ?? p.status}</StatusPonto>
+                    </p>
+                    <h2 className="mt-1 break-words text-base font-semibold">
+                      <Link href={`/meus-projetos/${p.id}`} className="before:absolute before:inset-0 before:content-[''] hover:text-azul-esc">{p.nome}</Link>
+                    </h2>
+                    <p className="mt-0.5 text-xs tabular-nums text-faint">{codigoProjeto(p.cliente.numeroIdentificacao, p.numeroLocal)}</p>
+                  </div>
+                  <AnelProgresso percentual={conclusao.percentual} />
                 </div>
-                <Etiqueta>{status[p.status]}</Etiqueta>
-              </div>
-              <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-linha pt-4 text-[13px] sm:grid-cols-3">
-                <div><dt className="text-cinza">Tarefas</dt><dd className="mt-1 tabular-nums">{p.tarefas.length}</dd></div>
-                <div><dt className="text-cinza">Conclusão</dt><dd className="mt-1">{conclusao.percentual === null ? "Sem tarefas ativas" : <IndicadorConclusao indicador={conclusao} />}</dd></div>
-                <div><dt className="text-cinza">Conclusão prevista</dt><dd className="mt-1 tabular-nums">{data(p.dataPrevistaConclusao)}</dd></div>
-              </dl>
-              <div className="mt-4"><IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} limites={limites} /></div>
-            </Link>
+                <p className="flex flex-wrap items-center gap-2 px-5 pb-4 pt-2.5 text-[13px] text-cinza">
+                  Prazo
+                  {p.dataPrevistaConclusao ? <b className="font-semibold tabular-nums text-ink">{data(p.dataPrevistaConclusao)}</b> : <span className="text-faint">sem previsão</span>}
+                  <IndicadorSemaforoProjeto prazo={p.dataPrevistaConclusao} status={p.status} limites={limites} />
+                </p>
+                <dl className="grid grid-cols-3 border-t border-linha">
+                  {[
+                    { rotulo: "Tarefas abertas", valor: abertas.length, alerta: false },
+                    { rotulo: "Atrasadas", valor: atrasadas, alerta: atrasadas > 0 },
+                    { rotulo: "Concluídas", valor: p.tarefas.filter((t) => t.status === "CONCLUIDO").length, alerta: false },
+                  ].map((numero) => (
+                    <div key={numero.rotulo} className="min-w-0 border-l border-linha px-3.5 py-3 first:border-l-0">
+                      <dt className="truncate text-xs text-cinza">{numero.rotulo}</dt>
+                      <dd className={`mt-0.5 text-xl font-semibold tabular-nums ${numero.alerta ? "text-critico" : numero.valor === 0 ? "text-faint" : "text-ink"}`}>{numero.valor}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="flex items-center justify-between gap-3 border-t border-linha px-5 py-3">
+                  <div className="min-w-0">
+                    <p className="text-xs text-cinza">Próxima entrega</p>
+                    <p className="truncate text-[13.5px] font-medium">{proxima ? proxima.nome : <span className="font-normal text-faint">Nenhuma tarefa em aberto</span>}</p>
+                  </div>
+                  {proxima && <IndicadorSemaforoProjeto prazo={proxima.prazo} status={proxima.status} limites={limites} />}
+                </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

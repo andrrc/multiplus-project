@@ -301,3 +301,4 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 | 2026-09-29 | `d731f79` | Blocos da ficha voltam a ter o fundo `papel` (cor `fundo` não existia) |
 | 2026-09-30 | `1d88b94` | Máscara e validação de celular para dados de cliente e Pessoas Envolvidas; ver [análise](../analises/formatacao-campos-telefone.md) |
 | 2026-11-13 | este commit | Lista e ficha refeitas no padrão do protótipo `06-clientes`: tabela que vira cartões no celular, ficha em duas colunas com resumo, projetos, pessoas envolvidas e laudo à esquerda e dados, contatos, portal e documentos à direita; campo vazio em âmbar ("Não informado") |
+| 2026-11-13 | este commit | Lista e ficha dos clientes do colaborador no padrão do protótipo `06-clientes`, sem alterar o que ele pode ver |

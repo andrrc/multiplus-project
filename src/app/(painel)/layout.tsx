@@ -41,7 +41,7 @@ function BlocoUsuario({ nome, perfil }: { nome?: string | null; perfil: string }
       </span>
       <div className="min-w-0 leading-snug">
         <p className="truncate font-[family-name:var(--font-interface)] text-sm font-medium text-branco">{nome}</p>
-        <p className="truncate text-xs text-menu-inativo">{NOME_PERFIL[perfil] ?? perfil}</p>
+        <p className="text-xs text-menu-inativo">{NOME_PERFIL[perfil] ?? perfil}</p>
       </div>
       <div className="ml-auto flex shrink-0 gap-0.5">
         <Link href="/meu-perfil" title="Meu perfil" aria-label="Meu perfil" className={classeIcone}>

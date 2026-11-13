@@ -353,3 +353,4 @@ registro de quem criou e quando.
 | 2026-09-29 | `d731f79` | O botão de desativação e as tarefas atrasadas na agenda voltam a aparecer em vermelho terra (correção de cores inexistentes) |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
 | 2026-11-13 | este commit | Detalhe da tarefa no padrão do protótipo `05-tarefa`: trilha, resumo, subtarefas expansíveis em cartão, coluna lateral com descrição, configuração e registro; "Excluir tarefa" passa a "Desativar" com confirmação, resolvendo a L3 |
+| 2026-11-13 | este commit | Minhas tarefas em tabela com filtro de situação do prazo e detalhe da tarefa do colaborador no padrão do protótipo `05-tarefa`, mantendo o pedido e a retirada de conclusão |

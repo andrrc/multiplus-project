@@ -229,6 +229,7 @@ Descritos em `comentarios-mencoes.md`.
 | 2026-09-29 | `82cfccf`, `c229dfc` | Listagem mostra "Dias restantes" mantendo as cores do semáforo (ver abaixo) |
 | 2026-09-29 | `d731f79` | Correção das cores inexistentes na identidade visual |
 | 2026-11-13 | este commit | Detalhe do projeto no padrão do protótipo `04-projeto`: trilha, resumo com pendências, tarefas com abas Abertas/Todas, comentários em cartão e coluna lateral; Desativar pede confirmação |
+| 2026-11-13 | este commit | Meus projetos em cartões com anel de progresso e próxima entrega, e detalhe do projeto do colaborador no padrão do protótipo `04-projeto` |
 
 ### Decisão de 2026-09-29: dias restantes na listagem
 

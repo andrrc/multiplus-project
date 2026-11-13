@@ -159,3 +159,20 @@ export function ProgressoBarra({ concluidas, total }: { concluidas: number; tota
     </div>
   );
 }
+
+/** Anel de progresso com o percentual no centro (cartões de projeto dos colaboradores). */
+export function AnelProgresso({ percentual }: { percentual: number | null }) {
+  const valor = percentual ?? 0;
+  return (
+    <span
+      role="img"
+      aria-label={percentual === null ? "Sem tarefas ativas" : `${valor}% concluído`}
+      className="grid size-[60px] shrink-0 place-items-center rounded-full"
+      style={{ background: `conic-gradient(var(--verde) ${valor * 3.6}deg, var(--linha) 0)` }}
+    >
+      <span className="grid size-[46px] place-items-center rounded-full bg-branco text-[13px] font-semibold tabular-nums text-ink">
+        {percentual === null ? "—" : `${valor}%`}
+      </span>
+    </span>
+  );
+}

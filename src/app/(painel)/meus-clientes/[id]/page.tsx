@@ -1,23 +1,14 @@
-/**
- * Página da rota `src/app/(painel)/meus-clientes/[id]/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
- */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buscarClienteContextual } from "@/lib/clientes";
 import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { Etiqueta } from "@/ui/campo";
-
-function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  return <section className="rounded-cartao border border-linha bg-branco px-5 py-[22px] sm:px-6"><h2 className="text-[16px]">{titulo}</h2><div className="mt-4">{children}</div></section>;
-}
-
-function Campo({ label, valor }: { label: string; valor: React.ReactNode }) {
-  return <div><p className="font-[family-name:var(--font-interface)] text-[11.5px] font-medium tracking-[0.04em] text-cinza uppercase">{label}</p><p className="mt-1 font-[family-name:var(--font-interface)] text-[14.5px] text-tinta">{valor}</p></div>;
-}
+import { BlocoLateral, Cartao, CartaoLateral, ListaChaveValor, NaoInformado, Trilha } from "@/ui/cartao";
+import { StatusPonto } from "@/ui/lista";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
-const data = (valor: Date | null) => valor ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" }).format(valor) : "—";
+const data = (valor: Date | null) => valor ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(valor) : null;
+const ouNaoInformado = (valor: React.ReactNode) => (valor ? valor : <NaoInformado />);
 
 export default async function MeuClienteDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await exigirAcessoARota("/meus-clientes");
@@ -25,11 +16,67 @@ export default async function MeuClienteDetalhePage({ params }: { params: Promis
   const cliente = await buscarClienteContextual(ctx, id);
   if (!cliente) notFound();
 
-  return <div className="flex w-full max-w-[880px] flex-col gap-5">
-    <Link href="/meus-clientes" className="self-start font-[family-name:var(--font-interface)] text-[14px] text-azul-esc hover:underline">← Clientes</Link>
-    <div className="flex flex-col gap-4 border-b border-linha pb-5 sm:flex-row sm:items-start sm:justify-between"><div><h1 className="break-words text-[24px] text-tinta">{cliente.razaoSocial}</h1><div className="mt-3 flex flex-wrap items-center gap-3 font-[family-name:var(--font-interface)] text-[14px]"><span className="rounded-selo border border-linha bg-branco px-2.5 py-1 font-semibold tabular-nums text-cinza">ID {numeroCliente(cliente.numeroIdentificacao)}</span><span className="tabular-nums text-cinza">{documentoCliente(cliente)}</span><span className="rounded-selo bg-verde-cl px-2.5 py-1 text-[13px] font-medium text-verde-esc">{cliente.segmento}</span></div></div></div>
-    <Bloco titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}><div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">{cliente.origemContato && <Campo label="Origem do contato" valor={cliente.origemContato} />}{cliente.endereco && <Campo label="Endereço" valor={cliente.endereco} />}{cliente.municipio && <Campo label="Município" valor={cliente.estado ? `${cliente.municipio} - ${cliente.estado}` : cliente.municipio} />}{cliente.atividadePrincipal && <Campo label="Atividade principal" valor={cliente.atividadePrincipal} />}{cliente.tipo === "PESSOA_JURIDICA" && cliente.porte && <Campo label="Porte" valor={cliente.porte} />}{cliente.tipo === "PESSOA_FISICA" && <>{cliente.rg && <Campo label="RG" valor={cliente.rg} />}{cliente.cep && <Campo label="CEP" valor={cliente.cep} />}</>}</div></Bloco>
-    <Bloco titulo="Drive">{cliente.documentos.length === 0 ? <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">Nenhum link do Drive vinculado a este cliente.</p> : <ul className="flex flex-col gap-2">{cliente.documentos.map((doc) => <li key={doc.id} className="border-b border-linha py-2 last:border-b-0"><a href={doc.link} target="_blank" rel="noreferrer" className="font-[family-name:var(--font-interface)] text-[14.5px] text-azul-esc hover:underline">{doc.nome} ↗</a></li>)}</ul>}</Bloco>
-    <Bloco titulo="Projetos acessíveis">{cliente.projetos.length === 0 ? <p className="font-[family-name:var(--font-leitura)] text-[14.5px] text-cinza">Nenhum projeto disponível para você.</p> : <ul className="flex flex-col gap-2">{cliente.projetos.map((projeto) => <li key={projeto.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha py-3 last:border-b-0"><div><Link href={`/meus-projetos/${projeto.id}`} className="font-[family-name:var(--font-interface)] text-[14.5px] font-medium text-azul-esc hover:underline">{projeto.nome}</Link><p className="mt-1 text-[13px] text-cinza">Previsão: {data(projeto.dataPrevistaConclusao)}</p></div><Etiqueta tom={projeto.status === "CONCLUIDO" ? "positivo" : undefined}>{status[projeto.status] ?? projeto.status}</Etiqueta></li>)}</ul>}</Bloco>
+  const documento = documentoCliente(cliente);
+  return <div className="w-full max-w-[1280px]">
+    <Trilha itens={[{ rotulo: "Clientes", href: "/meus-clientes" }, { rotulo: `${numeroCliente(cliente.numeroIdentificacao)} · ${cliente.razaoSocial}` }]} />
+
+    <div className="mb-5">
+      <h1 className="break-words text-[26px]">{cliente.razaoSocial}</h1>
+      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[13.5px] text-cinza">
+        <span className="font-medium tabular-nums text-ink">ID {numeroCliente(cliente.numeroIdentificacao)}</span>
+        {documento !== "—" && <span className="tabular-nums">{documento}</span>}
+        <span>{cliente.segmento}{cliente.tipo === "PESSOA_JURIDICA" && cliente.porte ? ` · ${cliente.porte}` : ""}</span>
+        {cliente.municipio && <span>{cliente.estado ? `${cliente.municipio}/${cliente.estado}` : cliente.municipio}</span>}
+      </div>
+    </div>
+
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <Cartao titulo={<>Projetos acessíveis <span className="rounded-full bg-papel px-2 py-px text-xs font-semibold tabular-nums text-ink">{cliente.projetos.length}</span></>} semMargem>
+        {cliente.projetos.length === 0 ? <p className="px-5 py-8 text-center text-sm text-cinza">Nenhum projeto disponível para você.</p> : (
+          <ul>
+            {cliente.projetos.map((projeto) => (
+              <li key={projeto.id} className="relative grid gap-2 border-t border-linha px-5 py-3.5 first:border-t-0 hover:bg-cabecalho sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-5">
+                <div className="min-w-0">
+                  <Link href={`/meus-projetos/${projeto.id}`} className="block break-words font-medium text-ink before:absolute before:inset-0 before:content-[''] hover:text-azul-esc">{projeto.nome}</Link>
+                  <p className="mt-px text-[12.5px] tabular-nums text-cinza">Previsão: {data(projeto.dataPrevistaConclusao) ?? "sem previsão"}</p>
+                </div>
+                <StatusPonto status={projeto.status}>{status[projeto.status] ?? projeto.status}</StatusPonto>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Cartao>
+
+      <CartaoLateral>
+        <BlocoLateral titulo={cliente.tipo === "PESSOA_JURIDICA" ? "Dados da empresa" : "Dados pessoais"}>
+          <ListaChaveValor
+            itens={[
+              { rotulo: "Atividade principal", valor: ouNaoInformado(cliente.atividadePrincipal) },
+              ...(cliente.tipo === "PESSOA_JURIDICA" ? [{ rotulo: "Porte", valor: ouNaoInformado(cliente.porte) }] : []),
+              ...(cliente.tipo === "PESSOA_FISICA"
+                ? [
+                    { rotulo: "RG", valor: ouNaoInformado(cliente.rg) },
+                    { rotulo: "CEP", valor: ouNaoInformado(cliente.cep) },
+                  ]
+                : []),
+              { rotulo: "Endereço", valor: ouNaoInformado(cliente.endereco) },
+              { rotulo: "Município", valor: ouNaoInformado(cliente.municipio ? (cliente.estado ? `${cliente.municipio} - ${cliente.estado}` : cliente.municipio) : null) },
+              { rotulo: "Origem do contato", valor: ouNaoInformado(cliente.origemContato) },
+            ]}
+          />
+        </BlocoLateral>
+        <BlocoLateral titulo="Documentos">
+          {cliente.documentos.length === 0 ? <p className="text-[13px] text-cinza">Nenhum link do Drive vinculado a este cliente.</p> : (
+            <ul className="flex flex-col gap-2">
+              {cliente.documentos.map((doc) => (
+                <li key={doc.id} className="min-w-0 text-[13.5px]">
+                  <a href={doc.link} target="_blank" rel="noreferrer" className="break-words text-azul-esc hover:underline">{doc.nome} <span className="text-faint">↗</span></a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </BlocoLateral>
+      </CartaoLateral>
+    </div>
   </div>;
 }

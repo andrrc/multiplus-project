@@ -147,6 +147,24 @@ continuam ao lado da lista até existir a página de Configurações.
 **Pendências desta área.** "Marcar como não lido", ações diretas nos avisos (ver comprovantes, cobrar responsável), contexto de
 cada aviso, faixa de atrasados de meses anteriores, "Exportar PDF" da agenda e filtro por responsável.
 
+### Telas do colaborador interno
+
+**Como funciona.** Minhas tarefas é uma tabela (tarefa com código e andamento das subtarefas, projeto e cliente, prazo com selo e
+status com ponto) com botões de situação do prazo e contagem. Meus projetos são cartões com o cliente, o status, o anel de progresso,
+o prazo com selo, as contagens de tarefas abertas, atrasadas e concluídas e a próxima entrega. O detalhe do projeto e o da tarefa seguem
+o mesmo desenho da administradora (trilha, resumo em faixa, cartões e coluna lateral); na tarefa continuam o pedido e a retirada de
+conclusão, com o aviso de que a Talita confirma. Os clientes viram uma tabela e uma ficha com projetos acessíveis, dados e documentos.
+O que cada colaborador pode ver e fazer não mudou.
+
+**Detalhes técnicos.** `minhas-tarefas/page.tsx`, `minhas-tarefas/[id]/page.tsx`, `meus-projetos/page.tsx`, `meus-projetos/[id]/page.tsx`,
+`meus-clientes/page.tsx` e `meus-clientes/[id]/page.tsx`, com `src/ui/botoes-situacao.tsx` (filtro de situação por URL) e `AnelProgresso`
+em `src/ui/lista.tsx`. O rodapé do menu deixou de cortar o nome do perfil. O teste `tests/browser/colaborador.spec.ts` entra como
+colaborador interno, abre as seis telas e confere que cabem em 1024 e 375 px.
+
+**Pendências desta área.** Painel, agenda, abas "Minhas" e "Da equipe", busca, subtarefas na lista de tarefas, "Concluir" direto na linha,
+as contagens "minhas pendências" por pessoa em Meus projetos, comentários no nível da tarefa e "Quem acessa" dependem de dados, regras
+ou permissão novos.
+
 ### Recuperar e definir senha
 
 **Como funciona.** As telas de "Esqueci minha senha" e "Definir senha" seguem o visual do
@@ -226,6 +244,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-13 | este commit | Refazer as telas do colaborador interno no padrão dos protótipos (ver [Tarefas](tarefas.md), [Projetos](projetos.md) e [Clientes](clientes.md)) |
 | 2026-11-13 | este commit | Ajustes da conferência visual contra os protótipos: seta pequena nos seletores, botões de 32 px nos cabeçalhos de cartão e nas ações dos avisos, colunas alinhadas nas linhas de tarefa e subtarefa (só em telas largas), ID em negrito na lista de clientes, resumo da ficha sem data repetida, formulário de usuário em duas colunas e correção de um erro de serialização na agenda |
 | 2026-11-13 | este commit | Refazer a caixa de avisos e a agenda no padrão dos protótipos (ver [Notificações](notificacoes.md) e [Agenda](agenda.md)) |
 | 2026-11-13 | este commit | Refazer lista, cadastro e detalhe de usuários no padrão do protótipo (ver [Usuários](usuarios.md)) |

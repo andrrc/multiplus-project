@@ -1,49 +1,45 @@
-/**
- * Página da rota `src/app/(painel)/meus-clientes/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
- */
-import Link from "next/link";
 import { listarClientesContextuais } from "@/lib/clientes";
 import { documentoCliente, numeroCliente } from "@/lib/formatacao";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { Etiqueta } from "@/ui/campo";
+import { NaoInformado } from "@/ui/cartao";
+import { CelulaLista, LinhaLista, TabelaLista, TextoPrincipal, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
+
+const COLUNAS = [
+  { titulo: "ID", largura: "8%" },
+  { titulo: "Cliente", largura: "42%" },
+  { titulo: "Segmento", largura: "25%" },
+  { titulo: "Cidade", largura: "25%" },
+];
 
 export default async function MeusClientesPage() {
   const ctx = await exigirAcessoARota("/meus-clientes");
   const clientes = await listarClientesContextuais(ctx);
 
   return (
-    <div className="w-full max-w-[1000px]">
-      <h1 className="text-[28px]">Clientes</h1>
-      <p className="mt-1.5 text-[15px] text-cinza">
-        {clientes.length === 0 ? "Nenhum cliente relacionado às suas atribuições." : `${clientes.length} ${clientes.length === 1 ? "cliente acessível" : "clientes acessíveis"}.`}
-      </p>
+    <div className="w-full max-w-[1280px]">
+      <h1 className="text-2xl">Clientes</h1>
+      <p className="mt-1 text-sm text-cinza">Clientes dos projetos e tarefas em que você atua.</p>
+      <p className="mb-2.5 mt-5 text-[13px] tabular-nums text-cinza">{clientes.length} {clientes.length === 1 ? "cliente" : "clientes"}</p>
 
       {clientes.length === 0 ? (
-        <div className="mt-8 border border-dashed border-linha bg-branco px-8 py-14 text-center text-[15px] text-cinza">
-          Nenhum cliente está relacionado às suas atribuições ainda.
-        </div>
+        <Vazio titulo="Nenhum cliente por enquanto." descricao="Nenhum cliente está relacionado às suas atribuições ainda." />
       ) : (
-        <>
-        <ul className="mt-7 flex flex-col gap-3 md:hidden">
-          {clientes.map((cliente) => (
-            <li key={cliente.id}>
-              <Link href={`/meus-clientes/${cliente.id}`} className="block rounded-controle border border-linha bg-branco px-4 py-4 font-[family-name:var(--font-interface)] hover:border-azul">
-                <p className="break-words text-[15px] font-medium text-tinta">{cliente.razaoSocial}</p>
-                <p className="mt-1 font-[family-name:var(--font-interface)] text-[12px] font-semibold tracking-[0.04em] text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p>
-                <p className="mt-1 text-[14px] tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Documento não informado" : documentoCliente(cliente)}</p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <Etiqueta>{cliente.segmento}</Etiqueta>
-                  <span className="text-[14px] text-cinza">{cliente.municipio ?? "Cidade não informada"}</span>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <table className="mt-7 hidden w-full table-fixed border-collapse font-[family-name:var(--font-interface)] text-[14px] md:table"><caption className="sr-only">Clientes acessíveis</caption><colgroup><col className="w-[35%]" /><col className="w-[25%]" /><col className="w-[20%]" /><col className="w-[20%]" /></colgroup>
-          <thead><tr className="bg-papel text-left text-cinza"><th className="rounded-l-[3px] px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Razão social</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">CNPJ/CPF</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Segmento</th><th className="px-5 py-3 text-[11.5px] font-semibold tracking-[0.06em] uppercase">Cidade</th></tr></thead>
-          <tbody>{clientes.map((cliente) => <tr key={cliente.id} className="border-t border-linha bg-branco transition-colors hover:bg-papel"><td className="break-words px-5 py-4 font-medium text-tinta"><Link href={`/meus-clientes/${cliente.id}`} className="hover:text-azul-esc">{cliente.razaoSocial}</Link><p className="mt-1 text-[12px] font-semibold tabular-nums text-azul-esc">ID {numeroCliente(cliente.numeroIdentificacao)}</p></td><td className="break-all px-5 py-4 tabular-nums text-cinza">{documentoCliente(cliente) === "—" ? "Documento não informado" : documentoCliente(cliente)}</td><td className="px-5 py-4"><Etiqueta>{cliente.segmento}</Etiqueta></td><td className="px-5 py-4 text-cinza">{cliente.municipio ?? "Cidade não informada"}</td></tr>)}</tbody>
-        </table>
-        </>
+        <TabelaLista rotulo="Clientes acessíveis" colunas={COLUNAS}>
+          {clientes.map((cliente) => {
+            const documento = documentoCliente(cliente);
+            return (
+              <LinhaLista key={cliente.id}>
+                <CelulaLista rotulo="ID"><span className="font-semibold tabular-nums text-ink">{numeroCliente(cliente.numeroIdentificacao)}</span></CelulaLista>
+                <CelulaLista larga>
+                  <TituloLinha href={`/meus-clientes/${cliente.id}`}>{cliente.razaoSocial}</TituloLinha>
+                  <TextoSecundario><span className="tabular-nums">{documento === "—" ? "Documento não informado" : documento}</span></TextoSecundario>
+                </CelulaLista>
+                <CelulaLista rotulo="Segmento">{cliente.segmento ? <TextoPrincipal>{cliente.segmento}</TextoPrincipal> : <NaoInformado />}</CelulaLista>
+                <CelulaLista rotulo="Cidade">{cliente.municipio ? <TextoPrincipal>{cliente.municipio}</TextoPrincipal> : <NaoInformado />}</CelulaLista>
+              </LinhaLista>
+            );
+          })}
+        </TabelaLista>
       )}
     </div>
   );

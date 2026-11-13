@@ -1,54 +1,88 @@
 /**
  * Página da rota `src/app/(painel)/minhas-tarefas/page.tsx`. Recebe os parâmetros da URL ou da rota, valida o acesso no servidor, obtém os dados necessários e compõe a resposta visual; as regras de negócio permanecem nas funções de domínio chamadas por ela.
  */
-import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarTarefasAtribuidas } from "@/lib/projetos-tarefas";
-import { Etiqueta } from "@/ui/campo";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
-import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
-import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
-import { IndicadorConclusao } from "@/ui/indicador-conclusao";
+import { calcularDiasRestantes } from "@/lib/datas";
 import { codigoTarefa } from "@/lib/identificadores-hierarquicos";
+import { contarSituacoes, interpretarSituacao, rotulosSituacao, situacaoDoPrazo } from "@/lib/situacao-prazo";
+import { BotoesSituacao } from "@/ui/botoes-situacao";
+import { CelulaLista, CelulaPrazo, LinhaLista, StatusPonto, TabelaLista, TextoPrincipal, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
+
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
-export default async function MinhasTarefasPage() {
+
+const COLUNAS = [
+  { titulo: "Tarefa", largura: "36%" },
+  { titulo: "Projeto e cliente", largura: "26%" },
+  { titulo: "Prazo", largura: "16%" },
+  { titulo: "Status", largura: "22%" },
+];
+
+export default async function MinhasTarefasPage({ searchParams }: { searchParams: Promise<{ situacao?: string | string[] }> }) {
   const ctx = await exigirAcessoARota("/minhas-tarefas");
+  const { situacao: situacaoParametro } = await searchParams;
   const [tarefas, limites] = await Promise.all([
     listarTarefasAtribuidas(ctx),
     buscarLimitesSemaforo(ctx),
   ]);
 
+  // Cada tarefa recebe sua situação de prazo; as contagens dos botões usam a lista inteira.
+  const situacaoFiltro = interpretarSituacao(situacaoParametro);
+  const itens = tarefas.map((tarefa) => ({
+    tarefa,
+    situacao: situacaoDoPrazo(
+      { diasRestantes: tarefa.prazo ? calcularDiasRestantes(tarefa.prazo) : null, fechado: tarefa.status === "CONCLUIDO" || tarefa.status === "CANCELADO" },
+      limites.diasAmareloAte,
+    ),
+  }));
+  const contagens = contarSituacoes(itens.map((item) => item.situacao));
+  // Tarefas abertas vêm antes das concluídas e canceladas, mantendo a ordem de prazo da consulta.
+  const visiveis = (situacaoFiltro === "todos" ? itens : itens.filter((item) => item.situacao === situacaoFiltro))
+    .sort((a, b) => Number(a.situacao === "fechado") - Number(b.situacao === "fechado"));
+
   return (
     <div className="w-full max-w-[1280px]">
-      <h1 className="text-[24px] sm:text-[28px]">Minhas tarefas</h1>
-      <p className="mt-1.5 text-[15px] text-cinza">O que precisa da sua atenção, em ordem de prazo.</p>
-      {tarefas.length === 0 ? (
-        <div className="mt-7 rounded-cartao border border-linha bg-branco px-6 py-14 text-center text-[15px] text-cinza">
-          Nenhuma tarefa atribuída a você ainda.
-        </div>
+      <h1 className="text-2xl">Minhas tarefas</h1>
+      <p className="mt-1 text-sm text-cinza">Tarefas em que você é o responsável, em ordem de prazo.</p>
+
+      <BotoesSituacao
+        key={situacaoFiltro}
+        rota="/minhas-tarefas"
+        rotulos={rotulosSituacao(limites.diasAmareloAte)}
+        contagens={contagens}
+        situacaoInicial={situacaoFiltro}
+        total={visiveis.length}
+        singular="tarefa"
+        plural="tarefas"
+      />
+
+      {visiveis.length === 0 ? (
+        <Vazio
+          titulo={tarefas.length === 0 ? "Nenhuma tarefa atribuída a você ainda." : "Nenhuma tarefa nesta seleção."}
+          descricao={tarefas.length === 0 ? "Quando uma tarefa for atribuída a você, ela aparece aqui." : "Ajuste o filtro de situação."}
+        />
       ) : (
-        <div className="mt-7 overflow-hidden rounded-cartao border border-linha bg-branco">
-          {tarefas.map((t) => {
-            const progresso = t.subtarefas.length
-              ? calcularPercentualConclusao(t.subtarefas)
-              : calcularPercentualConclusao([{ ativo: true, status: t.status }]);
-            return (
-              <Link href={`/minhas-tarefas/${t.id}`} key={t.id} className="flex min-h-11 flex-col gap-4 border-b border-linha px-5 py-4 hover:bg-papel last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="break-words text-[15px] font-semibold text-tinta">{t.nome}</p>
-                  <p className="mt-1 break-all text-[12px] tabular-nums text-cinza">ID {codigoTarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal)}</p>
-                  <p className="mt-1 break-words text-[14px] text-cinza">{t.projeto.cliente.razaoSocial} · {t.projeto.nome}</p>
-                  <p className="mt-2 text-[13px] text-cinza">Progresso: <IndicadorConclusao indicador={progresso} detalhado />{t.subtarefas.length ? " subtarefas" : ""}</p>
-                  {t._count.subtarefas > 0 && <p className="mt-1 text-[12px] font-medium text-ambar">{t._count.subtarefas} {t._count.subtarefas === 1 ? "subtarefa aguarda" : "subtarefas aguardam"} atribuição</p>}
-                </div>
-                <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-                  <span className="text-[13px] text-cinza"><span className="block text-[11px]">Prazo</span><IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} /></span>
-                  <Etiqueta tom={t.status === "CONCLUIDO" ? "positivo" : undefined}>{status[t.status]}</Etiqueta>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <TabelaLista rotulo="Tabela de minhas tarefas" colunas={COLUNAS}>
+          {visiveis.map(({ tarefa: t }) => (
+            <LinhaLista key={t.id}>
+              <CelulaLista larga>
+                <TituloLinha href={`/minhas-tarefas/${t.id}`}>{t.nome}</TituloLinha>
+                <TextoSecundario>
+                  <span className="tabular-nums text-faint">{codigoTarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal)}</span>
+                  {t.subtarefas.length > 0 && <span className="tabular-nums"> · {t.subtarefas.filter((s) => s.status === "CONCLUIDO").length}/{t.subtarefas.length} subtarefas</span>}
+                </TextoSecundario>
+                {t._count.subtarefas > 0 && <span className="mt-px block text-[12.5px] text-ambar">{t._count.subtarefas} {t._count.subtarefas === 1 ? "subtarefa aguarda" : "subtarefas aguardam"} atribuição</span>}
+              </CelulaLista>
+              <CelulaLista larga>
+                <TextoPrincipal>{t.projeto.nome}</TextoPrincipal>
+                <TextoSecundario>{t.projeto.cliente.razaoSocial}</TextoSecundario>
+              </CelulaLista>
+              <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={t.prazo} status={t.status} ativo limites={limites} /></CelulaLista>
+              <CelulaLista rotulo="Status"><StatusPonto status={t.status}>{status[t.status] ?? t.status}</StatusPonto></CelulaLista>
+            </LinhaLista>
+          ))}
+        </TabelaLista>
       )}
     </div>
   );
