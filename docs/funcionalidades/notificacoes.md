@@ -44,8 +44,8 @@ As caixas de notificações são apresentadas como **Avisos** no menu e no títu
 - **Sino:** ADMIN, ADMIN_INTERNO e ADMIN_EXTERNO acessam a própria caixa pelo menu. Para
   ADMIN, o sino mostra também o contador de não lidas e abre `/notificacoes`. Não há prévia
   suspensa. Avisos in-app novos aparecem como toast no canto inferior direito; ao entrar no
-  painel, um toast resume a quantidade de não lidas. Abrir a central marca as não lidas da
-  própria conta como lidas.
+  painel, um toast resume a quantidade de não lidas. **Abrir a central não marca nada como lido** (desde 16/11/2026): a pessoa
+  marca um aviso, ou todos com "Marcar todos como lidos", e pode desfazer com "Marcar como não lido". O contador do sino só baixa quando ela marca.
 - Em telas estreitas, o texto do aviso e a data ocupam linhas próprias quando necessário.
   Nas preferências, o nome do evento fica acima dos controles quando falta espaço; E-mail,
   App e Salvar permanecem juntos e alinhados. Com largura suficiente, o nome fica à esquerda
@@ -67,7 +67,7 @@ mostra título, mensagem, horário, ícone por tipo, botão de fechar e barra de
 O relógio pausa quando o cartão recebe o mouse ou foco. No máximo três cartões aparecem ao
 mesmo tempo; os seguintes entram na fila. O resumo de entrada abre a central. Clicar num
 aviso individual marca somente aquele aviso como lido e abre seu registro; quando não há
-destino, abre a central. Abrir a central marca todas as não lidas próprias. Em múltiplas
+destino, abre a central. Abrir a central não altera a leitura. Em múltiplas
 abas, cada aba ativa recebe os avisos e sincroniza leituras.
 
 **Detalhes técnicos.** O evento `NOTIFY` do PostgreSQL é disparado depois do commit por
@@ -78,7 +78,7 @@ da janela recente depois de reconexão. A rota fecha a conexão ao desconectar o
 sessão. Estilos derivados: tarefa/projeto concluído (sucesso), prazo e solicitação (aviso),
 comentário e atribuição (informação); o estilo erro fica disponível sem evento atual.
 `ToastNotifications` é compartilhado pelo layout do painel; o resumo é único por sessão e
-reinicia quando uma nova autenticação começa. A central marca as próprias não lidas ao ser
+reinicia quando uma nova autenticação começa. A central não marca avisos como lidos ao ser
 aberta. Em desenvolvimento, ADMIN pode usar “Gerar toasts de demonstração” na central para
 mostrar os quatro estilos na aba atual. Os exemplos são temporários no navegador, não entram
 no banco e não alteram contador, e-mail ou SSE. Cada clique substitui os exemplos anteriores.
@@ -172,6 +172,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 | Data | Commit | Alteração |
 |---|---|---|
 | 2026-11-16 | este commit | Botão "Marcar como não lido" nos avisos já lidos (`marcarNotificacaoNaoLida`, só da própria conta) |
+| 2026-11-16 | este commit | Abrir a central deixa de marcar todos os avisos como lidos; o sinal em tempo real passa a informar a operação (migration `20261116120000_notificacao_operacao_no_sinal`), para um aviso marcado como não lido voltar à caixa e ao contador sem abrir toast |
 | 2026-11-16 | este commit | Textos de leitura no masculino, como no protótipo: "Marcar todos como lidos" e "Marcar como lido" |
 | 2026-11-12 | este commit | Ajustar o destaque de avisos não lidos |
 | 2026-11-10 | este commit | Iniciar adaptação visual das caixas de avisos |

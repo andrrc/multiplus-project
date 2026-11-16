@@ -51,7 +51,15 @@ test("Talita recebe resumo inicial, toasts em tempo real e pode abrir a central"
   await resumo.click();
   await expect(page).toHaveURL(/\/notificacoes$/);
   await expect(page.getByText("Conclusão aguardando confirmação")).toBeVisible();
-  await expect.poll(async () => (await db.notificacao.findFirst({ where: { usuarioId, titulo: "Conclusão aguardando confirmação" } }))?.lida).toBe(true);
+  // Abrir a central não marca nada como lido: o aviso continua não lido até a pessoa marcá-lo, e ela pode desfazer.
+  await page.waitForTimeout(1000);
+  const lidaNoBanco = async () => (await db.notificacao.findFirst({ where: { usuarioId, titulo: "Conclusão aguardando confirmação" } }))?.lida;
+  expect(await lidaNoBanco()).toBe(false);
+  const aviso = page.getByRole("listitem").filter({ hasText: "Conclusão aguardando confirmação" });
+  await aviso.getByRole("button", { name: "Marcar como lido" }).click();
+  await expect.poll(lidaNoBanco).toBe(true);
+  await aviso.getByRole("button", { name: "Marcar como não lido" }).click();
+  await expect.poll(lidaNoBanco).toBe(false);
 
   const totalAntesDaDemonstracao = await db.notificacao.count({ where: { usuarioId } });
   const gerarToasts = page.getByRole("button", { name: "Gerar toasts de demonstração" });
@@ -118,5 +126,8 @@ test("Talita recebe resumo inicial, toasts em tempo real e pode abrir a central"
   await expect(page.getByRole("button", { name: "Gerar toasts de demonstração" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await expect(page.getByText("Um colaborador solicitou a conclusão de uma tarefa de teste.")).toBeVisible();
+  // O contador só zera quando a pessoa marca os avisos como lidos.
+  expect(await db.notificacao.count({ where: { usuarioId, lida: false } })).toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Marcar todos como lidos" }).click();
   await expect.poll(async () => db.notificacao.count({ where: { usuarioId, lida: false } })).toBe(0);
 });

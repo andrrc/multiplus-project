@@ -93,9 +93,11 @@ export function idDaNotificacaoDoUsuario(payload: string, usuarioId: string) {
 
 export function sinalNotificacaoDoUsuario(payload: string, usuarioId: string) {
   try {
-    const aviso = JSON.parse(payload) as { id?: unknown; usuarioId?: unknown; lida?: unknown };
+    const aviso = JSON.parse(payload) as { id?: unknown; usuarioId?: unknown; lida?: unknown; operacao?: unknown };
     if (aviso.usuarioId !== usuarioId || typeof aviso.id !== "string" || typeof aviso.lida !== "boolean") return null;
-    return { id: aviso.id, lida: aviso.lida };
+    // `nova` só quando o aviso acabou de ser criado: "não lido" por atualização (a pessoa desfez a leitura) não abre toast.
+    // Sinais sem o campo (anteriores à migration) seguem tratados como novos.
+    return { id: aviso.id, lida: aviso.lida, nova: aviso.operacao !== "UPDATE" };
   } catch {
     return null;
   }

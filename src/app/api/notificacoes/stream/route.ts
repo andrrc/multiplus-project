@@ -80,7 +80,8 @@ export async function GET(request: Request) {
         if (sinal.lida) {
           enviados.delete(sinal.id);
           escrever(`event: notificacao-lida\ndata: ${JSON.stringify({ id: sinal.id })}\n\n`);
-        } else {
+        } else if (sinal.nova) {
+          // Aviso que a pessoa marcou como não lido volta à caixa e ao contador, mas não abre toast.
           void emitirItem(sinal.id);
         }
       };

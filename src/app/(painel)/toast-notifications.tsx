@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { IconAlertCircle, IconAlertTriangle, IconCircleCheck, IconInfoCircle, IconX } from "@tabler/icons-react";
 import type { Perfil } from "@prisma/client";
 import { formatarDataHoraBrasilia } from "@/lib/datas";
 import { criarAmostrasToastDemonstracao, enfileirarToast, EVENTO_GERAR_TOASTS_DEMONSTRACAO, rotaCentralNotificacoes, rotaSeguraDoToast, substituirAmostrasToast, textoResumoNotificacoes, tipoToastDoEvento, toastsVisiveis, type NotificacaoToast, type TipoToast } from "@/lib/notificacoes-toasts";
-import { marcarNotificacaoLidaAction, marcarTodasNotificacoesLidasAction } from "./notificacoes/actions";
+import { marcarNotificacaoLidaAction } from "./notificacoes/actions";
 
 type Toast = NotificacaoToast & { resumo?: boolean; demonstracao?: boolean; tipoVisual?: TipoToast };
 
@@ -165,9 +165,7 @@ export function ToastNotifications({
   demoDisponivel: boolean;
 }) {
   const [fila, setFila] = useState<Toast[]>([]);
-  const pathname = usePathname();
   const idsRecebidos = useRef(new Set<string>());
-  const centraisVisitadas = useRef(new Set<string>());
 
   const adicionar = useCallback((toast: Toast) => {
     if (idsRecebidos.current.has(toast.id)) return;
@@ -218,33 +216,6 @@ export function ToastNotifications({
       }
     }
   }, [adicionar, naoLidasIniciais, usuarioId, versaoSessao]);
-
-  useEffect(() => {
-    const chave = `mplus-central-visit:${usuarioId}:${versaoSessao}`;
-    const caminhoCentral = rotaCentralNotificacoes(perfil);
-    if (pathname !== caminhoCentral) {
-      centraisVisitadas.current.delete(chave);
-      try {
-        sessionStorage.removeItem(chave);
-      } catch {
-        // A deduplicação em memória continua valendo quando o navegador bloqueia storage.
-      }
-      return;
-    }
-
-    if (centraisVisitadas.current.has(chave)) return;
-    try {
-      if (sessionStorage.getItem(chave) === "aberta") {
-        centraisVisitadas.current.add(chave);
-        return;
-      }
-      sessionStorage.setItem(chave, "aberta");
-    } catch {
-      // O marcador em memória evita chamadas repetidas durante a visita atual.
-    }
-    centraisVisitadas.current.add(chave);
-    void marcarTodasNotificacoesLidasAction();
-  }, [pathname, perfil, usuarioId, versaoSessao]);
 
   useEffect(() => {
     const conexao = new EventSource("/api/notificacoes/stream");

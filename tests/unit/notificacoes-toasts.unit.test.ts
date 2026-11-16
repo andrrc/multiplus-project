@@ -1,6 +1,6 @@
 /** RF-023 — apresentação, destino seguro, resumo e isolamento do sinal de toast. */
 import { describe, expect, it } from "vitest";
-import { criarAmostrasToastDemonstracao, enfileirarToast, tipoToastDoEvento, rotaCentralNotificacoes, rotaSeguraDoToast, textoResumoNotificacoes, toastsVisiveis, idDaNotificacaoDoUsuario, podeGerarToastsDemonstracao, substituirAmostrasToast } from "@/lib/notificacoes-toasts";
+import { sinalNotificacaoDoUsuario, criarAmostrasToastDemonstracao, enfileirarToast, tipoToastDoEvento, rotaCentralNotificacoes, rotaSeguraDoToast, textoResumoNotificacoes, toastsVisiveis, idDaNotificacaoDoUsuario, podeGerarToastsDemonstracao, substituirAmostrasToast } from "@/lib/notificacoes-toasts";
 
 describe("toasts de notificações", () => {
   it("associa os eventos aos estilos sem acrescentar um tipo persistido", () => {
@@ -63,5 +63,23 @@ describe("toasts de notificações", () => {
       { id: "real", demonstracao: false },
       { id: "demo-nova", demonstracao: true },
     ]);
+  });
+});
+
+describe("sinal de aviso do banco", () => {
+  const sinal = (extra: Record<string, unknown>) => JSON.stringify({ id: "n1", usuarioId: "u1", lida: false, ...extra });
+
+  it("aviso criado é novo; mudança de leitura por atualização não é", () => {
+    expect(sinalNotificacaoDoUsuario(sinal({ operacao: "INSERT" }), "u1")).toEqual({ id: "n1", lida: false, nova: true });
+    expect(sinalNotificacaoDoUsuario(sinal({ operacao: "UPDATE" }), "u1")).toEqual({ id: "n1", lida: false, nova: false });
+  });
+
+  it("sinal sem operação, de antes da migration, segue tratado como novo", () => {
+    expect(sinalNotificacaoDoUsuario(sinal({}), "u1")?.nova).toBe(true);
+  });
+
+  it("ignora o aviso de outra conta e payload inválido", () => {
+    expect(sinalNotificacaoDoUsuario(sinal({ usuarioId: "outro" }), "u1")).toBeNull();
+    expect(sinalNotificacaoDoUsuario("não é json", "u1")).toBeNull();
   });
 });
