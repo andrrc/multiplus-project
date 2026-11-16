@@ -6,6 +6,7 @@ import { validarDadosLaudo, type DadosLaudoInput } from "@/lib/validacao-laudo";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { normalizarCnpj } from "@/lib/cnpj";
 import { normalizarCpf } from "@/lib/cpf";
+import { statusPortalDoCliente } from "@/lib/status-portal-cliente";
 import { enviarConviteDefinicaoSenha, type ResultadoConvite } from "@/lib/convites";
 import { prisma } from "@/lib/prisma";
 import { limparDadosPessoa, type DadosPessoa } from "@/lib/heranca-pessoa";
@@ -182,31 +183,55 @@ export async function listarClientes(
   cidade?: string,
   incluirDesativados = false,
   laudo?: "com" | "sem",
+  segmento?: string,
 ) {
   exigirAdministradorClientes(ctx);
   if (laudo && ctx.perfil !== "ADMIN") throw new Error("RF-051: filtro de laudos restrito ao Administrador.");
-  return comContextoDeUsuario(ctx, (tx) =>
+  const termo = busca?.trim();
+  // Só digitar números procura também pelo ID do cliente; sem dígitos, CNPJ e CPF não entram na busca
+  // (um "contém vazio" casaria com todos os clientes que têm documento).
+  const digitosCnpj = termo ? normalizarCnpj(termo) : "";
+  const digitosCpf = termo ? normalizarCpf(termo) : "";
+  const idDoCliente = termo && /^\d{1,9}$/.test(termo) ? Number(termo) : null;
+  const clientes = await comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
       where: {
         AND: [
           incluirDesativados ? {} : { ativo: true },
-          busca
+          termo
             ? {
                 OR: [
-                  { razaoSocial: { contains: busca, mode: "insensitive" } },
-                  { cnpj: { contains: normalizarCnpj(busca) } },
-                  { cpf: { contains: normalizarCpf(busca) } },
-                  { municipio: { contains: busca, mode: "insensitive" } },
+                  { razaoSocial: { contains: termo, mode: "insensitive" } },
+                  ...(digitosCnpj ? [{ cnpj: { contains: digitosCnpj } }] : []),
+                  ...(digitosCpf ? [{ cpf: { contains: digitosCpf } }] : []),
+                  { municipio: { contains: termo, mode: "insensitive" } },
+                  ...(idDoCliente !== null ? [{ numeroIdentificacao: idDoCliente }] : []),
                 ],
               }
             : {},
           cidade ? { municipio: cidade } : {},
+          segmento ? { segmento } : {},
           laudo === "com" ? { laudoTecnico: { is: { ativo: true } } } : laudo === "sem" ? { OR: [{ laudoTecnico: { is: null } }, { laudoTecnico: { is: { ativo: false } } }] } : {},
         ],
+      },
+      include: {
+        _count: { select: { projetos: { where: { ativo: true } } } },
+        // Só para derivar a situação do portal; o hash da senha não sai desta função.
+        usuarios: { where: { perfil: "CLIENTE" }, select: { ativo: true, senhaHash: true } },
       },
       orderBy: { numeroIdentificacao: "asc" },
     }),
   );
+  return clientes.map(({ usuarios, _count, ...cliente }) => ({ ...cliente, projetosAtivos: _count.projetos, portal: statusPortalDoCliente(usuarios) }));
+}
+
+/** Segmentos que já têm cliente ativo cadastrado, para o filtro da lista. */
+export async function listarSegmentosComCliente(ctx: ContextoUsuario): Promise<string[]> {
+  exigirAdministradorClientes(ctx);
+  const clientes = await comContextoDeUsuario(ctx, (tx) =>
+    tx.cliente.findMany({ where: { ativo: true }, distinct: ["segmento"], select: { segmento: true }, orderBy: { segmento: "asc" } }),
+  );
+  return clientes.map((c) => c.segmento).filter(Boolean);
 }
 
 /** RF-003 — cidades pra popular o dropdown do painel; só as que já têm cliente cadastrado. */

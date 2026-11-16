@@ -35,9 +35,10 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 ### U1. Listar usuários (RF-040)
 
 **Como funciona.**
-- **Colunas:** nome (com e-mail e cargo), perfil, o que acessa, situação do acesso e ações. A linha inteira abre o
+- **Colunas:** nome (com e-mail e cargo), perfil, **empresa**, o que acessa, situação do acesso e ações. A linha inteira abre o
   usuário e vira cartão no celular.
-- **Filtros:** busca enquanto se digita, botões de perfil com contagem, situação do acesso e "Mostrar desativados".
+- **Filtros:** busca enquanto se digita (nome, e-mail, cargo ou empresa), filtro por empresa, botões de perfil com contagem (inclui **Cliente**), situação do acesso e "Mostrar desativados".
+- **Empresa e clientes (16/11/2026):** a lista inclui os acessos do perfil Cliente, só para leitura: o nome abre a ficha do cliente e a ação é "Ver cliente" (o acesso do cliente continua sendo gerido na ficha, RF-029/RF-031). A empresa é a Múltiplus Ambiental para a equipe, o cliente para o portal e para colaboradores externos que vieram de uma pessoa envolvida.
   A contagem dos botões considera a busca e a situação escolhidas.
 - **Situação do acesso:** Ativo, Pendente de ativação ou Desativado.
 - **Alcance:** "Acesso total" para a Administradora, ou as atribuições do colaborador.
@@ -134,12 +135,13 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 | # | Situação | Efeito |
 |---|---|---|
 | — | Não há limitação conhecida para desativação ou atualização de perfil durante uma sessão aberta. | — |
-| L1 | A lista e o cadastro seguem o protótipo `07-usuarios` só no visual (13/11/2026). | Faltam a lista única que inclui clientes e colaboradores externos, os filtros por empresa, a coluna "Último acesso" e a escolha da empresa antes do perfil no cadastro: dependem de dados e regras novas. |
+| L1 | A lista e o cadastro seguem o protótipo `07-usuarios`. | Faltam a coluna "Último acesso" e a escolha da empresa antes do perfil no cadastro: dependem de dados e regras novas. |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Lista com coluna e filtro de empresa, busca por empresa e acessos de cliente em modo leitura |
 | 2026-11-11 | este commit | Adaptar a listagem responsiva de usuários |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de usuários |
 | 2026-10-27 | este commit | Ocultar “Minhas atribuições” do perfil CLIENTE; o acesso do cliente continua pelo portal |
