@@ -4,7 +4,8 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarUsuarios, ROTULO_STATUS, type UsuarioDaListagem } from "@/lib/usuarios";
 import { Etiqueta } from "@/ui/campo";
 import { botaoPrimario } from "@/ui/botoes";
-import { CelulaLista, LinhaLista, StatusPonto, TabelaLista, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
+import { NaoInformado } from "@/ui/cartao";
+import { CelulaLista, LinhaLista, StatusPonto, TabelaLista, TextoPrincipal, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
 import {
   BotaoDesativarUsuario,
   BotaoGerarLinkConvite,
@@ -20,15 +21,16 @@ const NOME_PERFIL: Record<Perfil, string> = {
   CLIENTE: "Cliente",
 };
 
-const PERFIS_FILTRAVEIS: Perfil[] = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO"];
+const PERFIS_FILTRAVEIS: Perfil[] = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", "CLIENTE"];
 const SITUACOES_FILTRAVEIS = ["ativo", "pendente", "desativado"] as const;
 
 const COLUNAS = [
-  { titulo: "Nome", largura: "26%" },
-  { titulo: "Perfil", largura: "16%" },
-  { titulo: "O que acessa", largura: "20%" },
-  { titulo: "Situação", largura: "15%" },
-  { titulo: "Ações", largura: "23%" },
+  { titulo: "Nome", largura: "23%" },
+  { titulo: "Perfil", largura: "13%" },
+  { titulo: "Empresa", largura: "17%" },
+  { titulo: "O que acessa", largura: "17%" },
+  { titulo: "Situação", largura: "13%" },
+  { titulo: "Ações", largura: "17%" },
 ];
 
 /**
@@ -39,6 +41,10 @@ const COLUNAS = [
 function Atribuicoes({ usuario }: { usuario: UsuarioDaListagem }) {
   if (usuario.perfil === "ADMIN") {
     return <span className="text-cinza">Acesso total</span>;
+  }
+
+  if (usuario.perfil === "CLIENTE") {
+    return <span className="text-ink">Portal do cliente</span>;
   }
 
   if (usuario.totalAtribuicoes === 0) {
@@ -106,10 +112,11 @@ export default async function UsuariosPage({
     situacao?: string;
     desativados?: string;
     convite?: string;
+    empresa?: string;
   }>;
 }) {
   const ctx = await exigirAcessoARota("/usuarios");
-  const { busca, perfil, situacao, desativados, convite } = await searchParams;
+  const { busca, perfil, situacao, desativados, convite, empresa } = await searchParams;
 
   const perfilFiltrado = PERFIS_FILTRAVEIS.find((p) => p === perfil);
   const situacaoFiltrada = SITUACOES_FILTRAVEIS.find((s) => s === situacao);
@@ -117,10 +124,12 @@ export default async function UsuariosPage({
 
   // A consulta traz todos os perfis da equipe; o perfil e a situação são aplicados aqui para que
   // os botões de perfil mostrem a contagem de cada um dentro da busca atual.
-  const todos = await listarUsuarios(ctx, { busca, incluirDesativados });
-  const naSituacao = situacaoFiltrada
-    ? todos.filter((usuario) => usuario.status.toLowerCase() === situacaoFiltrada)
-    : todos;
+  const todos = await listarUsuarios(ctx, { busca, incluirDesativados, incluirClientes: true });
+  const empresas = [...new Set(todos.map((usuario) => usuario.empresa).filter((nome): nome is string => !!nome))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const empresaFiltrada = empresas.find((nome) => nome === empresa);
+  const naSituacao = todos
+    .filter((usuario) => !situacaoFiltrada || usuario.status.toLowerCase() === situacaoFiltrada)
+    .filter((usuario) => !empresaFiltrada || usuario.empresa === empresaFiltrada);
   const usuarios = perfilFiltrado ? naSituacao.filter((usuario) => usuario.perfil === perfilFiltrado) : naSituacao;
   const opcoesPerfil = [
     { valor: "", rotulo: "Todos", total: naSituacao.length },
@@ -132,7 +141,7 @@ export default async function UsuariosPage({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl">Usuários</h1>
-          <p className="mt-1 text-sm text-cinza">Pessoas da equipe com acesso ao sistema.</p>
+          <p className="mt-1 text-sm text-cinza">Equipe e clientes com acesso ao sistema.</p>
         </div>
         <Link href="/usuarios/novo" className={botaoPrimario}>+ Novo usuário</Link>
       </div>
@@ -140,10 +149,12 @@ export default async function UsuariosPage({
       <RetornoConvite convite={convite} />
 
       <FiltrosUsuarios
-        key={`${busca ?? ""}|${perfilFiltrado ?? ""}|${situacaoFiltrada ?? ""}|${incluirDesativados}`}
+        key={`${perfilFiltrado ?? ""}|${situacaoFiltrada ?? ""}|${empresaFiltrada ?? ""}|${incluirDesativados}`}
         buscaInicial={busca ?? ""}
         perfilInicial={perfilFiltrado ?? ""}
         situacaoInicial={situacaoFiltrada ?? ""}
+        empresaInicial={empresaFiltrada ?? ""}
+        empresas={empresas}
         desativadosInicial={incluirDesativados}
         opcoesPerfil={opcoesPerfil}
         total={usuarios.length}
@@ -151,7 +162,7 @@ export default async function UsuariosPage({
 
       {usuarios.length === 0 ? (
         <Vazio
-          titulo={busca || perfilFiltrado || situacaoFiltrada ? "Nenhum usuário corresponde a esse filtro." : "Nenhum usuário além de você."}
+          titulo={busca || perfilFiltrado || situacaoFiltrada || empresaFiltrada ? "Nenhum usuário corresponde a esse filtro." : "Nenhum usuário além de você."}
           descricao="Ajuste a busca ou os filtros, ou cadastre uma pessoa da equipe."
         />
       ) : (
@@ -159,22 +170,30 @@ export default async function UsuariosPage({
           {usuarios.map((usuario) => (
             <LinhaLista key={usuario.id}>
               <CelulaLista larga>
-                <TituloLinha href={`/usuarios/${usuario.id}`}>{usuario.nome}</TituloLinha>
+                <TituloLinha href={usuario.perfil === "CLIENTE" && usuario.clienteId ? `/clientes/${usuario.clienteId}` : `/usuarios/${usuario.id}`}>{usuario.nome}</TituloLinha>
                 <TextoSecundario>{usuario.email}</TextoSecundario>
                 {usuario.cargo && <TextoSecundario>{usuario.cargo}</TextoSecundario>}
-                {usuario.origemPessoaEnvolvida && <TextoSecundario>Pessoa envolvida de {usuario.origemPessoaEnvolvida.cliente}</TextoSecundario>}
+                {usuario.origemPessoaEnvolvida && <TextoSecundario>Pessoa envolvida</TextoSecundario>}
               </CelulaLista>
               <CelulaLista rotulo="Perfil"><span>{NOME_PERFIL[usuario.perfil]}</span></CelulaLista>
+              <CelulaLista rotulo="Empresa">{usuario.empresa ? <TextoPrincipal>{usuario.empresa}</TextoPrincipal> : <NaoInformado />}</CelulaLista>
               <CelulaLista rotulo="O que acessa"><Atribuicoes usuario={usuario} /></CelulaLista>
               <CelulaLista rotulo="Situação"><StatusPonto status={usuario.status}>{ROTULO_STATUS[usuario.status]}</StatusPonto></CelulaLista>
               <CelulaLista larga>
                 {/* Acima do link esticado do nome, para os botões continuarem clicáveis. */}
+                {usuario.perfil === "CLIENTE" ? (
+                  // O acesso do cliente é gerido na ficha do cliente (RF-029/RF-031), não nesta lista.
+                  <div className="relative z-10">
+                    {usuario.clienteId && <Link href={`/clientes/${usuario.clienteId}`} className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline md:min-h-8">Ver cliente</Link>}
+                  </div>
+                ) : (
                 <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1">
                   <Link href={`/usuarios/${usuario.id}/editar`} className="inline-flex min-h-11 items-center font-[family-name:var(--font-interface)] text-[13.5px] font-medium text-azul-esc hover:underline md:min-h-8">Editar dados</Link>
                   {usuario.status === "PENDENTE" && <BotaoGerarLinkConvite usuarioId={usuario.id} />}
                   {usuario.status === "PENDENTE" && <BotaoReenviarConvite usuarioId={usuario.id} />}
                   <BotaoDesativarUsuario usuarioId={usuario.id} nome={usuario.nome} ativo={usuario.ativo} />
                 </div>
+                )}
               </CelulaLista>
             </LinhaLista>
           ))}

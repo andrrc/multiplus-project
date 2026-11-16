@@ -17,7 +17,7 @@ export default async function MinhasNotificacoesPage({ searchParams }: { searchP
   return <div className="w-full max-w-[900px]">
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <h1 className="text-2xl">Avisos</h1>
-      {naoLidas > 0 && <form action={marcarTodasNotificacoesLidasAction}><button className={botaoSecundario}>Marcar todas como lidas</button></form>}
+      {naoLidas > 0 && <form action={marcarTodasNotificacoesLidasAction}><button className={botaoSecundario}>Marcar todos como lidos</button></form>}
     </div>
     <FiltrosAvisos
       key={`${apenasNaoLidos}|${tipo}`}

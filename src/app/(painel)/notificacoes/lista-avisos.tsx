@@ -64,7 +64,7 @@ export function ListaAvisos({ itens, filtrado }: { itens: ItemAviso[]; filtrado:
               const estilo = ESTILO_EVENTO[item.evento];
               return (
                 <li key={item.id} className={`relative grid grid-cols-[36px_minmax(0,1fr)] gap-x-3.5 gap-y-2 border-t border-linha px-5 py-3.5 first:border-t-0 sm:grid-cols-[36px_minmax(0,1fr)_auto] sm:items-start ${item.lida ? "" : "bg-azul-cl/40"}`}>
-                  {!item.lida && <span role="img" aria-label="Não lida" className="absolute left-2 top-7 size-[7px] rounded-full bg-azul" />}
+                  {!item.lida && <span role="img" aria-label="Não lido" className="absolute left-2 top-7 size-[7px] rounded-full bg-azul" />}
                   <span aria-hidden="true" className={`flex size-9 items-center justify-center rounded-cartao ${estilo.cores}`}>{estilo.icone}</span>
                   <div className="min-w-0">
                     <p className={`break-words text-[13px] ${item.lida ? "text-cinza" : "font-semibold text-ink"}`}>{ROTULO_EVENTO[item.evento]}</p>
@@ -76,7 +76,7 @@ export function ListaAvisos({ itens, filtrado }: { itens: ItemAviso[]; filtrado:
                     {item.url && <Link href={item.url} className={botaoSecundarioPequeno}>Abrir registro</Link>}
                     {!item.lida && (
                       <form action={marcarNotificacaoLidaAction.bind(null, item.id)}>
-                        <button className={botaoDiscretoPequeno}>Marcar como lida</button>
+                        <button className={botaoDiscretoPequeno}>Marcar como lido</button>
                       </form>
                     )}
                   </div>

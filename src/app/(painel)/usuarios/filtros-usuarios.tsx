@@ -1,27 +1,27 @@
 "use client";
 /**
- * Barra de filtros da lista de Usuários (protótipo 07-usuarios): busca que vale enquanto se
- * digita, botões de perfil com contagem, situação do acesso, "Mostrar desativados" e a linha
- * de resultado com "Limpar filtros". Cada escolha atualiza a URL e a página (servidor) refaz a lista.
+ * Barra de filtros da lista de Usuários (protótipo 07-usuarios): busca que vale enquanto se digita (nome, e-mail, cargo
+ * ou empresa), empresa, situação do acesso, botões de perfil com contagem, "Mostrar desativados" e a linha de
+ * resultado com "Limpar filtros". Cada escolha atualiza a URL e a página (servidor) refaz a lista.
  */
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-const ESPERA_DA_BUSCA_MS = 350;
+import { CampoBuscaLista } from "@/ui/campo-busca-lista";
 
 export type OpcaoFiltroPerfil = { valor: string; rotulo: string; total: number };
 
 const campoClasse = "h-11 w-full min-w-0 rounded-controle border border-linha-forte bg-branco px-3 font-[family-name:var(--font-interface)] text-sm text-ink focus:border-azul focus:outline-none focus:ring-[3px] focus:ring-azul/15 disabled:opacity-60 md:h-[38px]";
 
-type Estado = { busca: string; perfil: string; situacao: string; desativados: boolean };
+type Estado = { busca: string; perfil: string; situacao: string; empresa: string; desativados: boolean };
 
 function urlUsuarios(estado: Estado) {
   const parametros = new URLSearchParams();
   if (estado.busca.trim()) parametros.set("busca", estado.busca.trim());
   if (estado.perfil) parametros.set("perfil", estado.perfil);
   if (estado.situacao) parametros.set("situacao", estado.situacao);
+  if (estado.empresa) parametros.set("empresa", estado.empresa);
   if (estado.desativados) parametros.set("desativados", "1");
   const query = parametros.toString();
   return query ? `/usuarios?${query}` : "/usuarios";
@@ -31,56 +31,61 @@ export function FiltrosUsuarios({
   buscaInicial,
   perfilInicial,
   situacaoInicial,
+  empresaInicial,
   desativadosInicial,
   opcoesPerfil,
+  empresas,
   total,
 }: {
   buscaInicial: string;
   perfilInicial: string;
   situacaoInicial: string;
+  empresaInicial: string;
   desativadosInicial: boolean;
   /** Botões de perfil, na ordem de exibição; o primeiro (valor vazio) é "Todos". */
   opcoesPerfil: OpcaoFiltroPerfil[];
+  /** Empresas que aparecem na lista (a equipe, os clientes e as empresas das pessoas envolvidas). */
+  empresas: string[];
   total: number;
 }) {
   const router = useRouter();
   const [pendente, startTransition] = useTransition();
-  const [estado, setEstado] = useState<Estado>({ busca: buscaInicial, perfil: perfilInicial, situacao: situacaoInicial, desativados: desativadosInicial });
-  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [estado, setEstado] = useState<Estado>({ busca: buscaInicial, perfil: perfilInicial, situacao: situacaoInicial, empresa: empresaInicial, desativados: desativadosInicial });
 
-  // Cancela uma busca agendada se a barra sair da tela.
-  useEffect(() => () => { if (temporizador.current) clearTimeout(temporizador.current); }, []);
+  // "Limpar filtros" tira a busca da URL: o estado local acompanha, para os demais filtros não a reaplicarem.
+  const [buscaDaUrl, setBuscaDaUrl] = useState(buscaInicial);
+  if (buscaInicial !== buscaDaUrl) {
+    setBuscaDaUrl(buscaInicial);
+    if (buscaInicial === "") setEstado((atual) => ({ ...atual, busca: "" }));
+  }
 
   function aplicar(proximo: Estado) {
     setEstado(proximo);
     startTransition(() => router.push(urlUsuarios(proximo), { scroll: false }));
   }
 
-  function alterarBusca(valor: string) {
-    const proximo = { ...estado, busca: valor };
-    setEstado(proximo);
-    // Espera uma pausa na digitação para não consultar o servidor a cada letra.
-    if (temporizador.current) clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(() => aplicar(proximo), ESPERA_DA_BUSCA_MS);
-  }
-
-  const temFiltro = estado.busca.trim() !== "" || estado.perfil !== "" || estado.situacao !== "";
+  const temFiltro = estado.busca.trim() !== "" || estado.perfil !== "" || estado.situacao !== "" || estado.empresa !== "";
 
   return (
     <div className="mt-6" aria-label="Filtros da listagem">
       <div className="mb-3 flex flex-wrap items-center gap-2.5">
-        <label className="relative w-full min-w-0 flex-1 basis-[260px] md:max-w-[340px]">
-          <span className="sr-only">Buscar usuários</span>
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" className="pointer-events-none absolute left-[11px] top-1/2 -translate-y-1/2 text-faint" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-          <input
-            type="search"
-            name="busca"
-            value={estado.busca}
-            onChange={(evento) => alterarBusca(evento.target.value)}
-            placeholder="Buscar por nome, e-mail ou cargo"
-            className={`${campoClasse} pl-9`}
-          />
-        </label>
+        <CampoBuscaLista
+          valorInicial={buscaInicial}
+          placeholder="Buscar por nome, e-mail, cargo ou empresa"
+          rotulo="Buscar usuários"
+          aoAlterar={(busca) => setEstado((atual) => ({ ...atual, busca }))}
+          aoBuscar={(busca) => aplicar({ ...estado, busca })}
+        />
+        <select
+          aria-label="Filtrar por empresa"
+          value={estado.empresa}
+          disabled={pendente}
+          onChange={(evento) => aplicar({ ...estado, empresa: evento.target.value })}
+          className={`${campoClasse} md:w-auto md:max-w-[240px]`}
+        >
+          <option value="">Todas as empresas</option>
+          {empresas.map((empresa) => <option key={empresa} value={empresa}>{empresa}</option>)}
+        </select>
         <select
           aria-label="Filtrar por situação"
           value={estado.situacao}

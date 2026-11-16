@@ -24,7 +24,7 @@ export default async function NotificacoesPage({ searchParams }: { searchParams:
       <h1 className="text-2xl">Avisos</h1>
       <div className="flex flex-wrap items-center gap-2">
         <BotaoGerarToastsDemonstracao habilitado={demoDisponivel} />
-        {naoLidas > 0 && <form action={marcarTodasNotificacoesLidasAction}><button className={botaoSecundario}>Marcar todas como lidas</button></form>}
+        {naoLidas > 0 && <form action={marcarTodasNotificacoesLidasAction}><button className={botaoSecundario}>Marcar todos como lidos</button></form>}
         <Link href="/configuracoes?aba=notificacoes" className={botaoDiscreto}>Preferências</Link>
       </div>
     </div>

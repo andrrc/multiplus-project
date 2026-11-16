@@ -56,10 +56,15 @@ export function granularidadeDoPerfil(perfil: Perfil): EntidadeTipo | null {
  */
 const PERFIS_INTERNOS: Perfil[] = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO"];
 
+/** Empresa mostrada para a equipe da Múltiplus na lista de Usuários. */
+export const EMPRESA_DA_EQUIPE = "Múltiplus Ambiental";
+
 export type FiltrosUsuarios = {
   busca?: string;
   perfil?: Perfil;
   incluirDesativados?: boolean;
+  /** Inclui os acessos de cliente (perfil CLIENTE), só para leitura; sem isso a lista é só da equipe. */
+  incluirClientes?: boolean;
 };
 
 export type UsuarioDaListagem = {
@@ -73,6 +78,10 @@ export type UsuarioDaListagem = {
   totalAtribuicoes: number;
   /** ADR-005/ADR-007 — Pessoa Envolvida que originou este acesso (RF-028/RF-033), se houver. */
   origemPessoaEnvolvida: { nome: string; cliente: string } | null;
+  /** Empresa da pessoa: a Múltiplus para a equipe, o cliente para o portal e para pessoas envolvidas. */
+  empresa: string | null;
+  /** Cadastro do cliente, para os acessos do perfil CLIENTE. */
+  clienteId: string | null;
 };
 
 /**
@@ -90,14 +99,15 @@ export async function listarUsuarios(
   // O filtro por perfil só estreita o recorte, nunca o amplia: pedir `perfil: "CLIENTE"`
   // aqui devolve vazio em vez de listar os acessos de cliente, que são geridos pelo
   // cadastro do cliente (RF-029/RF-031) e não por esta tela.
+  const perfisPermitidos: Perfil[] = filtros.incluirClientes ? [...PERFIS_INTERNOS, "CLIENTE"] : PERFIS_INTERNOS;
   const perfilFiltrado =
-    filtros.perfil && PERFIS_INTERNOS.includes(filtros.perfil) ? filtros.perfil : undefined;
+    filtros.perfil && perfisPermitidos.includes(filtros.perfil) ? filtros.perfil : undefined;
   if (filtros.perfil && !perfilFiltrado) return [];
 
   const usuarios = await comContextoDeUsuario(ctx, (tx) =>
     tx.usuario.findMany({
       where: {
-        perfil: perfilFiltrado ? perfilFiltrado : { in: PERFIS_INTERNOS },
+        perfil: perfilFiltrado ? perfilFiltrado : { in: perfisPermitidos },
         ...(filtros.incluirDesativados ? {} : { ativo: true }),
         ...(filtros.busca
           ? {
@@ -105,6 +115,8 @@ export async function listarUsuarios(
                 { nome: { contains: filtros.busca, mode: "insensitive" as const } },
                 { email: { contains: filtros.busca, mode: "insensitive" as const } },
                 { cargo: { contains: filtros.busca, mode: "insensitive" as const } },
+                { cliente: { razaoSocial: { contains: filtros.busca, mode: "insensitive" as const } } },
+                { pessoaEnvolvida: { cliente: { razaoSocial: { contains: filtros.busca, mode: "insensitive" as const } } } },
               ],
             }
           : {}),
@@ -117,6 +129,8 @@ export async function listarUsuarios(
         perfil: true,
         ativo: true,
         senhaHash: true,
+        clienteId: true,
+        cliente: { select: { razaoSocial: true } },
         _count: { select: { atribuicoes: true } },
         pessoaEnvolvida: { select: { nome: true, cliente: { select: { razaoSocial: true } } } },
       },
@@ -136,6 +150,10 @@ export async function listarUsuarios(
     origemPessoaEnvolvida: u.pessoaEnvolvida
       ? { nome: u.pessoaEnvolvida.nome, cliente: u.pessoaEnvolvida.cliente.razaoSocial }
       : null,
+    empresa: u.perfil === "CLIENTE"
+      ? u.cliente?.razaoSocial ?? null
+      : u.pessoaEnvolvida?.cliente.razaoSocial ?? (u.perfil === "ADMIN_EXTERNO" ? null : EMPRESA_DA_EQUIPE),
+    clienteId: u.clienteId,
   }));
 }
 

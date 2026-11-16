@@ -31,7 +31,7 @@ function Item({ item, naoLidas }: { item: ItemMenu; naoLidas: number }) {
       </span>
       {avisos && naoLidas > 0 && (
         <span
-          aria-label={`${naoLidas} não lida${naoLidas === 1 ? "" : "s"}`}
+          aria-label={`${naoLidas} não lido${naoLidas === 1 ? "" : "s"}`}
           className="ml-auto min-w-[22px] rounded-full bg-branco/15 px-[7px] py-px text-center text-xs font-semibold tabular-nums text-branco"
         >
           {naoLidas > 99 ? "99+" : naoLidas}
