@@ -154,6 +154,7 @@ A listagem administrativa de projetos está em adaptação visual aos modelos da
 
 **Como funciona.**
 - **Lista:** o colaborador vê os projetos em que atua, com cliente, tarefas e semáforo.
+- **Busca e filtros (16/11/2026):** busca por projeto, cliente ou ID; filtro de cliente; ordenação por prazo, tarefas abertas ou nome; e abas **Ativos** (padrão), **Com atraso** (projeto ativo com tarefa aberta vencida), **Concluídos** e **Todos**, com contagem. As regras estão em `src/lib/lista-meus-projetos.ts`. A aba "Com pendências minhas" do protótipo ficou de fora: o protótipo não define "pendência minha".
 - **No projeto:** as tarefas visíveis para ele e os documentos do projeto e do cliente.
   O valor contratado **não** aparece.
 
@@ -196,6 +197,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Meus projetos com busca, filtro de cliente, ordenação e abas com contagem |
 | 2026-11-13 | este commit | Lista de projetos com filtro por cliente e exportação em PDF, conforme o protótipo |
 | 2026-11-12 | este commit | Organizar o detalhe de projetos atribuídos |
 | 2026-11-12 | este commit | Adaptar os cartões de projetos atribuídos |

@@ -7,28 +7,53 @@ import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { calcularDiasRestantes } from "@/lib/datas";
 import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 import { AnelProgresso, StatusPonto, Vazio } from "@/ui/lista";
+import { interpretarBuscaLista } from "@/lib/busca-lista";
+import { interpretarOrdemMeusProjetos, interpretarSituacaoMeusProjetos, prepararMeusProjetos, tarefaEmAberto } from "@/lib/lista-meus-projetos";
+import { FiltrosMeusProjetos } from "./filtros-meus-projetos";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(v) : null;
-const emAberto = (t: { ativo: boolean; status: string }) => t.ativo && t.status !== "CONCLUIDO" && t.status !== "CANCELADO";
 
-export default async function MeusProjetosPage() {
+export default async function MeusProjetosPage({ searchParams }: { searchParams: Promise<{ busca?: string | string[]; cliente?: string; situacao?: string | string[]; ordem?: string | string[] }> }) {
   const ctx = await exigirAcessoARota("/meus-projetos");
+  const parametros = await searchParams;
   const [projetos, limites] = await Promise.all([listarProjetosAtribuidos(ctx), buscarLimitesSemaforo(ctx)]);
+
+  // Busca, cliente, aba e ordem valem sobre os projetos que a RLS já entregou a este colaborador.
+  const busca = interpretarBuscaLista(parametros.busca);
+  const situacao = interpretarSituacaoMeusProjetos(parametros.situacao);
+  const ordem = interpretarOrdemMeusProjetos(parametros.ordem);
+  const clienteId = typeof parametros.cliente === "string" ? parametros.cliente : "";
+  const { contagens, visiveis } = prepararMeusProjetos(projetos, { busca, clienteId, situacao, ordem });
+  const clientes = [...new Map(projetos.map((p) => [p.clienteId, p.cliente.razaoSocial])).entries()]
+    .map(([id, nome]) => ({ id, nome }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
   return (
     <div className="w-full max-w-[1280px]">
       <h1 className="text-2xl">Meus projetos</h1>
       <p className="mt-1 text-sm text-cinza">Projetos em que você tem uma tarefa ou subtarefa atribuída.</p>
-      <p className="mb-2.5 mt-5 text-[13px] tabular-nums text-cinza">{projetos.length} {projetos.length === 1 ? "projeto" : "projetos"}</p>
+      <FiltrosMeusProjetos
+        key={`${clienteId}|${situacao}|${ordem}`}
+        buscaInicial={busca}
+        clienteInicial={clienteId}
+        situacaoInicial={situacao}
+        ordemInicial={ordem}
+        clientes={clientes}
+        contagens={contagens}
+        total={visiveis.length}
+      />
 
-      {projetos.length === 0 ? (
-        <Vazio titulo="Nenhum projeto por enquanto." descricao="Quando uma tarefa ou subtarefa for atribuída a você, o projeto aparece aqui." />
+      {visiveis.length === 0 ? (
+        <Vazio
+          titulo={projetos.length === 0 ? "Nenhum projeto por enquanto." : "Nenhum projeto nesta seleção."}
+          descricao={projetos.length === 0 ? "Quando uma tarefa ou subtarefa for atribuída a você, o projeto aparece aqui." : "Ajuste a busca, o cliente ou a aba."}
+        />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
-          {projetos.map((p) => {
+          {visiveis.map((p) => {
             const conclusao = calcularPercentualConclusao(p.tarefas);
-            const abertas = p.tarefas.filter(emAberto);
+            const abertas = p.tarefas.filter(tarefaEmAberto);
             const atrasadas = abertas.filter((t) => t.prazo && calcularDiasRestantes(t.prazo) < 0).length;
             // A próxima entrega é a tarefa em aberto com o prazo mais próximo.
             const proxima = abertas.filter((t) => t.prazo).sort((a, b) => a.prazo!.getTime() - b.prazo!.getTime())[0];

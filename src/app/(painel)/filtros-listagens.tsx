@@ -30,6 +30,8 @@ export function FiltrosListagens({
   buscaInicial = "",
   ordemAtual = "",
   placeholderBusca,
+  ocultarTarefa = false,
+  ocultarResponsavel = false,
   clienteInicial = "",
   projetoInicial = "",
   tarefaInicial = "",
@@ -42,7 +44,7 @@ export function FiltrosListagens({
   singular = "item",
   plural = "itens",
 }: {
-  rota: "/tarefas" | "/subtarefas";
+  rota: "/tarefas" | "/subtarefas" | "/minhas-tarefas";
   clientes: ClienteFiltro[];
   projetos: ProjetoFiltro[];
   tarefas: TarefaFiltro[];
@@ -54,6 +56,9 @@ export function FiltrosListagens({
   ordemAtual?: string;
   /** Sem ele, a lista não tem campo de busca. */
   placeholderBusca?: string;
+  /** Listas que não filtram por tarefa ou por responsável (Minhas tarefas) escondem esses seletores. */
+  ocultarTarefa?: boolean;
+  ocultarResponsavel?: boolean;
   clienteInicial?: string;
   projetoInicial?: string;
   tarefaInicial?: string;
@@ -151,14 +156,14 @@ export function FiltrosListagens({
             {projetosVisiveis.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}
           </select>
         </label>
-        <label className="w-full min-w-0 md:w-auto">
+        {!ocultarTarefa && <label className="w-full min-w-0 md:w-auto">
           <span className="sr-only">Tarefa</span>
           <select name="tarefa" value={tarefa} disabled={pendente} onChange={(event) => alterarTarefa(event.target.value)} className={`${campoClasse} md:max-w-[260px]`}>
             <option value="">Todas as tarefas</option>
             {tarefasVisiveis.map((item) => <option key={item.id} value={item.id}>{item.projeto.nome} · {item.nome}</option>)}
           </select>
-        </label>
-        <label className="w-full min-w-0 md:w-auto">
+        </label>}
+        {!ocultarResponsavel && <label className="w-full min-w-0 md:w-auto">
           <span className="sr-only">Responsável</span>
           <select name="responsavel" value={responsavel} disabled={pendente} onChange={(event) => alterarResponsavel(event.target.value)} className={`${campoClasse} md:max-w-[240px]`}>
             <option value="">Todos os responsáveis</option>
@@ -166,7 +171,7 @@ export function FiltrosListagens({
             {responsavel && responsavel !== "sem" && !responsaveis.some(item => item.valor === responsavel) && <option value={responsavel}>Sem resultados nesta seleção</option>}
             {responsaveis.map(item => <option key={item.valor} value={item.valor}>{item.nome}</option>)}
           </select>
-        </label>
+        </label>}
       </div>
 
       {rotulosSituacao && contagens && (

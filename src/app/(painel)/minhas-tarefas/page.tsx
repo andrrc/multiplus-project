@@ -8,7 +8,9 @@ import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularDiasRestantes } from "@/lib/datas";
 import { codigoTarefa } from "@/lib/identificadores-hierarquicos";
 import { contarSituacoes, interpretarSituacao, rotulosSituacao, situacaoDoPrazo } from "@/lib/situacao-prazo";
-import { BotoesSituacao } from "@/ui/botoes-situacao";
+import { FiltrosListagens } from "../filtros-listagens";
+import { interpretarBuscaLista } from "@/lib/busca-lista";
+import { buscarEOrdenarTarefas } from "@/lib/lista-tarefas";
 import { TelaTarefasExterno } from "./tela-externo";
 import { CelulaLista, CelulaPrazo, LinhaLista, StatusPonto, TabelaLista, TextoPrincipal, TextoSecundario, TituloLinha, Vazio } from "@/ui/lista";
 
@@ -21,9 +23,9 @@ const COLUNAS = [
   { titulo: "Status", largura: "22%" },
 ];
 
-export default async function MinhasTarefasPage({ searchParams }: { searchParams: Promise<{ situacao?: string | string[] }> }) {
+export default async function MinhasTarefasPage({ searchParams }: { searchParams: Promise<{ situacao?: string | string[]; busca?: string | string[]; cliente?: string; projeto?: string }> }) {
   const ctx = await exigirAcessoARota("/minhas-tarefas");
-  const { situacao: situacaoParametro } = await searchParams;
+  const { situacao: situacaoParametro, busca: buscaParametro, cliente, projeto } = await searchParams;
   const [tarefas, limites] = await Promise.all([
     listarTarefasAtribuidas(ctx),
     buscarLimitesSemaforo(ctx),
@@ -35,9 +37,24 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
     return <TelaTarefasExterno nome={sessao?.user?.name ?? ""} tarefas={tarefas} limites={limites} />;
   }
 
-  // Cada tarefa recebe sua situação de prazo; as contagens dos botões usam a lista inteira.
+  // Busca, cliente e projeto valem sobre as tarefas que a consulta já entregou a este colaborador.
+  const busca = interpretarBuscaLista(buscaParametro);
+  const clienteId = typeof cliente === "string" ? cliente : "";
+  const projetoId = typeof projeto === "string" ? projeto : "";
+  const clientes = [...new Map(tarefas.map((t) => [t.projeto.cliente.id, t.projeto.cliente.razaoSocial])).entries()]
+    .map(([id, razaoSocial]) => ({ id, razaoSocial }))
+    .sort((a, b) => a.razaoSocial.localeCompare(b.razaoSocial, "pt-BR"));
+  const projetos = [...new Map(tarefas.map((t) => [t.projeto.id, { id: t.projeto.id, nome: t.projeto.nome, cliente: { id: t.projeto.cliente.id } }])).values()]
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  const daSelecao = buscarEOrdenarTarefas(
+    tarefas.filter((t) => (!clienteId || t.projeto.cliente.id === clienteId) && (!projetoId || t.projeto.id === projetoId)),
+    busca,
+    null,
+  );
+
+  // Cada tarefa recebe sua situação de prazo; as contagens dos botões usam a lista antes desse filtro.
   const situacaoFiltro = interpretarSituacao(situacaoParametro);
-  const itens = tarefas.map((tarefa) => ({
+  const itens = daSelecao.map((tarefa) => ({
     tarefa,
     situacao: situacaoDoPrazo(
       { diasRestantes: tarefa.prazo ? calcularDiasRestantes(tarefa.prazo) : null, fechado: tarefa.status === "CONCLUIDO" || tarefa.status === "CANCELADO" },
@@ -54,12 +71,22 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
       <h1 className="text-2xl">Minhas tarefas</h1>
       <p className="mt-1 text-sm text-cinza">Tarefas em que você é o responsável, em ordem de prazo.</p>
 
-      <BotoesSituacao
-        key={situacaoFiltro}
+      <FiltrosListagens
+        key={`${clienteId}|${projetoId}|${situacaoFiltro}`}
         rota="/minhas-tarefas"
-        rotulos={rotulosSituacao(limites.diasAmareloAte)}
-        contagens={contagens}
+        clientes={clientes}
+        projetos={projetos}
+        tarefas={[]}
+        responsaveis={[]}
+        ocultarTarefa
+        ocultarResponsavel
+        clienteInicial={clienteId}
+        projetoInicial={projetoId}
+        buscaInicial={busca}
+        placeholderBusca="Buscar por nome, projeto, cliente ou ID"
         situacaoInicial={situacaoFiltro}
+        rotulosSituacao={rotulosSituacao(limites.diasAmareloAte)}
+        contagens={contagens}
         total={visiveis.length}
         singular="tarefa"
         plural="tarefas"
@@ -68,7 +95,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
       {visiveis.length === 0 ? (
         <Vazio
           titulo={tarefas.length === 0 ? "Nenhuma tarefa atribuída a você ainda." : "Nenhuma tarefa nesta seleção."}
-          descricao={tarefas.length === 0 ? "Quando uma tarefa for atribuída a você, ela aparece aqui." : "Ajuste o filtro de situação."}
+          descricao={tarefas.length === 0 ? "Quando uma tarefa for atribuída a você, ela aparece aqui." : "Ajuste a busca ou os filtros."}
         />
       ) : (
         <TabelaLista rotulo="Tabela de minhas tarefas" colunas={COLUNAS}>

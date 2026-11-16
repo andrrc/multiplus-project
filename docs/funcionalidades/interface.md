@@ -30,6 +30,22 @@ visível; `colaborador.spec.ts` confere o perfil do externo e do cliente a 375 p
 **Pendências.** Telefone editável pela própria pessoa e a tabela "Avisos que você recebe" do protótipo dependem de dado e de regra
 novos e **não foram criados**.
 
+### Busca e ordenação nas listas
+
+**Como funciona.** Várias listas ganharam, conforme os protótipos, um campo de busca que vale enquanto se digita, e as tabelas de Tarefas
+e Subtarefas ganharam cabeçalhos que ordenam (clicar alterna entre crescente e decrescente; o que não tem valor, como tarefa sem prazo,
+fica no fim). A busca ignora maiúsculas e acentos e exige que todas as palavras apareçam. Telas: Tarefas, Subtarefas, Clientes,
+Usuários, Meus projetos, Clientes e Minhas tarefas dos colaboradores. Busca, ordem e filtros ficam na URL, então o link pode ser
+compartilhado e o botão Voltar funciona.
+
+**Detalhes técnicos.** `src/lib/busca-lista.ts` (busca sobre as linhas que a consulta já entregou), `src/lib/ordenacao-lista.ts`
+(`?ordem=prazo` ou `?ordem=-prazo`), `src/lib/lista-tarefas.ts` (busca e ordem de Tarefas e Subtarefas, usada também pelo PDF, para a
+exportação levar a mesma lista da tela), `src/ui/campo-busca-lista.tsx` (campo com pausa na digitação, que acompanha o "Limpar filtros") e
+`ColunaLista.ordenacao` em `src/ui/lista.tsx`. A busca não amplia acesso: ela só filtra o que o perfil já pode ler.
+
+**Pendências.** As abas "Com pendências", "Cadastro incompleto" e "Aguardando outras pessoas", a coluna "Pendências", "Último acesso",
+"Minhas / Da equipe", o tipo "Só subtarefas" e o Exportar PDF do colaborador dependem de definição de regra, de permissão ou de dado novo.
+
 ### Busca geral
 
 **Como funciona.** A barra superior da administração e do colaborador interno tem o campo "Buscar cliente, projeto ou tarefa". Ao enviar,
@@ -187,7 +203,7 @@ conclusão, com o aviso de que a Talita confirma. Os clientes viram uma tabela e
 O que cada colaborador pode ver e fazer não mudou.
 
 **Detalhes técnicos.** `minhas-tarefas/page.tsx`, `minhas-tarefas/[id]/page.tsx`, `meus-projetos/page.tsx`, `meus-projetos/[id]/page.tsx`,
-`meus-clientes/page.tsx` e `meus-clientes/[id]/page.tsx`, com `src/ui/botoes-situacao.tsx` (filtro de situação por URL) e `AnelProgresso`
+`meus-clientes/page.tsx` e `meus-clientes/[id]/page.tsx`, com `AnelProgresso`
 em `src/ui/lista.tsx`. O rodapé do menu deixou de cortar o nome do perfil. O teste `tests/browser/colaborador.spec.ts` entra como
 colaborador interno, abre as seis telas e confere que cabem em 1024 e 375 px.
 
@@ -312,6 +328,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Busca de texto e ordenação nas listas (Tarefas, Subtarefas, Clientes, Usuários e as dos colaboradores) |
 | 2026-11-13 | este commit | Busca geral na barra superior (`/busca`), filtro de cliente e Exportar PDF na lista de projetos |
 | 2026-11-13 | este commit | Menu do colaborador externo reduzido a tarefas, avisos e perfil; agenda do interno em `/minha-agenda` |
 | 2026-11-13 | este commit | Rótulo do perfil ADMIN passa a "Administração" (neutro) nas telas; mensagens de erro de domínio não mudaram |

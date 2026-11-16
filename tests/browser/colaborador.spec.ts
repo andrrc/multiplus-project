@@ -93,6 +93,18 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
     }
   }
 
+  await page.setViewportSize({ width: 1024, height: 800 });
+  // Meus projetos e Clientes: abas, busca e filtros, sobre o que o colaborador já alcança.
+  await page.goto("/meus-projetos");
+  await expect(page.getByRole("group", { name: "Situação dos projetos" })).toBeVisible();
+  await expect(page.getByRole("link", { name: `Projeto colaborador ${sufixo}` })).toBeVisible();
+  await page.getByRole("searchbox", { name: "Buscar projetos" }).fill("sem-resultado-xyz");
+  await expect(page.getByText("Nenhum projeto nesta seleção.")).toBeVisible();
+  await page.goto("/meus-clientes");
+  await page.getByRole("searchbox", { name: "Buscar clientes" }).fill(nomeCliente);
+  await expect(page.getByRole("link", { name: nomeCliente })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Projetos comigo" })).toBeVisible();
+
   // A lista de tarefas tem os filtros de situação e abre a tarefa pela linha.
   await page.setViewportSize({ width: 1024, height: 800 });
   await page.goto("/minhas-tarefas");

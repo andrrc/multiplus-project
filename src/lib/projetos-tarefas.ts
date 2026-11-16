@@ -551,7 +551,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
         ],
       },
       include: {
-        projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { razaoSocial: true, numeroIdentificacao: true } } } },
+        projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
         subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
       },

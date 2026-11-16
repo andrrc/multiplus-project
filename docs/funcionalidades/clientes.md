@@ -150,6 +150,7 @@ A listagem administrativa e os cabeçalhos das fichas de clientes para administr
 
 **Como funciona.**
 - **Onde:** o colaborador vê em "Clientes" apenas os clientes ligados ao trabalho dele. A lista usa tabela no desktop e cartões no celular, com mensagens para dados não informados.
+- **Busca e filtros (16/11/2026):** busca por ID, nome, CNPJ, CPF ou cidade e filtros de segmento e cidade, sobre os clientes que o colaborador já alcança. A coluna **Projetos comigo** conta os projetos ativos dele no cliente. "Pendências" e as abas "Com pendências" e "Com atraso" do protótipo ficaram de fora.
 - **Na ficha:** documento (CNPJ/CPF), segmento, atividade, porte, município, origem do contato, links do Drive e os projetos a que tem
   acesso. **RG, endereço e CEP não são entregues** ao colaborador (13/11/2026). A rota é só do colaborador interno; o externo não tem a lista de clientes.
 
@@ -268,6 +269,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Clientes do colaborador com busca, filtros de segmento e cidade e coluna Projetos comigo |
 | 2026-11-16 | este commit | Lista de clientes com busca por ID, filtro de segmento, colunas Projetos ativos e Portal do cliente e botões com e sem projeto ativo; busca por texto deixa de casar com todos os clientes com documento |
 | 2026-11-13 | este commit | Ficha contextual sem RG, endereço e CEP; `/meus-clientes` só para o colaborador interno ([análise](../analises/restricao-externo-e-agenda-interno.md)) |
 | 2026-11-12 | este commit | Ajustar a lista de clientes dos colaboradores |
