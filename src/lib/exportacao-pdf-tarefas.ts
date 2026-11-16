@@ -331,7 +331,7 @@ function desenharRodape(doc: PDFKit.PDFDocument, pagina: number, total: number, 
   const altura = doc.page.height;
   const largura = doc.page.width;
   doc.strokeColor(CORES.linha).lineWidth(0.7).moveTo(MARGEM, altura - 35).lineTo(largura - MARGEM, altura - 35).stroke();
-  doc.font("Montserrat").fontSize(7).fillColor(CORES.cinza).text(`Prévia oficial · Gerado em ${formatarDataHoraBrasilia(instante)} (Brasília)`, MARGEM, altura - 24, { lineBreak: false });
+  doc.font("Montserrat").fontSize(7).fillColor(CORES.cinza).text(`Gerado em ${formatarDataHoraBrasilia(instante)} (Brasília)`, MARGEM, altura - 24, { lineBreak: false });
   const rotulo = `Página ${pagina} de ${total}`;
   desenharTextoComAlgarismos(doc, rotulo, largura - MARGEM - 105, altura - 24, 105, 7, CORES.cinza, true);
 }
@@ -345,7 +345,7 @@ function gerarBufferPdf(
   linhas: Linha[],
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const documento = new PDFDocument({ size: "A4", layout: "landscape", margin: 0, bufferPages: true, compress: true });
+    const documento = new PDFDocument({ size: "A4", layout: "landscape", margin: 0, bufferPages: true, compress: true, autoFirstPage: false });
     fontes(documento);
     const partes: Buffer[] = [];
     documento.on("data", parte => partes.push(Buffer.from(parte)));
