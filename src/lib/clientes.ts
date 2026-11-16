@@ -1,6 +1,8 @@
 /**
  * Biblioteca de domínio `clientes`. Reúne funções reutilizáveis desta área; os comentários junto às funções explicam validações, decisões e efeitos específicos de cada operação.
  */
+import { StatusSubtarefa, StatusTarefa, type Prisma } from "@prisma/client";
+import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
 import { salvarLaudoNaTransacao } from "@/lib/laudos-tecnicos";
 import { validarDadosLaudo, type DadosLaudoInput } from "@/lib/validacao-laudo";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
@@ -222,7 +224,35 @@ export async function listarClientes(
       orderBy: { numeroIdentificacao: "asc" },
     }),
   );
-  return clientes.map(({ usuarios, _count, ...cliente }) => ({ ...cliente, projetosAtivos: _count.projetos, portal: statusPortalDoCliente(usuarios) }));
+  const comAtraso = await comContextoDeUsuario(ctx, (tx) => idsDeClientesComAtraso(tx));
+  return clientes.map(({ usuarios, _count, ...cliente }) => ({
+    ...cliente,
+    projetosAtivos: _count.projetos,
+    portal: statusPortalDoCliente(usuarios),
+    emAtraso: comAtraso.has(cliente.id),
+  }));
+}
+
+/**
+ * Clientes com ao menos uma tarefa ou subtarefa ativa, ainda aberta, com prazo anterior a hoje (dia civil de
+ * Brasília, a mesma conta do semáforo). Roda no contexto de quem pergunta, então o colaborador só enxerga o atraso
+ * do que a RLS já mostra a ele.
+ */
+async function idsDeClientesComAtraso(tx: Prisma.TransactionClient): Promise<Set<string>> {
+  const hoje = new Date(dataDeHojeEmSaoPaulo());
+  const projetos = await tx.projeto.findMany({
+    where: {
+      ativo: true,
+      cliente: { ativo: true },
+      OR: [
+        { tarefas: { some: { ativo: true, status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] }, prazo: { lt: hoje } } } },
+        { tarefas: { some: { ativo: true, subtarefas: { some: { ativo: true, status: StatusSubtarefa.EM_ANDAMENTO, prazo: { lt: hoje } } } } } },
+      ],
+    },
+    select: { clienteId: true },
+    distinct: ["clienteId"],
+  });
+  return new Set(projetos.map((projeto) => projeto.clienteId));
 }
 
 /** Segmentos que já têm cliente ativo cadastrado, para o filtro da lista. */
@@ -326,7 +356,7 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
     throw new Error("Visão exclusiva de colaboradores.");
   }
 
-  return comContextoDeUsuario(ctx, (tx) =>
+  const clientes = await comContextoDeUsuario(ctx, (tx) =>
     tx.cliente.findMany({
       where: { ativo: true },
       select: {
@@ -347,6 +377,8 @@ export async function listarClientesContextuais(ctx: ContextoUsuario) {
       orderBy: { razaoSocial: "asc" },
     }),
   );
+  const comAtraso = await comContextoDeUsuario(ctx, (tx) => idsDeClientesComAtraso(tx));
+  return clientes.map((cliente) => ({ ...cliente, emAtraso: comAtraso.has(cliente.id) }));
 }
 
 /** Dados cadastrais mínimos (sem RG, endereço e CEP) e documentos para o detalhe contextual do colaborador. */

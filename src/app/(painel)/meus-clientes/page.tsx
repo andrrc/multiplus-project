@@ -21,7 +21,7 @@ const COLUNAS = [
 const unicosOrdenados = (valores: Array<string | null>) =>
   [...new Set(valores.filter((valor): valor is string => !!valor))].sort((a, b) => a.localeCompare(b, "pt-BR"));
 
-export default async function MeusClientesPage({ searchParams }: { searchParams: Promise<{ busca?: string | string[]; segmento?: string; cidade?: string }> }) {
+export default async function MeusClientesPage({ searchParams }: { searchParams: Promise<{ busca?: string | string[]; segmento?: string; cidade?: string; situacao?: string }> }) {
   const ctx = await exigirAcessoARota("/meus-clientes");
   const parametros = await searchParams;
   const todos = await listarClientesContextuais(ctx);
@@ -29,10 +29,14 @@ export default async function MeusClientesPage({ searchParams }: { searchParams:
   const busca = interpretarBuscaLista(parametros.busca);
   const segmento = typeof parametros.segmento === "string" ? parametros.segmento : "";
   const cidade = typeof parametros.cidade === "string" ? parametros.cidade : "";
-  const clientes = todos.filter((cliente) =>
+  const soAtrasados = parametros.situacao === "atraso";
+  // As contagens das abas valem para a busca, o segmento e a cidade escolhidos, antes de a aba filtrar.
+  const daSelecao = todos.filter((cliente) =>
     (!segmento || cliente.segmento === segmento) &&
     (!cidade || cliente.municipio === cidade) &&
     correspondeABusca(busca, [cliente.razaoSocial, numeroCliente(cliente.numeroIdentificacao), cliente.numeroIdentificacao, cliente.cnpj, cliente.cpf, documentoCliente(cliente), cliente.municipio]));
+  const contagens = { todos: daSelecao.length, atraso: daSelecao.filter((cliente) => cliente.emAtraso).length };
+  const clientes = soAtrasados ? daSelecao.filter((cliente) => cliente.emAtraso) : daSelecao;
 
   return (
     <div className="w-full max-w-[1280px]">
@@ -40,10 +44,12 @@ export default async function MeusClientesPage({ searchParams }: { searchParams:
       <p className="mt-1 text-sm text-cinza">Clientes dos projetos e tarefas em que você atua.</p>
 
       <FiltrosMeusClientes
-        key={`${segmento}|${cidade}`}
+        key={`${segmento}|${cidade}|${soAtrasados}`}
         buscaInicial={busca}
         segmentoInicial={segmento}
         cidadeInicial={cidade}
+        atrasoInicial={soAtrasados}
+        contagens={contagens}
         segmentos={unicosOrdenados(todos.map((cliente) => cliente.segmento))}
         cidades={unicosOrdenados(todos.map((cliente) => cliente.municipio))}
         total={clientes.length}

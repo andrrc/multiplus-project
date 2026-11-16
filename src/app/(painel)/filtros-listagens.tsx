@@ -32,6 +32,7 @@ export function FiltrosListagens({
   placeholderBusca,
   ocultarTarefa = false,
   ocultarResponsavel = false,
+  botaoAguardando,
   clienteInicial = "",
   projetoInicial = "",
   tarefaInicial = "",
@@ -59,6 +60,8 @@ export function FiltrosListagens({
   /** Listas que não filtram por tarefa ou por responsável (Minhas tarefas) escondem esses seletores. */
   ocultarTarefa?: boolean;
   ocultarResponsavel?: boolean;
+  /** Botão "Aguardando outras pessoas" ao lado da situação do prazo (Minhas tarefas). */
+  botaoAguardando?: { total: number; ativoInicial: boolean };
   clienteInicial?: string;
   projetoInicial?: string;
   tarefaInicial?: string;
@@ -77,6 +80,7 @@ export function FiltrosListagens({
   const [pendente, startTransition] = useTransition();
   const [responsavel, setResponsavel] = useState(responsavelInicial);
   const [busca, setBusca] = useState(buscaInicial);
+  const [aguardando, setAguardando] = useState(botaoAguardando?.ativoInicial ?? false);
   const [cliente, setCliente] = useState(clienteInicial);
   const [projeto, setProjeto] = useState(projetoInicial);
   const [tarefa, setTarefa] = useState(tarefaInicial);
@@ -88,10 +92,10 @@ export function FiltrosListagens({
     (!cliente || item.projeto.clienteId === cliente) &&
     (!projeto || item.projetoId === projeto),
   );
-  const temFiltro = !!(cliente || projeto || tarefa || responsavel || busca.trim()) || situacao !== "todos";
+  const temFiltro = !!(cliente || projeto || tarefa || responsavel || busca.trim()) || situacao !== "todos" || aguardando;
 
-  function aplicarFiltros(valores: Omit<ValoresFiltrosListagens, "busca" | "ordem">, buscaAtual = busca) {
-    startTransition(() => router.push(urlFiltrosListagens(rota, { ...valores, busca: buscaAtual, ordem: ordemAtual }, incluirFiltroConcluidas), { scroll: false }));
+  function aplicarFiltros(valores: Omit<ValoresFiltrosListagens, "busca" | "ordem" | "aguardando">, buscaAtual = busca, aguardandoAtual = aguardando) {
+    startTransition(() => router.push(urlFiltrosListagens(rota, { ...valores, busca: buscaAtual, ordem: ordemAtual, aguardando: aguardandoAtual }, incluirFiltroConcluidas), { scroll: false }));
   }
 
   function alterarCliente(valor: string) {
@@ -190,6 +194,21 @@ export function FiltrosListagens({
                 <span className="ml-1 font-medium tabular-nums text-faint">{contagens[valor]}</span>
               </button>
             ))}
+            {botaoAguardando && (
+              <button
+                type="button"
+                aria-pressed={aguardando}
+                disabled={pendente}
+                onClick={() => {
+                  setAguardando(!aguardando);
+                  aplicarFiltros({ cliente, projeto, tarefa, responsavel, mostrarConcluidas, situacao }, busca, !aguardando);
+                }}
+                className="h-11 whitespace-nowrap border-l border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] font-medium text-cinza hover:bg-papel hover:text-ink aria-pressed:bg-selecionado aria-pressed:font-semibold aria-pressed:text-ink max-md:flex-1 md:h-9"
+              >
+                Aguardando outras pessoas
+                <span className="ml-1 font-medium tabular-nums text-faint">{botaoAguardando.total}</span>
+              </button>
+            )}
           </div>
         </div>
       )}

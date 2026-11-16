@@ -42,14 +42,16 @@ export default async function ClientesPage({
     listarSegmentosComCliente(ctx),
   ]);
   // A situação (com ou sem projeto ativo) é aplicada aqui; as contagens dos botões usam a lista antes dela.
-  const situacao = situacaoParametro === "com" || situacaoParametro === "sem" ? situacaoParametro : "";
+  const situacao = situacaoParametro === "com" || situacaoParametro === "sem" || situacaoParametro === "atraso" ? situacaoParametro : "";
   const contagens = {
     todos: clientesDaConsulta.length,
     com: clientesDaConsulta.filter((c) => c.projetosAtivos > 0).length,
     sem: clientesDaConsulta.filter((c) => c.projetosAtivos === 0).length,
+    atraso: clientesDaConsulta.filter((c) => c.emAtraso).length,
   };
   const clientes = situacao === "com" ? clientesDaConsulta.filter((c) => c.projetosAtivos > 0)
     : situacao === "sem" ? clientesDaConsulta.filter((c) => c.projetosAtivos === 0)
+    : situacao === "atraso" ? clientesDaConsulta.filter((c) => c.emAtraso)
     : clientesDaConsulta;
   const colunas = mostrarDesativados ? [...COLUNAS, COLUNA_SITUACAO] : COLUNAS;
   const comFiltro = Boolean(busca || cidade || segmento || filtroLaudo || situacao);

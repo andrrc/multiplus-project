@@ -6,13 +6,19 @@
 import { EventoNotificacao } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { obterContexto } from "@/server/auth/contexto";
-import { atualizarPreferenciaNotificacao, marcarNotificacaoLida, marcarTodasNotificacoesLidas } from "@/lib/notificacoes";
+import { atualizarPreferenciaNotificacao, marcarNotificacaoLida, marcarNotificacaoNaoLida, marcarTodasNotificacoesLidas } from "@/lib/notificacoes";
 import { atualizarLimitesSemaforo } from "@/lib/semaforo";
 
 const perfis = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", "CLIENTE"] as const;
 
 export async function marcarNotificacaoLidaAction(id: string) {
   await marcarNotificacaoLida(await obterContexto(), id);
+  revalidatePath("/notificacoes");
+  revalidatePath("/minhas-notificacoes");
+}
+
+export async function marcarNotificacaoNaoLidaAction(id: string) {
+  await marcarNotificacaoNaoLida(await obterContexto(), id);
   revalidatePath("/notificacoes");
   revalidatePath("/minhas-notificacoes");
 }

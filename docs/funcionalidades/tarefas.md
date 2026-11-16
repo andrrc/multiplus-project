@@ -228,7 +228,8 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 ### T8. Minhas tarefas (colaboradores)
 
 **Como funciona.**
-- **Busca e filtros (16/11/2026):** campo "Buscar por nome, projeto, cliente ou ID", filtros de cliente e projeto e os botões de situação do prazo com contagem. "Minhas / Da equipe", "Só tarefas / só subtarefas", Exportar PDF e a aba "Aguardando outras pessoas" do protótipo ficaram de fora: dependem de permissão ou de dados novos.
+- **Busca e filtros (16/11/2026):** campo "Buscar por nome, projeto, cliente ou ID", filtros de cliente e projeto e os botões de situação do prazo com contagem. "Minhas / Da equipe", "Só tarefas / só subtarefas" e Exportar PDF do protótipo ficaram de fora: dependem de permissão.
+- **Aguardando outras pessoas:** botão ao lado da situação do prazo, com contagem (`?aguardando=1`), e o mesmo número no painel do colaborador. Conta a tarefa aberta que tem pedido de conclusão esperando confirmação (dela ou de uma subtarefa) ou subtarefa em andamento atribuída a outra pessoa. A regra é `aguardaOutrasPessoas` (`src/lib/aguardando-outras-pessoas.ts`). **Limite:** a RLS só mostra as subtarefas dos colegas a quem está atribuído ao projeto; quem é apenas responsável pela tarefa não vê as dos colegas, então o aviso por subtarefa não aparece para ele (o aviso por pedido de conclusão aparece).
 - **Lista:** o colaborador vê, em ordem de prazo, as tarefas em que é responsável, está
   atribuído, ou é responsável por alguma subtarefa. Os cartões se reorganizam em uma
   coluna no celular e mantêm visíveis o prazo e o status.
@@ -316,6 +317,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | "Aguardando outras pessoas" em Minhas tarefas e no painel do colaborador interno |
 | 2026-11-16 | este commit | Minhas tarefas do colaborador interno com busca e filtros de cliente e projeto |
 | 2026-11-16 | este commit | Busca de texto, ordenação pelos cabeçalhos e "Mostrar concluídas e canceladas" na lista; o PDF passa a levar a mesma busca, ordem e conclusão da tela ([lib/lista-tarefas.ts](../../src/lib/lista-tarefas.ts)) |
 | 2026-11-12 | este commit | Reorganizar o detalhe da tarefa para colaboradores |

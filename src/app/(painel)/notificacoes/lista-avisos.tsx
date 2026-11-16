@@ -9,7 +9,7 @@ import type { EventoNotificacao } from "@prisma/client";
 import { formatarDataHoraBrasilia } from "@/lib/datas";
 import { agruparAvisos } from "@/lib/avisos-agrupamento";
 import { botaoDiscretoPequeno, botaoSecundarioPequeno } from "@/ui/botoes";
-import { marcarNotificacaoLidaAction } from "./actions";
+import { marcarNotificacaoLidaAction, marcarNotificacaoNaoLidaAction } from "./actions";
 
 export const ROTULO_EVENTO: Record<EventoNotificacao, string> = {
   PRAZO_PROXIMO: "Prazo próximo",
@@ -74,11 +74,9 @@ export function ListaAvisos({ itens, filtrado }: { itens: ItemAviso[]; filtrado:
                   </div>
                   <div className="col-span-full flex flex-wrap items-center gap-1.5 sm:col-span-1 sm:col-start-3 sm:justify-end">
                     {item.url && <Link href={item.url} className={botaoSecundarioPequeno}>Abrir registro</Link>}
-                    {!item.lida && (
-                      <form action={marcarNotificacaoLidaAction.bind(null, item.id)}>
-                        <button className={botaoDiscretoPequeno}>Marcar como lido</button>
-                      </form>
-                    )}
+                    <form action={(item.lida ? marcarNotificacaoNaoLidaAction : marcarNotificacaoLidaAction).bind(null, item.id)}>
+                      <button className={botaoDiscretoPequeno}>{item.lida ? "Marcar como não lido" : "Marcar como lido"}</button>
+                    </form>
                   </div>
                 </li>
               );

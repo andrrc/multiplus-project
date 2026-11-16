@@ -23,9 +23,9 @@ const COLUNAS = [
   { titulo: "Status", largura: "22%" },
 ];
 
-export default async function MinhasTarefasPage({ searchParams }: { searchParams: Promise<{ situacao?: string | string[]; busca?: string | string[]; cliente?: string; projeto?: string }> }) {
+export default async function MinhasTarefasPage({ searchParams }: { searchParams: Promise<{ situacao?: string | string[]; busca?: string | string[]; cliente?: string; projeto?: string; aguardando?: string }> }) {
   const ctx = await exigirAcessoARota("/minhas-tarefas");
-  const { situacao: situacaoParametro, busca: buscaParametro, cliente, projeto } = await searchParams;
+  const { situacao: situacaoParametro, busca: buscaParametro, cliente, projeto, aguardando } = await searchParams;
   const [tarefas, limites] = await Promise.all([
     listarTarefasAtribuidas(ctx),
     buscarLimitesSemaforo(ctx),
@@ -52,9 +52,13 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
     null,
   );
 
+  // "Aguardando outras pessoas" é um filtro à parte da situação do prazo: o botão conta as tarefas da seleção atual.
+  const soAguardando = aguardando === "1";
+  const totalAguardando = daSelecao.filter((tarefa) => tarefa.aguardandoOutras).length;
+
   // Cada tarefa recebe sua situação de prazo; as contagens dos botões usam a lista antes desse filtro.
   const situacaoFiltro = interpretarSituacao(situacaoParametro);
-  const itens = daSelecao.map((tarefa) => ({
+  const itens = (soAguardando ? daSelecao.filter((tarefa) => tarefa.aguardandoOutras) : daSelecao).map((tarefa) => ({
     tarefa,
     situacao: situacaoDoPrazo(
       { diasRestantes: tarefa.prazo ? calcularDiasRestantes(tarefa.prazo) : null, fechado: tarefa.status === "CONCLUIDO" || tarefa.status === "CANCELADO" },
@@ -72,7 +76,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
       <p className="mt-1 text-sm text-cinza">Tarefas em que você é o responsável, em ordem de prazo.</p>
 
       <FiltrosListagens
-        key={`${clienteId}|${projetoId}|${situacaoFiltro}`}
+        key={`${clienteId}|${projetoId}|${situacaoFiltro}|${soAguardando}`}
         rota="/minhas-tarefas"
         clientes={clientes}
         projetos={projetos}
@@ -80,6 +84,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
         responsaveis={[]}
         ocultarTarefa
         ocultarResponsavel
+        botaoAguardando={{ total: totalAguardando, ativoInicial: soAguardando }}
         clienteInicial={clienteId}
         projetoInicial={projetoId}
         buscaInicial={busca}

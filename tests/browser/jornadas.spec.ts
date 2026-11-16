@@ -96,6 +96,7 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await expect(clientes).toBeVisible();
   await expect.poll(() => clientes.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   await expect(clientes.getByRole("columnheader", { name: "Cidade" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Com atraso/ })).toBeVisible();
 
   // Ficha do cliente: abre pela linha da lista, mostra o resumo e os projetos e cabe nos dois tamanhos.
   await clientes.getByRole("link", { name: `Cliente teste ${sufixo}` }).click();

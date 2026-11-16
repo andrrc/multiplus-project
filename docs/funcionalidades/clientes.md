@@ -87,7 +87,8 @@ A listagem administrativa e os cabeçalhos das fichas de clientes para administr
   cliente) e botões **Todos / Com projeto ativo / Sem projeto ativo** com contagem (16/11/2026). Os filtros se aplicam automaticamente.
 - **Colunas novas:** **Projetos ativos** (conta só projetos ativos) e **Portal do cliente** (Ativo, Convite pendente ou Sem acesso, derivado dos usuários do cliente). A coluna Situação só aparece com "Mostrar desativados".
 - **Busca por texto:** sem dígitos, CNPJ e CPF não entram na busca (antes, um texto qualquer também casava com todos os clientes que têm documento).
-- **Ficou de fora:** os botões "Com pendências" e "Cadastro incompleto" e a coluna "Pendências", porque o protótipo não define o que contam.
+- **Com atraso (16/11/2026):** o botão traz os clientes com ao menos uma tarefa ou subtarefa ativa, ainda aberta, com prazo anterior a hoje (dia civil de Brasília, a mesma conta do semáforo). Concluídas, canceladas e desativadas não contam. A regra está em `idsDeClientesComAtraso` (`src/lib/clientes.ts`) e roda no contexto de quem pergunta: o colaborador interno só vê o atraso do que a RLS já mostra a ele, e a lista dele (`/meus-clientes`) ganhou o mesmo botão.
+- **Ficou de fora:** "Cadastro incompleto" (depende de a Talita dizer quais campos contam) e a coluna "Pendências" (era só um número de exemplo do protótipo).
 - **Desativados:** "Mostrar desativados" inclui os clientes desativados.
 
 **Detalhes técnicos.**
@@ -269,6 +270,7 @@ de cadastro. A situação do cliente continua controlada pelo filtro de clientes
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Botão "Com atraso" na lista de clientes da administração e do colaborador interno |
 | 2026-11-16 | este commit | Clientes do colaborador com busca, filtros de segmento e cidade e coluna Projetos comigo |
 | 2026-11-16 | este commit | Lista de clientes com busca por ID, filtro de segmento, colunas Projetos ativos e Portal do cliente e botões com e sem projeto ativo; busca por texto deixa de casar com todos os clientes com documento |
 | 2026-11-13 | este commit | Ficha contextual sem RG, endereço e CEP; `/meus-clientes` só para o colaborador interno ([análise](../analises/restricao-externo-e-agenda-interno.md)) |

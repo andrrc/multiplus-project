@@ -371,6 +371,12 @@ export async function marcarNotificacaoLida(ctx: ContextoUsuario, id: string) {
   return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { id, usuarioId: ctx.usuarioId }, data: { lida: true } }));
 }
 
+/** Desfaz a leitura de um aviso próprio, para a pessoa lembrar de voltar a ele. */
+export async function marcarNotificacaoNaoLida(ctx: ContextoUsuario, id: string) {
+  // O filtro composto impede alterar uma notificação pertencente a outra conta.
+  return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { id, usuarioId: ctx.usuarioId }, data: { lida: false } }));
+}
+
 export async function marcarTodasNotificacoesLidas(ctx: ContextoUsuario) {
   // Atualiza somente notificações não lidas do usuário atual.
   return comContextoDeUsuario(ctx, (tx) => tx.notificacao.updateMany({ where: { usuarioId: ctx.usuarioId, lida: false }, data: { lida: true } }));

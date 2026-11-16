@@ -104,6 +104,11 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
   await page.getByRole("searchbox", { name: "Buscar clientes" }).fill(nomeCliente);
   await expect(page.getByRole("link", { name: nomeCliente })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Projetos comigo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Com atraso/ })).toBeVisible();
+  await page.goto("/minhas-tarefas");
+  await expect(page.getByRole("button", { name: /^Aguardando outras pessoas/ })).toBeVisible();
+  await page.goto("/painel");
+  await expect(page.getByRole("link", { name: /Aguardando outras pessoas/ })).toBeVisible();
 
   // A lista de tarefas tem os filtros de situação e abre a tarefa pela linha.
   await page.setViewportSize({ width: 1024, height: 800 });

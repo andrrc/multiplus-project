@@ -15,6 +15,7 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
+import { aguardaOutrasPessoas } from "@/lib/aguardando-outras-pessoas";
 import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 import { validarUrlHttp } from "@/lib/validacao-url";
 
@@ -541,7 +542,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
         ...(usuario?.pessoaEnvolvidaId ? [{ responsavelId: usuario.pessoaEnvolvidaId }] : []),
       ],
     };
-    return tx.tarefa.findMany({
+    const tarefas = await tx.tarefa.findMany({
       where: {
         ativo: true,
         OR: [
@@ -552,11 +553,24 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       },
       include: {
         projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
-        subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } },
+        // Os pedidos de conclusão pendentes e os responsáveis das subtarefas só servem para "aguardando outras pessoas".
+        solicitacoesConclusao: { where: { status: StatusSolicitacaoConclusao.PENDENTE }, select: { id: true } },
+        subtarefas: {
+          where: { ativo: true },
+          select: {
+            status: true,
+            ativo: true,
+            atribuidoAId: true,
+            atribuidoAUsuarioId: true,
+            solicitacoesConclusao: { where: { status: StatusSolicitacaoConclusao.PENDENTE }, select: { id: true } },
+          },
+        },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
+    const eu = { usuarioId: ctx.usuarioId, pessoaEnvolvidaId: usuario?.pessoaEnvolvidaId ?? null };
+    return tarefas.map((tarefa) => ({ ...tarefa, aguardandoOutras: aguardaOutrasPessoas(tarefa, eu) }));
   });
 }
 

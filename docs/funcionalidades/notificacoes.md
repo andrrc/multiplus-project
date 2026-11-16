@@ -171,6 +171,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Botão "Marcar como não lido" nos avisos já lidos (`marcarNotificacaoNaoLida`, só da própria conta) |
 | 2026-11-16 | este commit | Textos de leitura no masculino, como no protótipo: "Marcar todos como lidos" e "Marcar como lido" |
 | 2026-11-12 | este commit | Ajustar o destaque de avisos não lidos |
 | 2026-11-10 | este commit | Iniciar adaptação visual das caixas de avisos |

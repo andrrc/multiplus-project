@@ -45,6 +45,8 @@ export type ValoresFiltrosListagens = {
   busca?: string;
   /** Coluna ordenada (`prazo`, ou `-prazo` para decrescente); vazio mantém a ordem da consulta. */
   ordem?: string;
+  /** Só as tarefas que aguardam outras pessoas (Minhas tarefas). */
+  aguardando?: boolean;
 };
 
 export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListagens, incluirConcluidas: boolean) {
@@ -56,6 +58,7 @@ export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListage
   if (valores.situacao && valores.situacao !== "todos") parametros.set("situacao", valores.situacao);
   if (valores.busca?.trim()) parametros.set("busca", valores.busca.trim());
   if (valores.ordem) parametros.set("ordem", valores.ordem);
+  if (valores.aguardando) parametros.set("aguardando", "1");
   // O sinalizador só existe em telas que permitem incluir itens concluídos.
   if (incluirConcluidas && valores.mostrarConcluidas) parametros.set("todos", "1");
   // Evita o ponto de interrogação quando nenhum filtro foi selecionado.
