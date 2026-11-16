@@ -78,6 +78,9 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 - **Conteúdo:** todas as tarefas ativas de projetos ativos, com cliente, projeto, prazo,
   status e responsável.
 - **Filtros:** por cliente, projeto, tarefa e responsável. O responsável pode ser pessoa envolvida ou integrante da equipe; "Sem responsável" encontra registros sem nenhum dos dois vínculos. A seleção é aplicada automaticamente e permanece na URL. O filtro considera o responsável direto da tarefa. Ao trocar outro filtro, o responsável é preservado; uma combinação incompatível mostra lista vazia e pode ser limpa em "Todos os responsáveis". Escolher um cliente limita os projetos oferecidos. Os títulos dos seletores ficam disponíveis para leitores de tela; visualmente, a opção selecionada identifica cada campo.
+- **Busca:** o campo "Buscar por tarefa, projeto, cliente ou ID" procura sem diferenciar maiúsculas e acentos; todas as palavras digitadas precisam aparecer (nome da tarefa, projeto, cliente ou código `TAR-…`) (16/11/2026).
+- **Ordenação:** os cabeçalhos "Tarefa" e "Prazo" alternam a ordem crescente e decrescente; tarefa sem prazo fica no fim.
+- **Concluídas:** por padrão, concluídas e canceladas ficam fora; "Mostrar concluídas e canceladas" (`todos=1`) traz a lista completa, com as fechadas depois das abertas.
 - **Destaque:** um indicador mostra quantas subtarefas estão sem responsável.
 - **Progresso das subtarefas:** ao filtrar por responsável (inclusive "Sem responsável"),
   a coluna "Subtarefas" mostra concluídas/total, como `2/6`. Considera todas as subtarefas
@@ -312,6 +315,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Busca de texto, ordenação pelos cabeçalhos e "Mostrar concluídas e canceladas" na lista; o PDF passa a levar a mesma busca, ordem e conclusão da tela ([lib/lista-tarefas.ts](../../src/lib/lista-tarefas.ts)) |
 | 2026-11-12 | este commit | Reorganizar o detalhe da tarefa para colaboradores |
 | 2026-11-12 | este commit | Reorganizar o detalhe da tarefa em áreas responsivas |
 | 2026-11-10 | este commit | Ajustar a apresentação responsiva de Minhas tarefas |

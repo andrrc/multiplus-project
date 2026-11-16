@@ -107,6 +107,7 @@ pessoa (RN-004).
 
 **Como funciona.**
 - **Conteúdo:** lista as subtarefas de todos os projetos, ordenadas por prazo.
+- **Busca e ordem:** o campo "Buscar por subtarefa, tarefa, cliente ou ID" procura sem diferenciar maiúsculas e acentos, e os cabeçalhos "Subtarefa" e "Prazo" alternam a ordem (16/11/2026). O indicador "Em dia" e as contagens acompanham a busca.
 - **Destaques:** linhas brancas, que passam a cinza-papel (`bg-papel`) ao passar o mouse, sem outra cor de fundo,
   nem quando a subtarefa está atrasada. O atraso aparece no
   semáforo ("Atrasado N dias", em vermelho) e na etiqueta de status. O indicador "Em dia"
@@ -218,6 +219,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-16 | este commit | Busca de texto e ordenação pelos cabeçalhos na lista; o PDF leva a mesma busca e ordem |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem e da fila de confirmações |
 | 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |
 | 2026-11-03 | este commit | Exportar a lista filtrada de `/subtarefas` em PDF, sem a fila de pedidos, seguindo a identidade visual aprovada ([análise](../analises/exportacao-pdf-tarefas-subtarefas.md)) |

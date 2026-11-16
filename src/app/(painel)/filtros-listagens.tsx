@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { urlFiltrosListagens, type OpcaoResponsavel, type ValoresFiltrosListagens } from "@/lib/filtro-responsavel";
 import type { ContagemSituacoes, FiltroSituacao } from "@/lib/situacao-prazo";
+import { CampoBuscaLista } from "@/ui/campo-busca-lista";
 
 type ClienteFiltro = { id: string; razaoSocial: string };
 type ProjetoFiltro = { id: string; nome: string; cliente: { id: string } };
@@ -26,6 +27,9 @@ export function FiltrosListagens({
   tarefas,
   responsaveis,
   responsavelInicial = "",
+  buscaInicial = "",
+  ordemAtual = "",
+  placeholderBusca,
   clienteInicial = "",
   projetoInicial = "",
   tarefaInicial = "",
@@ -44,6 +48,12 @@ export function FiltrosListagens({
   tarefas: TarefaFiltro[];
   responsaveis: OpcaoResponsavel[];
   responsavelInicial?: string;
+  /** Termo da busca da URL, para o campo e para os demais filtros o preservarem. */
+  buscaInicial?: string;
+  /** Ordem ativa da URL (`prazo`, `-prazo`), preservada ao mudar os filtros. */
+  ordemAtual?: string;
+  /** Sem ele, a lista não tem campo de busca. */
+  placeholderBusca?: string;
   clienteInicial?: string;
   projetoInicial?: string;
   tarefaInicial?: string;
@@ -61,6 +71,7 @@ export function FiltrosListagens({
   const router = useRouter();
   const [pendente, startTransition] = useTransition();
   const [responsavel, setResponsavel] = useState(responsavelInicial);
+  const [busca, setBusca] = useState(buscaInicial);
   const [cliente, setCliente] = useState(clienteInicial);
   const [projeto, setProjeto] = useState(projetoInicial);
   const [tarefa, setTarefa] = useState(tarefaInicial);
@@ -72,10 +83,10 @@ export function FiltrosListagens({
     (!cliente || item.projeto.clienteId === cliente) &&
     (!projeto || item.projetoId === projeto),
   );
-  const temFiltro = !!(cliente || projeto || tarefa || responsavel) || situacao !== "todos";
+  const temFiltro = !!(cliente || projeto || tarefa || responsavel || busca.trim()) || situacao !== "todos";
 
-  function aplicarFiltros(valores: ValoresFiltrosListagens) {
-    startTransition(() => router.push(urlFiltrosListagens(rota, valores, incluirFiltroConcluidas), { scroll: false }));
+  function aplicarFiltros(valores: Omit<ValoresFiltrosListagens, "busca" | "ordem">, buscaAtual = busca) {
+    startTransition(() => router.push(urlFiltrosListagens(rota, { ...valores, busca: buscaAtual, ordem: ordemAtual }, incluirFiltroConcluidas), { scroll: false }));
   }
 
   function alterarCliente(valor: string) {
@@ -117,6 +128,15 @@ export function FiltrosListagens({
   return (
     <div className="mt-6" aria-label="Filtros da listagem">
       <div className="mb-3 flex flex-wrap items-center gap-2.5">
+        {placeholderBusca && (
+          <CampoBuscaLista
+            valorInicial={buscaInicial}
+            placeholder={placeholderBusca}
+            rotulo="Buscar na lista"
+            aoAlterar={setBusca}
+            aoBuscar={(valor) => aplicarFiltros({ cliente, projeto, tarefa, responsavel, mostrarConcluidas, situacao }, valor)}
+          />
+        )}
         <label className="w-full min-w-0 md:w-auto">
           <span className="sr-only">Cliente</span>
           <select name="cliente" value={cliente} disabled={pendente} onChange={(event) => alterarCliente(event.target.value)} className={`${campoClasse} md:max-w-[220px]`}>

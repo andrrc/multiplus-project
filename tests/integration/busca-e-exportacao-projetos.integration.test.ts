@@ -91,6 +91,16 @@ describe("lista de projetos por cliente e exportação em PDF", () => {
     await expect(gerarExportacaoTarefasPdf(ctxInterno(), new URLSearchParams(), "projetos")).rejects.toThrow("Ação restrita ao Administrador.");
   });
 
+  it("exporta tarefas e subtarefas com a busca, a ordem e a conclusão da tela", async () => {
+    const params = new URLSearchParams({ busca: "Relatório", ordem: "-prazo", todos: "1" });
+    for (const tipo of ["tarefas", "subtarefas"] as const) {
+      const pdf = await gerarExportacaoTarefasPdf(ctxAdmin(), params, tipo);
+      expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+    }
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ busca: "x".repeat(121) }), "tarefas")).rejects.toThrow("O filtro busca é inválido.");
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams([["ordem", "prazo"], ["ordem", "-prazo"]]), "tarefas")).rejects.toThrow("O filtro ordem foi informado mais de uma vez.");
+  });
+
   it("recusa filtro inválido ou repetido", async () => {
     await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ cliente: "../x" }), "projetos")).rejects.toThrow("O filtro cliente é inválido.");
     const repetido = new URLSearchParams([["situacao", "atrasado"], ["situacao", "prazo"]]);

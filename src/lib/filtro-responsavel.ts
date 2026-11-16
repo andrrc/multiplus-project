@@ -41,6 +41,10 @@ export type ValoresFiltrosListagens = {
   mostrarConcluidas: boolean;
   /** Situação do prazo (`atrasado`, `proximo`, `prazo`, `sem`); vazio ou `todos` não filtra. */
   situacao?: string;
+  /** Texto da busca da lista; vazio não filtra. */
+  busca?: string;
+  /** Coluna ordenada (`prazo`, ou `-prazo` para decrescente); vazio mantém a ordem da consulta. */
+  ordem?: string;
 };
 
 export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListagens, incluirConcluidas: boolean) {
@@ -50,6 +54,8 @@ export function urlFiltrosListagens(rota: string, valores: ValoresFiltrosListage
     if (valores[campo]) parametros.set(campo, valores[campo]);
   }
   if (valores.situacao && valores.situacao !== "todos") parametros.set("situacao", valores.situacao);
+  if (valores.busca?.trim()) parametros.set("busca", valores.busca.trim());
+  if (valores.ordem) parametros.set("ordem", valores.ordem);
   // O sinalizador só existe em telas que permitem incluir itens concluídos.
   if (incluirConcluidas && valores.mostrarConcluidas) parametros.set("todos", "1");
   // Evita o ponto de interrogação quando nenhum filtro foi selecionado.

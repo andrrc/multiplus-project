@@ -12,7 +12,8 @@ import { StatusPonto } from "@/ui/status-ponto";
 
 const FONTE = "font-[family-name:var(--font-interface)]";
 
-export type ColunaLista = { titulo: string; largura: string };
+/** `ordenacao`: o cabeçalho vira link que alterna a ordem da coluna; `direcao` é a ordem ativa (ou `null`). */
+export type ColunaLista = { titulo: string; largura: string; ordenacao?: { href: string; direcao: "asc" | "desc" | null } };
 
 export function TabelaLista({
   rotulo,
@@ -36,8 +37,18 @@ export function TabelaLista({
         <thead className="max-md:hidden">
           <tr>
             {colunas.map((coluna) => (
-              <th key={coluna.titulo} scope="col" className="whitespace-nowrap border-b border-linha bg-cabecalho px-4 py-[11px] text-xs font-semibold text-cinza">
-                {coluna.titulo}
+              <th
+                key={coluna.titulo}
+                scope="col"
+                aria-sort={coluna.ordenacao ? (coluna.ordenacao.direcao === "asc" ? "ascending" : coluna.ordenacao.direcao === "desc" ? "descending" : "none") : undefined}
+                className="whitespace-nowrap border-b border-linha bg-cabecalho px-4 py-[11px] text-xs font-semibold text-cinza"
+              >
+                {coluna.ordenacao ? (
+                  <Link href={coluna.ordenacao.href} scroll={false} className="inline-flex items-center gap-1 hover:text-ink">
+                    {coluna.titulo}
+                    <span aria-hidden="true" className={`text-[9px] ${coluna.ordenacao.direcao ? "text-ink" : "text-faint"}`}>{coluna.ordenacao.direcao === "desc" ? "▼" : "▲"}</span>
+                  </Link>
+                ) : coluna.titulo}
               </th>
             ))}
           </tr>

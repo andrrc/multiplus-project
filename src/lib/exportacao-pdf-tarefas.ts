@@ -18,6 +18,8 @@ import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 import { prepararListaProjetos } from "@/lib/lista-projetos";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { rotulosSituacao } from "@/lib/situacao-prazo";
+import { buscarEOrdenarSubtarefas, buscarEOrdenarTarefas, CHAVES_ORDEM_SUBTAREFAS, CHAVES_ORDEM_TAREFAS } from "@/lib/lista-tarefas";
+import { interpretarOrdem, type OrdemLista } from "@/lib/ordenacao-lista";
 import type { ContextoUsuario } from "@/lib/prisma-app";
 
 type TipoLista = "tarefas" | "subtarefas";
@@ -32,7 +34,7 @@ type Celula = {
   tom?: TomPrazo;
 };
 type Linha = Celula[];
-type FiltrosExportacao = FiltrosPrazos & { incluirConcluidas: boolean; responsavel?: string | string[] };
+type FiltrosExportacao = FiltrosPrazos & { incluirConcluidas: boolean; responsavel?: string | string[]; busca: string; ordem: OrdemLista };
 
 const CORES = {
   tinta: "#0B2530",
@@ -65,13 +67,19 @@ function lerFiltros(params: URLSearchParams, tipo: TipoLista): FiltrosExportacao
   const responsaveis = params.getAll("responsavel");
   const responsavel = responsaveis.length > 1 ? responsaveis : responsaveis[0];
   const todos = params.getAll("todos");
+  // Como na tela, concluídas e canceladas ficam fora, a menos que `todos=1` peça a lista completa.
+  const incluirConcluidas = todos.length === 1 && todos[0] === "1";
+  const busca = valorUnico(params, "busca") ?? "";
+  if (busca.length > 120) throw new Error("O filtro busca é inválido.");
   return {
     clienteId,
     projetoId,
     tarefaId,
     responsavel,
-    pendentes: tipo === "subtarefas" && !(todos.length === 1 && todos[0] === "1"),
-    incluirConcluidas: tipo === "subtarefas" && todos.length === 1 && todos[0] === "1",
+    pendentes: !incluirConcluidas,
+    incluirConcluidas,
+    busca,
+    ordem: interpretarOrdem(valorUnico(params, "ordem"), tipo === "tarefas" ? CHAVES_ORDEM_TAREFAS : CHAVES_ORDEM_SUBTAREFAS),
   };
 }
 
@@ -95,7 +103,6 @@ function textoFiltros(
   projetos: Array<{ id: string; nome: string }>,
   tarefas: Array<{ id: string; nome: string }>,
   responsaveis: Array<{ valor: string; nome: string }>,
-  tipo: TipoLista,
 ) {
   const partes = [
     `Cliente: ${labelFiltro(filtros.clienteId, clientes.map(item => ({ id: item.id, nome: item.razaoSocial })), "Todos")}`,
@@ -103,7 +110,8 @@ function textoFiltros(
     `Tarefa: ${labelFiltro(filtros.tarefaId, tarefas, "Todas")}`,
     `Responsável: ${labelResponsavel(filtros.responsavel, responsaveis)}`,
   ];
-  if (tipo === "subtarefas") partes.push(`Situação: ${filtros.incluirConcluidas ? "Todas" : "Pendentes"}`);
+  partes.push(`Situação: ${filtros.incluirConcluidas ? "Todas" : "Pendentes"}`);
+  if (filtros.busca) partes.push(`Busca: "${filtros.busca}"`);
   return partes.join("  ·  ");
 }
 
@@ -453,18 +461,18 @@ export async function gerarExportacaoTarefasPdf(ctx: ContextoUsuario, params: UR
     listarResponsaveisParaFiltro(ctx, tipo, baseResponsaveis),
     buscarLimitesSemaforo(ctx),
   ]);
-  const resumo = textoFiltros(filtros, clientes, projetos.map(item => ({ id: item.id, nome: item.nome })), tarefasFiltro.map(item => ({ id: item.id, nome: `${item.projeto.nome} · ${item.nome}` })), responsaveis, tipo);
+  const resumo = textoFiltros(filtros, clientes, projetos.map(item => ({ id: item.id, nome: item.nome })), tarefasFiltro.map(item => ({ id: item.id, nome: `${item.projeto.nome} · ${item.nome}` })), responsaveis);
 
   if (tipo === "tarefas") {
     const tipoResponsavel = interpretarResponsavel(filtros.responsavel).tipo;
     const mostrarProgresso = tipoResponsavel !== "todos" && tipoResponsavel !== "invalido";
-    const tarefas = await listarPrazos(ctx, { ...filtrosConsulta, pendentes: false }, mostrarProgresso);
+    const tarefas = buscarEOrdenarTarefas(await listarPrazos(ctx, filtrosConsulta, mostrarProgresso), filtros.busca, filtros.ordem);
     const colunas = cabecalhoColunas(tipo, mostrarProgresso);
     const linhas = tarefas.map(tarefa => linhaTarefa(tarefa, limites, mostrarProgresso));
     return gerarBufferPdf("Tarefas", `${tarefas.length} ${tarefas.length === 1 ? "tarefa" : "tarefas"}`, resumo, colunas, largurasColunas(tipo, mostrarProgresso), linhas);
   }
 
-  const subtarefas = await listarSubtarefasPrazos(ctx, filtrosConsulta);
+  const subtarefas = buscarEOrdenarSubtarefas(await listarSubtarefasPrazos(ctx, filtrosConsulta), filtros.busca, filtros.ordem);
   const colunas = cabecalhoColunas(tipo, false);
   const linhas = subtarefas.map(subtarefa => linhaSubtarefa(subtarefa, limites));
   return gerarBufferPdf("Subtarefas", `${subtarefas.length} ${subtarefas.length === 1 ? "subtarefa" : "subtarefas"}`, resumo, colunas, largurasColunas(tipo, false), linhas);

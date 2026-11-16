@@ -6,6 +6,9 @@ import Link from "next/link";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarClientesParaProjeto, listarProjetos, listarPrazos, listarTarefasParaFiltro, listarResponsaveisParaFiltro } from "@/lib/projetos-tarefas";
 import { FiltrosListagens } from "../filtros-listagens";
+import { interpretarBuscaLista } from "@/lib/busca-lista";
+import { hrefDeOrdenacao, interpretarOrdem } from "@/lib/ordenacao-lista";
+import { buscarEOrdenarTarefas, CHAVES_ORDEM_TAREFAS } from "@/lib/lista-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularDiasRestantes } from "@/lib/datas";
 import { contarSituacoes, interpretarSituacao, rotulosSituacao, situacaoDoPrazo } from "@/lib/situacao-prazo";
@@ -31,31 +34,41 @@ function ProgressoSubtarefas({ progresso }: { progresso?: { concluidas: number; 
   return <span className="font-[family-name:var(--font-interface)] tabular-nums" role="img" aria-label={`${progresso.concluidas} de ${progresso.total} subtarefas concluídas`}>{progresso.concluidas}/{progresso.total}</span>;
 }
 
-export default async function TarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; cliente?: string; projeto?: string; tarefa?: string; situacao?: string | string[] }> }) {
+export default async function TarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; cliente?: string; projeto?: string; tarefa?: string; situacao?: string | string[]; busca?: string | string[]; ordem?: string | string[]; todos?: string }> }) {
   // A página é administrativa; a action de domínio também verifica ADMIN antes de ler dados.
   const ctx = await exigirAcessoARota("/tarefas");
   const filtros = await searchParams;
   // A situação do prazo é aplicada nesta página; a exportação em PDF usa só os filtros da consulta.
   const { situacao: situacaoParametro, ...filtrosDaConsulta } = filtros;
   const hrefExportacao = urlExportacaoPdf("/api/exportacao-pdf/tarefas", filtrosDaConsulta);
+  const colunas = COLUNAS.map((coluna) => {
+    const chave = coluna.titulo === "Tarefa" ? "tarefa" : coluna.titulo === "Prazo" ? "prazo" : null;
+    if (!chave) return coluna;
+    const ordemAtiva = interpretarOrdem(filtros.ordem, CHAVES_ORDEM_TAREFAS);
+    return { ...coluna, ordenacao: { href: hrefDeOrdenacao("/tarefas", filtros, ordemAtiva, chave), direcao: ordemAtiva?.chave === chave ? ordemAtiva.direcao : null } };
+  });
   // Determina se a coluna agregada deve ser solicitada ao backend para este filtro.
   const tipoResponsavel = interpretarResponsavel(filtros.responsavel).tipo;
   const responsavelInvalido = tipoResponsavel === "invalido";
   const mostrarProgresso = tipoResponsavel !== "todos" && !responsavelInvalido;
   const responsavelInicial = typeof filtros.responsavel === "string" ? filtros.responsavel : filtros.responsavel ? "invalido" : "";
+  // Por padrão, concluídas e canceladas ficam fora; `todos=1` solicita a lista completa.
+  const pendentes = filtros.todos !== "1";
+  const busca = interpretarBuscaLista(filtros.busca);
+  const ordem = interpretarOrdem(filtros.ordem, CHAVES_ORDEM_TAREFAS);
   // Busca lista, filtros e limites em paralelo, mantendo a consulta principal restrita no servidor.
   const [tarefasConsulta, projetos, clientes, tarefasFiltro, limites, responsaveis] = await Promise.all([
-    listarPrazos(ctx, { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, responsavel: filtros.responsavel, pendentes: false }, mostrarProgresso),
+    listarPrazos(ctx, { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, responsavel: filtros.responsavel, pendentes }, mostrarProgresso),
     listarProjetos(ctx),
     listarClientesParaProjeto(ctx),
     listarTarefasParaFiltro(ctx),
     buscarLimitesSemaforo(ctx),
-    listarResponsaveisParaFiltro(ctx, "tarefas", { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, pendentes: false }),
+    listarResponsaveisParaFiltro(ctx, "tarefas", { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, pendentes }),
   ]);
 
   // Cada tarefa recebe sua situação de prazo; as contagens dos botões usam a lista antes desse filtro.
   const situacaoFiltro = interpretarSituacao(situacaoParametro);
-  const itens = tarefasConsulta.map((tarefa) => ({
+  const itens = buscarEOrdenarTarefas(tarefasConsulta, busca, ordem).map((tarefa) => ({
     tarefa,
     situacao: situacaoDoPrazo(
       { diasRestantes: tarefa.prazo ? calcularDiasRestantes(tarefa.prazo) : null, fechado: tarefa.status === "CONCLUIDO" || tarefa.status === "CANCELADO" || tarefa.ativo === false },
@@ -84,6 +97,11 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
       projetoInicial={filtros.projeto}
       tarefaInicial={filtros.tarefa}
       situacaoInicial={situacaoFiltro}
+      buscaInicial={busca}
+      ordemAtual={filtros.ordem && typeof filtros.ordem === "string" ? filtros.ordem : ""}
+      placeholderBusca="Buscar por tarefa, projeto, cliente ou ID"
+      mostrarConcluidasInicial={!pendentes}
+      incluirFiltroConcluidas
       rotulosSituacao={rotulosSituacao(limites.diasAmareloAte)}
       contagens={contagens}
       total={visiveis.length}
@@ -92,7 +110,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
     />
     {responsavelInvalido && <p role="alert" className="mb-3 text-sm text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
     {visiveis.length === 0 ? <Vazio titulo="Nenhuma tarefa nesta seleção." descricao="Não há tarefas ativas ou os filtros não encontraram tarefas." /> : (
-      <TabelaLista rotulo="Tabela de tarefas" colunas={COLUNAS}>
+      <TabelaLista rotulo="Tabela de tarefas" colunas={colunas}>
         {visiveis.map(({ tarefa }) => {
           const nomeResponsavel = tarefa.responsavel?.nome ?? tarefa.responsavelUsuario?.nome;
           return <LinhaLista key={tarefa.id}>

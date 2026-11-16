@@ -9,6 +9,9 @@ import { indicadorDePrazosSubtarefas, listarClientesParaProjeto, listarProjetos,
 import { Etiqueta, inputClass } from "@/ui/campo";
 import { botaoPerigo, botaoPrimario, botaoSecundario } from "@/ui/botoes";
 import { FiltrosListagens } from "../filtros-listagens";
+import { interpretarBuscaLista } from "@/lib/busca-lista";
+import { hrefDeOrdenacao, interpretarOrdem } from "@/lib/ordenacao-lista";
+import { buscarEOrdenarSubtarefas, CHAVES_ORDEM_SUBTAREFAS } from "@/lib/lista-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularDiasRestantes } from "@/lib/datas";
 import { contarSituacoes, interpretarSituacao, rotulosSituacao, situacaoDoPrazo } from "@/lib/situacao-prazo";
@@ -26,7 +29,7 @@ const COLUNAS = [
   { titulo: "Status", largura: "16%" },
 ];
 
-export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; projeto?: string; cliente?: string; tarefa?: string; todos?: string; situacao?: string | string[] }> }) {
+export default async function SubtarefasPage({ searchParams }: { searchParams: Promise<{ responsavel?: string | string[]; projeto?: string; cliente?: string; tarefa?: string; todos?: string; situacao?: string | string[]; busca?: string | string[]; ordem?: string | string[] }> }) {
   // A rota gerencial exige ADMIN; consultas e actions continuam protegidas no servidor.
   const ctx = await exigirAcessoARota("/subtarefas");
   const filtros = await searchParams;
@@ -36,6 +39,15 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     tarefa: filtros.tarefa,
     responsavel: filtros.responsavel,
     todos: filtros.todos,
+    busca: typeof filtros.busca === "string" ? filtros.busca : undefined,
+    ordem: typeof filtros.ordem === "string" ? filtros.ordem : undefined,
+  });
+  const busca = interpretarBuscaLista(filtros.busca);
+  const ordem = interpretarOrdem(filtros.ordem, CHAVES_ORDEM_SUBTAREFAS);
+  const colunas = COLUNAS.map((coluna) => {
+    const chave = coluna.titulo === "Subtarefa" ? "subtarefa" : coluna.titulo === "Prazo" ? "prazo" : null;
+    if (!chave) return coluna;
+    return { ...coluna, ordenacao: { href: hrefDeOrdenacao("/subtarefas", filtros, ordem, chave), direcao: ordem?.chave === chave ? ordem.direcao : null } };
   });
   // Parâmetro repetido ou malformado é tratado como inválido e não amplia a lista.
   const responsavelInvalido = interpretarResponsavel(filtros.responsavel).tipo === "invalido";
@@ -53,10 +65,12 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     listarSolicitacoesConclusaoPendentes(ctx),
   ]);
   // O indicador usa a mesma coleção que será exibida após a aplicação dos filtros.
-  const indicador = indicadorDePrazosSubtarefas(subtarefas);
+  // A busca e a ordem valem para a lista inteira: o indicador "Em dia" e as contagens acompanham o que aparece.
+  const subtarefasDaLista = buscarEOrdenarSubtarefas(subtarefas, busca, ordem);
+  const indicador = indicadorDePrazosSubtarefas(subtarefasDaLista);
   // Cada subtarefa recebe sua situação de prazo; as contagens dos botões usam a lista antes desse filtro.
   const situacaoFiltro = interpretarSituacao(filtros.situacao);
-  const itens = subtarefas.map((subtarefa) => ({
+  const itens = subtarefasDaLista.map((subtarefa) => ({
     subtarefa,
     situacao: situacaoDoPrazo(
       { diasRestantes: subtarefa.prazo ? calcularDiasRestantes(subtarefa.prazo) : null, fechado: subtarefa.status === StatusSubtarefa.CONCLUIDO || subtarefa.status === StatusSubtarefa.CANCELADO || subtarefa.ativo === false },
@@ -121,6 +135,9 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
       mostrarConcluidasInicial={!pendentes}
       incluirFiltroConcluidas
       situacaoInicial={situacaoFiltro}
+      buscaInicial={busca}
+      ordemAtual={typeof filtros.ordem === "string" ? filtros.ordem : ""}
+      placeholderBusca="Buscar por subtarefa, tarefa, cliente ou ID"
       rotulosSituacao={rotulosSituacao(limites.diasAmareloAte)}
       contagens={contagens}
       total={visiveis.length}
@@ -129,7 +146,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     />
     {responsavelInvalido && <p role="alert" className="mb-3 text-sm text-critico">Filtro de responsável inválido. Selecione um responsável ou “Todos os responsáveis”.</p>}
     {visiveis.length === 0 ? <Vazio titulo="Nenhuma subtarefa nesta seleção." descricao="A fila está limpa ou os filtros não encontraram subtarefas." /> : (
-      <TabelaLista rotulo="Tabela de subtarefas" colunas={COLUNAS}>
+      <TabelaLista rotulo="Tabela de subtarefas" colunas={colunas}>
         {visiveis.map(({ subtarefa: s }) => {
           const nomeResponsavel = s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome;
           return <LinhaLista key={s.id}>

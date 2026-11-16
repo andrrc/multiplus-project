@@ -82,6 +82,15 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
     await expect.poll(() => lista.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
     await expect(lista.getByRole("columnheader", { name: "Status" }).or(lista.getByRole("columnheader", { name: "Situação" }))).toBeVisible();
   }
+  // Tarefas: busca de texto e ordenação pelo cabeçalho.
+  await page.goto("/tarefas");
+  await page.getByRole("searchbox", { name: "Buscar na lista" }).fill("Tarefa teste");
+  await expect(page).toHaveURL(/busca=Tarefa\+teste/);
+  const tabelaTarefas = page.getByRole("region", { name: "Tabela de tarefas" });
+  await expect(tabelaTarefas.getByRole("link", { name: "Tarefa teste", exact: true })).toBeVisible();
+  await expect(tabelaTarefas.getByRole("link", { name: "Prazo de exemplo", exact: true })).toHaveCount(0);
+  await tabelaTarefas.getByRole("columnheader", { name: /Prazo/ }).getByRole("link").click();
+  await expect(page).toHaveURL(/ordem=prazo/);
   await page.goto("/clientes");
   const clientes = page.getByRole("region", { name: "Tabela de clientes" });
   await expect(clientes).toBeVisible();
