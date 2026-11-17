@@ -87,10 +87,10 @@ Os rótulos passaram a usar minúsculas ("Colaborador interno", "Meus projetos",
 tarefas", "Meu perfil"). A paleta de tokens e a tipografia estão na
 [identidade visual](../Identidade_Visual_Multiplus.md).
 
-**Pendências desta área.** A busca geral da barra superior, o seletor de unidade e o botão
-"Gerar relatório" do cliente e a barra do colaborador externo dependem de dados e regras
-ainda não decididos e não foram criados. O item Painel e a página de Configurações dependem
-de rotas novas.
+**Pendências desta área.** O seletor de unidade e o botão "Gerar relatório" do cliente e a
+barra do colaborador externo dependem de dados e regras ainda não decididos e não foram
+criados. A busca geral da barra superior existe (veja "Busca geral"), assim como o Painel e as
+Configurações (veja "Painéis e Configurações").
 
 ### Listas de projetos, tarefas e subtarefas
 
@@ -220,8 +220,9 @@ comprovante mostra quantas fotos ou arquivos são pedidos; no detalhe fica a tel
 da tarefa e do projeto, a data com o selo de prazo, o andamento das subtarefas e a recorrência. Tocar no cartão abre o detalhe da tarefa.
 
 **Detalhes técnicos.** `minhas-tarefas/page.tsx` escolhe a tela pelo perfil e `minhas-tarefas/tela-externo.tsx` a monta, com os mesmos
-dados de antes. Esta tela é só visual: **o menu e os dados do externo continuam os mesmos do interno** (Meus projetos e Clientes seguem
-no menu, e cliente e projeto aparecem nas tarefas). O teste `tests/browser/colaborador.spec.ts` entra como externo, confere a saudação,
+dados de antes. O menu do externo tem só Minhas tarefas, Avisos e Meu perfil: Meus projetos, Clientes e Agenda saem do menu e da rota
+(`src/lib/navegacao.ts`, restrição aprovada em 13/11/2026, [análise](../analises/restricao-externo-e-agenda-interno.md)). A tela mostra o
+nome do projeto de cada tarefa, mas não o cliente. O teste `tests/browser/colaborador.spec.ts` entra como externo, confere a saudação,
 o grupo e a ausência de rolagem lateral a 375 px.
 
 **Pendências desta área.** Dependem de etapas seguintes da [análise dos comprovantes](../analises/comprovantes-colaborador-externo.md): parar o
@@ -322,8 +323,9 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
   cliente, vídeo e contatos das Instruções, "Ver como cliente", último acesso, duplicar e
   exportar projeto, pausa de prazo, status "A iniciar" de subtarefa e pedidos de prazo do
   colaborador externo.
-- A restrição de menu e de dados do colaborador externo e a liberação da agenda ao colaborador
-  interno mudam permissão e exigem análise aprovada antes de aplicar.
+- A restrição de menu e de dados do colaborador externo e a agenda do colaborador interno
+  (`/minha-agenda`) foram aprovadas em 13/11/2026 e já estão aplicadas ([análise](../analises/restricao-externo-e-agenda-interno.md)).
+  Qualquer nova mudança de permissão continua exigindo análise aprovada antes.
 
 ## Histórico de alterações
 
