@@ -56,3 +56,21 @@ export async function lerImagemComentario(chave: string): Promise<Buffer> {
   for await (const parte of stream) partes.push(Buffer.isBuffer(parte) ? parte : Buffer.from(parte));
   return Buffer.concat(partes);
 }
+
+/** Guarda um comprovante no bucket privado. A chave é sempre gerada aqui, nunca montada a partir do nome enviado. */
+export async function armazenarComprovante(dados: Buffer, tipo: string, extensao: string): Promise<string> {
+  await garantirBucketPrivado();
+  const chave = `comprovantes/${randomUUID()}.${extensao}`;
+  await storage.putObject(bucket, chave, dados, dados.length, { "Content-Type": tipo });
+  return chave;
+}
+
+/** Remove um objeto do bucket (rascunho de comprovante descartado ou envio que falhou no banco). */
+export async function removerObjeto(chave: string): Promise<void> {
+  await storage.removeObject(bucket, chave);
+}
+
+/** Lê um objeto do bucket privado; a rota autenticada que chama já conferiu o acesso. */
+export async function lerObjeto(chave: string): Promise<Buffer> {
+  return lerImagemComentario(chave);
+}

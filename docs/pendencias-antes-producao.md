@@ -85,6 +85,8 @@ Este checklist reúne o que precisa ser resolvido antes de disponibilizar o sist
 - [ ] Confirmar que a rota autenticada impede acesso anônimo às imagens.
 - [ ] Testar imagem de comentário com cada perfil de usuário.
 - [ ] Definir backup e retenção das imagens.
+- [ ] Definir por quanto tempo guardar os comprovantes (fotos e arquivos) e se haverá limpeza automática; conferir que o backup do volume do MinIO os inclui e que o disco comporta o crescimento (até 20 arquivos de 10 MB por envio).
+- [ ] Confirmar com a Talita o aviso de privacidade (pessoas, placas e documentos pessoais nas fotos) e a política de acesso: o cliente nunca vê comprovantes.
 - [ ] Testar comportamento quando o storage estiver indisponível.
 
 ### 6. Job diário de notificações

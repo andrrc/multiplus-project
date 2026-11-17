@@ -213,8 +213,10 @@ ou permissão novos.
 ### Tela de tarefas do colaborador externo
 
 **Como funciona.** Quem entra como colaborador externo vê, em Minhas tarefas, uma tela própria feita para o celular: saudação com o
-primeiro nome, pílulas de resumo (atrasadas, vencem em breve e para fazer) e as tarefas em cartões grandes, agrupadas em "Para fazer" e
-"Concluídas". Cada cartão tem uma barra lateral na cor do prazo (vermelho vencido, âmbar próximo, verde no prazo, roxo visita), o nome
+primeiro nome, pílulas de resumo (atrasadas, vencem em breve, devolvidas, para fazer e aguardando conferência) e as tarefas em cartões
+grandes, agrupadas em "Devolvidas para correção" (com o motivo), "Para fazer", "Aguardando conferência" e "Concluídas". O cartão do item que exige
+comprovante mostra quantas fotos ou arquivos são pedidos; no detalhe fica a tela de envio (lista "o que enviar", aviso de privacidade, "Tirar foto",
+"Galeria ou arquivo", contador, observação e "Enviar comprovante"), descrita em [Tarefas](tarefas.md) (T6b). Cada cartão tem uma barra lateral na cor do prazo (vermelho vencido, âmbar próximo, verde no prazo, roxo visita), o nome
 da tarefa e do projeto, a data com o selo de prazo, o andamento das subtarefas e a recorrência. Tocar no cartão abre o detalhe da tarefa.
 
 **Detalhes técnicos.** `minhas-tarefas/page.tsx` escolhe a tela pelo perfil e `minhas-tarefas/tela-externo.tsx` a monta, com os mesmos
@@ -222,9 +224,8 @@ dados de antes. Esta tela é só visual: **o menu e os dados do externo continua
 no menu, e cliente e projeto aparecem nas tarefas). O teste `tests/browser/colaborador.spec.ts` entra como externo, confere a saudação,
 o grupo e a ausência de rolagem lateral a 375 px.
 
-**Pendências desta área.** A restrição do menu e dos dados do externo (só Minhas tarefas, Avisos e Instruções, sem cliente nem projeto)
-muda permissão e exige análise aprovada antes. Também dependem de dados novos: grupos "Devolvidas para correção" e "Aguardando conferência",
-envio de comprovantes, pedido de prazo, mensagens e a página de Instruções.
+**Pendências desta área.** Dependem de etapas seguintes da [análise dos comprovantes](../analises/comprovantes-colaborador-externo.md): parar o
+prazo durante a conferência (etapa 2), pedido de prazo e impedimento (etapa 3), mensagens e a página de Instruções com foto de exemplo (etapa 4).
 
 ### Painéis e Configurações
 
@@ -315,7 +316,8 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 - **Migração para os protótipos de `telas-novas/` (iniciada em 13/11/2026).** A meta é copiar o
   visual por inteiro. O mapa de cada protótipo, a página real e a situação está em
   [mapeamento](../mapeamento-telas-talita.md). Ficam como pendência, por exigirem dado, regra ou
-  permissão: comprovantes (envio, confirmação e rejeição), cobrança de responsável, histórico
+  permissão: parada do prazo durante a conferência e pedido de prazo (etapas 2 e 3 dos
+  comprovantes; o envio e a conferência já existem), cobrança de responsável, histórico
   automático, régua de avisos, resumo mensal, PDF de relatório do cliente, unidades e Drive do
   cliente, vídeo e contatos das Instruções, "Ver como cliente", último acesso, duplicar e
   exportar projeto, pausa de prazo, status "A iniciar" de subtarefa e pedidos de prazo do
@@ -327,6 +329,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-17 | este commit | Tela de tarefas do externo em grupos (devolvidas, para fazer, aguardando conferência, concluídas) e tela de envio de comprovante |
 | 2026-11-16 | este commit | Busca de texto e ordenação nas listas (Tarefas, Subtarefas, Clientes, Usuários e as dos colaboradores) |
 | 2026-11-13 | este commit | Busca geral na barra superior (`/busca`), filtro de cliente e Exportar PDF na lista de projetos |
 | 2026-11-13 | este commit | Menu do colaborador externo reduzido a tarefas, avisos e perfil; agenda do interno em `/minha-agenda` |

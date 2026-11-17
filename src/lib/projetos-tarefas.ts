@@ -16,6 +16,7 @@ import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etique
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 import { aguardaOutrasPessoas } from "@/lib/aguardando-outras-pessoas";
+import { situacaoDaTarefaDoColaborador, situacaoDoEnvio } from "@/lib/comprovantes-arquivos";
 import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 import { validarUrlHttp } from "@/lib/validacao-url";
 
@@ -43,6 +44,10 @@ export type DadosTarefa = {
   diasAntecedencia?: number | null;
   status?: StatusTarefa;
   colaboradorPodeCriarSubtarefas?: boolean;
+  /** Comprovante exigido (só a administração define): quantidade e lista "o que enviar". `undefined` preserva o valor. */
+  comprovanteExigido?: boolean;
+  comprovanteQuantidade?: number | null;
+  comprovanteInstrucoes?: string[];
 };
 
 export type DadosSubtarefa = {
@@ -55,6 +60,10 @@ export type DadosSubtarefa = {
   novasEtiquetas?: EtiquetaSelecionada[];
   atribuidoAId?: string | null;
   atribuidoAUsuarioId?: string | null;
+  /** Comprovante exigido (só a administração define): quantidade e lista "o que enviar". `undefined` preserva o valor. */
+  comprovanteExigido?: boolean;
+  comprovanteQuantidade?: number | null;
+  comprovanteInstrucoes?: string[];
 };
 
 export type DadosDocumentoProjeto = {
@@ -209,6 +218,8 @@ export async function listarSolicitacoesConclusaoPendentes(ctx: ContextoUsuario)
   return comContextoDeUsuario(ctx, (tx) => tx.solicitacaoConclusao.findMany({
     where: { status: StatusSolicitacaoConclusao.PENDENTE },
     include: {
+      // Pedido com comprovantes é conferido na página do item, onde os arquivos aparecem.
+      _count: { select: { arquivos: true } },
       solicitadoPor: { select: { id: true, nome: true } },
       tarefa: {
         include: {
@@ -237,22 +248,31 @@ export async function buscarSolicitacaoConclusaoPendente(ctx: ContextoUsuario, t
   }));
 }
 
-/** Registra o pedido do colaborador via função SQL que valida vínculo e permissão. */
-export async function solicitarConclusao(ctx: ContextoUsuario, tipo: "TAREFA" | "SUBTAREFA", itemId: string) {
+/**
+ * Registra o pedido do colaborador via função SQL que valida vínculo e permissão. Os comprovantes anexados antes (rascunhos
+ * do próprio colaborador neste item) entram no envio; se o item exige comprovante, o banco confere a quantidade.
+ */
+export async function solicitarConclusao(ctx: ContextoUsuario, tipo: "TAREFA" | "SUBTAREFA", itemId: string, observacao?: string | null) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Ação disponível somente para colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
     // A função SQL verifica a autorização e grava a solicitação atomicamente.
-    const linhas = await tx.$queryRaw<{ id: string }[]>`SELECT solicitar_conclusao(${tipo}, ${itemId}) AS id`;
+    const linhas = await tx.$queryRaw<{ id: string }[]>`SELECT solicitar_conclusao(${tipo}, ${itemId}, CAST(${observacao?.trim() || null} AS TEXT)) AS id`;
     const solicitacao = await tx.solicitacaoConclusao.findUniqueOrThrow({ where: { id: linhas[0].id } });
     const item = tipo === "TAREFA"
       ? await tx.tarefa.findUniqueOrThrow({ where: { id: itemId }, select: { id: true, nome: true, projetoId: true } })
       : await tx.subtarefa.findUniqueOrThrow({ where: { id: itemId }, select: { id: true, titulo: true, tarefaId: true } });
+    const tarefaId = tipo === "TAREFA" ? itemId : (item as { tarefaId: string }).tarefaId;
+    const projetoId = tipo === "TAREFA"
+      ? (item as { projetoId: string }).projetoId
+      : (await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId }, select: { projetoId: true } })).projetoId;
     return {
       solicitacao,
       tipo,
       itemId,
       titulo: tipo === "TAREFA" ? (item as { nome: string }).nome : (item as { titulo: string }).titulo,
-      tarefaId: tipo === "TAREFA" ? itemId : (item as { tarefaId: string }).tarefaId,
+      tarefaId,
+      projetoId,
+      totalComprovantes: await tx.arquivoComprovante.count({ where: { solicitacaoId: solicitacao.id } }),
     };
   });
 }
@@ -278,12 +298,19 @@ export async function decidirSolicitacaoConclusao(
   aprovar: boolean,
   comentario?: string | null,
 ) {
-  exigirAdministrador(ctx);
+  if (ctx.perfil !== "ADMIN" && ctx.perfil !== "ADMIN_INTERNO") throw new Error("Ação restrita ao Administrador.");
   // Texto vazio equivale à ausência de comentário; o limite é conferido no servidor.
   const observacao = comentario?.trim() || null;
   if (observacao && observacao.length > 2000) throw new Error("O comentário deve ter no máximo 2000 caracteres.");
 
   return comContextoDeUsuario(ctx, async (tx) => {
+    if (ctx.perfil === "ADMIN_INTERNO") {
+      // O interno só decide o pedido de um colaborador externo, em projeto ao qual está atribuído. A função do banco confere
+      // isso e libera a decisão apenas deste pedido, nesta transação; sem direito, a resposta é a mesma de antes.
+      const [{ ok }] = await tx.$queryRaw<{ ok: boolean }[]>`SELECT pode_decidir_solicitacao_delegada(${solicitacaoId}) AS ok`;
+      if (!ok) throw new Error("Ação restrita ao Administrador.");
+      await tx.$queryRaw`SELECT habilitar_decisao_delegada(${solicitacaoId})`;
+    }
     await tx.$queryRaw`SELECT "id" FROM "solicitacoes_conclusao" WHERE "id" = ${solicitacaoId} FOR UPDATE`;
     const atual = await tx.solicitacaoConclusao.findUnique({
       where: { id: solicitacaoId },
@@ -293,6 +320,10 @@ export async function decidirSolicitacaoConclusao(
       },
     });
     if (!atual || atual.status !== StatusSolicitacaoConclusao.PENDENTE) throw new Error("RN-007: esta solicitação já foi decidida ou não existe.");
+    // Devolver um envio com comprovantes exige o motivo, que volta ao colaborador (o banco repete esta regra).
+    if (!aprovar && !observacao && await tx.arquivoComprovante.count({ where: { solicitacaoId } }) > 0) {
+      throw new Error("RN-009: informe o motivo da devolução do comprovante.");
+    }
 
     let proximaId: string | null = null;
     if (aprovar && atual.tarefa) {
@@ -553,8 +584,9 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       },
       include: {
         projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
-        // Os pedidos de conclusão pendentes e os responsáveis das subtarefas só servem para "aguardando outras pessoas".
-        solicitacoesConclusao: { where: { status: StatusSolicitacaoConclusao.PENDENTE }, select: { id: true } },
+        // O pedido mais recente de cada item vale para "aguardando outras pessoas" (pendente) e para os grupos de
+        // comprovante (pendente = aguardando conferência; rejeitado = devolvida). Pendente é sempre o mais recente.
+        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true } },
         subtarefas: {
           where: { ativo: true },
           select: {
@@ -562,7 +594,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
             ativo: true,
             atribuidoAId: true,
             atribuidoAUsuarioId: true,
-            solicitacoesConclusao: { where: { status: StatusSolicitacaoConclusao.PENDENTE }, select: { id: true } },
+            solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true } },
           },
         },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
@@ -570,7 +602,27 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
     const eu = { usuarioId: ctx.usuarioId, pessoaEnvolvidaId: usuario?.pessoaEnvolvidaId ?? null };
-    return tarefas.map((tarefa) => ({ ...tarefa, aguardandoOutras: aguardaOutrasPessoas(tarefa, eu) }));
+    const atribuidasATarefa = new Set(atribuicoes.map((a) => a.entidadeId));
+    return tarefas.map((tarefa) => {
+      const pendentes = <T extends { status: string }>(lista: T[]) => lista.filter((pedido) => pedido.status === StatusSolicitacaoConclusao.PENDENTE);
+      const subtarefas = tarefa.subtarefas.map((sub) => ({ ...sub, solicitacoesConclusao: pendentes(sub.solicitacoesConclusao) }));
+      const doColaborador = { ...tarefa, solicitacoesConclusao: pendentes(tarefa.solicitacoesConclusao), subtarefas };
+      const { situacao, motivoDevolucao } = situacaoDaTarefaDoColaborador(
+        {
+          status: tarefa.status,
+          ativo: tarefa.ativo,
+          meu: atribuidasATarefa.has(tarefa.id) || tarefa.responsavelUsuarioId === ctx.usuarioId || (!!eu.pessoaEnvolvidaId && tarefa.responsavelId === eu.pessoaEnvolvidaId),
+          ultimaSolicitacao: tarefa.solicitacoesConclusao[0] ?? null,
+        },
+        tarefa.subtarefas.map((sub) => ({
+          status: sub.status,
+          ativo: sub.ativo,
+          meu: sub.atribuidoAUsuarioId === ctx.usuarioId || (!!eu.pessoaEnvolvidaId && sub.atribuidoAId === eu.pessoaEnvolvidaId),
+          ultimaSolicitacao: sub.solicitacoesConclusao[0] ?? null,
+        })),
+      );
+      return { ...doColaborador, aguardandoOutras: aguardaOutrasPessoas(doColaborador, eu), situacaoEnvio: situacao, motivoDevolucao };
+    });
   });
 }
 
@@ -584,11 +636,13 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       where: { id: tarefaId, ativo: true },
       select: {
         id: true, numeroLocal: true, projetoId: true, nome: true, descricao: true, prazo: true, status: true, periodicidade: true, responsavelId: true, responsavelUsuarioId: true, colaboradorPodeCriarSubtarefas: true, criadoEm: true, criadoPorNome: true,
+        comprovanteExigido: true, comprovanteQuantidade: true, comprovanteInstrucoes: true,
         projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { razaoSocial: true, numeroIdentificacao: true } } } },
         subtarefas: {
           where: { ativo: true },
           select: {
             id: true, numeroLocal: true, titulo: true, descricao: true, prazo: true, status: true, etiquetas: true,
+            comprovanteExigido: true, comprovanteQuantidade: true, comprovanteInstrucoes: true,
             atribuidoAId: true, atribuidoAUsuarioId: true,
             atribuidoA: { select: { nome: true } },
             atribuidoAUsuario: { select: { nome: true } },
@@ -628,18 +682,72 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
     const solicitacaoTarefa = solicitacoesPendentes.find((pedido) => pedido.tarefaId === tarefa.id) ?? null;
     const solicitacoesPorSubtarefa = new Map(solicitacoesPendentes.filter((pedido) => pedido.subtarefaId).map((pedido) => [pedido.subtarefaId!, pedido]));
 
+    // Envios (pedidos com comprovantes, de todos os estados) e arquivos anexados ainda não enviados (rascunhos).
+    const envios = await carregarEnvios(tx, ctx, tarefa.id, tarefa.subtarefas.map((subtarefa) => subtarefa.id));
+    const rascunhos = await tx.arquivoComprovante.findMany({
+      where: {
+        solicitacaoId: null,
+        enviadoPorId: ctx.usuarioId,
+        OR: [{ tarefaId: tarefa.id }, { subtarefaId: { in: tarefa.subtarefas.map((subtarefa) => subtarefa.id) } }],
+      },
+      select: { id: true, tarefaId: true, subtarefaId: true, nomeOriginal: true, tipo: true, tamanhoBytes: true },
+      orderBy: { enviadoEm: "asc" },
+    });
+
     return {
       ...tarefa,
       podeConcluirTarefa,
       podeCriarSubtarefas: tarefa.colaboradorPodeCriarSubtarefas && responsavelDiretoDaTarefa,
       solicitacaoConclusao: solicitacaoTarefa,
+      enviosDaTarefa: envios.filter((envio) => envio.tarefaId === tarefa.id),
+      rascunhosDaTarefa: rascunhos.filter((arquivo) => arquivo.tarefaId === tarefa.id),
+      situacaoEnvioDaTarefa: situacaoDoEnvio(tarefa, envios.find((envio) => envio.tarefaId === tarefa.id) ?? null),
       subtarefas: tarefa.subtarefas.map((subtarefa) => ({
         ...subtarefa,
         solicitacaoConclusao: solicitacoesPorSubtarefa.get(subtarefa.id) ?? null,
+        envios: envios.filter((envio) => envio.subtarefaId === subtarefa.id),
+        rascunhos: rascunhos.filter((arquivo) => arquivo.subtarefaId === subtarefa.id),
+        situacaoEnvio: situacaoDoEnvio(subtarefa, envios.find((envio) => envio.subtarefaId === subtarefa.id) ?? null),
         responsavelDaSessao: subtarefa.atribuidoAUsuarioId === ctx.usuarioId
           || (usuario?.pessoaEnvolvidaId != null && subtarefa.atribuidoAId === usuario.pessoaEnvolvidaId),
       })),
     };
+  });
+}
+
+/**
+ * Envios (pedidos de conclusão, de qualquer estado) de uma tarefa e de suas subtarefas, do mais novo para o mais antigo, com os
+ * arquivos de cada um. A RLS decide o que cada perfil enxerga: o colaborador vê os próprios envios, o interno vê os do projeto
+ * dele e a administração vê todos. `podeDecidir` diz se o perfil atual pode confirmar ou devolver um pedido pendente.
+ */
+async function carregarEnvios(tx: Prisma.TransactionClient, ctx: ContextoUsuario, tarefaId: string, subtarefaIds: string[]) {
+  const envios = await tx.solicitacaoConclusao.findMany({
+    where: { OR: [{ tarefaId }, { subtarefaId: { in: subtarefaIds } }] },
+    orderBy: { solicitadoEm: "desc" },
+    select: {
+      id: true, tarefaId: true, subtarefaId: true, status: true, solicitadoPorId: true, solicitadoPorNome: true, solicitadoEm: true,
+      observacaoEnvio: true, decididoPorNome: true, decididoEm: true, comentarioDecisao: true,
+      arquivos: { select: { id: true, nomeOriginal: true, tipo: true, tamanhoBytes: true, enviadoEm: true }, orderBy: { enviadoEm: "asc" } },
+    },
+  });
+  const decisoes = new Map<string, boolean>();
+  for (const envio of envios) {
+    if (envio.status !== StatusSolicitacaoConclusao.PENDENTE) continue;
+    if (ctx.perfil === "ADMIN") decisoes.set(envio.id, true);
+    else if (ctx.perfil === "ADMIN_INTERNO") {
+      const [{ ok }] = await tx.$queryRaw<{ ok: boolean }[]>`SELECT pode_decidir_solicitacao_delegada(${envio.id}) AS ok`;
+      decisoes.set(envio.id, ok);
+    }
+  }
+  return envios.map((envio) => ({ ...envio, podeDecidir: decisoes.get(envio.id) === true }));
+}
+
+/** Envios de uma tarefa e de suas subtarefas para a conferência (administração e interno do projeto). */
+export async function listarEnviosDaTarefa(ctx: ContextoUsuario, tarefaId: string) {
+  if (ctx.perfil !== "ADMIN" && ctx.perfil !== "ADMIN_INTERNO") throw new Error("Ação não disponível para este perfil.");
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const subtarefas = await tx.subtarefa.findMany({ where: { tarefaId }, select: { id: true } });
+    return carregarEnvios(tx, ctx, tarefaId, subtarefas.map((subtarefa) => subtarefa.id));
   });
 }
 
@@ -834,6 +942,20 @@ export async function atualizarStatusProjeto(ctx: ContextoUsuario, projetoId: st
   return comContextoDeUsuario(ctx, (tx) => tx.projeto.update({ where: { id: projetoId }, data: { status } }));
 }
 
+/**
+ * Campos de comprovante para gravar. Sem exigência informada, nada muda (o formulário antigo não apaga o que já existe);
+ * sem exigir, a quantidade e a lista são zeradas; exigindo, a quantidade precisa ser um inteiro de 1 a 20.
+ */
+function camposDoComprovante(dados: { comprovanteExigido?: boolean; comprovanteQuantidade?: number | null; comprovanteInstrucoes?: string[] }) {
+  if (dados.comprovanteExigido === undefined) return {};
+  if (!dados.comprovanteExigido) return { comprovanteExigido: false, comprovanteQuantidade: null, comprovanteInstrucoes: [] };
+  const quantidade = dados.comprovanteQuantidade;
+  if (quantidade == null || !Number.isInteger(quantidade) || quantidade < 1 || quantidade > 20) {
+    throw new Error("Informe a quantidade de comprovantes, de 1 a 20.");
+  }
+  return { comprovanteExigido: true, comprovanteQuantidade: quantidade, comprovanteInstrucoes: dados.comprovanteInstrucoes ?? [] };
+}
+
 /** Cria tarefa, série recorrente, vínculos de responsável e notificações de atribuição. */
 export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
   exigirAdministrador(ctx);
@@ -865,6 +987,7 @@ export async function criarTarefa(ctx: ContextoUsuario, dados: DadosTarefa) {
         responsavelId: dados.responsavelId ?? null,
         responsavelUsuarioId: dados.responsavelUsuarioId ?? null,
         colaboradorPodeCriarSubtarefas: dados.colaboradorPodeCriarSubtarefas ?? false,
+        ...camposDoComprovante(dados),
         criadoPorId: ctx.usuarioId,
       },
     });
@@ -918,6 +1041,7 @@ export async function atualizarTarefa(
         status: dados.status ?? undefined,
         responsavelId: dados.responsavelId ?? null,
         responsavelUsuarioId: dados.responsavelUsuarioId ?? null,
+        ...camposDoComprovante(dados),
       },
     });
 
@@ -999,6 +1123,8 @@ export async function criarSubtarefa(ctx: ContextoUsuario, dados: DadosSubtarefa
         prazo: dados.prazo ?? null,
         status: ehAdministrador ? dados.status ?? undefined : StatusSubtarefa.EM_ANDAMENTO,
         etiquetas,
+        // Só a administração define a exigência de comprovante; a subtarefa criada por colaborador não exige.
+        ...(ehAdministrador ? camposDoComprovante(dados) : {}),
         atribuidoAId: responsavelId ?? null,
         atribuidoAUsuarioId: responsavelUsuarioId ?? null,
         criadoPorId: ctx.usuarioId,
@@ -1038,6 +1164,7 @@ export async function atualizarSubtarefa(
         etiquetas,
         atribuidoAId: dados.atribuidoAId ?? null,
         atribuidoAUsuarioId: dados.atribuidoAUsuarioId ?? null,
+        ...camposDoComprovante(dados),
       },
     });
     const usuarioResponsavelNovo = await usuarioDaResponsabilidadeSubtarefa(tx, subtarefa.atribuidoAId, subtarefa.atribuidoAUsuarioId);

@@ -115,7 +115,7 @@ concluída.
   atribuição recebida e falha de envio no endpoint com fixture de prazo futuro.
 - **Falhas:** erro de e-mail não bloqueia a ação que gerou o aviso.
 - **Audiência:** `dispararEventoNotificacao` exige `usuarioIds`; lista vazia não envia. Comentários usam usuários ativos com acesso ao alvo. Eventos de conclusão direcionam somente à conta ADMIN da Talita e não notificam o executor. Preferências por perfil/canal continuam valendo.
-- **Aprovação:** `CONCLUSAO_SOLICITADA` usa preferências independentes para os canais; pedidos são enviados aos ADMIN ativos, e decisões ao solicitante. `TAREFA_CONCLUIDA` só é disparado depois da aprovação.
+- **Aprovação:** `CONCLUSAO_SOLICITADA` usa preferências independentes para os canais; pedidos são enviados aos ADMIN ativos, e decisões ao solicitante. Quando o pedido é de um colaborador externo (envio de comprovante), o colaborador interno atribuído ao projeto recebe o aviso com link para a tarefa; a mensagem informa o número de comprovantes e, na devolução, o motivo. `TAREFA_CONCLUIDA` só é disparado depois da aprovação.
 - **Apresentação do e-mail:** notificações e menções usam o mesmo cartão institucional dos
   convites de acesso, com logo pública, conteúdo alinhado à esquerda, botão verde e rodapé.
   O botão de ação usa o texto “Abrir no sistema”.

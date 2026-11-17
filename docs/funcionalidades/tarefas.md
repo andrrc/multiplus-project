@@ -186,8 +186,10 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 **Como funciona.**
 - **Pedido:** ADMIN_INTERNO e ADMIN_EXTERNO solicitam a conclusão das tarefas pelas quais
   já tinham permissão para concluir. A tarefa mantém o status atual enquanto Talita decide.
-- **Decisão:** somente ADMIN pode confirmar ou rejeitar. Rejeitar mantém o status anterior
-  e aceita comentário opcional; o solicitante pode retirar seu próprio pedido pendente.
+- **Decisão:** ADMIN confirma ou rejeita qualquer pedido; o colaborador interno atribuído ao
+  projeto decide apenas o pedido de um colaborador externo (comprovantes). Rejeitar mantém o
+  status anterior e aceita comentário opcional, que passa a ser **obrigatório** quando o pedido
+  traz comprovantes; o solicitante pode retirar seu próprio pedido pendente.
 - **Após confirmar:** o status passa a concluído e o colaborador não pode mais editar a
   tarefa. ADMIN continua podendo editar e reabrir.
 - **Recorrência:** a próxima ocorrência só é criada depois da confirmação, na mesma
@@ -211,6 +213,43 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
   - `conclusao-actions.unit.test.ts`: ADMIN conclui diretamente e colaboradores solicitam confirmação;
   - migration `fix_concluir_tarefa_nulo`: garante a recusa quando a comparação de
     permissão envolve `NULL`.
+
+### T6b. Comprovante exigido e envio pelo colaborador (etapa 1)
+
+**Como funciona.**
+- **Configurar (só ADMIN):** nos formulários de tarefa e de subtarefa, "Exigir comprovante para
+  concluir" liga a quantidade (1 a 20) e a lista "o que enviar" (um item por linha). A tarefa
+  recorrente leva a exigência para a próxima ocorrência (e para as subtarefas copiadas).
+- **Enviar (colaborador responsável):** em `/minhas-tarefas/[id]` o item que exige comprovante
+  mostra a lista "o que enviar", o aviso de privacidade, "Tirar foto", "Galeria ou arquivo", o
+  contador "N de M arquivos exigidos" e a observação opcional. O botão "Enviar comprovante" só
+  liga com a quantidade exigida. Cada arquivo sobe sozinho como rascunho; o envio cria o pedido
+  de conclusão com os arquivos. O item passa a "Aguardando conferência".
+- **Conferir:** ADMIN (em `/tarefas/[id]`) e o interno do projeto (em `/minhas-tarefas/[id]`)
+  veem os arquivos, a observação e o autor com data e hora do servidor; confirmam o envio (a
+  tarefa conclui e a recorrência segue) ou devolvem com motivo. Pedido com comprovantes não é
+  decidido na fila nem no painel: ali há o atalho "Conferir comprovantes".
+- **Devolução:** o item volta ao colaborador em "Devolvidas para correção", com o motivo.
+  O novo envio é outro pedido; o anterior fica no histórico do item.
+- **O que não muda (etapa 1):** o prazo continua contando durante a conferência. A regra de
+  parar o prazo é a etapa 2 ([análise](../analises/comprovantes-colaborador-externo.md)).
+
+**Detalhes técnicos.**
+- **Dados:** colunas `comprovanteExigido`, `comprovanteQuantidade` e `comprovanteInstrucoes` em
+  `tarefas` e `subtarefas`; `observacaoEnvio` em `solicitacoes_conclusao`; tabela
+  `arquivos_comprovante` (rascunho sem pedido; depois do envio, imutável e nunca apagada).
+- **Banco:** `registrar_arquivo_comprovante` (anexar, só item aberto que exige e sem envio
+  pendente, até 20 arquivos), `solicitar_conclusao` (agora confere a quantidade e anexa os
+  rascunhos), `pode_decidir_solicitacao_delegada` e `habilitar_decisao_delegada` (decisão do
+  interno, válida só para o pedido habilitado e só na transação). RLS: ADMIN vê tudo, o autor vê
+  os próprios, o interno do projeto vê os já enviados; só o rascunho do autor pode ser apagado.
+- **Arquivos:** `src/lib/comprovantes-arquivos.ts` (tipo pelo conteúdo, limites, nome seguro,
+  situação do envio), `src/lib/comprovantes.ts` (storage e rascunhos), rotas
+  `POST /api/comprovantes` (um arquivo por requisição, por causa do limite de 12 MB do proxy),
+  `GET` e `DELETE /api/comprovantes/[id]`. A foto é reduzida no navegador (até 2048 px).
+- **Testes:** `comprovantes.integration.test.ts` (permissão, RLS, quantidade, devolução com
+  motivo, recorrência), `comprovantes-arquivos.unit.test.ts`, `comprovantes-rotas.unit.test.ts`
+  e a jornada `tests/browser/comprovantes.spec.ts`.
 
 ### T7. Desativar e reativar (RF-039)
 
@@ -312,11 +351,14 @@ registro de quem criou e quando.
 | L4 | A listagem `/tarefas` só mostra tarefas ativas e não tem "Mostrar desativadas" (RF-039). | Uma tarefa desativada só é encontrada pela URL direta, então na prática não dá para reativá-la pela interface. |
 | L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
 | L6 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
+| L7 | O prazo continua contando enquanto o envio de comprovante aguarda conferência (regra da etapa 2). | Um item aguardando conferência pode aparecer como atrasado. |
+| L8 | Retenção das fotos, backup do volume de arquivos e limpeza de arquivos antigos ainda não definidos. | Ver [pendências antes da produção](../pendencias-antes-producao.md). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-17 | este commit | Comprovante exigido, envio pelo colaborador, conferência e devolução com motivo (etapa 1) |
 | 2026-11-16 | este commit | "Aguardando outras pessoas" em Minhas tarefas e no painel do colaborador interno |
 | 2026-11-16 | este commit | Minhas tarefas do colaborador interno com busca e filtros de cliente e projeto |
 | 2026-11-16 | este commit | Busca de texto, ordenação pelos cabeçalhos e "Mostrar concluídas e canceladas" na lista; o PDF passa a levar a mesma busca, ordem e conclusão da tela ([lib/lista-tarefas.ts](../../src/lib/lista-tarefas.ts)) |

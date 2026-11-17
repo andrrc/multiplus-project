@@ -10,6 +10,7 @@ import { listarEtiquetas } from "@/lib/etiquetas";
 import { CORES_ETIQUETA } from "@/lib/etiqueta-colors";
 import { atualizarSubtarefaERedirecionarAction } from "@/app/(painel)/projetos/actions";
 import { inputClass } from "@/ui/campo";
+import { CamposComprovante } from "@/ui/campos-comprovante";
 import { SeletorEtiquetas } from "@/ui/seletor-etiquetas";
 
 const rotulos: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -53,6 +54,7 @@ export default async function EditarSubtarefaPage({ params }: { params: Promise<
         <optgroup label="Pessoas envolvidas">{pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}</optgroup>
       </select></label>
       <SeletorEtiquetas disponiveis={catalogo} selecionadasIniciais={selecionadasIniciais} />
+      <CamposComprovante exigidoInicial={subtarefa.comprovanteExigido} quantidadeInicial={subtarefa.comprovanteQuantidade} instrucoesIniciais={subtarefa.comprovanteInstrucoes} />
       <div className="flex flex-wrap justify-end gap-2"><Link href={`/tarefas/${id}?subtarefa=${subtarefa.id}#subtarefa-${subtarefa.id}`} className="rounded-controle border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button className="rounded-controle bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco hover:bg-azul-esc">Salvar alterações</button></div>
     </form>
   </div>;

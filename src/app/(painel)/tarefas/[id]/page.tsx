@@ -5,7 +5,9 @@ import { formatarDataHoraBrasilia, calcularDiasRestantes } from "@/lib/datas";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { buscarTarefa, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
+import { buscarTarefa, listarEnviosDaTarefa, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
+import { EnviosComprovantes } from "@/app/(painel)/projetos/envios-comprovantes";
+import { descricaoDaExigencia } from "@/lib/comprovantes-arquivos";
 import {
   concluirTarefaAction,
   atualizarStatusSubtarefaAction,
@@ -52,10 +54,11 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const { subtarefa: subtarefaSelecionada } = await searchParams;
   const t = await buscarTarefa(ctx, id, true);
   if (!t) notFound();
-  const [{ pessoas, usuarios }, catalogoEtiquetas, limites] = await Promise.all([
+  const [{ pessoas, usuarios }, catalogoEtiquetas, limites, envios] = await Promise.all([
     listarPessoasParaProjeto(ctx, t.projeto.clienteId),
     listarEtiquetas(ctx),
     buscarLimitesSemaforo(ctx),
+    listarEnviosDaTarefa(ctx, id),
   ]);
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
   const subtarefasConcluidas = t.subtarefas.filter(s => s.status === StatusSubtarefa.CONCLUIDO).length;
@@ -158,6 +161,8 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                   <p className="text-sm leading-6 text-cinza">{s.descricao || "Sem descrição."}</p>
                   <p className="mt-2 text-xs text-cinza">Criado por: {s.criadoPorNome ?? "Registro anterior"} · {dataHora(s.criadoEm)}</p>
                   <EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} />
+                  {s.comprovanteExigido && <p className="mt-2 text-[13px] text-cinza">Exige comprovante: <b className="font-medium text-ink">{descricaoDaExigencia(s.comprovanteQuantidade)}</b></p>}
+                  <EnviosComprovantes envios={envios.filter((envio) => envio.subtarefaId === s.id)} />
                   {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className={`mt-3 ${botaoSecundario}`}>Editar subtarefa</Link>}
                   {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-xs font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className={botaoSecundario}>Salvar responsável</button></form>}
                   {t.ativo && s.ativo && <div className="mt-3"><StatusInline status={s.status} label={statusSubtarefa[s.status]} opcoes={Object.values(StatusSubtarefa).map(valor => ({ valor, label: statusSubtarefa[valor] }))} action={atualizarStatusSubtarefaAction.bind(null, s.id)} alinhar="esquerda" /></div>}
@@ -166,6 +171,8 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
               </details>
             ))}
           </Cartao>
+
+          <EnviosComprovantes envios={envios.filter((envio) => envio.tarefaId === t.id)} titulo="Comprovantes da tarefa" />
 
           <Comentarios alvo={{ tarefaId: t.id }} nivel="tarefa" entidadeId={t.id} />
         </div>
@@ -182,6 +189,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                 { rotulo: "Periodicidade", valor: t.periodicidade ? <span className="capitalize">{PERIODICIDADE[t.periodicidade] ?? t.periodicidade}</span> : "Não recorrente" },
                 { rotulo: "Aviso antes do prazo", valor: t.diasAntecedencia ? plural(t.diasAntecedencia, "dia", "dias") : <span className="text-cinza">Sem aviso extra</span> },
                 { rotulo: "Responsável cria subtarefas", valor: t.colaboradorPodeCriarSubtarefas ? "Sim" : "Não" },
+                { rotulo: "Comprovante exigido", valor: t.comprovanteExigido ? (descricaoDaExigencia(t.comprovanteQuantidade) ?? "Sim") : <span className="text-cinza">Não</span> },
               ]}
             />
           </BlocoLateral>

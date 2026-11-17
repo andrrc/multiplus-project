@@ -176,6 +176,15 @@ export async function listarAdministradoresAtivos(): Promise<string[]> {
   return administradores.map(({ id }) => id);
 }
 
+/** Colaboradores internos ativos atribuídos ao projeto: quem confere o envio de um colaborador externo. */
+export async function listarInternosAtribuidosAoProjeto(projetoId: string): Promise<string[]> {
+  const atribuicoes = await prisma.atribuicao.findMany({
+    where: { entidadeTipo: "PROJETO", entidadeId: projetoId, usuario: { ativo: true, perfil: "ADMIN_INTERNO" } },
+    select: { usuarioId: true },
+  });
+  return atribuicoes.map(({ usuarioId }) => usuarioId);
+}
+
 /** RF-022 — resolve clientes ativos vinculados ao projeto sem aceitar IDs de destinatário do formulário. */
 export async function listarClientesAtivosDoProjeto(projetoId: string): Promise<string[]> {
   // Não aceita destinatários enviados pela tela: resolve cliente a partir do projeto ativo.

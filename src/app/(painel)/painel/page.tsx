@@ -124,10 +124,12 @@ export default async function PainelPage() {
                         <p className="mt-px truncate text-[12.5px] text-cinza">{projeto?.cliente.razaoSocial} · {projeto?.nome}</p>
                         <p className="mt-0.5 text-xs text-cinza">Enviado por {pedido.solicitadoPor?.nome ?? pedido.solicitadoPorNome}</p>
                       </div>
-                      <form action={decidirSolicitacaoConclusaoFormAction.bind(null, pedido.id)} className="flex flex-wrap items-center gap-1.5">
-                        <button name="decisao" value="REJEITAR" className={botaoDiscretoPequeno}>Rejeitar</button>
-                        <button name="decisao" value="APROVAR" className={botaoPrimarioPequeno}>Confirmar</button>
-                      </form>
+                      {pedido._count.arquivos > 0
+                        ? <Link href={href} className={botaoPrimarioPequeno}>Conferir {pedido._count.arquivos} {pedido._count.arquivos === 1 ? "comprovante" : "comprovantes"}</Link>
+                        : <form action={decidirSolicitacaoConclusaoFormAction.bind(null, pedido.id)} className="flex flex-wrap items-center gap-1.5">
+                            <button name="decisao" value="REJEITAR" className={botaoDiscretoPequeno}>Rejeitar</button>
+                            <button name="decisao" value="APROVAR" className={botaoPrimarioPequeno}>Confirmar</button>
+                          </form>}
                     </li>
                   );
                 })}

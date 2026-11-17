@@ -113,11 +113,14 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
             <p className="mt-2 break-words text-[13px] text-cinza">Solicitado por {pedido.solicitadoPor?.nome ?? pedido.solicitadoPorNome} · {cliente?.razaoSocial ?? "Cliente"} · {projeto?.nome ?? "Projeto"}{!ehTarefa && tarefaNome ? ` · ${tarefaNome}` : ""}</p>
             <p className="mt-1 text-[12px] text-cinza">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(pedido.solicitadoEm)}</p>
           </div>
-          <form action={decidirSolicitacaoConclusaoFormAction.bind(null, pedido.id)} className="grid gap-2">
+          {pedido._count.arquivos > 0 ? <div className="grid content-start gap-2">
+            <p className="text-[13px] text-cinza">Este pedido traz {pedido._count.arquivos} {pedido._count.arquivos === 1 ? "comprovante" : "comprovantes"}. Confira os arquivos antes de confirmar ou devolver.</p>
+            <Link href={href} className={botaoPrimario}>Conferir comprovantes</Link>
+          </div> : <form action={decidirSolicitacaoConclusaoFormAction.bind(null, pedido.id)} className="grid gap-2">
             {!itemAtivo && <p className="text-[13px] text-ambar">Item cancelado/inativo ou projeto/cliente inativo. Reative para confirmar; este pedido ainda pode ser rejeitado.</p>}
             <label className="grid gap-1 text-[12px] font-medium text-cinza">Comentário (opcional, usado se rejeitar)<textarea name="comentario" maxLength={2000} rows={2} className={inputClass} /></label>
             <div className="flex flex-wrap gap-2"><button name="decisao" value="APROVAR" disabled={!itemAtivo} className={botaoPrimario}>Confirmar conclusão</button><button name="decisao" value="REJEITAR" className={botaoPerigo}>Rejeitar</button></div>
-          </form>
+          </form>}
         </li>;
       })}</ul>}
     </section>}

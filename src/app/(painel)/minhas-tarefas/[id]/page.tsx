@@ -18,6 +18,8 @@ import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { botaoPrimario, botaoPrimarioPequeno, botaoSecundario, botaoSecundarioPequeno } from "@/ui/botoes";
 import { BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, Trilha } from "@/ui/cartao";
 import { CelulaPrazo, StatusPonto } from "@/ui/lista";
+import { EnviosComprovantes } from "@/app/(painel)/projetos/envios-comprovantes";
+import { EnviarComprovante } from "./enviar-comprovante";
 
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 const statusTarefa: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
@@ -52,7 +54,7 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-3">
         <StatusPonto status={t.status}>{statusTarefa[t.status] ?? t.status}</StatusPonto>
-        {podeSolicitar && !solicitacao && (
+        {podeSolicitar && !solicitacao && !t.comprovanteExigido && (
           <form action={concluirTarefaFormAction.bind(null, t.id)}>
             <button className={botaoPrimario} title="A conclusão só será registrada depois da confirmação da Talita.">Solicitar conclusão</button>
           </form>
@@ -67,6 +69,23 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
           : <span>Pedido de {solicitacao.solicitadoPorNome} aguardando confirmação da Talita.</span>}
       </div>
     )}
+
+    {podeSolicitar && t.comprovanteExigido && !solicitacao && (
+      <div className="mb-6">
+        <Cartao titulo="Enviar comprovante">
+          <EnviarComprovante
+            tipo="TAREFA"
+            itemId={t.id}
+            quantidade={t.comprovanteQuantidade ?? 1}
+            instrucoes={t.comprovanteInstrucoes}
+            rascunhosIniciais={t.rascunhosDaTarefa}
+            acaoEnviar={concluirTarefaFormAction.bind(null, t.id)}
+            motivoDevolucao={t.situacaoEnvioDaTarefa === "devolvida" ? t.enviosDaTarefa[0]?.comentarioDecisao ?? null : null}
+          />
+        </Cartao>
+      </div>
+    )}
+    {t.enviosDaTarefa.some((envio) => envio.arquivos.length > 0 || envio.status === "PENDENTE") && <div className="mb-6"><EnviosComprovantes envios={t.enviosDaTarefa} titulo="Comprovantes da tarefa" /></div>}
 
     {subtarefasSemResponsavel.length > 0 && <div role="status" className="mb-6 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-3.5 text-sm text-ambar"><strong className="font-semibold">Atribuição pendente:</strong> {subtarefasSemResponsavel.length} {subtarefasSemResponsavel.length === 1 ? "subtarefa está" : "subtarefas estão"} sem responsável. A administração precisa definir quem ficará responsável.</div>}
 
@@ -115,7 +134,20 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
                 ? (s.solicitacaoConclusao.solicitadoPorId === ctx.usuarioId
                   ? <form action={cancelarSolicitacaoConclusaoFormAction.bind(null, s.solicitacaoConclusao.id)} className="mt-3"><p className="text-[13px] text-ambar">Seu pedido está aguardando confirmação da Talita.</p><button className={`mt-2 ${botaoSecundarioPequeno}`}>Retirar solicitação</button></form>
                   : <p className="mt-3 text-[13px] text-ambar">Pedido de {s.solicitacaoConclusao.solicitadoPorNome} aguardando confirmação da Talita.</p>)
-                : <form action={concluirSubtarefaFormAction.bind(null, s.id)} className="mt-3"><button className={botaoPrimarioPequeno}>Solicitar conclusão</button></form>)}
+                : s.comprovanteExigido
+                  ? <div className="mt-4 rounded-cartao border border-linha bg-branco p-4">
+                      <EnviarComprovante
+                        tipo="SUBTAREFA"
+                        itemId={s.id}
+                        quantidade={s.comprovanteQuantidade ?? 1}
+                        instrucoes={s.comprovanteInstrucoes}
+                        rascunhosIniciais={s.rascunhos}
+                        acaoEnviar={concluirSubtarefaFormAction.bind(null, s.id)}
+                        motivoDevolucao={s.situacaoEnvio === "devolvida" ? s.envios[0]?.comentarioDecisao ?? null : null}
+                      />
+                    </div>
+                  : <form action={concluirSubtarefaFormAction.bind(null, s.id)} className="mt-3"><button className={botaoPrimarioPequeno}>Solicitar conclusão</button></form>)}
+              <EnviosComprovantes envios={s.envios} />
               <Comentarios alvo={{ subtarefaId: s.id }} nivel="subtarefa" entidadeId={s.id} tarefaId={t.id} />
             </div>
           </details>

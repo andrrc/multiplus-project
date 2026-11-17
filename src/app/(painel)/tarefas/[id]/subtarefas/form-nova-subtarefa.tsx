@@ -5,6 +5,7 @@ import Link from "next/link";
 import { StatusSubtarefa } from "@prisma/client";
 import { criarSubtarefaERedirecionarAction } from "@/app/(painel)/projetos/actions";
 import { inputClass } from "@/ui/campo";
+import { CamposComprovante } from "@/ui/campos-comprovante";
 import { SeletorEtiquetas } from "@/ui/seletor-etiquetas";
 
 const rotulos: Record<StatusSubtarefa, string> = {
@@ -51,6 +52,7 @@ export function FormNovaSubtarefa({
         <optgroup label="Pessoas envolvidas">{opcoesResponsavel.pessoas.map((pessoa) => <option key={pessoa.id} value={pessoa.id}>{pessoa.nome}</option>)}</optgroup>
       </select></label> : <p className="text-[13px] text-cinza">Você será definido como responsável por esta subtarefa.</p>}
       <SeletorEtiquetas disponiveis={etiquetas} />
+      {ehAdmin && <CamposComprovante />}
       {opcoesResponsavel && !responsaveisDisponiveis && <p className="text-[13px] text-critico">Cadastre uma pessoa envolvida ou um integrante ativo da equipe para poder criar a subtarefa.</p>}
       <p className="text-[13px] text-cinza">Depois de salvar, você poderá abrir a subtarefa para consultar os detalhes e registrar comentários.</p>
       <div className="flex flex-wrap justify-end gap-2"><Link href={voltar} className="min-h-11 rounded-controle border border-linha px-4 py-2.5 text-[13px]">Cancelar</Link><button disabled={!responsaveisDisponiveis} className="min-h-11 rounded-controle bg-tinta px-4 py-2.5 font-[family-name:var(--font-interface)] text-[13px] font-semibold text-branco disabled:cursor-not-allowed disabled:opacity-50">Criar subtarefa</button></div>

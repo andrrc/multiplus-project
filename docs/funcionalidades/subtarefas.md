@@ -86,8 +86,9 @@ pessoa (RN-004).
 - **Pedido:** o responsável solicita a conclusão da própria subtarefa. O status permanece
   “Em andamento” até a confirmação. O solicitante pode retirar o pedido enquanto estiver
   pendente.
-- **Decisão:** somente ADMIN confirma ou rejeita; a rejeição preserva o status anterior e
-  pode incluir comentário. A confirmação muda para “Concluída” e bloqueia edições do
+- **Decisão:** ADMIN confirma ou rejeita; o colaborador interno atribuído ao projeto decide o
+  pedido de um colaborador externo. A rejeição preserva o status anterior e pode incluir
+  comentário (obrigatório quando o pedido traz comprovantes). A confirmação muda para “Concluída” e bloqueia edições do
   colaborador. ADMIN continua podendo editar ou reabrir.
 - **O que o colaborador não pode:** editar, reabrir ou cancelar a subtarefa.
 
@@ -102,6 +103,16 @@ pessoa (RN-004).
 - **Testes:** `aprovacao-conclusao.integration.test.ts` e
   `subtarefas-rn004.integration.test.ts`, incluindo o colaborador interno dono do projeto
   sendo barrado.
+
+### S3b. Comprovante exigido (etapa 1)
+
+A subtarefa pode exigir comprovante, como a tarefa: a administração define a quantidade e o
+"o que enviar" na criação e na edição; o responsável envia fotos ou arquivos dentro da própria
+subtarefa em `/minhas-tarefas/[id]`, e o envio vira o pedido de conclusão. A conferência
+(confirmar ou devolver com motivo) é de ADMIN e do interno do projeto, e aparece na subtarefa,
+em `/tarefas/[id]`. O interno atribuído ao projeto passou a enxergar também os pedidos de
+subtarefa do projeto (antes só os das subtarefas atribuídas a ele). Detalhes em
+[Tarefas](tarefas.md) (T6b) e na [análise](../analises/comprovantes-colaborador-externo.md).
 
 ### S4. Painel de subtarefas (RF-037)
 
@@ -219,6 +230,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-17 | este commit | Comprovante exigido na subtarefa: envio, conferência e devolução com motivo (etapa 1) |
 | 2026-11-16 | este commit | Busca de texto e ordenação pelos cabeçalhos na lista; o PDF leva a mesma busca e ordem |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem e da fila de confirmações |
 | 2026-11-03 | este commit | Compactar os filtros, mantendo os nomes acessíveis |

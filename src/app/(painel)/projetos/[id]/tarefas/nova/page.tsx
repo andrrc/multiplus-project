@@ -6,6 +6,7 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjeto, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
 import { criarTarefaERedirecionarAction } from "../../../actions";
 import { Campo, SecaoNumerada, inputClass } from "@/ui/campo";
+import { CamposComprovante } from "@/ui/campos-comprovante";
 import { CamposRecorrencia } from "@/app/(painel)/projetos/campos-recorrencia";
 
 export default async function NovaTarefaPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +37,7 @@ export default async function NovaTarefaPage({ params }: { params: Promise<{ id:
           <Campo label="Antecedência (dias)"><input type="number" min="1" name="diasAntecedencia" className={inputClass} placeholder="Padrão: 7" /></Campo>
         </div>
         <div className="grid gap-4 sm:grid-cols-2"><CamposRecorrencia /></div>
+        <CamposComprovante />
       </SecaoNumerada>
       <div className="flex gap-3"><button className="min-h-11 rounded-controle bg-tinta px-5 text-[14px] font-semibold text-branco">Criar tarefa</button><a href={`/projetos/${id}`} className="flex min-h-11 items-center rounded-controle border border-linha px-5 text-[14px]">Cancelar</a></div>
     </form>

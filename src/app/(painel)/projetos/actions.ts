@@ -27,12 +27,22 @@ import {
   solicitarConclusao,
 } from "@/lib/projetos-tarefas";
 import { criarComentario, listarUsuariosMencionaveis } from "@/lib/comentarios";
-import { buscarProjetoAtivoDaTarefa, dispararNotificacoesMencaoComentario, dispararEventoNotificacao, listarAdministradoresAtivos, listarClientesAtivosDoProjeto } from "@/lib/notificacoes";
+import { buscarProjetoAtivoDaTarefa, dispararNotificacoesMencaoComentario, dispararEventoNotificacao, listarAdministradoresAtivos, listarClientesAtivosDoProjeto, listarInternosAtribuidosAoProjeto } from "@/lib/notificacoes";
+import { lerExigenciaDoComprovante } from "@/lib/comprovantes-arquivos";
 import { montarNumeroProposta } from "@/lib/numero-proposta";
 import type { EtiquetaSelecionada } from "@/lib/etiqueta-colors";
 
 function texto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
+}
+
+/**
+ * Campos de comprovante do formulário de tarefa e subtarefa (só a administração os envia). O campo oculto `comprovanteCampos`
+ * marca que o formulário trouxe os campos: sem ele nada muda no item (um formulário antigo não apaga a exigência).
+ */
+function comprovanteDoFormulario(formData: FormData) {
+  if (texto(formData, "comprovanteCampos") !== "1") return {};
+  return lerExigenciaDoComprovante(formData.get("comprovanteExigido") === "on", texto(formData, "comprovanteQuantidade"), String(formData.get("comprovanteInstrucoes") ?? ""));
 }
 
 function dataOpcional(valor: string): Date | null {
@@ -173,6 +183,7 @@ export async function criarTarefaAction(formData: FormData) {
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: statusTarefa(texto(formData, "status")),
     colaboradorPodeCriarSubtarefas: formData.get("colaboradorPodeCriarSubtarefas") === "on",
+    ...comprovanteDoFormulario(formData),
   });
   revalidatePath(`/projetos/${tarefa.projetoId}`);
   revalidatePath("/subtarefas");
@@ -200,6 +211,7 @@ export async function atualizarTarefaAction(tarefaId: string, formData: FormData
       diaSemana: texto(formData, "diaSemana") ? Number(texto(formData, "diaSemana")) : null,
     diasAntecedencia: texto(formData, "diasAntecedencia") ? Number(texto(formData, "diasAntecedencia")) : null,
     status: pedidoPendente ? undefined : statusSolicitado,
+    ...comprovanteDoFormulario(formData),
   });
   if (pedidoPendente) {
     const decisao = await decidirSolicitacaoConclusao(ctx, pedidoPendente.id, true);
@@ -263,6 +275,7 @@ export async function criarSubtarefaAction(formData: FormData) {
     etiquetas: formData.getAll("etiquetaNome").map(String),
     novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
+    ...comprovanteDoFormulario(formData),
   });
   revalidatePath(`/tarefas/${subtarefa.tarefaId}`);
   revalidatePath(`/minhas-tarefas/${subtarefa.tarefaId}`);
@@ -336,6 +349,7 @@ export async function atualizarSubtarefaAction(subtarefaId: string, formData: Fo
     etiquetas: formData.getAll("etiquetaNome").map(String),
     novasEtiquetas: lerNovasEtiquetas(formData),
     ...dadosResponsavel,
+    ...comprovanteDoFormulario(formData),
   });
   if (pedidoPendente) {
     const decisao = await decidirSolicitacaoConclusao(ctx, pedidoPendente.id, true);
@@ -379,7 +393,44 @@ export async function criarDocumentoProjetoFormAction(formData: FormData): Promi
   await criarDocumentoProjetoAction(formData);
 }
 
+/**
+ * Avisa quem confere um pedido de conclusão: a administração (fila de pedidos) e, quando o pedido é de um colaborador
+ * externo, o colaborador interno atribuído ao projeto, que também pode confirmar ou devolver o envio.
+ */
+async function avisarPedidoDeConclusao(
+  ctx: { usuarioId: string; perfil: string },
+  resultado: Awaited<ReturnType<typeof solicitarConclusao>>,
+) {
+  const tipo = resultado.tipo === "TAREFA" ? "tarefa" : "subtarefa";
+  const mensagem = resultado.totalComprovantes > 0
+    ? `Um colaborador enviou ${resultado.totalComprovantes} ${resultado.totalComprovantes === 1 ? "comprovante" : "comprovantes"} e pediu a conclusão da ${tipo} ${resultado.titulo}. Confira o envio.`
+    : `Um colaborador solicitou a conclusão da ${tipo} ${resultado.titulo}.`;
+  void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+    titulo: "Conclusão aguardando confirmação",
+    mensagem,
+    url: `/subtarefas?conclusao=${resultado.solicitacao.id}#solicitacao-${resultado.solicitacao.id}`,
+    entidadeId: resultado.solicitacao.id,
+    dedupeKey: `solicitacao-conclusao:${resultado.solicitacao.id}:pendente`,
+    usuarioIds: await listarAdministradoresAtivos(),
+  });
+  if (ctx.perfil === "ADMIN_EXTERNO") {
+    const internos = (await listarInternosAtribuidosAoProjeto(resultado.projetoId)).filter((usuarioId) => usuarioId !== ctx.usuarioId);
+    if (internos.length > 0) void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
+      titulo: "Conclusão aguardando confirmação",
+      mensagem,
+      url: `/tarefas/${resultado.tarefaId}`,
+      entidadeId: resultado.solicitacao.id,
+      dedupeKey: `solicitacao-conclusao:${resultado.solicitacao.id}:pendente:interno`,
+      usuarioIds: internos,
+    });
+  }
+}
+
 export async function concluirTarefaAction(tarefaId: string) {
+  await concluirTarefaComObservacao(tarefaId, null);
+}
+
+async function concluirTarefaComObservacao(tarefaId: string, observacao: string | null) {
   const ctx = await obterContexto();
   if (ctx.perfil === "ADMIN") {
     const resultado = await concluirTarefa(ctx, tarefaId);
@@ -399,36 +450,26 @@ export async function concluirTarefaAction(tarefaId: string) {
     return;
   }
 
-  const resultado = await solicitarConclusao(ctx, "TAREFA", tarefaId);
-  void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
-    titulo: "Conclusão aguardando confirmação",
-    mensagem: `Um colaborador solicitou a conclusão da tarefa ${resultado.titulo}.`,
-    url: `/subtarefas?conclusao=${resultado.solicitacao.id}#solicitacao-${resultado.solicitacao.id}`,
-    entidadeId: resultado.solicitacao.id,
-    dedupeKey: `solicitacao-conclusao:${resultado.solicitacao.id}:pendente`,
-    usuarioIds: await listarAdministradoresAtivos(),
-  });
+  const resultado = await solicitarConclusao(ctx, "TAREFA", tarefaId, observacao);
+  await avisarPedidoDeConclusao(ctx, resultado);
   revalidatePath(`/tarefas/${tarefaId}`);
   revalidatePath(`/minhas-tarefas/${tarefaId}`);
   revalidatePath("/notificacoes");
   revalidatePath("/subtarefas");
 }
 
-export async function concluirTarefaFormAction(tarefaId: string): Promise<void> {
-  await concluirTarefaAction(tarefaId);
+export async function concluirTarefaFormAction(tarefaId: string, formData?: FormData): Promise<void> {
+  await concluirTarefaComObservacao(tarefaId, formData ? texto(formData, "observacao") : null);
 }
 
 export async function concluirSubtarefaAction(subtarefaId: string) {
+  await concluirSubtarefaComObservacao(subtarefaId, null);
+}
+
+async function concluirSubtarefaComObservacao(subtarefaId: string, observacao: string | null) {
   const ctx = await obterContexto();
-  const resultado = await solicitarConclusao(ctx, "SUBTAREFA", subtarefaId);
-  void dispararEventoNotificacao(EventoNotificacao.CONCLUSAO_SOLICITADA, {
-    titulo: "Conclusão aguardando confirmação",
-    mensagem: `Um colaborador solicitou a conclusão da subtarefa ${resultado.titulo}.`,
-    url: `/subtarefas?conclusao=${resultado.solicitacao.id}#solicitacao-${resultado.solicitacao.id}`,
-    entidadeId: resultado.solicitacao.id,
-    dedupeKey: `solicitacao-conclusao:${resultado.solicitacao.id}:pendente`,
-    usuarioIds: await listarAdministradoresAtivos(),
-  });
+  const resultado = await solicitarConclusao(ctx, "SUBTAREFA", subtarefaId, observacao);
+  await avisarPedidoDeConclusao(ctx, resultado);
   revalidatePath(`/tarefas/${resultado.tarefaId}`);
   revalidatePath(`/minhas-tarefas/${resultado.tarefaId}`);
   revalidatePath("/notificacoes");
@@ -508,8 +549,8 @@ export async function cancelarSolicitacaoConclusaoFormAction(solicitacaoId: stri
   }
 }
 
-export async function concluirSubtarefaFormAction(subtarefaId: string): Promise<void> {
-  await concluirSubtarefaAction(subtarefaId);
+export async function concluirSubtarefaFormAction(subtarefaId: string, formData?: FormData): Promise<void> {
+  await concluirSubtarefaComObservacao(subtarefaId, formData ? texto(formData, "observacao") : null);
 }
 
 export async function definirAtivoProjetoAction(id: string, ativo: boolean) {

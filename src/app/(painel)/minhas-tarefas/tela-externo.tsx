@@ -10,6 +10,7 @@ import { calcularDiasRestantes } from "@/lib/datas";
 import { classeDoItemAgenda, COR_BARRA_AGENDA } from "@/lib/agenda-itens";
 import type { LimitesSemaforo } from "@/lib/semaforo";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
+import { descricaoDaExigencia, type SituacaoDoEnvio } from "@/lib/comprovantes-arquivos";
 
 type TarefaExterno = {
   id: string;
@@ -19,6 +20,11 @@ type TarefaExterno = {
   periodicidade: string | null;
   projeto: { nome: string };
   subtarefas: Array<{ status: string }>;
+  comprovanteExigido: boolean;
+  comprovanteQuantidade: number | null;
+  /** Situação do envio derivada dos pedidos de conclusão: devolvida, para enviar, aguardando conferência ou concluída. */
+  situacaoEnvio: SituacaoDoEnvio;
+  motivoDevolucao: string | null;
 };
 
 const RECORRENCIA: Record<string, string> = { SEMANAL: "Toda semana", MENSAL: "Todo mês", TRIMESTRAL: "Todo trimestre", SEMESTRAL: "Todo semestre", ANUAL: "Todo ano" };
@@ -57,6 +63,10 @@ export function TelaTarefasExterno({
   const fechada = (t: TarefaExterno) => t.status === "CONCLUIDO" || t.status === "CANCELADO";
   const abertas = tarefas.filter((t) => !fechada(t));
   const concluidas = tarefas.filter(fechada);
+  // Grupos do protótipo: devolvidas (com o motivo), para fazer, aguardando conferência e concluídas.
+  const devolvidas = abertas.filter((t) => t.situacaoEnvio === "devolvida");
+  const aguardando = abertas.filter((t) => t.situacaoEnvio === "aguardando");
+  const paraFazer = abertas.filter((t) => t.situacaoEnvio !== "devolvida" && t.situacaoEnvio !== "aguardando");
   const dias = (t: TarefaExterno) => (t.prazo ? calcularDiasRestantes(t.prazo) : null);
   const atrasadas = abertas.filter((t) => (dias(t) ?? 0) < 0).length;
   const proximas = abertas.filter((t) => { const d = dias(t); return d !== null && d >= 0 && d <= limites.diasAmareloAte; }).length;
@@ -75,10 +85,12 @@ export function TelaTarefasExterno({
             <span className="mt-1 block truncate text-[13px] text-cinza">{t.projeto.nome}</span>
             <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-cinza">
               {t.prazo && <span className="inline-flex items-center gap-1.5 tabular-nums text-ink">{icone(<><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>)}{formatarData(t.prazo)}</span>}
-              {!esmaecido && <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} />}
+              {!fechada(t) && <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} />}
               {t.subtarefas.length > 0 && <span className="inline-flex items-center gap-1.5 tabular-nums">{icone(<><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h.01M4 12h.01M4 18h.01" /></>)}{concluidasSub}/{t.subtarefas.length} subtarefas</span>}
               {t.periodicidade && <span className="inline-flex items-center gap-1.5">{icone(<><path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></>)}{RECORRENCIA[t.periodicidade] ?? t.periodicidade}</span>}
+              {t.comprovanteExigido && !fechada(t) && <span className="inline-flex items-center gap-1.5">{icone(<><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" /><circle cx="12" cy="13" r="3.5" /></>)}{descricaoDaExigencia(t.comprovanteQuantidade)}</span>}
             </span>
+            {t.situacaoEnvio === "devolvida" && t.motivoDevolucao && <span className="mt-2 block rounded-controle bg-azul-cl px-3 py-2 text-[13px] text-azul-esc"><strong className="font-semibold">Motivo:</strong> {t.motivoDevolucao}</span>}
           </span>
           <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" className="shrink-0 text-ink" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
         </Link>
@@ -94,7 +106,9 @@ export function TelaTarefasExterno({
       <div className="mt-5 flex flex-wrap gap-2.5" aria-label="Resumo das tarefas">
         {atrasadas > 0 && <Pilula tom="critico">{atrasadas} {atrasadas === 1 ? "atrasada" : "atrasadas"}</Pilula>}
         {proximas > 0 && <Pilula tom="ambar">{proximas} {proximas === 1 ? "vence" : "vencem"} em breve</Pilula>}
-        <Pilula tom="neutro">{abertas.length} para fazer</Pilula>
+        {devolvidas.length > 0 && <Pilula tom="ambar">{devolvidas.length} {devolvidas.length === 1 ? "devolvida" : "devolvidas"}</Pilula>}
+        <Pilula tom="neutro">{paraFazer.length} para fazer</Pilula>
+        {aguardando.length > 0 && <Pilula tom="neutro">{aguardando.length} aguardando conferência</Pilula>}
       </div>
 
       {tarefas.length === 0 && (
@@ -103,7 +117,9 @@ export function TelaTarefasExterno({
           Quando uma tarefa for atribuída a você, ela aparece aqui.
         </div>
       )}
-      {abertas.length > 0 && <Grupo titulo="Para fazer" total={abertas.length}>{abertas.map((t) => cartao(t, false))}</Grupo>}
+      {devolvidas.length > 0 && <Grupo titulo="Devolvidas para correção" total={devolvidas.length}>{devolvidas.map((t) => cartao(t, false))}</Grupo>}
+      {paraFazer.length > 0 && <Grupo titulo="Para fazer" total={paraFazer.length}>{paraFazer.map((t) => cartao(t, false))}</Grupo>}
+      {aguardando.length > 0 && <Grupo titulo="Aguardando conferência" total={aguardando.length}>{aguardando.map((t) => cartao(t, true))}</Grupo>}
       {concluidas.length > 0 && <Grupo titulo="Concluídas" total={concluidas.length}>{concluidas.map((t) => cartao(t, true))}</Grupo>}
     </div>
   );

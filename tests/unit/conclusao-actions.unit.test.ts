@@ -45,8 +45,11 @@ describe("action de conclusão de tarefa", () => {
     });
     mocks.solicitarConclusao.mockResolvedValue({
       solicitacao: { id: "pedido-1" },
+      tipo: "TAREFA",
       titulo: "Tarefa de teste",
       tarefaId: "tarefa-1",
+      projetoId: "projeto-1",
+      totalComprovantes: 0,
     });
   });
 
@@ -68,7 +71,7 @@ describe("action de conclusão de tarefa", () => {
 
     await concluirTarefaAction("tarefa-1");
 
-    expect(mocks.solicitarConclusao).toHaveBeenCalledWith({ usuarioId: "interno-1", perfil: "ADMIN_INTERNO" }, "TAREFA", "tarefa-1");
+    expect(mocks.solicitarConclusao).toHaveBeenCalledWith({ usuarioId: "interno-1", perfil: "ADMIN_INTERNO" }, "TAREFA", "tarefa-1", null);
     expect(mocks.concluirTarefa).not.toHaveBeenCalled();
     expect(mocks.dispararEventoNotificacao).toHaveBeenCalledWith(EventoNotificacao.CONCLUSAO_SOLICITADA, expect.objectContaining({
       entidadeId: "pedido-1",

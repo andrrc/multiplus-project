@@ -158,6 +158,7 @@ model Usuario {
   comentarios           Comentario[]
   solicitacoesConclusao SolicitacaoConclusao[] @relation("SolicitacaoConclusaoSolicitante")
   decisoesConclusao     SolicitacaoConclusao[] @relation("SolicitacaoConclusaoDecisor")
+  arquivosComprovante   ArquivoComprovante[]   @relation("ArquivoComprovanteAutor")
   notificacoes          Notificacao[]
   tokensAcesso          TokenAcesso[]
 
@@ -427,6 +428,11 @@ model Tarefa {
   serieEncerradaEm               DateTime?
   diasAntecedencia               Int?
   colaboradorPodeCriarSubtarefas Boolean        @default(false)
+  /// Comprovante exigido: o responsável só pede a conclusão depois de anexar a quantidade informada.
+  comprovanteExigido    Boolean @default(false)
+  comprovanteQuantidade Int?
+  /// Lista "o que enviar" exibida na tela de envio do colaborador.
+  comprovanteInstrucoes String[] @default([])
   ativo                          Boolean        @default(true)
   desativadoEm                   DateTime?
   desativadoPor                  String?
@@ -445,6 +451,7 @@ model Tarefa {
   subtarefas            Subtarefa[]
   comentarios           Comentario[]
   solicitacoesConclusao SolicitacaoConclusao[]
+  arquivosComprovante   ArquivoComprovante[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -466,6 +473,11 @@ model Subtarefa {
   prazo         DateTime?
   /// Guarda nomes canônicos do catálogo global de etiquetas.
   etiquetas     String[]        @default([])
+  /// Comprovante exigido: o responsável só pede a conclusão depois de anexar a quantidade informada.
+  comprovanteExigido    Boolean @default(false)
+  comprovanteQuantidade Int?
+  /// Lista "o que enviar" exibida na tela de envio do colaborador.
+  comprovanteInstrucoes String[] @default([])
   status        StatusSubtarefa @default(EM_ANDAMENTO)
   ativo         Boolean         @default(true)
   desativadoEm  DateTime?
@@ -483,6 +495,7 @@ model Subtarefa {
   criadoPorNome       String?
   comentarios           Comentario[]
   solicitacoesConclusao SolicitacaoConclusao[]
+  arquivosComprovante   ArquivoComprovante[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -547,11 +560,41 @@ model SolicitacaoConclusao {
   decididoPorNome   String?
   decididoEm        DateTime?
   comentarioDecisao String?
+  /// Observação opcional escrita pelo colaborador ao enviar os comprovantes.
+  observacaoEnvio   String?
+  arquivos          ArquivoComprovante[]
 
   @@index([status, solicitadoEm])
   @@index([tarefaId, solicitadoEm])
   @@index([subtarefaId, solicitadoEm])
   @@map("solicitacoes_conclusao")
+}
+
+/// Arquivo de comprovante enviado pelo colaborador. Nasce como rascunho (sem solicitação) e passa a fazer parte
+/// do envio quando o pedido de conclusão é criado; depois disso é imutável e nunca é apagado.
+model ArquivoComprovante {
+  id            String                @id @default(cuid())
+  tarefaId      String?
+  tarefa        Tarefa?               @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  subtarefaId   String?
+  subtarefa     Subtarefa?            @relation(fields: [subtarefaId], references: [id], onDelete: Cascade)
+  solicitacaoId String?
+  solicitacao   SolicitacaoConclusao? @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
+  /// Caminho no bucket privado; nunca é exibido nem montado a partir do nome enviado.
+  chave         String                @unique
+  nomeOriginal  String
+  tipo          String
+  tamanhoBytes  Int
+  enviadoPorId  String?
+  enviadoPor    Usuario?              @relation("ArquivoComprovanteAutor", fields: [enviadoPorId], references: [id], onDelete: SetNull)
+  enviadoPorNome String
+  /// Hora do servidor (banco), nunca a do aparelho do colaborador.
+  enviadoEm     DateTime              @default(now())
+
+  @@index([tarefaId])
+  @@index([subtarefaId])
+  @@index([solicitacaoId])
+  @@map("arquivos_comprovante")
 }
 
 /// RF-022 — cada perfil configura os eventos independentemente por e-mail e in-app.
