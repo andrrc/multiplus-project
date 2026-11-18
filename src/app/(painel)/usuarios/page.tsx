@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Perfil } from "@prisma/client";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarUsuarios, ROTULO_STATUS, type UsuarioDaListagem } from "@/lib/usuarios";
+import { descreverUltimoAcesso } from "@/lib/ultimo-acesso";
 import { Etiqueta } from "@/ui/campo";
 import { botaoPrimario } from "@/ui/botoes";
 import { NaoInformado } from "@/ui/cartao";
@@ -25,12 +26,13 @@ const PERFIS_FILTRAVEIS: Perfil[] = ["ADMIN", "ADMIN_INTERNO", "ADMIN_EXTERNO", 
 const SITUACOES_FILTRAVEIS = ["ativo", "pendente", "desativado"] as const;
 
 const COLUNAS = [
-  { titulo: "Nome", largura: "23%" },
-  { titulo: "Perfil", largura: "13%" },
-  { titulo: "Empresa", largura: "17%" },
-  { titulo: "O que acessa", largura: "17%" },
-  { titulo: "Situação", largura: "13%" },
-  { titulo: "Ações", largura: "17%" },
+  { titulo: "Nome", largura: "20%" },
+  { titulo: "Perfil", largura: "11%" },
+  { titulo: "Empresa", largura: "14%" },
+  { titulo: "O que acessa", largura: "15%" },
+  { titulo: "Último acesso", largura: "12%" },
+  { titulo: "Situação", largura: "12%" },
+  { titulo: "Ações", largura: "16%" },
 ];
 
 /**
@@ -178,6 +180,13 @@ export default async function UsuariosPage({
               <CelulaLista rotulo="Perfil"><span>{NOME_PERFIL[usuario.perfil]}</span></CelulaLista>
               <CelulaLista rotulo="Empresa">{usuario.empresa ? <TextoPrincipal>{usuario.empresa}</TextoPrincipal> : <NaoInformado />}</CelulaLista>
               <CelulaLista rotulo="O que acessa"><Atribuicoes usuario={usuario} /></CelulaLista>
+              <CelulaLista rotulo="Último acesso">
+                {usuario.ultimoAcessoEm ? (
+                  <span className="tabular-nums text-ink">{descreverUltimoAcesso(usuario)}</span>
+                ) : (
+                  <span className="text-faint">{descreverUltimoAcesso(usuario)}</span>
+                )}
+              </CelulaLista>
               <CelulaLista rotulo="Situação"><StatusPonto status={usuario.status}>{ROTULO_STATUS[usuario.status]}</StatusPonto></CelulaLista>
               <CelulaLista larga>
                 {/* Acima do link esticado do nome, para os botões continuarem clicáveis. */}

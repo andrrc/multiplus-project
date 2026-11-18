@@ -141,6 +141,7 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   const usuarios = page.getByRole("region", { name: "Usuários e acessos" });
   await expect(usuarios).toBeVisible();
   await expect(usuarios.getByRole("columnheader", { name: "Situação" })).toBeVisible();
+  await expect(usuarios.getByRole("columnheader", { name: "Último acesso" })).toBeVisible();
   await expect.poll(() => usuarios.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   await page.goto("/usuarios/novo");
   await expect(page.getByRole("heading", { name: "Novo usuário", level: 1 })).toBeVisible();

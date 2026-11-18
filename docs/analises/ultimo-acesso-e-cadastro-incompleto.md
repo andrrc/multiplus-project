@@ -1,7 +1,7 @@
 # Último acesso dos usuários e filtro "Cadastro incompleto"
 
 - **Data:** 2026-11-18
-- **Status:** aguardando aprovação. Nada foi implementado.
+- **Status:** aprovada em 2026-11-18 e implementada no mesmo dia (cadastro incompleto e último acesso, em dois commits).
 - **Origem:** pedido do usuário em 2026-11-18, a partir das diferenças restantes entre os protótipos e o sistema ([planejamento](planejamento-diferencas-prototipos.md), perguntas 6 e 7). Protótipos: `telas-novas/sistema-gestao-multiplus/07-usuarios.html` (coluna "Último acesso") e `06-clientes.html` (situação "Cadastro incompleto").
 - **Decisões já tomadas:** registrar a última vez que o usuário acessou; considerar cadastro incompleto o cliente **sem segmento ou sem cidade**.
 
@@ -77,6 +77,6 @@ No login que deu certo, dentro de `autenticarComCredenciais` (`src/server/auth/c
 3. No fim, atualizar o [planejamento](planejamento-diferencas-prototipos.md): marcar os dois itens como feitos e corrigir o que ficou desatualizado (a lista de Usuários já mostra clientes e externos, com empresa e filtro por empresa).
 
 ## 4. Pontos para aprovação
-1. **"Último acesso" = último login** (recomendado), em vez de também registrar a atividade. — **Resposta:** pendente.
-2. **Visível só à administração.** — **Resposta:** pendente.
+1. **"Último acesso" = último login** (recomendado), em vez de também registrar a atividade. — **Resposta:** em 2026-11-18, aprovado.
+2. **Visível só à administração.** — **Resposta:** em 2026-11-18, aprovado.
 3. **Cadastro incompleto = sem segmento ou sem cidade**, como no protótipo. — **Resposta:** definido em 2026-11-18 (você).

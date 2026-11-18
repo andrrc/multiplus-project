@@ -38,9 +38,9 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 | Cobrar responsável | C | Cria aviso manual para outra pessoa: limite de uso, quem pode cobrar quem, registro. |
 | Histórico automático junto dos comentários | B | Registrar eventos (mudou status, prazo, responsável). Conferir se já há tabela de auditoria aproveitável. |
 | Duplicar projeto | B/D | Definir o que copia (tarefas, subtarefas, comprovantes, datas) e como ficam os IDs hierárquicos. |
-| Usuários: "Último acesso" | D | Exige registrar login (LGPD). A decisão anterior foi não criar; só refazer se a Talita pedir. |
-| Usuários: lista única de clientes e externos, filtro e escolha de empresa | B/D | `Usuario` não tem vínculo com empresa; definir o modelo antes. |
-| Clientes: filtro "Cadastro incompleto" | D | Falta definir quais campos tornam um cadastro incompleto; depois é A. |
+| Usuários: "Último acesso" | **Feito em 18/11/2026** | Gravado no login, visível só à administração ([análise](ultimo-acesso-e-cadastro-incompleto.md)). A data é a do login, não a do último uso. |
+| Usuários: lista única de clientes e externos e filtro por empresa | **Já existia** (16/11/2026) | A lista mostra clientes e externos, com coluna Empresa e filtro por empresa. Falta só escolher a empresa antes do perfil no cadastro (B/D). |
+| Clientes: filtro "Cadastro incompleto" | **Feito em 18/11/2026** | Sem segmento ou sem cidade, como no protótipo. |
 | Configurações: régua de avisos, escalonamento, resumo mensal | B/C | Mexe no agendador e nas notificações. Fase própria. |
 
 ### Colaborador interno
@@ -52,7 +52,7 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 | Contagem de "minhas pendências" por pessoa em Meus projetos | A | Conferir que não expõe dado de quem o interno não vê. |
 | Comentários no nível da tarefa | B | Hoje os comentários ficam no projeto; conferir o modelo. |
 | Abas "Minhas / Da equipe" | C | "Da equipe" mostra trabalho de outras pessoas: define escopo de leitura e RLS. |
-| "Concluir" direto na linha | C | O interno pede a conclusão e a administração confirma (regra de 22/10/2026). Só vale se a regra mudar. |
+| "Concluir" na linha | A/C | O protótipo não pede conclusão direta: o botão da linha é "Concluir e enviar para confirmação", e a administração continua confirmando (regra de 22/10/2026). É o atalho para o pedido que já existe; com comprovante exigido, leva ao envio. |
 | "Exportar PDF" para o colaborador | C | Precisa garantir mascaramento e escopo. |
 | "Novo" com mais opções | C | Depende do que o interno pode criar. |
 
@@ -105,12 +105,12 @@ Itens: parar o prazo durante a conferência, pausa de prazo, pedido de prazo e i
 - Risco principal: a etapa 2 atravessa semáforo, atrasos, agenda, portal e avisos; os testes existentes de semáforo e de atraso precisam continuar valendo.
 
 ### Fase 3: permissões do colaborador interno
-Itens: abas "Minhas / Da equipe", Exportar PDF do colaborador, "Novo" com mais opções, "Concluir" direto na linha (só se a Talita mudar a regra de aprovação), comentários no nível da tarefa.
+Itens: abas "Minhas / Da equipe", Exportar PDF do colaborador, "Novo" com mais opções, "Concluir" na linha (atalho para o pedido de conclusão, sem mudar a regra de aprovação), comentários no nível da tarefa.
 - Uma análise de permissão para o conjunto, com a tabela de quem vê e faz o quê, como em `restricao-externo-e-agenda-interno.md`.
 - Testes de RLS para o perfil permitido e o negado.
 
 ### Fase 4: administração (dado novo)
-Itens: histórico automático, cobrar responsável, avisos com contexto e ações diretas, duplicar projeto, Usuários com lista única e empresa, "Cadastro incompleto", "Último acesso" (se pedido).
+Itens: histórico automático, cobrar responsável, avisos com contexto e ações diretas, duplicar projeto e escolha da empresa antes do perfil no cadastro de usuário. ("Cadastro incompleto" e "Último acesso" foram feitos em 18/11/2026.)
 - Começar pelo histórico automático, porque avisos com contexto e outros itens podem reaproveitá-lo.
 - Duplicar projeto e Usuários com empresa exigem modelo definido antes (classe D).
 
@@ -128,11 +128,11 @@ Item isolado porque muda o enum e vários cálculos (progresso, semáforo, pain�
 
 ## 4. Perguntas para a Talita
 
-1. **Último acesso:** ela quer ver quando cada pessoa acessou o sistema? (envolve registrar o login)
-2. **Cadastro incompleto:** quais campos do cliente tornam o cadastro incompleto?
+1. ~~**Último acesso**~~ — decidido e feito em 18/11/2026 (você).
+2. ~~**Cadastro incompleto**~~ — decidido e feito em 18/11/2026: sem segmento ou sem cidade.
 3. **Duplicar projeto:** o que deve ser copiado (tarefas, subtarefas, datas, comprovantes exigidos)?
 4. **Colaborador "Da equipe":** o interno deve ver tarefas de outros colaboradores do mesmo projeto? Só leitura?
-5. **Concluir direto:** o interno pode concluir sem a confirmação dela, ou continua pedindo a conclusão?
+5. ~~**Concluir direto**~~ — o protótipo já responde: o interno continua enviando para confirmação.
 6. **Unidades do cliente:** o que é uma unidade (filial, obra, local)? Um projeto pertence a uma unidade?
 7. **Drive:** pasta compartilhada por cliente? Quem coloca o link?
 8. **Trilha de etapas:** as etapas são fixas por tipo de projeto ou definidas por projeto? O cliente vê comentários?

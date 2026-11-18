@@ -35,22 +35,23 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 ### U1. Listar usuários (RF-040)
 
 **Como funciona.**
-- **Colunas:** nome (com e-mail e cargo), perfil, **empresa**, o que acessa, situação do acesso e ações. A linha inteira abre o
+- **Colunas:** nome (com e-mail e cargo), perfil, **empresa**, o que acessa, **último acesso**, situação do acesso e ações. A linha inteira abre o
   usuário e vira cartão no celular.
 - **Filtros:** busca enquanto se digita (nome, e-mail, cargo ou empresa), filtro por empresa, botões de perfil com contagem (inclui **Cliente**), situação do acesso e "Mostrar desativados".
 - **Empresa e clientes (16/11/2026):** a lista inclui os acessos do perfil Cliente, só para leitura: o nome abre a ficha do cliente e a ação é "Ver cliente" (o acesso do cliente continua sendo gerido na ficha, RF-029/RF-031). A empresa é a Múltiplus Ambiental para a equipe, o cliente para o portal e para colaboradores externos que vieram de uma pessoa envolvida.
   A contagem dos botões considera a busca e a situação escolhidas.
 - **Situação do acesso:** Ativo, Pendente de ativação ou Desativado.
+- **Último acesso (18/11/2026):** data e hora do último login bem-sucedido, no horário de Brasília (a ficha do usuário mostra o mesmo dado). Quem ainda não definiu a senha aparece como "Ainda não acessou"; quem já tem senha e entrou antes de o registro existir aparece como "Sem registro" até o próximo login. Só a administração vê esse dado, que não é guardado como histórico: fica só o último momento, sem IP nem aparelho.
 - **Alcance:** "Acesso total" para a Administradora, ou as atribuições do colaborador.
 - **Alertas:** colaborador sem nenhuma atribuição aparece com o aviso "não vê nada ao
   entrar". Falha no envio do convite também aparece na lista.
 
 **Detalhes técnicos.**
 - **Rota:** `/usuarios`.
-- **Funções:** `listarUsuarios` e `statusAcesso` (`src/lib/usuarios.ts`). A página traz a equipe toda e aplica o perfil
+- **Funções:** `listarUsuarios` e `statusAcesso` (`src/lib/usuarios.ts`); `registrarUltimoAcesso` e `descreverUltimoAcesso` (`src/lib/ultimo-acesso.ts`). A coluna é `usuarios.ultimoAcessoEm`, gravada na autenticação (veja [Autenticação](autenticacao-acesso.md), A1). A página traz a equipe toda e aplica o perfil
   e a situação no servidor da página, para contar cada perfil.
 - **Telas:** `usuarios/page.tsx`, `usuarios/filtros-usuarios.tsx` e `src/ui/lista.tsx`.
-- **Teste:** `administracao-acesso.unit.test.ts`, com os casos da situação do acesso.
+- **Teste:** `administracao-acesso.unit.test.ts`, com os casos da situação do acesso; `ultimo-acesso.unit.test.ts` e `ultimo-acesso.integration.test.ts`, com o texto da coluna, a gravação no login e quem pode ler.
 
 ### U2. Criar usuário e enviar convite (RF-030)
 
@@ -135,12 +136,14 @@ A listagem administrativa apresenta uma tabela no desktop e cartões no celular,
 | # | Situação | Efeito |
 |---|---|---|
 | — | Não há limitação conhecida para desativação ou atualização de perfil durante uma sessão aberta. | — |
-| L1 | A lista e o cadastro seguem o protótipo `07-usuarios`. | Faltam a coluna "Último acesso" e a escolha da empresa antes do perfil no cadastro: dependem de dados e regras novas. |
+| L1 | A lista e o cadastro seguem o protótipo `07-usuarios`. | Falta a escolha da empresa antes do perfil no cadastro: depende de regra nova. |
+| L2 | "Último acesso" é a data do **login**, não do último uso. | A sessão dura vários dias: quem continua logado aparece com a data de quando entrou. Registrar também a atividade é uma alternativa descrita na [análise](../analises/ultimo-acesso-e-cadastro-incompleto.md). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-18 | este commit | Coluna "Último acesso" na lista e na ficha ([análise](../analises/ultimo-acesso-e-cadastro-incompleto.md)) |
 | 2026-11-16 | este commit | Lista com coluna e filtro de empresa, busca por empresa e acessos de cliente em modo leitura |
 | 2026-11-11 | este commit | Adaptar a listagem responsiva de usuários |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem de usuários |

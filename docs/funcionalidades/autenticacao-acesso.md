@@ -40,6 +40,7 @@ acessar.
 - **Senha:** hash com bcrypt (`src/lib/senha.ts`).
 - **Proteção contra tentativa e erro:** 5 falhas por e-mail e 20 por IP em cada janela de 15 minutos. Tentativas em andamento reservam uma posição; o sucesso libera a reserva e limpa falhas anteriores quando não há falhas concorrentes. O bloqueio é temporário e a recuperação de senha continua disponível.
 - **Proteção compartilhada:** os limites são persistidos no PostgreSQL, com chaves resumidas por hash e capacidade limitada; valem entre instâncias e sobrevivem ao reinício. Se o banco estiver indisponível ou a capacidade se esgotar, a autenticação é negada por segurança.
+- **Último acesso (18/11/2026):** depois de a senha conferir e de o limite ser liberado, `autenticarComCredenciais` grava o instante em `usuarios.ultimoAcessoEm` (`registrarUltimoAcesso`, `src/lib/ultimo-acesso.ts`). É um UPDATE direto, que não altera `atualizadoEm` nem `versaoSessao`. Login recusado (senha errada, conta desativada ou sem senha) não grava, e uma falha na gravação vai para o log do servidor sem derrubar o login. O dado é o último momento, sem histórico, IP nem aparelho; só a administração o vê (lista e ficha de Usuários). A sessão dura vários dias, então a data é a do login, não a do último uso.
 - **Origem do IP:** o Caddy substitui `X-Real-IP` pelo peer da conexão; o app não confia no `X-Forwarded-For` fornecido pelo cliente.
 - **Testes:** `autenticacao.smoke.test.ts` e `limites-autenticacao.integration.test.ts` cobrem limites, concorrência e acesso negado à tabela interna.
 
@@ -171,3 +172,4 @@ o endereço completos; o valor de exemplo em `.env.example` usa o novo nome. Cob
 | 2026-10-05 | `1339997` | Link de definição de senha copiável na ficha ao criar acesso do cliente ([análise](../analises/link-manual-convite-cliente.md)) |
 | 2026-10-08 | `1339997` | Convite de definição de senha ganha layout visual com marca, botão principal e link alternativo |
 | 2026-11-13 | este commit | Tela inicial da Administradora e do colaborador interno passa a ser o Painel (`/painel`); o item do cliente passa a se chamar Painel |
+| 2026-11-18 | este commit | Gravar o último acesso no login bem-sucedido ([análise](../analises/ultimo-acesso-e-cadastro-incompleto.md)) |

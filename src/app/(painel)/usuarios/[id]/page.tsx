@@ -15,6 +15,7 @@ import {
   type AtribuicaoDetalhada,
 } from "@/lib/usuarios";
 import { formatarCnpj, formatarCpf, formatarTelefone } from "@/lib/formatacao";
+import { descreverUltimoAcesso } from "@/lib/ultimo-acesso";
 import { Etiqueta } from "@/ui/campo";
 import { botaoSecundario } from "@/ui/botoes";
 import { Avatar, Trilha } from "@/ui/cartao";
@@ -134,6 +135,10 @@ export default async function DetalheUsuarioPage({
         <span className="text-sm font-medium text-ink">{NOME_PERFIL[usuario.perfil]}</span>
         <StatusPonto status={status}>{ROTULO_STATUS[status]}</StatusPonto>
         <span className="text-[13.5px] text-cinza">{GRANULARIDADE[usuario.perfil]}</span>
+        {/* Só a administração chega a esta página; o último acesso de outras pessoas não sai daqui. */}
+        <span className="text-[13.5px] text-cinza">
+          Último acesso: {descreverUltimoAcesso({ ultimoAcessoEm: usuario.ultimoAcessoEm, temSenha: usuario.senhaHash !== null })}
+        </span>
       </div>
 
       {(usuario.cargo ||

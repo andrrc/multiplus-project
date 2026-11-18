@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Perfil } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verificarSenha } from "@/lib/senha";
+import { registrarUltimoAcesso } from "@/lib/ultimo-acesso";
 import { finalizarLimites, reservarLimites } from "@/lib/rate-limit-banco";
 
 const LIMITE_LOGIN_EMAIL = 5;
@@ -79,6 +80,9 @@ export async function autenticarComCredenciais(
 
   // O sucesso libera sua reserva sem apagar falhas registradas em paralelo.
   await finalizarLimites(reserva, true);
+
+  // Só o login que deu certo chega aqui; a gravação não derruba o acesso se falhar.
+  await registrarUltimoAcesso(usuario.id);
 
   return {
     id: usuario.id,

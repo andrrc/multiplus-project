@@ -139,6 +139,11 @@ model Usuario {
   desativadoEm  DateTime?
   desativadoPor String?
 
+  /// Última vez que a pessoa entrou com sucesso (login). Só o último momento: sem histórico, IP
+  /// nem aparelho. Nulo para quem nunca entrou ou entrou antes de a coluna existir. Só a
+  /// administração lê esse dado de outras pessoas (RLS de `usuarios` e `listarUsuarios`).
+  ultimoAcessoEm DateTime?
+
   // Preenchido apenas para perfil CLIENTE — vincula o usuário à empresa que ele representa.
   clienteId String?
   cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)

@@ -82,6 +82,10 @@ export type UsuarioDaListagem = {
   empresa: string | null;
   /** Cadastro do cliente, para os acessos do perfil CLIENTE. */
   clienteId: string | null;
+  /** Último login bem-sucedido; nulo se nunca entrou ou entrou antes de o registro existir. */
+  ultimoAcessoEm: Date | null;
+  /** Já definiu a senha; separa "Ainda não acessou" de "Sem registro" quando falta a data. */
+  temSenha: boolean;
 };
 
 /**
@@ -129,6 +133,7 @@ export async function listarUsuarios(
         perfil: true,
         ativo: true,
         senhaHash: true,
+        ultimoAcessoEm: true,
         clienteId: true,
         cliente: { select: { razaoSocial: true } },
         _count: { select: { atribuicoes: true } },
@@ -154,6 +159,8 @@ export async function listarUsuarios(
       ? u.cliente?.razaoSocial ?? null
       : u.pessoaEnvolvida?.cliente.razaoSocial ?? (u.perfil === "ADMIN_EXTERNO" ? null : EMPRESA_DA_EQUIPE),
     clienteId: u.clienteId,
+    ultimoAcessoEm: u.ultimoAcessoEm,
+    temSenha: u.senhaHash !== null,
   }));
 }
 

@@ -88,6 +88,7 @@ Este checklist reúne o que precisa ser resolvido antes de disponibilizar o sist
 - [ ] Definir por quanto tempo guardar os comprovantes (fotos e arquivos) e se haverá limpeza automática; conferir que o backup do volume do MinIO os inclui e que o disco comporta o crescimento (até 20 arquivos de 10 MB por envio).
 - [ ] Confirmar com a Talita o aviso de privacidade (pessoas, placas e documentos pessoais nas fotos) e a política de acesso: o cliente nunca vê comprovantes.
 - [ ] Testar comportamento quando o storage estiver indisponível.
+- [ ] Informar no aviso de privacidade que o sistema registra a data e a hora do último acesso de cada usuário (só o último momento, sem IP nem aparelho, visível só à administração).
 
 ### 6. Job diário de notificações
 
