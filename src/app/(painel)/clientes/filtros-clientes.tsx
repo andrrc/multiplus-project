@@ -2,7 +2,7 @@
 /**
  * Barra de filtros da lista de Clientes (protótipo 06-clientes): busca que vale enquanto se digita (nome, ID, CNPJ, CPF
  * ou cidade), segmento, cidade, laudo técnico (Administração), botões de situação com contagem (Todos, Com projeto
- * ativo, Sem projeto ativo), linha de resultado com "Limpar filtros" e o botão "Mostrar desativados". Cada escolha
+ * ativo, Sem projeto ativo, Com atraso, Cadastro incompleto), linha de resultado com "Limpar filtros" e o botão "Mostrar desativados". Cada escolha
  * atualiza a URL e a página (servidor) refaz a consulta.
  */
 
@@ -13,10 +13,10 @@ import { CampoBuscaLista } from "@/ui/campo-busca-lista";
 
 const filtroClass = "h-11 w-full min-w-0 rounded-controle border border-linha-forte bg-branco px-3 font-[family-name:var(--font-interface)] text-sm text-ink focus:border-azul focus:outline-none focus:ring-[3px] focus:ring-azul/15 disabled:opacity-60 md:h-[38px]";
 
-export type SituacaoClientes = "" | "com" | "sem" | "atraso";
+export type SituacaoClientes = "" | "com" | "sem" | "atraso" | "incompleto";
 type Filtros = { busca: string; cidade: string; segmento: string; desativados: boolean; laudo: string; situacao: SituacaoClientes };
 
-const BOTOES: Array<[SituacaoClientes, string]> = [["", "Todos"], ["com", "Com projeto ativo"], ["sem", "Sem projeto ativo"], ["atraso", "Com atraso"]];
+const BOTOES: Array<[SituacaoClientes, string]> = [["", "Todos"], ["com", "Com projeto ativo"], ["sem", "Sem projeto ativo"], ["atraso", "Com atraso"], ["incompleto", "Cadastro incompleto"]];
 
 export function FiltrosClientes({
   laudoInicial = "",
@@ -40,7 +40,7 @@ export function FiltrosClientes({
   cidades: string[];
   segmentos: string[];
   /** Clientes por situação, já com a busca, o segmento e a cidade aplicados. */
-  contagens: { todos: number; com: number; sem: number; atraso: number };
+  contagens: { todos: number; com: number; sem: number; atraso: number; incompleto: number };
   podeMostrarDesativados: boolean;
   /** Quantos clientes a lista mostra agora, para a linha de resultado. */
   total?: number;

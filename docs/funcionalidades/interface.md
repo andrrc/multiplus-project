@@ -43,7 +43,7 @@ compartilhado e o botão Voltar funciona.
 exportação levar a mesma lista da tela), `src/ui/campo-busca-lista.tsx` (campo com pausa na digitação, que acompanha o "Limpar filtros") e
 `ColunaLista.ordenacao` em `src/ui/lista.tsx`. A busca não amplia acesso: ela só filtra o que o perfil já pode ler.
 
-**Pendências.** "Cadastro incompleto", "Minhas / Da equipe", o tipo "Só subtarefas" e o Exportar PDF do colaborador dependem de definição de regra ou de permissão. A coluna "Pendências", "Último acesso" e os demais números do protótipo eram dados ilustrativos e não serão criados. "Com atraso" (Clientes), "Aguardando outras pessoas" (Minhas tarefas e painel) e "Marcar como não lido" (Avisos) foram feitos em 16/11/2026; veja `clientes.md`, `tarefas.md` e `notificacoes.md`.
+**Pendências.** "Minhas / Da equipe", o tipo "Só subtarefas" e o Exportar PDF do colaborador dependem de definição de regra ou de permissão. A coluna "Pendências", "Último acesso" e os demais números do protótipo eram dados ilustrativos e não serão criados. "Com atraso" (Clientes), "Aguardando outras pessoas" (Minhas tarefas e painel) e "Marcar como não lido" (Avisos) foram feitos em 16/11/2026; veja `clientes.md`, `tarefas.md` e `notificacoes.md`.
 
 ### Busca geral
 
