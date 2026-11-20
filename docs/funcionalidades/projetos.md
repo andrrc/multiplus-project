@@ -135,6 +135,8 @@ A listagem administrativa de projetos está em adaptação visual aos modelos da
 - **Rota:** `/projetos/[id]`.
 - **Funções:** `buscarProjeto`, `alterarStatusProjetoAction` e
   `criarDocumentoProjetoAction`.
+- **Quem acessa este projeto (18/11/2026):** bloco na coluna lateral, só para a administração, com a administração, a equipe atribuída ao projeto inteiro, os colaboradores atribuídos a tarefas ou subtarefas dele (com a contagem) e o portal do cliente (com o número de pessoas com acesso). Pessoa desativada não entra e ninguém se repete. Não traz e-mail, telefone nem documento. `listarQuemAcessaProjeto` e `montarQuemAcessa` (`src/lib/acesso-projeto.ts`); testes `acesso-projeto.unit.test.ts` e `acesso-projeto.integration.test.ts`, com o perfil negado.
+- **Exportar PDF do projeto (18/11/2026):** botão no cabeçalho do projeto ativo; gera o resumo (cliente, proposta, ID, status, previsão de conclusão e tarefas concluídas) e as tarefas ativas, abertas primeiro. **Sem valor contratado** e sem comentários. Rota `GET /api/exportacao-pdf/projeto?id=`, só para `ADMIN`.
 
 ### P5. Documentos do projeto (RF-013)
 
@@ -197,6 +199,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-18 | este commit | "Quem acessa este projeto" na coluna lateral e Exportar PDF do projeto |
 | 2026-11-16 | este commit | Meus projetos com busca, filtro de cliente, ordenação e abas com contagem |
 | 2026-11-13 | este commit | Lista de projetos com filtro por cliente e exportação em PDF, conforme o protótipo |
 | 2026-11-12 | este commit | Organizar o detalhe de projetos atribuídos |

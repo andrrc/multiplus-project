@@ -65,8 +65,9 @@ de resumo (progresso, início, conclusão prevista, dias restantes e última atu
 andamento, prazo, responsável e progresso das subtarefas) e **Documentos**.
 
 **Detalhes técnicos.** `portal/[id]/page.tsx` usa só `buscarProjetoPortal`, que já limita o que o cliente enxerga; nenhum dado novo
-foi exposto. A trilha de etapas, as atualizações da Múltiplus e o filtro Em andamento/Concluídos do protótipo dependem de dados que
-o portal não entrega (etapas nomeadas, comentários liberados ao cliente) e ficaram de fora.
+foi exposto. A trilha de etapas e as atualizações da Múltiplus do protótipo dependem de dados que o portal não entrega (etapas nomeadas,
+comentários liberados ao cliente) e ficaram de fora. O filtro Em andamento, Concluídos e Todos da lista de projetos do painel foi
+feito em 18/11/2026 (veja [Área exclusiva do cliente](area-exclusiva-cliente.md), C1b).
 
 ### Navegação e identidade dos modelos
 
@@ -115,9 +116,8 @@ ficam em `src/ui/botoes.ts` e `calcularDiasRestantes` passou para `src/lib/datas
 (reexportado por `indicador-dias-restantes.tsx`). Testes: `tests/unit/situacao-prazo.unit.test.ts`,
 `tests/unit/filtro-responsavel.unit.test.ts` e a jornada de `tests/browser/jornadas.spec.ts`.
 
-**Pendências desta área.** Busca por texto em Tarefas e Subtarefas, ordenação clicável nas
-colunas, a coluna de etiquetas nas subtarefas e o texto do responsável com seu papel dependem
-de consultas novas e não foram criados. O PDF não aplica a situação do prazo.
+**Pendências desta área.** Nenhuma conhecida. A busca por texto e a ordenação nas colunas (16/11/2026) e, em 18/11/2026, as
+etiquetas nas subtarefas, o papel do responsável nas tarefas e a situação do prazo no PDF já existem.
 
 ### Lista e ficha de clientes
 
@@ -153,9 +153,10 @@ importar código de servidor, porque o menu de status é um componente de client
 mudaram. A jornada de `tests/browser/jornadas.spec.ts` abre as duas páginas, cancela a confirmação e confere a
 tarefa a 375 px.
 
-**Pendências desta área.** "Quem acessa este projeto", histórico automático junto dos comentários, comprovantes das
-subtarefas, "Cobrar responsável", rejeição com motivo, duplicar e exportar PDF do projeto, "Próxima ocorrência" da
-tarefa e o texto de "Atribuição pendente" no cabeçalho dependem de dados ou regras novas.
+**Pendências desta área.** Histórico automático junto dos comentários, "Cobrar responsável" e duplicar projeto dependem de
+dados ou regras novas. Em 18/11/2026 entraram "Quem acessa este projeto", o "Exportar PDF" do projeto e a "Próxima ocorrência" da
+tarefa; os comprovantes das subtarefas e a rejeição com motivo, em 17/11/2026. O aviso "Atribuição pendente" (subtarefas sem
+responsável) já existe na tarefa; o protótipo não traz mais nada com esse nome.
 
 ### Lista, cadastro e detalhe de usuários
 
@@ -189,8 +190,9 @@ Testes: `tests/unit/avisos-agrupamento.unit.test.ts`, `tests/unit/agenda-itens.u
 `tests/browser/jornadas.spec.ts`. Na caixa da Administradora, o status do envio de prazos, o semáforo e as preferências por perfil
 continuam ao lado da lista até existir a página de Configurações.
 
-**Pendências desta área.** "Marcar como não lido", ações diretas nos avisos (ver comprovantes, cobrar responsável), contexto de
-cada aviso, faixa de atrasados de meses anteriores, "Exportar PDF" da agenda e filtro por responsável.
+**Pendências desta área.** Ações diretas nos avisos (ver comprovantes, cobrar responsável), contexto de cada aviso e faixa de
+atrasados de meses anteriores. "Marcar como não lido" (16/11/2026), o filtro por responsável e o "Exportar PDF" da agenda
+(18/11/2026) já existem.
 
 ### Telas do colaborador interno
 
@@ -331,6 +333,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-18 | este commit | Acabamentos da lista e do detalhe da administração: papel do responsável, etiquetas nas subtarefas, próxima ocorrência, quem acessa o projeto, filtro por responsável e PDF da agenda, PDF do projeto e filtro do portal |
 | 2026-11-17 | este commit | Tela de tarefas do externo em grupos (devolvidas, para fazer, aguardando conferência, concluídas) e tela de envio de comprovante |
 | 2026-11-16 | este commit | Busca de texto e ordenação nas listas (Tarefas, Subtarefas, Clientes, Usuários e as dos colaboradores) |
 | 2026-11-13 | este commit | Busca geral na barra superior (`/busca`), filtro de cliente e Exportar PDF na lista de projetos |

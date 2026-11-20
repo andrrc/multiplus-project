@@ -46,6 +46,10 @@ Os cartões de acompanhamento do cliente estão em adaptação visual, mantendo 
 - **Acesso:** RLS filtra projetos/tarefas/documentos por `clienteId`, inclui herança de desativação e nega IDs de outras contas.
 - **Teste:** `portal-cliente-sprint6.integration.test.ts` cobre vínculo, IDOR, documentos, payload minimizado e presença do prazo/status usados pelo indicador.
 
+### C1b. Filtro da lista de projetos (18/11/2026)
+
+A lista do painel (`/portal`) tem os botões **Em andamento**, **Concluídos** e **Todos**, com contagem, como no protótipo `cliente/02-projetos`. "Em andamento" (o padrão) inclui o projeto que ainda vai começar; o cancelado só aparece em "Todos". O resumo acima da lista continua somando todos os projetos. O filtro vai na URL (`?situacao=concluidos` ou `?situacao=todos`) e só escolhe o que a lista mostra: os dados entregues ao cliente são os mesmos. `src/lib/portal-filtro-projetos.ts`, com teste unitário.
+
 ### C2. Progresso e última atualização (RF-048/RF-049)
 
 **Como funciona.**
@@ -95,5 +99,6 @@ Os cartões de acompanhamento do cliente estão em adaptação visual, mantendo 
 | 2026-10-22 | este commit | Colorir etiquetas de status de projetos e tarefas no portal conforme a identidade visual |
 | 2026-10-02 | `b81feaf` | Portal somente leitura, agregações de conclusão/atividade, políticas RLS e destinatários de notificação limitados ([análise](../analises/area-exclusiva-cliente-sprint-6.md)). |
 | 2026-10-20 | este commit | Padronizar horários e referência de dia em Brasília ([análise](../analises/padronizacao-horarios-brasilia.md)) |
+| 2026-11-18 | este commit | Filtro Em andamento, Concluídos e Todos na lista de projetos do portal |
 | 2026-11-13 | este commit | Lista do portal vira Painel do cliente, com resumo de tarefas concluídas e projetos em linhas, sem ampliar os dados que o portal entrega |
 | 2026-11-13 | este commit | Detalhe do projeto no portal refeito (resumo, tarefas e documentos), sem ampliar os dados entregues |

@@ -32,7 +32,8 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
   Brasília seguinte ao prazo), visita/reunião e tarefa
   recorrente ainda não criada (fundo azul claro com borda tracejada, identificada como
   "Tarefa recorrente").
-- **Filtros:** por cliente, por projeto e "Só visitas/reuniões".
+- **Filtros:** por cliente, por projeto, **por responsável** (18/11/2026; pessoa envolvida, equipe ou "Sem responsável") e "Só visitas/reuniões".
+- **Exportar PDF (18/11/2026):** o botão "Exportar PDF" da barra de filtros gera a agenda do mês, em lista (data, item, projeto, cliente, responsável e situação do prazo), com os mesmos filtros da tela. A ocorrência futura de tarefa recorrente sai como "Próxima ocorrência", sem situação de prazo.
 - **Mês vazio:** a tela avisa que não há prazos no mês.
 
 - **Nome completo:** ao passar o mouse sobre um item, a dica do navegador mostra o nome
@@ -41,7 +42,7 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
 **Detalhes técnicos.**
 - **Exibição:** atributo HTML `title` nos itens, usando o nome já carregado; recorrências
   mantêm também a identificação "Tarefa recorrente" na dica.
-- **Rota:** `/agenda?mes=&cliente=&projeto=&visitas=1`.
+- **Rota:** `/agenda?mes=&cliente=&projeto=&responsavel=&visitas=1`. O PDF vem de `GET /api/exportacao-pdf/agenda` (mesmos parâmetros), só para `ADMIN`; o mês sai de `intervaloDoMes` (`src/lib/agenda-periodo.ts`), a mesma conta da tela. Testes: `filtro-responsavel.integration.test.ts`, `busca-e-exportacao-projetos.integration.test.ts` e `agenda-periodo.unit.test.ts`.
 - **Função:** `listarItensAgenda` (`src/lib/projetos-tarefas.ts`), que reaproveita
   `listarPrazos`: tarefas ativas de projetos ativos, em todos os status.
 
@@ -87,12 +88,13 @@ O colaborador externo não tem agenda.
 |---|---|---|
 | L1 | Itens com o mesmo projeto, nome e data são unificados na tela. | Duas tarefas distintas com o mesmo nome e prazo no mesmo projeto aparecem como uma só. |
 | L2 | A agenda mostra só tarefas. | Prazos de subtarefas não aparecem. |
-| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam a faixa de atrasados de meses anteriores, o filtro por responsável, "Exportar PDF", os prazos de subtarefas e de projeto dependem de dados e regras novos. A agenda do colaborador interno foi aberta em `/minha-agenda` (G4). |
+| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam a faixa de atrasados de meses anteriores e os prazos de subtarefas e de projeto, que dependem de dados e regras novos. O filtro por responsável e o "Exportar PDF" foram feitos em 18/11/2026. A agenda do colaborador interno foi aberta em `/minha-agenda` (G4). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-18 | este commit | Filtro por responsável e Exportar PDF do mês na agenda da administração |
 | 2026-11-13 | este commit | Agenda do colaborador interno (`/minha-agenda`), com consulta própria limitada ao escopo dele ([análise](../analises/restricao-externo-e-agenda-interno.md)) |
 | 2026-11-13 | este commit | Agenda no padrão do protótipo: itens coloridos pelo semáforo (visitas em roxo, recorrentes tracejadas), painel do dia ao lado, visualização Mês/Lista e filtros aplicados na hora |
 | 2026-11-12 | este commit | Agrupar os itens da agenda por dia no celular |

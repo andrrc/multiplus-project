@@ -24,15 +24,15 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 
 | Item | Classe | Observação |
 |---|---|---|
-| "Próxima ocorrência" da tarefa | A | Derivável da recorrência; a agenda já calcula a próxima ocorrência. |
-| Texto de "Atribuição pendente" no cabeçalho | A | Derivado das atribuições existentes. |
-| Coluna de etiquetas nas subtarefas | A | Consulta com junção; conferir custo da consulta. |
-| Texto do responsável com o papel dele | A | Consulta. |
-| PDF de tarefas e subtarefas ignora o filtro de situação | A | Correção: a lista já tem `lista-tarefas.ts` compartilhado com o PDF. |
-| Agenda: filtro por responsável | A | Mesmo padrão dos filtros de tarefas. |
-| Agenda: Exportar PDF | A | Já existe infraestrutura de PDF (`pdfkit`). |
-| Exportar PDF do projeto | A | Sem valor contratado no PDF, como na lista. |
-| "Quem acessa este projeto" | A (só administração) | Lê atribuições e pessoas envolvidas. Se for aberto a outro perfil, vira C. |
+| "Próxima ocorrência" da tarefa | **Feito em 18/11/2026** | Derivável da recorrência; a agenda já calcula a próxima ocorrência. |
+| Texto de "Atribuição pendente" no cabeçalho | **Já existia** | O aviso aparece na tarefa; o protótipo não traz mais nada com esse nome. |
+| Coluna de etiquetas nas subtarefas | **Feito em 18/11/2026** | Consulta com junção; conferir custo da consulta. |
+| Texto do responsável com o papel dele | **Feito em 18/11/2026** | Consulta. |
+| PDF de tarefas e subtarefas ignora o filtro de situação | **Feito em 18/11/2026** | Correção: a lista já tem `lista-tarefas.ts` compartilhado com o PDF. |
+| Agenda: filtro por responsável | **Feito em 18/11/2026** | Mesmo padrão dos filtros de tarefas. |
+| Agenda: Exportar PDF | **Feito em 18/11/2026** | Já existe infraestrutura de PDF (`pdfkit`). |
+| Exportar PDF do projeto | **Feito em 18/11/2026** | Sem valor contratado no PDF, como na lista. |
+| "Quem acessa este projeto" | **Feito em 18/11/2026** (só administração) | Lê atribuições e pessoas envolvidas. Se for aberto a outro perfil, vira C. |
 | Avisos: contexto de cada aviso e ações diretas | B | Precisa guardar o alvo da ação no aviso; verificar o que `Notificacao` já guarda. |
 | Avisos: faixa de atrasados de meses anteriores | A | Consulta sobre prazos já existentes. |
 | Cobrar responsável | C | Cria aviso manual para outra pessoa: limite de uso, quem pode cobrar quem, registro. |
@@ -68,7 +68,7 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 
 | Item | Classe | Observação |
 |---|---|---|
-| Filtro "Em andamento / Concluídos" na lista de projetos | A | Filtro por status que o portal já entrega. |
+| Filtro "Em andamento / Concluídos" na lista de projetos | **Feito em 18/11/2026** | Filtro por status que o portal já entrega. |
 | Trilha de etapas e atualizações da Múltiplus | B/D | Precisa de etapas nomeadas e de comentários liberados ao cliente; definir com a Talita. |
 | Unidades do cliente e seletor de unidade | B/D | Modelo novo; `Unidade de trabalho` hoje é outra coisa (vínculo de recorrência). |
 | Drive do cliente | B/D | Link ou integração; definir. |
@@ -93,6 +93,8 @@ Ordem pensada para entregar valor sem decisão primeiro, deixar as regras de pra
 - Entregável: análise dos comprovantes atualizada e uma lista de decisões por item da classe D.
 
 ### Fase 1: acabamentos de classe A (sem decisão nova)
+**Andamento (18/11/2026):** feitos todos os itens de Administração e do portal da lista abaixo. **Faltam**, e ficaram para a próxima rodada: a faixa de atrasados de meses anteriores nos avisos e, no colaborador interno, as subtarefas na lista de tarefas com "Só subtarefas", "Concluir" na linha e a contagem de "minhas pendências" por pessoa.
+
 Itens: "Próxima ocorrência", "Atribuição pendente", etiquetas e papel do responsável, correção do filtro no PDF, filtro por responsável e PDF na agenda, PDF do projeto, "Quem acessa" (só administração), faixa de atrasados de meses anteriores, subtarefas na lista de tarefas do interno com "Só subtarefas", contagem de pendências por pessoa, filtro Em andamento/Concluídos do portal.
 - Separar em 3 ou 4 commits por tela (tarefa, listas, agenda e PDFs, interno, portal).
 - Cada commit leva teste e a atualização de `docs/funcionalidades/`.

@@ -251,6 +251,15 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
   motivo, recorrência), `comprovantes-arquivos.unit.test.ts`, `comprovantes-rotas.unit.test.ts`
   e a jornada `tests/browser/comprovantes.spec.ts`.
 
+### T6c. Lista e resumo da tarefa (18/11/2026)
+
+**Como funciona.**
+- **Lista `/tarefas`:** abaixo do nome do responsável aparece o papel dele: Administração, Colaborador interno, Colaborador externo (inclui a pessoa envolvida que tem acesso) ou Pessoa do cliente (pessoa envolvida sem acesso).
+- **Resumo da tarefa:** a célula "Recorrência" vira "Próxima ocorrência" (data e periodicidade, com a nota "Criada automaticamente ao concluir esta") enquanto a tarefa recorrente está aberta e a série segue ativa. Concluída, cancelada, desativada, sem prazo ou com a série encerrada, volta a mostrar a "Recorrência".
+- **PDF:** o botão de situação do prazo da tela (Atrasados, Vencem em até N dias, No prazo, Sem prazo) passa a valer também na exportação (ver T13).
+
+**Detalhes técnicos.** `papelDoResponsavel` (`src/lib/papel-responsavel.ts`), `proximaOcorrenciaDaTarefa` (`src/lib/regras-projetos-tarefas.ts`, usa `calcularProximaOcorrencia`, a mesma conta da conclusão e da agenda) e `situacaoDoItem` e `filtrarPorSituacao` (`src/lib/lista-tarefas.ts`). Sem dado novo e sem mudança de permissão. Testes: `papel-responsavel.unit.test.ts`, `proxima-ocorrencia-tarefa.unit.test.ts` e `situacao-lista-tarefas.unit.test.ts`.
+
 ### T7. Desativar e reativar (RF-039)
 
 **Como funciona.**
@@ -339,7 +348,7 @@ registro de quem criou e quando.
 
 ### T13. Exportar a listagem em PDF
 
-**Como funciona.** A Administradora pode exportar para PDF todas as tarefas que correspondem aos filtros ativos. O arquivo preserva o ordenamento da lista, inclui o identificador sequencial do cliente, o semáforo de prazo acompanhado da data exata, os filtros aplicados e o progresso de subtarefas quando a lista também o apresenta. Listas vazias geram um arquivo com a mensagem “Nenhum item encontrado”.
+**Como funciona.** A Administradora pode exportar para PDF todas as tarefas que correspondem aos filtros ativos. O arquivo preserva o ordenamento da lista, inclui o identificador sequencial do cliente, o semáforo de prazo acompanhado da data exata, os filtros aplicados e o progresso de subtarefas quando a lista também o apresenta. Listas vazias geram um arquivo com a mensagem “Nenhum item encontrado”. Desde 18/11/2026 o PDF também leva o botão de situação do prazo da tela (`?situacao=`), com o mesmo limite do semáforo, e o resumo dos filtros mostra "Situação do prazo".
 
 **Detalhes técnicos.** Link `Exportar PDF` em `/tarefas`; rota `GET /api/exportacao-pdf/tarefas`; renderização com PDFKit em A4 paisagem, cabeçalho repetido, paginação, fontes Raleway/Montserrat/Droid Serif, logo institucional e resposta `private, no-store`. A rota e `listarPrazos` exigem `ADMIN`; os filtros são validados no servidor. Não exporta o ID técnico do cliente nem dados de contato. Análise e prévia aprovada: [exportação PDF de tarefas e subtarefas](../analises/exportacao-pdf-tarefas-subtarefas.md).
 
@@ -358,6 +367,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-18 | este commit | Papel do responsável na lista, "Próxima ocorrência" no resumo e situação do prazo no PDF |
 | 2026-11-17 | este commit | Comprovante exigido, envio pelo colaborador, conferência e devolução com motivo (etapa 1) |
 | 2026-11-16 | este commit | "Aguardando outras pessoas" em Minhas tarefas e no painel do colaborador interno |
 | 2026-11-16 | este commit | Minhas tarefas do colaborador interno com busca e filtros de cliente e projeto |

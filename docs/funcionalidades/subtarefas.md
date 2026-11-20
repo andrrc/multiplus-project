@@ -147,6 +147,10 @@ subtarefa do projeto (antes só os das subtarefas atribuídas a ele). Detalhes e
   - `identidade-visual-tokens.unit.test.ts`: garante que a cor de atraso exista.
 - **Identificador:** `numeroLocal` é atribuído pelo banco em toda criação, inclusive nas subtarefas copiadas para recorrências, e é único dentro da tarefa. O CUID continua como chave técnica. A formatação e alocação estão cobertas por `identificadores-hierarquicos.unit.test.ts` e `identificadores-hierarquicos.integration.test.ts`.
 
+### S4b. Etiquetas na lista e situação do prazo no PDF (18/11/2026)
+
+A lista `/subtarefas` mostra as etiquetas de cada subtarefa abaixo do código, com as cores do catálogo (`EtiquetasSubtarefa`, a mesma peça das telas de subtarefa), como no protótipo `03-listas-projetos-tarefas`. A exportação em PDF passou a aplicar o botão de situação do prazo da tela (veja S10). Sem dado novo: as etiquetas já são guardadas na subtarefa.
+
 ### S5. Etiquetas nas subtarefas (RF-025)
 
 **Como funciona.**
@@ -207,7 +211,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 ### S10. Exportar o painel em PDF
 
-**Como funciona.** A Administradora pode exportar todas as subtarefas da lista principal, respeitando filtros e a opção de incluir concluídas e canceladas. A fila “Conclusões aguardando confirmação” não é exportada. O PDF inclui o identificador sequencial do cliente, o semáforo de prazo com a data exata, os filtros ativos e uma mensagem quando não há resultados.
+**Como funciona.** A Administradora pode exportar todas as subtarefas da lista principal, respeitando filtros e a opção de incluir concluídas e canceladas. A fila “Conclusões aguardando confirmação” não é exportada. Desde 18/11/2026 o PDF também leva o botão de situação do prazo da tela (`?situacao=`) e o resumo dos filtros mostra "Situação do prazo". O PDF inclui o identificador sequencial do cliente, o semáforo de prazo com a data exata, os filtros ativos e uma mensagem quando não há resultados.
 
 **Detalhes técnicos.** Link `Exportar PDF` em `/subtarefas`; rota `GET /api/exportacao-pdf/subtarefas`; consulta reaproveita `listarSubtarefasPrazos` e `listarResponsaveisParaFiltro`. PDFKit gera A4 paisagem com cabeçalho repetido, paginação, fontes e cabeçalho institucional iguais ao PDF da Agenda; a rota exige `ADMIN` e responde `private, no-store`. A exportação não contém o ID técnico do cliente nem a fila de pedidos. Análise e prévia aprovada: [exportação PDF de tarefas e subtarefas](../analises/exportacao-pdf-tarefas-subtarefas.md).
 
@@ -230,6 +234,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-18 | este commit | Etiquetas na lista de subtarefas e situação do prazo no PDF |
 | 2026-11-17 | este commit | Comprovante exigido na subtarefa: envio, conferência e devolução com motivo (etapa 1) |
 | 2026-11-16 | este commit | Busca de texto e ordenação pelos cabeçalhos na lista; o PDF leva a mesma busca e ordem |
 | 2026-11-10 | este commit | Iniciar adaptação visual da listagem e da fila de confirmações |

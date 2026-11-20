@@ -120,6 +120,9 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.goto("/agenda?mes=2026-11");
   await expect(page.getByRole("heading", { name: "Agenda", level: 1 })).toBeVisible();
   await expect(page.getByRole("group", { name: "Visualização" })).toBeVisible();
+  // Filtro por responsável e exportação em PDF do mês, que levam os filtros em uso.
+  await expect(page.getByRole("combobox", { name: "Responsável" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Exportar PDF" })).toHaveAttribute("href", /\/api\/exportacao-pdf\/agenda\?mes=2026-11/);
   await page.getByRole("link", { name: "Lista", exact: true }).click();
   await expect(page).toHaveURL(/visao=lista/);
   await expect(page.getByRole("link", { name: "Prazo de exemplo" })).toBeVisible();
@@ -164,6 +167,9 @@ test("convite, login e lista responsiva exibem a tabela sem rolagem lateral", as
   await page.getByRole("link", { name: "Projeto teste", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Projeto teste", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Resumo do projeto" })).toBeVisible();
+  // Quem acessa o projeto e exportação do projeto em PDF.
+  await expect(page.getByText("Quem acessa este projeto", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Exportar PDF" })).toHaveAttribute("href", /\/api\/exportacao-pdf\/projeto\?id=/);
   // Desativar pede confirmação: cancelar fecha a janela sem alterar o projeto.
   await page.getByRole("button", { name: "Desativar", exact: true }).click();
   await expect(page.getByRole("dialog", { name: /Desativar o projeto/ })).toBeVisible();
