@@ -5,7 +5,9 @@ import { formatarDataCadastro, formatarDataHoraBrasilia } from "@/lib/datas";
 import { interpretarResponsavel, type ResponsavelFiltro } from "@/lib/filtro-responsavel";
 import { numeroCliente } from "@/lib/formatacao";
 import {
+  buscarProjeto,
   listarClientesParaProjeto,
+  listarItensAgenda,
   listarPrazos,
   listarProjetos,
   listarResponsaveisParaFiltro,
@@ -14,16 +16,17 @@ import {
   type FiltrosPrazos,
 } from "@/lib/projetos-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
-import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
+import { codigoProjeto, codigoTarefa } from "@/lib/identificadores-hierarquicos";
 import { prepararListaProjetos } from "@/lib/lista-projetos";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
-import { rotulosSituacao } from "@/lib/situacao-prazo";
-import { buscarEOrdenarSubtarefas, buscarEOrdenarTarefas, CHAVES_ORDEM_SUBTAREFAS, CHAVES_ORDEM_TAREFAS } from "@/lib/lista-tarefas";
+import { intervaloDoMes } from "@/lib/agenda-periodo";
+import { interpretarSituacao, rotulosSituacao, type FiltroSituacao } from "@/lib/situacao-prazo";
+import { buscarEOrdenarSubtarefas, buscarEOrdenarTarefas, CHAVES_ORDEM_SUBTAREFAS, CHAVES_ORDEM_TAREFAS, filtrarPorSituacao } from "@/lib/lista-tarefas";
 import { interpretarOrdem, type OrdemLista } from "@/lib/ordenacao-lista";
 import type { ContextoUsuario } from "@/lib/prisma-app";
 
 type TipoLista = "tarefas" | "subtarefas";
-type TipoExportacao = TipoLista | "projetos";
+type TipoExportacao = TipoLista | "projetos" | "agenda" | "projeto";
 type TomPrazo = "normal" | "atrasado" | "hoje" | "neutro";
 type Celula = {
   texto: string;
@@ -34,7 +37,7 @@ type Celula = {
   tom?: TomPrazo;
 };
 type Linha = Celula[];
-type FiltrosExportacao = FiltrosPrazos & { incluirConcluidas: boolean; responsavel?: string | string[]; busca: string; ordem: OrdemLista };
+type FiltrosExportacao = FiltrosPrazos & { incluirConcluidas: boolean; responsavel?: string | string[]; busca: string; ordem: OrdemLista; situacaoPrazo: FiltroSituacao };
 
 const CORES = {
   tinta: "#0B2530",
@@ -79,6 +82,8 @@ function lerFiltros(params: URLSearchParams, tipo: TipoLista): FiltrosExportacao
     pendentes: !incluirConcluidas,
     incluirConcluidas,
     busca,
+    // Como na tela, o botão de situação do prazo (Atrasados, Vencem em até N dias...) vale para a lista exportada.
+    situacaoPrazo: interpretarSituacao(valorUnico(params, "situacao")),
     ordem: interpretarOrdem(valorUnico(params, "ordem"), tipo === "tarefas" ? CHAVES_ORDEM_TAREFAS : CHAVES_ORDEM_SUBTAREFAS),
   };
 }
@@ -103,6 +108,7 @@ function textoFiltros(
   projetos: Array<{ id: string; nome: string }>,
   tarefas: Array<{ id: string; nome: string }>,
   responsaveis: Array<{ valor: string; nome: string }>,
+  limites: { diasAmareloAte: number },
 ) {
   const partes = [
     `Cliente: ${labelFiltro(filtros.clienteId, clientes.map(item => ({ id: item.id, nome: item.razaoSocial })), "Todos")}`,
@@ -111,6 +117,9 @@ function textoFiltros(
     `Responsável: ${labelResponsavel(filtros.responsavel, responsaveis)}`,
   ];
   partes.push(`Situação: ${filtros.incluirConcluidas ? "Todas" : "Pendentes"}`);
+  if (filtros.situacaoPrazo !== "todos") {
+    partes.push(`Situação do prazo: ${rotulosSituacao(limites.diasAmareloAte).find(([valor]) => valor === filtros.situacaoPrazo)?.[1] ?? "Todos"}`);
+  }
   if (filtros.busca) partes.push(`Busca: "${filtros.busca}"`);
   return partes.join("  ·  ");
 }
@@ -442,9 +451,96 @@ async function gerarExportacaoProjetosPdf(ctx: ContextoUsuario, params: URLSearc
   return gerarBufferPdf("Projetos", `${linhas.length} ${linhas.length === 1 ? "projeto" : "projetos"}`, resumo, COLUNAS_PROJETOS, LARGURAS_PROJETOS, linhas);
 }
 
+const COLUNAS_PROJETO = ["Tarefa", "ID", "Responsável", "Subtarefas", "Prazo", "Status"];
+const LARGURAS_PROJETO = [210, 100, 140, 66, 126, 120];
+
+/**
+ * Um projeto em PDF: o resumo (cliente, proposta, ID, status, prazo e progresso) e as suas tarefas ativas, abertas primeiro.
+ * Não leva o valor contratado nem comentários: é um resumo para circular, como a lista de projetos.
+ */
+async function gerarExportacaoProjetoPdf(ctx: ContextoUsuario, params: URLSearchParams) {
+  const id = validarIdParametro(params, "id");
+  if (!id) throw new Error("O filtro id é obrigatório.");
+  const [projeto, limites] = await Promise.all([buscarProjeto(ctx, id), buscarLimitesSemaforo(ctx)]);
+  if (!projeto) throw new Error("O filtro id não corresponde a um projeto ativo.");
+  const conclusao = calcularPercentualConclusao(projeto.tarefas);
+  const resumo = [
+    `Cliente: ${projeto.cliente.razaoSocial}`,
+    `Proposta: ${projeto.numeroProposta ?? "não informada"}`,
+    `ID: ${codigoProjeto(projeto.cliente.numeroIdentificacao, projeto.numeroLocal)}`,
+    `Status: ${STATUS_PROJETO[projeto.status] ?? projeto.status}`,
+    `Previsão de conclusão: ${projeto.dataPrevistaConclusao ? formatarDataCadastro(projeto.dataPrevistaConclusao) : "sem previsão"}`,
+    `Tarefas concluídas: ${conclusao.total === 0 ? "—" : `${conclusao.concluidas}/${conclusao.total}`}`,
+  ].join("  ·  ");
+  const fechada = (status: string) => status === "CONCLUIDO" || status === "CANCELADO";
+  const tarefas = [...projeto.tarefas].sort((a, b) => Number(fechada(a.status)) - Number(fechada(b.status)));
+  const linhas: Linha[] = tarefas.map(tarefa => {
+    const subtarefas = tarefa.subtarefas.filter(item => item.status !== "CANCELADO");
+    const concluidas = subtarefas.filter(item => item.status === "CONCLUIDO").length;
+    return [
+      { texto: tarefa.nome, negrito: true },
+      { texto: codigoTarefa(projeto.cliente.numeroIdentificacao, projeto.numeroLocal, tarefa.numeroLocal), algarismos: true },
+      { texto: tarefa.responsavel?.nome ?? "—" },
+      { texto: subtarefas.length === 0 ? "—" : `${concluidas}/${subtarefas.length}`, centralizada: true, algarismos: subtarefas.length > 0 },
+      indicadorPrazo(tarefa.prazo, tarefa.status, limites),
+      { texto: STATUS_TAREFA[tarefa.status] ?? tarefa.status },
+    ];
+  });
+  return gerarBufferPdf(projeto.nome, `${linhas.length} ${linhas.length === 1 ? "tarefa" : "tarefas"}`, resumo, COLUNAS_PROJETO, LARGURAS_PROJETO, linhas);
+}
+
+const COLUNAS_AGENDA = ["Data", "Item", "Projeto", "Cliente", "Responsável", "Situação"];
+const LARGURAS_AGENDA = [68, 190, 135, 135, 120, 114];
+const NOMES_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+/**
+ * Agenda do mês em PDF, com os mesmos filtros da tela (mês, cliente, projeto, responsável e só visitas e reuniões).
+ * O mês vem da mesma conta da tela (`intervaloDoMes`); uma ocorrência futura de tarefa recorrente sai marcada como tal.
+ */
+async function gerarExportacaoAgendaPdf(ctx: ContextoUsuario, params: URLSearchParams) {
+  const clienteId = validarIdParametro(params, "cliente");
+  const projetoId = validarIdParametro(params, "projeto");
+  const responsaveis = params.getAll("responsavel");
+  const responsavel = responsaveis.length > 1 ? responsaveis : responsaveis[0];
+  const mes = valorUnico(params, "mes");
+  if (mes && !/^\d{4}-\d{2}$/.test(mes)) throw new Error("O filtro mes é inválido.");
+  const apenasVisitas = valorUnico(params, "visitas") === "1";
+  const periodo = intervaloDoMes(mes);
+  const [itens, clientes, projetos, responsaveisOpcoes, limites] = await Promise.all([
+    listarItensAgenda(ctx, periodo.inicio, periodo.fim, { clienteId, projetoId, responsavel, visitas: apenasVisitas }),
+    listarClientesParaProjeto(ctx),
+    listarProjetos(ctx),
+    listarResponsaveisParaFiltro(ctx, "tarefas", { clienteId, projetoId, pendentes: false }),
+    buscarLimitesSemaforo(ctx),
+  ]);
+  const resumo = [
+    `Mês: ${NOMES_MESES[periodo.atual.mes]} de ${periodo.atual.ano}`,
+    `Cliente: ${labelFiltro(clienteId, clientes.map(item => ({ id: item.id, nome: item.razaoSocial })), "Todos")}`,
+    `Projeto: ${labelFiltro(projetoId, projetos.map(item => ({ id: item.id, nome: item.nome })), "Todos")}`,
+    `Responsável: ${labelResponsavel(responsavel, responsaveisOpcoes)}`,
+    `Tipo: ${apenasVisitas ? "Só visitas e reuniões" : "Todos"}`,
+  ].join("  ·  ");
+  const linhas: Linha[] = itens.map(item => [
+    { texto: formatarDataCadastro(item.prazo), algarismos: true },
+    {
+      texto: item.nome,
+      negrito: true,
+      ...(item.status === "VISITA_REUNIAO_AGENDADA" ? { detalhe: "Visita ou reunião" } : {}),
+    },
+    { texto: item.projeto.nome },
+    { texto: item.projeto.cliente.razaoSocial },
+    { texto: item.responsavel?.nome ?? "—" },
+    // A ocorrência futura ainda não existe como tarefa, então não tem situação de prazo.
+    item.projetada ? { texto: "Próxima ocorrência", tom: "neutro" } : indicadorPrazo(item.prazo, item.status, limites),
+  ]);
+  return gerarBufferPdf("Agenda", `${linhas.length} ${linhas.length === 1 ? "item" : "itens"}`, resumo, COLUNAS_AGENDA, LARGURAS_AGENDA, linhas);
+}
+
 export async function gerarExportacaoTarefasPdf(ctx: ContextoUsuario, params: URLSearchParams, tipo: TipoExportacao) {
   if (ctx.perfil !== "ADMIN") throw new Error("Ação restrita ao Administrador.");
   if (tipo === "projetos") return gerarExportacaoProjetosPdf(ctx, params);
+  if (tipo === "agenda") return gerarExportacaoAgendaPdf(ctx, params);
+  if (tipo === "projeto") return gerarExportacaoProjetoPdf(ctx, params);
   const filtros = lerFiltros(params, tipo);
   const filtrosConsulta: FiltrosPrazos = {
     clienteId: filtros.clienteId,
@@ -461,18 +557,18 @@ export async function gerarExportacaoTarefasPdf(ctx: ContextoUsuario, params: UR
     listarResponsaveisParaFiltro(ctx, tipo, baseResponsaveis),
     buscarLimitesSemaforo(ctx),
   ]);
-  const resumo = textoFiltros(filtros, clientes, projetos.map(item => ({ id: item.id, nome: item.nome })), tarefasFiltro.map(item => ({ id: item.id, nome: `${item.projeto.nome} · ${item.nome}` })), responsaveis);
+  const resumo = textoFiltros(filtros, clientes, projetos.map(item => ({ id: item.id, nome: item.nome })), tarefasFiltro.map(item => ({ id: item.id, nome: `${item.projeto.nome} · ${item.nome}` })), responsaveis, limites);
 
   if (tipo === "tarefas") {
     const tipoResponsavel = interpretarResponsavel(filtros.responsavel).tipo;
     const mostrarProgresso = tipoResponsavel !== "todos" && tipoResponsavel !== "invalido";
-    const tarefas = buscarEOrdenarTarefas(await listarPrazos(ctx, filtrosConsulta, mostrarProgresso), filtros.busca, filtros.ordem);
+    const tarefas = filtrarPorSituacao(buscarEOrdenarTarefas(await listarPrazos(ctx, filtrosConsulta, mostrarProgresso), filtros.busca, filtros.ordem), filtros.situacaoPrazo, limites.diasAmareloAte);
     const colunas = cabecalhoColunas(tipo, mostrarProgresso);
     const linhas = tarefas.map(tarefa => linhaTarefa(tarefa, limites, mostrarProgresso));
     return gerarBufferPdf("Tarefas", `${tarefas.length} ${tarefas.length === 1 ? "tarefa" : "tarefas"}`, resumo, colunas, largurasColunas(tipo, mostrarProgresso), linhas);
   }
 
-  const subtarefas = buscarEOrdenarSubtarefas(await listarSubtarefasPrazos(ctx, filtrosConsulta), filtros.busca, filtros.ordem);
+  const subtarefas = filtrarPorSituacao(buscarEOrdenarSubtarefas(await listarSubtarefasPrazos(ctx, filtrosConsulta), filtros.busca, filtros.ordem), filtros.situacaoPrazo, limites.diasAmareloAte);
   const colunas = cabecalhoColunas(tipo, false);
   const linhas = subtarefas.map(subtarefa => linhaSubtarefa(subtarefa, limites));
   return gerarBufferPdf("Subtarefas", `${subtarefas.length} ${subtarefas.length === 1 ? "subtarefa" : "subtarefas"}`, resumo, colunas, largurasColunas(tipo, false), linhas);

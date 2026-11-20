@@ -7,6 +7,7 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarClientesParaProjeto, listarProjetos, listarPrazos, listarTarefasParaFiltro, listarResponsaveisParaFiltro } from "@/lib/projetos-tarefas";
 import { FiltrosListagens } from "../filtros-listagens";
 import { interpretarBuscaLista } from "@/lib/busca-lista";
+import { papelDoResponsavel } from "@/lib/papel-responsavel";
 import { hrefDeOrdenacao, interpretarOrdem } from "@/lib/ordenacao-lista";
 import { buscarEOrdenarTarefas, CHAVES_ORDEM_TAREFAS } from "@/lib/lista-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
@@ -38,9 +39,9 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
   // A página é administrativa; a action de domínio também verifica ADMIN antes de ler dados.
   const ctx = await exigirAcessoARota("/tarefas");
   const filtros = await searchParams;
-  // A situação do prazo é aplicada nesta página; a exportação em PDF usa só os filtros da consulta.
+  // A situação do prazo é aplicada nesta página, fora da consulta; a exportação em PDF a recebe junto dos demais filtros.
   const { situacao: situacaoParametro, ...filtrosDaConsulta } = filtros;
-  const hrefExportacao = urlExportacaoPdf("/api/exportacao-pdf/tarefas", filtrosDaConsulta);
+  const hrefExportacao = urlExportacaoPdf("/api/exportacao-pdf/tarefas", { ...filtrosDaConsulta, situacao: typeof situacaoParametro === "string" ? situacaoParametro : undefined });
   const colunas = COLUNAS.map((coluna) => {
     const chave = coluna.titulo === "Tarefa" ? "tarefa" : coluna.titulo === "Prazo" ? "prazo" : null;
     if (!chave) return coluna;
@@ -127,7 +128,10 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
               <TextoSecundario><LinkSecundario href={`/clientes/${tarefa.projeto.cliente.id}`} suave>{tarefa.projeto.cliente.razaoSocial}</LinkSecundario></TextoSecundario>
             </CelulaLista>
             <CelulaLista rotulo="Responsável">
-              {nomeResponsavel ? <TextoPrincipal>{nomeResponsavel}</TextoPrincipal> : <span className="text-faint">Sem responsável</span>}
+              {nomeResponsavel ? <>
+                <TextoPrincipal>{nomeResponsavel}</TextoPrincipal>
+                <TextoSecundario>{papelDoResponsavel(tarefa)}</TextoSecundario>
+              </> : <span className="text-faint">Sem responsável</span>}
             </CelulaLista>
             <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={tarefa.prazo} status={tarefa.status} ativo={tarefa.ativo} limites={limites} /></CelulaLista>
             <CelulaLista rotulo="Status"><StatusPonto status={tarefa.status}>{status[tarefa.status]}</StatusPonto></CelulaLista>

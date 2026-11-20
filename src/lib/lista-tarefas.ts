@@ -6,6 +6,8 @@
 import { codigoSubtarefa, codigoTarefa } from "@/lib/identificadores-hierarquicos";
 import { correspondeABusca } from "@/lib/busca-lista";
 import { ordenarLista, type OrdemLista } from "@/lib/ordenacao-lista";
+import { calcularDiasRestantes } from "@/lib/datas";
+import { situacaoDoPrazo, type FiltroSituacao, type SituacaoPrazo } from "@/lib/situacao-prazo";
 
 export const CHAVES_ORDEM_TAREFAS = ["tarefa", "prazo"] as const;
 export const CHAVES_ORDEM_SUBTAREFAS = ["subtarefa", "prazo"] as const;
@@ -19,6 +21,16 @@ const fechado = (item: { status: string; ativo: boolean }) => item.status === "C
 /** Ordem pedida pelo cabeçalho e, depois dela, itens abertos antes dos fechados (a ordenação é estável). */
 function abertosPrimeiro<T extends { status: string; ativo: boolean }>(itens: T[]): T[] {
   return itens.sort((a, b) => Number(fechado(a)) - Number(fechado(b)));
+}
+
+/** Situação do prazo de uma tarefa ou subtarefa, com o mesmo limite do semáforo; a tela e o PDF usam esta conta. */
+export function situacaoDoItem(item: { prazo: Date | null; status: string; ativo: boolean }, diasAmareloAte: number): SituacaoPrazo {
+  return situacaoDoPrazo({ diasRestantes: item.prazo ? calcularDiasRestantes(item.prazo) : null, fechado: fechado(item) }, diasAmareloAte);
+}
+
+/** Aplica o botão de situação do prazo da lista: "todos" mantém tudo, inclusive os itens fechados. */
+export function filtrarPorSituacao<T extends { prazo: Date | null; status: string; ativo: boolean }>(itens: readonly T[], filtro: FiltroSituacao, diasAmareloAte: number): T[] {
+  return filtro === "todos" ? [...itens] : itens.filter((item) => situacaoDoItem(item, diasAmareloAte) === filtro);
 }
 
 export function buscarEOrdenarTarefas<T extends TarefaDaLista>(tarefas: readonly T[], busca: string, ordem: OrdemLista): T[] {

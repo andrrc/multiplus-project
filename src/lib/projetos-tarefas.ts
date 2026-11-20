@@ -170,8 +170,9 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
       where: whereTarefas(filtros),
       include: {
         projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
-        responsavel: { select: { nome: true } },
-        responsavelUsuario: { select: { nome: true } },
+        // O papel (perfil, ou acesso da pessoa envolvida) aparece abaixo do nome na lista de tarefas.
+        responsavel: { select: { nome: true, temAcesso: true } },
+        responsavelUsuario: { select: { nome: true, perfil: true } },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
@@ -412,9 +413,9 @@ export type ItemAgenda = {
 };
 
 /** Combina prazos cadastrados e recorrências futuras projetadas para o intervalo da agenda. */
-export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim: Date, filtros: { projetoId?: string; clienteId?: string; visitas?: boolean } = {}): Promise<ItemAgenda[]> {
-  // Reaproveita as mesmas regras de listagem e autorização usadas pelo painel de prazos.
-  const tarefas = await listarPrazos(ctx, { projetoId: filtros.projetoId, clienteId: filtros.clienteId, pendentes: false });
+export async function listarItensAgenda(ctx: ContextoUsuario, inicio: Date, fim: Date, filtros: { projetoId?: string; clienteId?: string; responsavel?: string | string[]; visitas?: boolean } = {}): Promise<ItemAgenda[]> {
+  // Reaproveita as mesmas regras de listagem e autorização usadas pelo painel de prazos, inclusive o filtro de responsável.
+  const tarefas = await listarPrazos(ctx, { projetoId: filtros.projetoId, clienteId: filtros.clienteId, responsavel: filtros.responsavel, pendentes: false });
   return montarItensAgenda(tarefas, inicio, fim, filtros.visitas);
 }
 

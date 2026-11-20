@@ -13,6 +13,8 @@ import { interpretarBuscaLista } from "@/lib/busca-lista";
 import { hrefDeOrdenacao, interpretarOrdem } from "@/lib/ordenacao-lista";
 import { buscarEOrdenarSubtarefas, CHAVES_ORDEM_SUBTAREFAS } from "@/lib/lista-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
+import { listarEtiquetas } from "@/lib/etiquetas";
+import { EtiquetasSubtarefa } from "@/ui/etiquetas-subtarefa";
 import { calcularDiasRestantes } from "@/lib/datas";
 import { contarSituacoes, interpretarSituacao, rotulosSituacao, situacaoDoPrazo } from "@/lib/situacao-prazo";
 import { codigoSubtarefa } from "@/lib/identificadores-hierarquicos";
@@ -39,6 +41,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     tarefa: filtros.tarefa,
     responsavel: filtros.responsavel,
     todos: filtros.todos,
+    situacao: typeof filtros.situacao === "string" ? filtros.situacao : undefined,
     busca: typeof filtros.busca === "string" ? filtros.busca : undefined,
     ordem: typeof filtros.ordem === "string" ? filtros.ordem : undefined,
   });
@@ -55,7 +58,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
   // Por padrão, concluídas e canceladas ficam fora; `todos=1` solicita a lista completa.
   const pendentes = filtros.todos !== "1";
   // Os dados, contadores, opções de filtro e solicitações pendentes são carregados em paralelo.
-  const [subtarefas, projetos, clientes, tarefasFiltro, limites, responsaveis, solicitacoes] = await Promise.all([
+  const [subtarefas, projetos, clientes, tarefasFiltro, limites, responsaveis, solicitacoes, catalogoEtiquetas] = await Promise.all([
     listarSubtarefasPrazos(ctx, { projetoId: filtros.projeto, clienteId: filtros.cliente, tarefaId: filtros.tarefa, responsavel: filtros.responsavel, pendentes }),
     listarProjetos(ctx),
     listarClientesParaProjeto(ctx),
@@ -63,6 +66,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
     buscarLimitesSemaforo(ctx),
     listarResponsaveisParaFiltro(ctx, "subtarefas", { clienteId: filtros.cliente, projetoId: filtros.projeto, tarefaId: filtros.tarefa, pendentes }),
     listarSolicitacoesConclusaoPendentes(ctx),
+    listarEtiquetas(ctx),
   ]);
   // O indicador usa a mesma coleção que será exibida após a aplicação dos filtros.
   // A busca e a ordem valem para a lista inteira: o indicador "Em dia" e as contagens acompanham o que aparece.
@@ -156,6 +160,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
             <CelulaLista larga>
               <TituloLinha href={hrefSubtarefa(s.tarefa.id, s.id)} rotuloAcessivel={`Abrir subtarefa ${s.titulo}`}>{s.titulo}</TituloLinha>
               <span className="block truncate text-xs tabular-nums text-faint">{codigoSubtarefa(s.tarefa.projeto.cliente.numeroIdentificacao, s.tarefa.projeto.numeroLocal, s.tarefa.numeroLocal, s.numeroLocal)}</span>
+              {s.etiquetas.length > 0 && <span className="mt-1.5 block"><EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} compacta /></span>}
             </CelulaLista>
             <CelulaLista larga>
               <TextoPrincipal><LinkSecundario href={`/tarefas/${s.tarefa.id}`}>{s.tarefa.nome}</LinkSecundario></TextoPrincipal>

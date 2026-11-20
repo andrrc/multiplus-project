@@ -101,6 +101,39 @@ describe("lista de projetos por cliente e exportação em PDF", () => {
     await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams([["ordem", "prazo"], ["ordem", "-prazo"]]), "tarefas")).rejects.toThrow("O filtro ordem foi informado mais de uma vez.");
   });
 
+  it("exporta tarefas e subtarefas com a situação do prazo da tela e recusa o filtro repetido", async () => {
+    for (const tipo of ["tarefas", "subtarefas"] as const) {
+      for (const situacao of ["atrasado", "proximo", "prazo", "sem"]) {
+        const pdf = await gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ situacao, todos: "1" }), tipo);
+        expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+      }
+      const repetido = new URLSearchParams([["situacao", "atrasado"], ["situacao", "prazo"]]);
+      await expect(gerarExportacaoTarefasPdf(ctxAdmin(), repetido, tipo)).rejects.toThrow("O filtro situacao foi informado mais de uma vez.");
+    }
+  });
+
+  it("exporta a agenda do mês com os filtros da tela, só para a administração", async () => {
+    const mes = new Date().toISOString().slice(0, 7);
+    const pdf = await gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ mes, cliente: clienteA.id, responsavel: "sem", visitas: "1" }), "agenda");
+    expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+    // Sem filtros, vale o mês atual, como na tela.
+    expect((await gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams(), "agenda")).subarray(0, 5).toString()).toBe("%PDF-");
+    await expect(gerarExportacaoTarefasPdf(ctxInterno(), new URLSearchParams({ mes }), "agenda")).rejects.toThrow("Ação restrita ao Administrador.");
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ mes: "novembro" }), "agenda")).rejects.toThrow("O filtro mes é inválido.");
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ cliente: "../x" }), "agenda")).rejects.toThrow("O filtro cliente é inválido.");
+    const repetido = new URLSearchParams([["mes", mes], ["mes", "2026-01"]]);
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), repetido, "agenda")).rejects.toThrow("O filtro mes foi informado mais de uma vez.");
+  });
+
+  it("exporta um projeto em PDF, só para a administração, e recusa id ausente ou desconhecido", async () => {
+    const pdf = await gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ id: projetoDoInterno.id }), "projeto");
+    expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+    await expect(gerarExportacaoTarefasPdf(ctxInterno(), new URLSearchParams({ id: projetoDoInterno.id }), "projeto")).rejects.toThrow("Ação restrita ao Administrador.");
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams(), "projeto")).rejects.toThrow("O filtro id é obrigatório.");
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ id: "nao-existe" }), "projeto")).rejects.toThrow("O filtro id não corresponde a um projeto ativo.");
+    await expect(gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ id: "../x" }), "projeto")).rejects.toThrow("O filtro id é inválido.");
+  });
+
   it("não gera página em branco: lista com poucos itens e lista vazia saem com uma página", async () => {
     const paginas = (pdf: Buffer) => (pdf.toString("latin1").match(/\/Type \/Page\b(?!s)/g) ?? []).length;
     const vazio = await gerarExportacaoTarefasPdf(ctxAdmin(), new URLSearchParams({ busca: "nada-corresponde-a-isto" }), "tarefas");
