@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/lib/semaforo", () => ({ buscarLimitesSemaforo: vi.fn(async () => ({ diasAmareloAte: 5 })) }));
 vi.mock("@/lib/projetos-tarefas", () => ({
   listarClientesParaProjeto: vi.fn(async () => []), listarProjetos: vi.fn(async () => []),
-  listarItensAgenda: vi.fn(async () => []),
+  listarItensAgenda: vi.fn(async () => []), listarResponsaveisParaFiltro: vi.fn(async () => []),
 }));
 import AgendaPage from "@/app/(painel)/agenda/page";
 import { listarItensAgenda } from "@/lib/projetos-tarefas";

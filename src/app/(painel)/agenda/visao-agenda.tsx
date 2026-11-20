@@ -6,7 +6,8 @@
  */
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { calcularDiasRestantes, dataDeHojeEmSaoPaulo } from "@/lib/datas";
+import { calcularDiasRestantes } from "@/lib/datas";
+import { intervaloDoMes } from "@/lib/agenda-periodo";
 import type { ItemAgenda } from "@/lib/projetos-tarefas";
 import { classeDoItemAgenda, COR_BARRA_AGENDA, COR_ITEM_AGENDA, ROTULO_CLASSE_AGENDA } from "@/lib/agenda-itens";
 import { botaoSecundario } from "@/ui/botoes";
@@ -22,24 +23,9 @@ const SETA_ESQUERDA = <svg aria-hidden="true" viewBox="0 0 24 24" width="18" hei
 const SETA_DIREITA = <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>;
 const classeNavegacao = "flex size-11 items-center justify-center rounded-controle border border-linha-forte bg-branco text-ink hover:bg-papel md:size-9";
 
-export type ParametrosAgenda = { mes?: string; projeto?: string; cliente?: string; visitas?: string; visao?: string; dia?: string };
+export type ParametrosAgenda = { mes?: string; projeto?: string; cliente?: string; responsavel?: string; visitas?: string; visao?: string; dia?: string };
 
-/** Aceita somente ano-mês válido; parâmetros ausentes ou malformados caem no mês atual. */
-const dataMes = (valor: string | undefined, agora: Date) => {
-  if (!valor || !/^\d{4}-\d{2}$/.test(valor)) return { ano: agora.getUTCFullYear(), mes: agora.getUTCMonth() };
-  const [ano, mes] = valor.split("-").map(Number);
-  return { ano, mes: Math.min(11, Math.max(0, mes - 1)) };
-};
-
-/** Intervalo mensal em UTC; o dia de hoje é o civil de São Paulo, ainda que o processo rode em outro fuso. */
-export function intervaloDoMes(mes: string | undefined) {
-  const hoje = new Date();
-  const hojeCivil = new Date(dataDeHojeEmSaoPaulo(hoje));
-  const atual = dataMes(mes, hojeCivil);
-  const inicio = new Date(Date.UTC(atual.ano, atual.mes, 1));
-  const fim = new Date(Date.UTC(atual.ano, atual.mes + 1, 0, 23, 59, 59));
-  return { hoje, hojeCivil, atual, inicio, fim };
-}
+export { intervaloDoMes };
 
 export function VisaoAgenda({
   rotaBase,
@@ -56,7 +42,7 @@ export function VisaoAgenda({
   diasAmareloAte: number;
   parametros: ParametrosAgenda;
   periodo: ReturnType<typeof intervaloDoMes>;
-  /** Filtros da página (cliente, projeto, visitas), quando o perfil os tem. */
+  /** Filtros da página (cliente, projeto, responsável, visitas), quando o perfil os tem. */
   filtrosUi?: ReactNode;
 }) {
   const { hoje, hojeCivil, atual, inicio, fim } = periodo;
@@ -83,6 +69,7 @@ export function VisaoAgenda({
     const parametros = new URLSearchParams({ mes: `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}` });
     if (filtros.cliente) parametros.set("cliente", filtros.cliente);
     if (filtros.projeto) parametros.set("projeto", filtros.projeto);
+    if (filtros.responsavel) parametros.set("responsavel", filtros.responsavel);
     if (filtros.visitas) parametros.set("visitas", "1");
     if ((opcoes.visao ?? visao) === "lista") parametros.set("visao", "lista");
     if (opcoes.dia) parametros.set("dia", String(opcoes.dia));

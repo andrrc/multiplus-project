@@ -93,6 +93,14 @@ describe("consulta filtrada", () => {
     const inicio = new Date("2099-12-01T00:00:00Z"), fim = new Date("2100-01-01T00:00:00Z");
     expect(ids(await listarItensAgenda(ctx, inicio, fim, { clienteId: "filtro-ca" }))).toEqual(["filtro-tp", "filtro-ts", "filtro-tu"]);
   });
+  it("filtra a agenda pelo responsável: pessoa, equipe, sem responsável e valor inválido", async () => {
+    const inicio = new Date("2099-12-01T00:00:00Z"), fim = new Date("2100-01-01T00:00:00Z");
+    expect(ids(await listarItensAgenda(ctx, inicio, fim, { clienteId: "filtro-ca", responsavel: "pessoa:filtro-comum" }))).toEqual(["filtro-tp"]);
+    expect(ids(await listarItensAgenda(ctx, inicio, fim, { clienteId: "filtro-ca", responsavel: "usuario:filtro-comum" }))).toEqual(["filtro-tu"]);
+    expect(ids(await listarItensAgenda(ctx, inicio, fim, { clienteId: "filtro-ca", responsavel: "sem" }))).toEqual(["filtro-ts"]);
+    expect(await listarItensAgenda(ctx, inicio, fim, { responsavel: "invalido" })).toEqual([]);
+    expect(await listarItensAgenda(ctx, inicio, fim, { responsavel: ["pessoa:filtro-comum", "sem"] })).toEqual([]);
+  });
 });
 
 describe("opções mínimas de responsável", () => {

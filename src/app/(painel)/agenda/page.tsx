@@ -3,7 +3,7 @@
  * de cliente, projeto e visitas. A apresentação é a de `visao-agenda.tsx`, compartilhada com `/minha-agenda`.
  */
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { listarClientesParaProjeto, listarItensAgenda, listarProjetos } from "@/lib/projetos-tarefas";
+import { listarClientesParaProjeto, listarItensAgenda, listarProjetos, listarResponsaveisParaFiltro } from "@/lib/projetos-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { FiltrosAgenda } from "./filtros-agenda";
 import { intervaloDoMes, VisaoAgenda, type ParametrosAgenda } from "./visao-agenda";
@@ -13,12 +13,15 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const filtros = await searchParams;
   const periodo = intervaloDoMes(filtros.mes);
   // Carrega itens, opções de filtro e limites do semáforo em paralelo.
-  const [itens, projetos, clientes, limites] = await Promise.all([
-    listarItensAgenda(ctx, periodo.inicio, periodo.fim, { projetoId: filtros.projeto, clienteId: filtros.cliente, visitas: filtros.visitas === "1" }),
+  const [itens, projetos, clientes, limites, responsaveis] = await Promise.all([
+    listarItensAgenda(ctx, periodo.inicio, periodo.fim, { projetoId: filtros.projeto, clienteId: filtros.cliente, responsavel: filtros.responsavel, visitas: filtros.visitas === "1" }),
     listarProjetos(ctx),
     listarClientesParaProjeto(ctx),
     buscarLimitesSemaforo(ctx),
+    listarResponsaveisParaFiltro(ctx, "tarefas", { projetoId: filtros.projeto, clienteId: filtros.cliente, pendentes: false }),
   ]);
+  // Valor repetido na URL (lista) não é um responsável válido: a consulta devolve nada e o seletor mostra "Filtro inválido".
+  const responsavelInicial = typeof filtros.responsavel === "string" ? filtros.responsavel : filtros.responsavel ? "invalido" : "";
   const visao = filtros.visao === "lista" ? "lista" : "mes";
 
   return (
@@ -31,11 +34,13 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       periodo={periodo}
       filtrosUi={
         <FiltrosAgenda
-          key={`${filtros.cliente ?? ""}|${filtros.projeto ?? ""}|${filtros.visitas ?? ""}|${filtros.mes ?? ""}|${visao}`}
+          key={`${filtros.cliente ?? ""}|${filtros.projeto ?? ""}|${responsavelInicial}|${filtros.visitas ?? ""}|${filtros.mes ?? ""}|${visao}`}
           mes={filtros.mes}
           visao={visao}
           clienteInicial={filtros.cliente ?? ""}
           projetoInicial={filtros.projeto ?? ""}
+          responsavelInicial={responsavelInicial}
+          responsaveis={responsaveis}
           apenasVisitasInicial={filtros.visitas === "1"}
           clientes={clientes.map(({ id, razaoSocial }) => ({ id, razaoSocial }))}
           projetos={projetos.map(({ id, nome }) => ({ id, nome }))}
