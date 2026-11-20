@@ -188,6 +188,16 @@ export type TarefaParaProjecao = {
   serieEncerradaEm?: DataLike | null;
 };
 
+/**
+ * Próxima ocorrência da tarefa recorrente, para o resumo da página da tarefa. Só existe enquanto a tarefa está aberta e
+ * a série segue ativa: concluída, cancelada, desativada ou com a série encerrada já não gera a próxima ao ser concluída.
+ */
+export function proximaOcorrenciaDaTarefa(tarefa: Omit<TarefaParaProjecao, "id">): Date | null {
+  if (!tarefa.ativo || !tarefa.prazo || !tarefa.periodicidade || tarefa.serieEncerradaEm) return null;
+  if (tarefa.status === "CANCELADO" || tarefa.status === "Cancelado" || tarefa.status === "CONCLUIDO" || tarefa.status === "Concluído") return null;
+  return calcularProximaOcorrencia(tarefa.prazo, tarefa.periodicidade, tarefa.prazoOriginal ?? tarefa.prazo, tarefa.diaSemana);
+}
+
 export type OcorrenciaMaterializada = {
   serieId?: string | null;
   prazo: DataLike;

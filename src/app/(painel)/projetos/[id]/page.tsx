@@ -5,6 +5,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarProjeto } from "@/lib/projetos-tarefas";
+import { listarQuemAcessaProjeto } from "@/lib/acesso-projeto";
+import { urlExportacaoPdf } from "@/lib/filtro-responsavel";
 import { formatarMoeda } from "@/lib/formatacao";
 import { formatarDataHoraBrasilia, calcularDiasRestantes } from "@/lib/datas";
 import { Etiqueta, inputClass } from "@/ui/campo";
@@ -17,7 +19,7 @@ import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { codigoProjeto, codigoTarefa } from "@/lib/identificadores-hierarquicos";
 import { botaoDiscretoPequeno, botaoPrimarioPequeno, botaoSecundario } from "@/ui/botoes";
 import { BotaoConfirmacao } from "@/ui/botao-confirmacao";
-import { BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, ListaChaveValor, NaoInformado, Trilha } from "@/ui/cartao";
+import { Avatar, BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, ListaChaveValor, NaoInformado, Trilha } from "@/ui/cartao";
 import { CelulaPrazo } from "@/ui/lista";
 
 const projetoStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
@@ -33,7 +35,7 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
   const ctx = await exigirAcessoARota("/projetos");
   const { id } = await params;
   const { tarefas: filtroTarefas } = await searchParams;
-  const [projeto, limites] = await Promise.all([buscarProjeto(ctx, id, true), buscarLimitesSemaforo(ctx)]);
+  const [projeto, limites, quemAcessa] = await Promise.all([buscarProjeto(ctx, id, true), buscarLimitesSemaforo(ctx), listarQuemAcessaProjeto(ctx, id)]);
   if (!projeto) notFound();
 
   const conclusao = calcularPercentualConclusao(projeto.tarefas);
@@ -69,6 +71,7 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
           {projeto.ativo
             ? <StatusCardInline status={projeto.status} label={rotuloStatus} opcoes={Object.entries(projetoStatus).map(([valor, label]) => ({ valor, label }))} action={alterarStatusProjetoAction.bind(null, id)} />
             : <Etiqueta tom="apagado">Desativado</Etiqueta>}
+          {projeto.ativo && <Link href={urlExportacaoPdf("/api/exportacao-pdf/projeto", { id })} className={botaoSecundario} title="Exporta o resumo do projeto e as tarefas ativas, sem o valor contratado">Exportar PDF</Link>}
           <Link href={`/projetos/${id}/editar`} className={botaoSecundario}>Editar</Link>
           {projeto.ativo ? (
             <BotaoConfirmacao
@@ -213,6 +216,24 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
                 <button className={botaoSecundario}>Salvar documento</button>
               </form>
             </details>
+          </BlocoLateral>
+
+          <BlocoLateral titulo="Quem acessa este projeto">
+            {quemAcessa.length === 0 ? (
+              <p className="text-[13px] text-cinza">Ninguém tem acesso a este projeto.</p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {quemAcessa.map((pessoa) => (
+                  <li key={pessoa.chave} className="flex min-w-0 items-center gap-3">
+                    <Avatar nome={pessoa.nome} tamanho={32} />
+                    <div className="min-w-0">
+                      <p className="break-words text-[13.5px] font-medium text-ink">{pessoa.nome}</p>
+                      <p className="break-words text-[12.5px] text-cinza">{pessoa.descricao}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </BlocoLateral>
 
           <BlocoLateral titulo="Registro">

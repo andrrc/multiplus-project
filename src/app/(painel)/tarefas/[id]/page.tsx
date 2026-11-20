@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarTarefa, listarEnviosDaTarefa, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
+import { proximaOcorrenciaDaTarefa } from "@/lib/regras-projetos-tarefas";
 import { EnviosComprovantes } from "@/app/(painel)/projetos/envios-comprovantes";
 import { descricaoDaExigencia } from "@/lib/comprovantes-arquivos";
 import {
@@ -61,6 +62,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
     listarEnviosDaTarefa(ctx, id),
   ]);
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
+  const proximaOcorrencia = proximaOcorrenciaDaTarefa(t);
   const subtarefasConcluidas = t.subtarefas.filter(s => s.status === StatusSubtarefa.CONCLUIDO).length;
   const subtarefasAtrasadas = t.subtarefas.filter(s => s.ativo && s.status === StatusSubtarefa.EM_ANDAMENTO && s.prazo && calcularDiasRestantes(s.prazo) < 0).length;
 
@@ -125,9 +127,16 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
           <span>{subtarefasConcluidas} de {t.subtarefas.length}</span>
           <span className="text-[13px] font-normal text-cinza">concluídas</span>
         </CelulaResumo>
-        <CelulaResumo rotulo="Recorrência">
-          {t.periodicidade ? <span className="capitalize">{PERIODICIDADE[t.periodicidade] ?? t.periodicidade}</span> : <span className="text-faint">Não recorrente</span>}
-        </CelulaResumo>
+        {proximaOcorrencia && t.periodicidade ? (
+          <CelulaResumo rotulo="Próxima ocorrência" detalhe="Criada automaticamente ao concluir esta">
+            <span>{data(proximaOcorrencia)}</span>
+            <span className="text-[13px] font-normal text-cinza">{PERIODICIDADE[t.periodicidade] ?? t.periodicidade}</span>
+          </CelulaResumo>
+        ) : (
+          <CelulaResumo rotulo="Recorrência">
+            {t.periodicidade ? <span className="capitalize">{PERIODICIDADE[t.periodicidade] ?? t.periodicidade}</span> : <span className="text-faint">Não recorrente</span>}
+          </CelulaResumo>
+        )}
       </FaixaResumo>
 
       {subtarefasSemResponsavel.length > 0 && <div role="status" className="mb-6 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-3.5 text-sm text-ambar">
