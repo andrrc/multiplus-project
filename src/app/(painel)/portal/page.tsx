@@ -8,6 +8,7 @@ import Link from "next/link";
 import { auth } from "@/server/auth";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { listarProjetosPortal } from "@/lib/portal-cliente";
+import { contarProjetosPorFiltro, interpretarFiltroProjetosPortal, projetoNoFiltroPortal, ROTULOS_FILTRO_PROJETOS_PORTAL } from "@/lib/portal-filtro-projetos";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 import { Cartao } from "@/ui/cartao";
@@ -17,12 +18,16 @@ const data = (valor: Date | null) => valor ? new Intl.DateTimeFormat("pt-BR", { 
 const atualizacao = (valor: Date | null) => valor ? formatarDataHoraBrasilia(valor) : "Sem movimentação";
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 
-export default async function PortalPage() {
+export default async function PortalPage({ searchParams }: { searchParams: Promise<{ situacao?: string | string[] }> }) {
   // A rota valida o perfil antes de buscar dados pelo vínculo clienteId da sessão.
   const ctx = await exigirAcessoARota("/portal");
   const [projetos, sessao] = await Promise.all([listarProjetosPortal(ctx), auth()]);
+  const filtro = interpretarFiltroProjetosPortal((await searchParams).situacao);
   const primeiroNome = (sessao?.user?.name ?? "").trim().split(/\s+/)[0] || "cliente";
 
+  // O resumo acima da lista vale para todos os projetos; o filtro só escolhe o que a lista mostra.
+  const contagemFiltro = contarProjetosPorFiltro(projetos);
+  const projetosDaLista = projetos.filter((p) => projetoNoFiltroPortal(p.status, filtro));
   const emAndamento = projetos.filter((p) => p.status === "EM_ANDAMENTO");
   const concluidos = projetos.filter((p) => p.status === "CONCLUIDO");
   const tarefasTotal = projetos.reduce((soma, p) => soma + p.conclusao.total, 0);
@@ -53,9 +58,29 @@ export default async function PortalPage() {
             </dl>
           </section>
 
+          <div role="group" aria-label="Situação dos projetos" className="mb-3 inline-flex overflow-hidden rounded-controle border border-linha-forte bg-branco max-md:flex max-md:w-full">
+            {ROTULOS_FILTRO_PROJETOS_PORTAL.map(([valor, rotulo]) => (
+              <Link
+                key={valor}
+                href={valor === "andamento" ? "/portal" : `/portal?situacao=${valor}`}
+                aria-current={filtro === valor ? "true" : undefined}
+                className="flex h-11 items-center justify-center whitespace-nowrap border-l border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] font-medium text-cinza first:border-l-0 hover:bg-papel hover:text-ink aria-[current=true]:bg-selecionado aria-[current=true]:font-semibold aria-[current=true]:text-ink max-md:flex-1 md:h-9"
+              >
+                {rotulo}
+                <span className="ml-1 font-medium tabular-nums text-faint">{contagemFiltro[valor]}</span>
+              </Link>
+            ))}
+          </div>
+
+          {projetosDaLista.length === 0 ? (
+            <Vazio
+              titulo="Nenhum projeto nesta seleção."
+              descricao={filtro === "todos" ? "Quando houver projetos, o andamento aparece aqui." : "Use “Todos” para ver os demais projetos."}
+            />
+          ) : (
           <Cartao titulo="Projetos" semMargem>
             <ul>
-              {projetos.map((projeto) => (
+              {projetosDaLista.map((projeto) => (
                 <li key={projeto.id} className="relative grid gap-3 border-t border-linha px-5 py-4 first:border-t-0 hover:bg-cabecalho md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] md:items-center md:gap-6">
                   <div className="min-w-0">
                     <h2 className="text-[15px] font-semibold">
@@ -81,6 +106,7 @@ export default async function PortalPage() {
               ))}
             </ul>
           </Cartao>
+          )}
         </>
       )}
     </div>
