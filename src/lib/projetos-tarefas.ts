@@ -13,6 +13,8 @@ import {
 } from "@prisma/client";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
+import { contarAtrasadosAnteriores } from "@/lib/agenda-itens";
+import { contarMinhasPendencias } from "@/lib/lista-meus-projetos";
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 import { aguardaOutrasPessoas } from "@/lib/aguardando-outras-pessoas";
@@ -438,6 +440,25 @@ export async function listarItensAgendaColaborador(ctx: ContextoUsuario, inicio:
   return montarItensAgenda(tarefas, inicio, fim, false);
 }
 
+/**
+ * Itens abertos e vencidos antes do mês exibido na agenda da administração, com os mesmos filtros dela (cliente, projeto,
+ * responsável e só visitas). Alimenta a faixa "de meses anteriores continuam abertos".
+ */
+export async function contarAtrasadosAnterioresAgenda(ctx: ContextoUsuario, inicioDoMes: Date, filtros: { projetoId?: string; clienteId?: string; responsavel?: string | string[]; visitas?: boolean } = {}): Promise<number> {
+  const tarefas = await listarPrazos(ctx, { projetoId: filtros.projetoId, clienteId: filtros.clienteId, responsavel: filtros.responsavel, pendentes: true });
+  return contarAtrasadosAnteriores(filtros.visitas ? tarefas.filter((t) => t.status === StatusTarefa.VISITA_REUNIAO_AGENDADA) : tarefas, inicioDoMes);
+}
+
+/** O mesmo para a agenda do colaborador interno: só o que a RLS já entrega a ele. */
+export async function contarAtrasadosAnterioresColaborador(ctx: ContextoUsuario, inicioDoMes: Date): Promise<number> {
+  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Agenda disponível somente para o colaborador interno.");
+  const tarefas = await comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
+    where: { ativo: true, projeto: { ativo: true }, status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] }, prazo: { lt: inicioDoMes } },
+    select: { prazo: true, status: true, ativo: true },
+  }));
+  return contarAtrasadosAnteriores(tarefas, inicioDoMes);
+}
+
 /** Transforma tarefas em itens da agenda: ocorrências gravadas no período mais as futuras projetadas. */
 function montarItensAgenda<T extends TarefaParaProjecao & { nome: string; prazo: Date | null; status: StatusTarefa; periodicidade: Periodicidade | null; projeto: ItemAgenda["projeto"]; responsavel: { nome: string } | null; responsavelUsuario: { nome: string } | null }>(tarefas: T[], inicio: Date, fim: Date, apenasVisitas: boolean | undefined): ItemAgenda[] {
   // O predicado também atua como proteção de tipo para prazos nulos.
@@ -525,14 +546,26 @@ export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
   if (ctx.perfil !== "ADMIN_INTERNO" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Visão exclusiva de colaboradores.");
   return comContextoDeUsuario(ctx, async (tx) => {
     // O acesso pode vir da atribuição explícita ao projeto ou de uma tarefa nele contida.
-    const [atribuicoes, tarefas] = await Promise.all([
+    const [atribuicoes, tarefas, usuario] = await Promise.all([
       tx.atribuicao.findMany({ where: { usuarioId: ctx.usuarioId, entidadeTipo: "PROJETO" }, select: { entidadeId: true } }),
       tx.tarefa.findMany({ where: { ativo: true }, select: { projetoId: true } }),
+      tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } }),
     ]);
-    return tx.projeto.findMany({
+    const pessoaEnvolvidaId = usuario?.pessoaEnvolvidaId ?? null;
+    const projetos = await tx.projeto.findMany({
       where: { id: { in: [...atribuicoes.map((a) => a.entidadeId), ...tarefas.map((tarefa) => tarefa.projetoId)] }, ativo: true },
-      include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true } }, tarefas: { where: { ativo: true }, select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } } } } },
+      include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true } }, tarefas: { where: { ativo: true }, select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true, responsavelUsuarioId: true, responsavelId: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true, prazo: true, atribuidoAUsuarioId: true, atribuidoAId: true } } } } },
       orderBy: { dataPrevistaConclusao: "asc" },
+    });
+    // "Minhas pendências" e "minhas atrasadas": os itens abertos em que o colaborador é o responsável (usuário ou pessoa envolvida).
+    const euNaTarefa = (t: { responsavelUsuarioId: string | null; responsavelId: string | null }) => t.responsavelUsuarioId === ctx.usuarioId || (!!pessoaEnvolvidaId && t.responsavelId === pessoaEnvolvidaId);
+    const euNaSubtarefa = (s: { atribuidoAUsuarioId: string | null; atribuidoAId: string | null }) => s.atribuidoAUsuarioId === ctx.usuarioId || (!!pessoaEnvolvidaId && s.atribuidoAId === pessoaEnvolvidaId);
+    return projetos.map((projeto) => {
+      const { pendencias, atrasadas } = contarMinhasPendencias(
+        projeto.tarefas.filter(euNaTarefa),
+        projeto.tarefas.flatMap((t) => t.subtarefas.filter(euNaSubtarefa)),
+      );
+      return { ...projeto, minhasPendencias: pendencias, minhasAtrasadas: atrasadas };
     });
   });
 }
@@ -608,11 +641,12 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
       const pendentes = <T extends { status: string }>(lista: T[]) => lista.filter((pedido) => pedido.status === StatusSolicitacaoConclusao.PENDENTE);
       const subtarefas = tarefa.subtarefas.map((sub) => ({ ...sub, solicitacoesConclusao: pendentes(sub.solicitacoesConclusao) }));
       const doColaborador = { ...tarefa, solicitacoesConclusao: pendentes(tarefa.solicitacoesConclusao), subtarefas };
+      const meu = atribuidasATarefa.has(tarefa.id) || tarefa.responsavelUsuarioId === ctx.usuarioId || (!!eu.pessoaEnvolvidaId && tarefa.responsavelId === eu.pessoaEnvolvidaId);
       const { situacao, motivoDevolucao } = situacaoDaTarefaDoColaborador(
         {
           status: tarefa.status,
           ativo: tarefa.ativo,
-          meu: atribuidasATarefa.has(tarefa.id) || tarefa.responsavelUsuarioId === ctx.usuarioId || (!!eu.pessoaEnvolvidaId && tarefa.responsavelId === eu.pessoaEnvolvidaId),
+          meu,
           ultimaSolicitacao: tarefa.solicitacoesConclusao[0] ?? null,
         },
         tarefa.subtarefas.map((sub) => ({
@@ -622,8 +656,49 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
           ultimaSolicitacao: sub.solicitacoesConclusao[0] ?? null,
         })),
       );
-      return { ...doColaborador, aguardandoOutras: aguardaOutrasPessoas(doColaborador, eu), situacaoEnvio: situacao, motivoDevolucao };
+      return { ...doColaborador, meu, aguardandoOutras: aguardaOutrasPessoas(doColaborador, eu), situacaoEnvio: situacao, motivoDevolucao };
     });
+  });
+}
+
+/**
+ * Subtarefas em que o colaborador interno é o responsável, para a lista "Minhas tarefas" (tarefas e subtarefas juntas, como no
+ * protótipo). A consulta roda com o contexto dele, então a RLS limita ao que ele alcança; subtarefa de outra pessoa não vem.
+ */
+export async function listarSubtarefasAtribuidas(ctx: ContextoUsuario) {
+  if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Visão exclusiva do colaborador interno.");
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const usuario = await tx.usuario.findUnique({ where: { id: ctx.usuarioId }, select: { pessoaEnvolvidaId: true } });
+    const subtarefas = await tx.subtarefa.findMany({
+      where: {
+        ativo: true,
+        tarefa: { ativo: true, projeto: { ativo: true } },
+        OR: [{ atribuidoAUsuarioId: ctx.usuarioId }, ...(usuario?.pessoaEnvolvidaId ? [{ atribuidoAId: usuario.pessoaEnvolvidaId }] : [])],
+      },
+      select: {
+        id: true,
+        numeroLocal: true,
+        titulo: true,
+        prazo: true,
+        status: true,
+        ativo: true,
+        comprovanteExigido: true,
+        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { status: true } },
+        tarefa: {
+          select: {
+            id: true,
+            nome: true,
+            numeroLocal: true,
+            projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
+          },
+        },
+      },
+      orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { titulo: "asc" }],
+    });
+    return subtarefas.map(({ solicitacoesConclusao, ...subtarefa }) => ({
+      ...subtarefa,
+      pedidoPendente: solicitacoesConclusao[0]?.status === StatusSolicitacaoConclusao.PENDENTE,
+    }));
   });
 }
 

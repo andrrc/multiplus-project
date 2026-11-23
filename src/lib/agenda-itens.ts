@@ -3,6 +3,8 @@
  * atrasado em vermelho, próximo do prazo em âmbar, no prazo em verde, visita ou reunião em
  * roxo, próxima ocorrência de tarefa recorrente tracejada e item fechado esmaecido.
  */
+import { estaAtrasada } from "@/lib/regras-projetos-tarefas";
+
 export type ClasseItemAgenda = "atrasado" | "proximo" | "prazo" | "visita" | "futura" | "concluida";
 
 export function classeDoItemAgenda(
@@ -48,3 +50,23 @@ export const ROTULO_CLASSE_AGENDA: Record<ClasseItemAgenda, string> = {
   futura: "Próxima ocorrência recorrente",
   concluida: "Concluído",
 };
+
+/**
+ * Faixa vermelha da agenda (protótipo 09-agenda): quantos itens abertos e vencidos ficaram em meses anteriores ao exibido.
+ * Sem ela, o atraso do mês passado some da tela ao navegar para o mês atual. Concluído, cancelado, desativado e sem prazo
+ * não entram; o prazo conta atrasado só a partir do dia seguinte, a mesma conta do semáforo.
+ */
+export function contarAtrasadosAnteriores(
+  tarefas: ReadonlyArray<{ prazo: Date | null; status: string; ativo: boolean }>,
+  inicioDoMes: Date,
+  agora: Date = new Date(),
+): number {
+  return tarefas.filter((tarefa) =>
+    tarefa.ativo
+    && tarefa.status !== "CONCLUIDO"
+    && tarefa.status !== "CANCELADO"
+    && tarefa.prazo !== null
+    && tarefa.prazo < inicioDoMes
+    && estaAtrasada(tarefa.prazo, false, agora),
+  ).length;
+}
