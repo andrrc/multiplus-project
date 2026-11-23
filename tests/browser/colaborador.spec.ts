@@ -114,6 +114,14 @@ test("colaborador interno abre as telas e elas cabem no celular", async ({ page 
   await page.setViewportSize({ width: 1024, height: 800 });
   await page.goto("/minhas-tarefas");
   await expect(page.getByRole("group", { name: "Situação do prazo" })).toBeVisible();
+  // Tarefas e subtarefas juntas, com o filtro de tipo na URL; a ação direta (Concluir) fica na coluna Ação.
+  await expect(page.getByRole("group", { name: "Tipo de item" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Ação" })).toBeVisible();
+  await page.getByRole("button", { name: /^Só subtarefas/ }).click();
+  await expect(page).toHaveURL(/tipo=subtarefas/);
+  await page.getByRole("button", { name: /^Só tarefas/ }).click();
+  await expect(page).toHaveURL(/tipo=tarefas/);
+  await page.goto("/minhas-tarefas");
   await page.getByRole("link", { name: `Tarefa colaborador ${sufixo}` }).click();
   await expect(page.getByRole("region", { name: "Resumo da tarefa" })).toBeVisible();
 });

@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { urlFiltrosListagens, type OpcaoResponsavel, type ValoresFiltrosListagens } from "@/lib/filtro-responsavel";
 import type { ContagemSituacoes, FiltroSituacao } from "@/lib/situacao-prazo";
 import { CampoBuscaLista } from "@/ui/campo-busca-lista";
+import { ROTULOS_TIPO_LISTA, type TipoLista } from "@/lib/minhas-tarefas-lista";
 
 type ClienteFiltro = { id: string; razaoSocial: string };
 type ProjetoFiltro = { id: string; nome: string; cliente: { id: string } };
@@ -33,6 +34,7 @@ export function FiltrosListagens({
   ocultarTarefa = false,
   ocultarResponsavel = false,
   botaoAguardando,
+  tipoLista,
   clienteInicial = "",
   projetoInicial = "",
   tarefaInicial = "",
@@ -62,6 +64,8 @@ export function FiltrosListagens({
   ocultarResponsavel?: boolean;
   /** Botão "Aguardando outras pessoas" ao lado da situação do prazo (Minhas tarefas). */
   botaoAguardando?: { total: number; ativoInicial: boolean };
+  /** Botões "Tarefas e subtarefas", "Só tarefas" e "Só subtarefas" com contagem (Minhas tarefas do colaborador interno). */
+  tipoLista?: { inicial: TipoLista; contagens: Record<TipoLista, number> };
   clienteInicial?: string;
   projetoInicial?: string;
   tarefaInicial?: string;
@@ -86,16 +90,17 @@ export function FiltrosListagens({
   const [tarefa, setTarefa] = useState(tarefaInicial);
   const [mostrarConcluidas, setMostrarConcluidas] = useState(mostrarConcluidasInicial);
   const [situacao, setSituacao] = useState<FiltroSituacao>(situacaoInicial);
+  const [tipo, setTipo] = useState<TipoLista>(tipoLista?.inicial ?? "todos");
 
   const projetosVisiveis = projetos.filter((item) => !cliente || item.cliente.id === cliente);
   const tarefasVisiveis = tarefas.filter((item) =>
     (!cliente || item.projeto.clienteId === cliente) &&
     (!projeto || item.projetoId === projeto),
   );
-  const temFiltro = !!(cliente || projeto || tarefa || responsavel || busca.trim()) || situacao !== "todos" || aguardando;
+  const temFiltro = !!(cliente || projeto || tarefa || responsavel || busca.trim()) || situacao !== "todos" || aguardando || (!!tipoLista && tipo !== "todos");
 
-  function aplicarFiltros(valores: Omit<ValoresFiltrosListagens, "busca" | "ordem" | "aguardando">, buscaAtual = busca, aguardandoAtual = aguardando) {
-    startTransition(() => router.push(urlFiltrosListagens(rota, { ...valores, busca: buscaAtual, ordem: ordemAtual, aguardando: aguardandoAtual }, incluirFiltroConcluidas), { scroll: false }));
+  function aplicarFiltros(valores: Omit<ValoresFiltrosListagens, "busca" | "ordem" | "aguardando" | "tipo">, buscaAtual = busca, aguardandoAtual = aguardando, tipoAtual = tipo) {
+    startTransition(() => router.push(urlFiltrosListagens(rota, { ...valores, busca: buscaAtual, ordem: ordemAtual, aguardando: aguardandoAtual, tipo: tipoLista ? tipoAtual : undefined }, incluirFiltroConcluidas), { scroll: false }));
   }
 
   function alterarCliente(valor: string) {
@@ -209,6 +214,29 @@ export function FiltrosListagens({
                 <span className="ml-1 font-medium tabular-nums text-faint">{botaoAguardando.total}</span>
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {tipoLista && (
+        <div className="mb-3">
+          <div role="group" aria-label="Tipo de item" className="inline-flex overflow-hidden rounded-controle border border-linha-forte bg-branco max-md:flex max-md:w-full max-md:overflow-x-auto">
+            {ROTULOS_TIPO_LISTA.map(([valor, rotulo]) => (
+              <button
+                key={valor}
+                type="button"
+                aria-pressed={tipo === valor}
+                disabled={pendente}
+                onClick={() => {
+                  setTipo(valor);
+                  aplicarFiltros({ cliente, projeto, tarefa, responsavel, mostrarConcluidas, situacao }, busca, aguardando, valor);
+                }}
+                className="h-11 whitespace-nowrap border-l border-linha px-3 font-[family-name:var(--font-interface)] text-[13px] font-medium text-cinza first:border-l-0 hover:bg-papel hover:text-ink aria-pressed:bg-selecionado aria-pressed:font-semibold aria-pressed:text-ink max-md:flex-1 md:h-9"
+              >
+                {rotulo}
+                <span className="ml-1 font-medium tabular-nums text-faint">{tipoLista.contagens[valor]}</span>
+              </button>
+            ))}
           </div>
         </div>
       )}
