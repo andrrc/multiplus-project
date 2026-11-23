@@ -1,7 +1,6 @@
 # TAREFA duplicar-projeto — Duplicar projeto
 
-> Campo sem resposta fica como **pendente de validação**, nunca como suposição. A tarefa só passa de `proposta` para `aprovada` depois que a pessoa
-> responsável responder as perguntas da seção 2.
+> Campo sem resposta fica como **pendente de validação**, nunca como suposição. Escopo aprovado pelo usuário em 2026-11-23: a tarefa está pronta para o Codex começar.
 
 | Campo | Valor |
 |---|---|
@@ -9,8 +8,8 @@
 | **Agente responsável** | codex |
 | **Branch** | `codex/duplicar-projeto` (criada a partir de `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/codex-duplicar-projeto` |
-| **Estado** | proposta |
-| **Quem aprovou o escopo** | pendente (aguarda o usuário) |
+| **Estado** | aprovada |
+| **Quem aprovou o escopo** | o usuário, em 2026-11-23 (as cinco decisões da seção 2) |
 | **Revisor** | claude |
 | **Criada em** | 2026-11-23 |
 
@@ -27,19 +26,19 @@ subtarefas do original em estado inicial, **sem datas e sem comprovantes enviado
   **não define o que mais é copiado**. Os dados dos protótipos são ilustrativos.
 - Módulo: [../funcionalidades/projetos.md](../funcionalidades/projetos.md) (seção P4, Detalhe do projeto) e [../funcionalidades/tarefas.md](../funcionalidades/tarefas.md).
 - Esta tarefa **não muda permissão, RLS, dado novo nem regra de prazo**: cria registros com os modelos que já existem (`Projeto`, `Tarefa`, `Subtarefa`), só para `ADMIN`. Por isso não exige
-  análise à parte, **mas exige as respostas abaixo**.
+  análise à parte, **mas exigiu as decisões abaixo**, já tomadas.
 
-**Perguntas que a pessoa responsável precisa responder antes de começar (pendentes de validação):**
+**Decisões da pessoa responsável (respondidas em 2026-11-23, todas conforme a recomendação):**
 
-1. **Status das subtarefas.** O status "A iniciar" **ainda não existe** para subtarefa (hoje: `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO`; o item "A iniciar" de subtarefa está na Fase 7 do
-   planejamento). Recomendação: a subtarefa copiada nasce `EM_ANDAMENTO`, o status inicial de hoje, e a Fase 7 ajusta depois. Aprovado?
-2. **O que mais copiar.** Recomendação: copiar `nome` e `descricao` do projeto e das tarefas, o `titulo` e a `descricao` das subtarefas, as `etiquetas` das subtarefas, a **configuração** de
-   comprovante exigido (`comprovanteExigido`, `comprovanteQuantidade`, `comprovanteInstrucoes`; é a exigência, não os arquivos), `colaboradorPodeCriarSubtarefas` e `diasAntecedencia`.
-   **Não** copiar: datas (`dataInicio`, `dataPrevistaConclusao`, `prazo`, `prazoOriginal`), status (todos nascem iniciais), comprovantes enviados, pedidos de conclusão, comentários, documentos,
-   valor contratado, número da proposta, recorrência (`periodicidade`, `diaSemana`, `serieId`, `serieEncerradaEm`) e responsáveis. Aprovado, ou quer mudar algum item?
-3. **Nome do projeto novo.** Recomendação: `Cópia de <nome do original>`, editável logo depois. Aprovado?
-4. **Fluxo na tela.** Recomendação: o botão "Duplicar" na página do projeto abre uma confirmação que mostra o que será copiado; depois da criação, vai para o projeto novo. Aprovado?
-5. **Cópia de projeto desativado.** Recomendação: só projetos **ativos** podem ser duplicados, e só tarefas e subtarefas **ativas** são copiadas. Aprovado?
+1. **Status das subtarefas:** a subtarefa copiada nasce `EM_ANDAMENTO`, o status inicial de hoje, porque o "A iniciar" de subtarefa ainda não existe (Fase 7 do planejamento).
+   Quando a Fase 7 for integrada, a cópia passa a nascer "A iniciar" (ajuste futuro, fora desta tarefa).
+2. **O que copiar:** `nome` e `descricao` do projeto e das tarefas; `titulo`, `descricao` e `etiquetas` das subtarefas; a **configuração** de comprovante exigido (`comprovanteExigido`,
+   `comprovanteQuantidade`, `comprovanteInstrucoes`: é a exigência, não os arquivos); `colaboradorPodeCriarSubtarefas` e `diasAntecedencia`.
+   **Não copiar:** datas (`dataInicio`, `dataPrevistaConclusao`, `prazo`, `prazoOriginal`), status (tudo nasce inicial), comprovantes enviados, pedidos de conclusão, comentários, documentos, valor contratado,
+   número da proposta, recorrência (`periodicidade`, `diaSemana`, `serieId`, `serieEncerradaEm`) e responsáveis.
+3. **Nome do projeto novo:** `Cópia de <nome do original>`, editável depois.
+4. **Fluxo na tela:** o botão "Duplicar" na página do projeto abre uma confirmação que mostra o que será copiado; depois da criação, vai para o projeto novo.
+5. **Projeto desativado:** só projetos **ativos** podem ser duplicados, e só tarefas e subtarefas **ativas** são copiadas.
 
 ## 3. Escopo
 
@@ -65,7 +64,7 @@ subtarefas do original em estado inicial, **sem datas e sem comprovantes enviado
 ## 4. Dependências
 
 - Tarefas que precisam estar integradas antes: nenhuma.
-- Tarefas que dependem desta: nenhuma. A tarefa da Fase 7 ("A iniciar" de subtarefa) deve revisar a cópia depois (pergunta 1).
+- Tarefas que dependem desta: nenhuma. A tarefa da Fase 7 ("A iniciar" de subtarefa) deve revisar a cópia depois (decisão 1).
 
 ## 5. Contratos e interfaces relevantes
 
@@ -81,7 +80,7 @@ subtarefas do original em estado inicial, **sem datas e sem comprovantes enviado
 
 - [ ] Só a administração vê o botão e só ela executa a duplicação (servidor e RLS); interno, externo e cliente recebem erro de permissão.
 - [ ] O projeto novo fica no **mesmo cliente**, com `status` inicial e sem datas, e recebe o próximo `numeroLocal` do cliente.
-- [ ] Tarefas e subtarefas ativas do original são copiadas, em estado inicial, com os campos da pergunta 2 conforme aprovado, **sem** datas, comprovantes enviados, pedidos de conclusão e comentários.
+- [ ] Tarefas e subtarefas ativas do original são copiadas, em estado inicial, com os campos da decisão 2, **sem** datas, comprovantes enviados, pedidos de conclusão, comentários, responsáveis e recorrência (a tarefa copiada não é recorrente).
 - [ ] A cópia é atômica: se algo falhar no meio, nada é criado.
 - [ ] O projeto original, as tarefas e os arquivos dele não mudam.
 - [ ] Projeto desativado, inexistente ou de outro cliente não é duplicado (erro claro).
@@ -91,13 +90,13 @@ subtarefas do original em estado inicial, **sem datas e sem comprovantes enviado
 
 - Unitário em `tests/unit/`: a escolha dos campos copiados e o que fica de fora, como função pura.
 - Integração em `tests/integration/` (RLS e permissão): `ADMIN` duplica; `ADMIN_INTERNO`, `ADMIN_EXTERNO` e `CLIENTE` são recusados; só itens ativos são copiados; numeração correta; atomicidade em caso de falha;
-  o original permanece intacto; o status inicial das subtarefas conforme a pergunta 1.
+  o original permanece intacto; o status inicial das subtarefas conforme a decisão 1.
 - Jornada de navegador em `tests/browser/` (arquivo novo): abrir o projeto, duplicar e ver o projeto novo.
 - Verificação final: `bash scripts/agentes/verificar.sh --completo` sem falhas novas.
 
 ## 8. Notas para o planejamento e as decisões
 
-(Preencher ao terminar.) Registrar em `planejamento-diferencas-prototipos.md`, Fase 4: "Duplicar projeto" feito, com o que é copiado. Em `decisoes-desenvolvimento.md`: as respostas das perguntas 1 a 5.
+(Preencher ao terminar.) Registrar em `planejamento-diferencas-prototipos.md`, Fase 4: "Duplicar projeto" feito, com o que é copiado. Em `decisoes-desenvolvimento.md`: as decisões 1 a 5.
 
 ## 9. Resumo da implementação (preenchido ao terminar)
 
