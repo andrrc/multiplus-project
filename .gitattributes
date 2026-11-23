@@ -1,0 +1,3 @@
+# Scripts de shell precisam de LF em qualquer sistema: com CRLF eles quebram no WSL e no Linux.
+# core.autocrlf=true converteria os .sh em CRLF no checkout de cada worktree no Windows.
+*.sh text eol=lf
