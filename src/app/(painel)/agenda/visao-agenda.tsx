@@ -161,7 +161,7 @@ export function VisaoAgenda({
         {itens.length === 0 && <p className="mt-2 rounded-cartao border border-linha bg-branco px-5 py-10 text-center text-sm text-cinza">Nenhum prazo neste mês.</p>}
 
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[12.5px] text-cinza">
-          {([["atrasado", "Atrasado"], ["proximo", `Vence em até ${diasAmareloAte} ${diasAmareloAte === 1 ? "dia" : "dias"}`], ["prazo", "No prazo"], ["visita", "Visita ou reunião"], ["futura", "Próxima ocorrência de tarefa recorrente"]] as const).map(([classe, rotulo]) => (
+          {([["atrasado", "Atrasado"], ["proximo", `Vence em até ${diasAmareloAte} ${diasAmareloAte === 1 ? "dia" : "dias"}`], ["prazo", "No prazo"], ["conferencia", "Em conferência"], ["visita", "Visita ou reunião"], ["futura", "Próxima ocorrência de tarefa recorrente"]] as const).map(([classe, rotulo]) => (
             <span key={classe} className="inline-flex items-center gap-1.5"><i aria-hidden="true" className={`inline-block size-3 rounded-[3px] ${COR_ITEM_AGENDA[classe].replace("line-through", "")}`} />{rotulo}</span>
           ))}
         </div>

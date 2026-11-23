@@ -64,7 +64,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
   const proximaOcorrencia = proximaOcorrenciaDaTarefa(t);
   const subtarefasConcluidas = t.subtarefas.filter(s => s.status === StatusSubtarefa.CONCLUIDO).length;
-  const subtarefasAtrasadas = t.subtarefas.filter(s => s.ativo && s.status === StatusSubtarefa.EM_ANDAMENTO && s.prazo && calcularDiasRestantes(s.prazo) < 0).length;
+  const subtarefasAtrasadas = t.subtarefas.filter(s => s.ativo && s.status === StatusSubtarefa.EM_ANDAMENTO && !s.emConferenciaDesde && s.prazo && calcularDiasRestantes(s.prazo) < 0).length;
 
   return (
     <div className="w-full max-w-[1280px]">
@@ -118,7 +118,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
       <FaixaResumo rotulo="Resumo da tarefa" colunas={4}>
         <CelulaResumo rotulo="Prazo" detalhe={t.diasAntecedencia ? `Aviso ao responsável ${plural(t.diasAntecedencia, "dia", "dias")} antes` : undefined}>
           {t.prazo ? <span>{data(t.prazo)}</span> : <span className="text-faint">Sem prazo</span>}
-          <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} />
+          <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} emConferenciaDesde={t.emConferenciaDesde} />
         </CelulaResumo>
         <CelulaResumo rotulo="Responsável">
           {t.responsavel ? <><Avatar nome={t.responsavel.nome} /><span className="text-base">{t.responsavel.nome}</span></> : <span className="text-faint">Sem responsável</span>}
@@ -162,7 +162,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                     </span>
                   </span>
                   <span className="truncate text-[13px] text-ink">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? <span className="text-faint">Sem responsável</span>}</span>
-                  <CelulaPrazo prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} />
+                  <CelulaPrazo prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} emConferenciaDesde={s.emConferenciaDesde} />
                   <StatusPonto status={s.status}>{statusSubtarefa[s.status]}</StatusPonto>
                   <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" className="hidden shrink-0 text-cinza transition-transform group-open:rotate-180 xl:block" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m6 9 6 6 6-6" /></svg>
                 </summary>

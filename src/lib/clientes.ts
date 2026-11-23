@@ -3,6 +3,7 @@
  */
 import { StatusSubtarefa, StatusTarefa, type Prisma } from "@prisma/client";
 import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
+import { SEM_CONFERENCIA_EM_ANDAMENTO } from "@/lib/prazo-em-conferencia";
 import { salvarLaudoNaTransacao } from "@/lib/laudos-tecnicos";
 import { validarDadosLaudo, type DadosLaudoInput } from "@/lib/validacao-laudo";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
@@ -245,8 +246,9 @@ async function idsDeClientesComAtraso(tx: Prisma.TransactionClient): Promise<Set
       ativo: true,
       cliente: { ativo: true },
       OR: [
-        { tarefas: { some: { ativo: true, status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] }, prazo: { lt: hoje } } } },
-        { tarefas: { some: { ativo: true, subtarefas: { some: { ativo: true, status: StatusSubtarefa.EM_ANDAMENTO, prazo: { lt: hoje } } } } } },
+        // Item em conferência (pedido pendente com comprovante) não conta atraso: o prazo dele está parado.
+        { tarefas: { some: { ativo: true, status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] }, prazo: { lt: hoje }, ...SEM_CONFERENCIA_EM_ANDAMENTO } } },
+        { tarefas: { some: { ativo: true, subtarefas: { some: { ativo: true, status: StatusSubtarefa.EM_ANDAMENTO, prazo: { lt: hoje }, ...SEM_CONFERENCIA_EM_ANDAMENTO } } } } },
       ],
     },
     select: { clienteId: true },

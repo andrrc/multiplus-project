@@ -14,7 +14,7 @@ export type OrdemMeusProjetos = "prazo" | "nome" | "abertas" | "minhas";
 const SITUACOES: SituacaoMeusProjetos[] = ["ativos", "pendencias", "atraso", "concluidos", "todos"];
 const ORDENS: OrdemMeusProjetos[] = ["prazo", "nome", "abertas", "minhas"];
 
-type TarefaDoProjeto = { ativo: boolean; status: string; prazo: Date | null };
+type TarefaDoProjeto = { ativo: boolean; status: string; prazo: Date | null; emConferenciaDesde?: Date | null };
 type ProjetoDaLista = {
   nome: string;
   status: string;
@@ -27,7 +27,7 @@ type ProjetoDaLista = {
   minhasPendencias?: number;
 };
 
-type ItemDoResponsavel = { ativo: boolean; status: string; prazo: Date | null };
+type ItemDoResponsavel = { ativo: boolean; status: string; prazo: Date | null; emConferenciaDesde?: Date | null };
 
 /**
  * "Minhas pendências" e "minhas atrasadas" de um projeto (protótipo interno/03): os itens abertos em que o colaborador é o
@@ -45,7 +45,8 @@ export function contarMinhasPendencias(
   ];
   return {
     pendencias: abertas.length,
-    atrasadas: abertas.filter((item) => item.prazo !== null && calcularDiasRestantes(item.prazo, hoje) < 0).length,
+    // Item em conferência segue pendente, mas o prazo dele não conta: não é atrasado.
+    atrasadas: abertas.filter((item) => !item.emConferenciaDesde && item.prazo !== null && calcularDiasRestantes(item.prazo, hoje) < 0).length,
   };
 }
 
@@ -62,7 +63,7 @@ export const tarefaEmAberto = (tarefa: TarefaDoProjeto) => tarefa.ativo && taref
 
 /** Tarefas em aberto cujo prazo já passou. */
 export const tarefasAtrasadas = (projeto: { tarefas: TarefaDoProjeto[] }) =>
-  projeto.tarefas.filter((tarefa) => tarefaEmAberto(tarefa) && tarefa.prazo && calcularDiasRestantes(tarefa.prazo) < 0).length;
+  projeto.tarefas.filter((tarefa) => tarefaEmAberto(tarefa) && !tarefa.emConferenciaDesde && tarefa.prazo && calcularDiasRestantes(tarefa.prazo) < 0).length;
 
 const projetoAtivo = (projeto: { status: string }) => projeto.status !== "CONCLUIDO" && projeto.status !== "CANCELADO";
 

@@ -5,16 +5,18 @@
  */
 import { estaAtrasada } from "@/lib/regras-projetos-tarefas";
 
-export type ClasseItemAgenda = "atrasado" | "proximo" | "prazo" | "visita" | "futura" | "concluida";
+export type ClasseItemAgenda = "atrasado" | "proximo" | "prazo" | "visita" | "futura" | "concluida" | "conferencia";
 
 export function classeDoItemAgenda(
-  item: { status: string; projetada: boolean },
+  item: { status: string; projetada: boolean; emConferenciaDesde?: Date | null },
   diasRestantes: number,
   diasAmareloAte: number,
 ): ClasseItemAgenda {
   // A ocorrência futura ainda não existe como tarefa, então não tem situação de prazo.
   if (item.projetada) return "futura";
   if (item.status === "CONCLUIDO" || item.status === "CANCELADO") return "concluida";
+  // Envio com comprovante aguardando conferência: o prazo não conta, então não é atraso nem "vence em breve".
+  if (item.emConferenciaDesde) return "conferencia";
   // Visitas e reuniões têm cor própria, mesmo quando a data já passou.
   if (item.status === "VISITA_REUNIAO_AGENDADA") return "visita";
   if (diasRestantes < 0) return "atrasado";
@@ -30,6 +32,7 @@ export const COR_ITEM_AGENDA: Record<ClasseItemAgenda, string> = {
   visita: "bg-visita-cl text-visita",
   futura: "border border-dashed border-linha-forte bg-branco text-cinza",
   concluida: "bg-papel text-faint line-through",
+  conferencia: "bg-azul-cl text-azul-esc",
 };
 
 /** Cor da barra lateral do item no painel do dia. */
@@ -40,6 +43,7 @@ export const COR_BARRA_AGENDA: Record<ClasseItemAgenda, string> = {
   visita: "bg-ponto-visita",
   futura: "bg-linha-forte",
   concluida: "bg-linha-forte",
+  conferencia: "bg-azul",
 };
 
 export const ROTULO_CLASSE_AGENDA: Record<ClasseItemAgenda, string> = {
@@ -49,15 +53,16 @@ export const ROTULO_CLASSE_AGENDA: Record<ClasseItemAgenda, string> = {
   visita: "Visita ou reunião",
   futura: "Próxima ocorrência recorrente",
   concluida: "Concluído",
+  conferencia: "Em conferência",
 };
 
 /**
  * Faixa vermelha da agenda (protótipo 09-agenda): quantos itens abertos e vencidos ficaram em meses anteriores ao exibido.
  * Sem ela, o atraso do mês passado some da tela ao navegar para o mês atual. Concluído, cancelado, desativado e sem prazo
- * não entram; o prazo conta atrasado só a partir do dia seguinte, a mesma conta do semáforo.
+ * não entram, nem o item em conferência; o prazo conta atrasado só a partir do dia seguinte, a mesma conta do semáforo.
  */
 export function contarAtrasadosAnteriores(
-  tarefas: ReadonlyArray<{ prazo: Date | null; status: string; ativo: boolean }>,
+  tarefas: ReadonlyArray<{ prazo: Date | null; status: string; ativo: boolean; emConferenciaDesde?: Date | null }>,
   inicioDoMes: Date,
   agora: Date = new Date(),
 ): number {
@@ -65,6 +70,7 @@ export function contarAtrasadosAnteriores(
     tarefa.ativo
     && tarefa.status !== "CONCLUIDO"
     && tarefa.status !== "CANCELADO"
+    && !tarefa.emConferenciaDesde
     && tarefa.prazo !== null
     && tarefa.prazo < inicioDoMes
     && estaAtrasada(tarefa.prazo, false, agora),

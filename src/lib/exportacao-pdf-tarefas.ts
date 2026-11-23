@@ -4,6 +4,7 @@ import { calcularDiasRestantes } from "@/ui/indicador-dias-restantes";
 import { formatarDataCadastro, formatarDataHoraBrasilia } from "@/lib/datas";
 import { interpretarResponsavel, type ResponsavelFiltro } from "@/lib/filtro-responsavel";
 import { numeroCliente } from "@/lib/formatacao";
+import { rotuloEnviadoEm } from "@/lib/prazo-em-conferencia";
 import {
   buscarProjeto,
   listarClientesParaProjeto,
@@ -124,9 +125,11 @@ function textoFiltros(
   return partes.join("  ·  ");
 }
 
-function indicadorPrazo(prazo: Date | null, status: string, limites: { diasAmareloAte: number }): Celula {
+function indicadorPrazo(prazo: Date | null, status: string, limites: { diasAmareloAte: number }, emConferenciaDesde?: Date | null): Celula {
   if (status === "CONCLUIDO") return { texto: "Concluído", tom: "normal", detalhe: prazo ? formatarDataCadastro(prazo) : undefined, algarismos: !!prazo };
   if (status === "CANCELADO") return { texto: "Cancelado", tom: "neutro", detalhe: prazo ? formatarDataCadastro(prazo) : undefined, algarismos: !!prazo };
+  // Envio com comprovante aguardando conferência: o prazo não conta (a tela mostra o mesmo texto).
+  if (emConferenciaDesde) return { texto: rotuloEnviadoEm(emConferenciaDesde), tom: "neutro", detalhe: prazo ? formatarDataCadastro(prazo) : undefined, algarismos: true };
   if (!prazo) return { texto: "Sem prazo", tom: "neutro" };
 
   const dias = calcularDiasRestantes(prazo);
@@ -206,7 +209,7 @@ function linhaTarefa(tarefa: Awaited<ReturnType<typeof listarPrazos>>[number], l
     const concluidas = tarefa.progressoSubtarefas?.concluidas ?? 0;
     linha.push({ texto: `${concluidas}/${total}`, centralizada: true, algarismos: true });
   }
-  linha.push(indicadorPrazo(tarefa.prazo, tarefa.status, limites));
+  linha.push(indicadorPrazo(tarefa.prazo, tarefa.status, limites, tarefa.emConferenciaDesde));
   linha.push({ texto: STATUS_TAREFA[tarefa.status] ?? tarefa.status });
   return linha;
 }
@@ -219,7 +222,7 @@ function linhaSubtarefa(subtarefa: Awaited<ReturnType<typeof listarSubtarefasPra
     { texto: subtarefa.tarefa.projeto.cliente.razaoSocial },
     { texto: numeroCliente(subtarefa.tarefa.projeto.cliente.numeroIdentificacao), centralizada: true, algarismos: true },
     { texto: subtarefa.atribuidoA?.nome ?? subtarefa.atribuidoAUsuario?.nome ?? "—" },
-    indicadorPrazo(subtarefa.prazo, subtarefa.status, limites),
+    indicadorPrazo(subtarefa.prazo, subtarefa.status, limites, subtarefa.emConferenciaDesde),
     { texto: STATUS_SUBTAREFA[subtarefa.status] ?? subtarefa.status },
   ];
 }

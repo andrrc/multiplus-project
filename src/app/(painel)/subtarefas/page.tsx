@@ -77,7 +77,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
   const itens = subtarefasDaLista.map((subtarefa) => ({
     subtarefa,
     situacao: situacaoDoPrazo(
-      { diasRestantes: subtarefa.prazo ? calcularDiasRestantes(subtarefa.prazo) : null, fechado: subtarefa.status === StatusSubtarefa.CONCLUIDO || subtarefa.status === StatusSubtarefa.CANCELADO || subtarefa.ativo === false },
+      { diasRestantes: subtarefa.prazo ? calcularDiasRestantes(subtarefa.prazo) : null, fechado: subtarefa.status === StatusSubtarefa.CONCLUIDO || subtarefa.status === StatusSubtarefa.CANCELADO || subtarefa.ativo === false, emConferencia: !!subtarefa.emConferenciaDesde },
       limites.diasAmareloAte,
     ),
   }));
@@ -171,7 +171,7 @@ export default async function SubtarefasPage({ searchParams }: { searchParams: P
             <CelulaLista rotulo="Responsável">
               {nomeResponsavel ? <TextoPrincipal>{nomeResponsavel}</TextoPrincipal> : <span className="text-faint">Sem responsável</span>}
             </CelulaLista>
-            <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} /></CelulaLista>
+            <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={s.prazo} status={s.status} ativo={s.ativo} limites={limites} emConferenciaDesde={s.emConferenciaDesde} /></CelulaLista>
             <CelulaLista rotulo="Status"><StatusPonto status={s.status}>{status[s.status]}</StatusPonto></CelulaLista>
           </LinhaLista>;
         })}

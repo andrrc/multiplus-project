@@ -72,7 +72,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
   const itens = buscarEOrdenarTarefas(tarefasConsulta, busca, ordem).map((tarefa) => ({
     tarefa,
     situacao: situacaoDoPrazo(
-      { diasRestantes: tarefa.prazo ? calcularDiasRestantes(tarefa.prazo) : null, fechado: tarefa.status === "CONCLUIDO" || tarefa.status === "CANCELADO" || tarefa.ativo === false },
+      { diasRestantes: tarefa.prazo ? calcularDiasRestantes(tarefa.prazo) : null, fechado: tarefa.status === "CONCLUIDO" || tarefa.status === "CANCELADO" || tarefa.ativo === false, emConferencia: !!tarefa.emConferenciaDesde },
       limites.diasAmareloAte,
     ),
   }));
@@ -133,7 +133,7 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
                 <TextoSecundario>{papelDoResponsavel(tarefa)}</TextoSecundario>
               </> : <span className="text-faint">Sem responsável</span>}
             </CelulaLista>
-            <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={tarefa.prazo} status={tarefa.status} ativo={tarefa.ativo} limites={limites} /></CelulaLista>
+            <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={tarefa.prazo} status={tarefa.status} ativo={tarefa.ativo} limites={limites} emConferenciaDesde={tarefa.emConferenciaDesde} /></CelulaLista>
             <CelulaLista rotulo="Status"><StatusPonto status={tarefa.status}>{status[tarefa.status]}</StatusPonto></CelulaLista>
           </LinhaLista>;
         })}

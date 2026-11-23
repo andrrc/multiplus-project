@@ -6,6 +6,7 @@ import { enviarEmail } from "@/lib/email";
 import { renderTemplateMencaoComentario, renderTemplateNotificacao } from "@/lib/email-templates";
 import { rotaDoRegistroParaPerfil } from "@/lib/notificacoes-rotas";
 import { dataDeHojeEmSaoPaulo } from "@/lib/datas";
+import { SEM_CONFERENCIA_EM_ANDAMENTO } from "@/lib/prazo-em-conferencia";
 import { prisma } from "@/lib/prisma";
 import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 
@@ -253,7 +254,8 @@ export async function dispararPrazoProximo(dias?: number, hoje = new Date()) {
   const antecedencia = dias ?? configuracao?.diasAntecedenciaPadrao ?? 7;
   // Usa o início do dia de São Paulo para que avisos e semáforo mudem de data juntos.
   const inicio = new Date(dataDeHojeEmSaoPaulo(hoje));
-  const whereBase: Prisma.TarefaWhereInput = { ativo: true, prazo: { gte: inicio }, status: { notIn: ["CONCLUIDO", "CANCELADO"] }, projeto: { ativo: true, cliente: { ativo: true } } };
+  // Item em conferência (pedido pendente com comprovante) já foi entregue: o aviso de prazo próximo não vale.
+  const whereBase: Prisma.TarefaWhereInput = { ativo: true, prazo: { gte: inicio }, status: { notIn: ["CONCLUIDO", "CANCELADO"] }, projeto: { ativo: true, cliente: { ativo: true } }, ...SEM_CONFERENCIA_EM_ANDAMENTO };
   // A janela ampla precisa cobrir também tarefas com antecedência maior que o padrão.
   const maiorAntecedencia = await prisma.tarefa.aggregate({ where: whereBase, _max: { diasAntecedencia: true } });
   const fim = new Date(inicio);

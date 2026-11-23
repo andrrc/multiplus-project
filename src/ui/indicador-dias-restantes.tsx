@@ -1,5 +1,6 @@
 import { calcularDiasRestantes } from "@/lib/datas";
 import { LIMITES_SEMAFORO_PADRAO, type LimitesSemaforo } from "@/lib/semaforo";
+import { rotuloEnviadoEm } from "@/lib/prazo-em-conferencia";
 
 // A conta de dias vive em `@/lib/datas`; é reexportada aqui para os usos e testes existentes.
 export { calcularDiasRestantes };
@@ -9,17 +10,22 @@ const COR_NEUTRA = "bg-papel text-cinza";
 const COR_VENCIDO = "bg-critico-cl text-critico";
 const COR_ATENCAO = "bg-ambar-cl text-ambar";
 const COR_EM_DIA = "bg-verde-cl text-verde-esc";
+/** Envio com comprovante aguardando conferência: o prazo não conta, então não é atraso nem aviso de vencimento. */
+const COR_CONFERENCIA = "bg-azul-cl text-azul-esc";
 
 export function IndicadorSemaforoProjeto({
   prazo,
   status,
   ativo = true,
   limites = LIMITES_SEMAFORO_PADRAO,
+  emConferenciaDesde = null,
 }: {
   prazo: Date | null;
   status: string;
   ativo?: boolean;
   limites?: LimitesSemaforo;
+  /** Instante do envio, quando há pedido pendente com comprovante (etapa 2): mostra "Enviado em dd/mm" no lugar do prazo. */
+  emConferenciaDesde?: Date | null;
 }) {
   // Texto e cor são derivados em conjunto para que o estado tenha sempre um rótulo legível.
   let texto: string;
@@ -34,6 +40,9 @@ export function IndicadorSemaforoProjeto({
   } else if (status === "CANCELADO") {
     texto = "Cancelado";
     cores = COR_NEUTRA;
+  } else if (emConferenciaDesde) {
+    texto = rotuloEnviadoEm(emConferenciaDesde);
+    cores = COR_CONFERENCIA;
   } else if (!prazo) {
     texto = "Sem prazo";
     cores = COR_NEUTRA;
