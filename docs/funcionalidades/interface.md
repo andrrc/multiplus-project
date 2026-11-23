@@ -190,8 +190,8 @@ Testes: `tests/unit/avisos-agrupamento.unit.test.ts`, `tests/unit/agenda-itens.u
 `tests/browser/jornadas.spec.ts`. Na caixa da Administradora, o status do envio de prazos, o semáforo e as preferências por perfil
 continuam ao lado da lista até existir a página de Configurações.
 
-**Pendências desta área.** Ações diretas nos avisos (ver comprovantes, cobrar responsável), contexto de cada aviso e faixa de
-atrasados de meses anteriores. "Marcar como não lido" (16/11/2026), o filtro por responsável e o "Exportar PDF" da agenda
+**Pendências desta área.** Ações diretas nos avisos (ver comprovantes, cobrar responsável) e contexto de cada aviso. A faixa de
+atrasados de meses anteriores da agenda foi feita em 23/11/2026. "Marcar como não lido" (16/11/2026), o filtro por responsável e o "Exportar PDF" da agenda
 (18/11/2026) já existem.
 
 ### Telas do colaborador interno
@@ -208,9 +208,10 @@ O que cada colaborador pode ver e fazer não mudou.
 em `src/ui/lista.tsx`. O rodapé do menu deixou de cortar o nome do perfil. O teste `tests/browser/colaborador.spec.ts` entra como
 colaborador interno, abre as seis telas e confere que cabem em 1024 e 375 px.
 
-**Pendências desta área.** Painel, agenda, abas "Minhas" e "Da equipe", busca, subtarefas na lista de tarefas, "Concluir" direto na linha,
-as contagens "minhas pendências" por pessoa em Meus projetos, comentários no nível da tarefa e "Quem acessa" dependem de dados, regras
-ou permissão novos.
+**Pendências desta área.** A aba "Da equipe" (aprovada em 23/11/2026, mas muda permissão de leitura e começa por uma análise), o
+Exportar PDF do colaborador e os comentários no nível da tarefa dependem de regra ou permissão novas. Em 23/11/2026 entraram as subtarefas
+na lista de tarefas com o filtro "Só subtarefas", o "Concluir" na linha (que envia o pedido de conclusão) e as contagens de minhas pendências
+por pessoa em Meus projetos; o painel, a agenda e a busca já existem.
 
 ### Tela de tarefas do colaborador externo
 
@@ -333,6 +334,7 @@ exige mudanças incompatíveis e deve ser avaliada separadamente.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | Minhas tarefas do colaborador interno com subtarefas, filtro de tipo e "Concluir" na linha; minhas pendências em Meus projetos; faixa de atrasados na agenda |
 | 2026-11-18 | este commit | Acabamentos da lista e do detalhe da administração: papel do responsável, etiquetas nas subtarefas, próxima ocorrência, quem acessa o projeto, filtro por responsável e PDF da agenda, PDF do projeto e filtro do portal |
 | 2026-11-17 | este commit | Tela de tarefas do externo em grupos (devolvidas, para fazer, aguardando conferência, concluídas) e tela de envio de comprovante |
 | 2026-11-16 | este commit | Busca de texto e ordenação nas listas (Tarefas, Subtarefas, Clientes, Usuários e as dos colaboradores) |

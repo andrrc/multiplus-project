@@ -33,6 +33,7 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
   recorrente ainda não criada (fundo azul claro com borda tracejada, identificada como
   "Tarefa recorrente").
 - **Filtros:** por cliente, por projeto, **por responsável** (18/11/2026; pessoa envolvida, equipe ou "Sem responsável") e "Só visitas/reuniões".
+- **Faixa de atrasados (23/11/2026):** quando há itens abertos e vencidos em meses anteriores ao exibido, uma faixa vermelha avisa "N itens atrasados de meses anteriores continuam abertos" e o link "Ver atrasados" abre a lista de tarefas atrasadas (na agenda da administração, com os filtros de cliente, projeto e responsável em uso; na do colaborador interno, em Minhas tarefas). Sem ela, o atraso do mês passado sumia ao navegar para o mês atual. Concluído, cancelado, desativado e sem prazo não contam; o dia do prazo ainda não é atraso. `contarAtrasadosAnteriores` (`src/lib/agenda-itens.ts`), `contarAtrasadosAnterioresAgenda` e `contarAtrasadosAnterioresColaborador` (`src/lib/projetos-tarefas.ts`); o colaborador interno só conta o que a RLS já entrega a ele.
 - **Exportar PDF (18/11/2026):** o botão "Exportar PDF" da barra de filtros gera a agenda do mês, em lista (data, item, projeto, cliente, responsável e situação do prazo), com os mesmos filtros da tela. A ocorrência futura de tarefa recorrente sai como "Próxima ocorrência", sem situação de prazo.
 - **Mês vazio:** a tela avisa que não há prazos no mês.
 
@@ -88,12 +89,13 @@ O colaborador externo não tem agenda.
 |---|---|---|
 | L1 | Itens com o mesmo projeto, nome e data são unificados na tela. | Duas tarefas distintas com o mesmo nome e prazo no mesmo projeto aparecem como uma só. |
 | L2 | A agenda mostra só tarefas. | Prazos de subtarefas não aparecem. |
-| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam a faixa de atrasados de meses anteriores e os prazos de subtarefas e de projeto, que dependem de dados e regras novos. O filtro por responsável e o "Exportar PDF" foram feitos em 18/11/2026. A agenda do colaborador interno foi aberta em `/minha-agenda` (G4). |
+| L3 | O calendário segue o protótipo `09-agenda` só no visual (13/11/2026). | Faltam os prazos de subtarefas e de projeto, que dependem de dados e regras novos. O filtro por responsável e o "Exportar PDF" foram feitos em 18/11/2026 e a faixa de atrasados de meses anteriores, em 23/11/2026. A agenda do colaborador interno foi aberta em `/minha-agenda` (G4). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | Faixa de atrasados de meses anteriores na agenda da administração e do colaborador interno |
 | 2026-11-18 | este commit | Filtro por responsável e Exportar PDF do mês na agenda da administração |
 | 2026-11-13 | este commit | Agenda do colaborador interno (`/minha-agenda`), com consulta própria limitada ao escopo dele ([análise](../analises/restricao-externo-e-agenda-interno.md)) |
 | 2026-11-13 | este commit | Agenda no padrão do protótipo: itens coloridos pelo semáforo (visitas em roxo, recorrentes tracejadas), painel do dia ao lado, visualização Mês/Lista e filtros aplicados na hora |

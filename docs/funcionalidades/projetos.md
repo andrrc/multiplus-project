@@ -156,7 +156,8 @@ A listagem administrativa de projetos está em adaptação visual aos modelos da
 
 **Como funciona.**
 - **Lista:** o colaborador vê os projetos em que atua, com cliente, tarefas e semáforo.
-- **Busca e filtros (16/11/2026):** busca por projeto, cliente ou ID; filtro de cliente; ordenação por prazo, tarefas abertas ou nome; e abas **Ativos** (padrão), **Com atraso** (projeto ativo com tarefa aberta vencida), **Concluídos** e **Todos**, com contagem. As regras estão em `src/lib/lista-meus-projetos.ts`. A aba "Com pendências minhas" do protótipo ficou de fora: o protótipo não define "pendência minha".
+- **Busca e filtros (16/11/2026):** busca por projeto, cliente ou ID; filtro de cliente; ordenação por prazo, tarefas abertas ou nome; e abas **Ativos** (padrão), **Com atraso** (projeto ativo com tarefa aberta vencida), **Concluídos** e **Todos**, com contagem. As regras estão em `src/lib/lista-meus-projetos.ts`.
+- **Minhas pendências (23/11/2026):** cada cartão mostra **Minhas pendências**, **Minhas atrasadas** e **Abertas na equipe**, como no protótipo. "Pendência minha" é o item aberto em que o colaborador é o responsável: tarefa aberta dele mais subtarefa em andamento dele; atrasada é a que já passou do prazo (o dia do prazo ainda não conta). Concluído, cancelado e desativado não contam. Há também a aba **Com pendências minhas** e a ordenação "por minhas pendências". `contarMinhasPendencias` (`src/lib/lista-meus-projetos.ts`) e `listarProjetosAtribuidos`, que devolve `minhasPendencias` e `minhasAtrasadas` por projeto; nada que o colaborador já não alcance pela RLS.
 - **No projeto:** as tarefas visíveis para ele e os documentos do projeto e do cliente.
   O valor contratado **não** aparece.
 
@@ -199,6 +200,7 @@ Descritos em `comentarios-mencoes.md`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | Minhas pendências, minhas atrasadas e abertas na equipe em Meus projetos, com aba e ordenação |
 | 2026-11-18 | este commit | "Quem acessa este projeto" na coluna lateral e Exportar PDF do projeto |
 | 2026-11-16 | este commit | Meus projetos com busca, filtro de cliente, ordenação e abas com contagem |
 | 2026-11-13 | este commit | Lista de projetos com filtro por cliente e exportação em PDF, conforme o protótipo |

@@ -34,7 +34,7 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 | Exportar PDF do projeto | **Feito em 18/11/2026** | Sem valor contratado no PDF, como na lista. |
 | "Quem acessa este projeto" | **Feito em 18/11/2026** (só administração) | Lê atribuições e pessoas envolvidas. Se for aberto a outro perfil, vira C. |
 | Avisos: contexto de cada aviso e ações diretas | B | Precisa guardar o alvo da ação no aviso; verificar o que `Notificacao` já guarda. |
-| Avisos: faixa de atrasados de meses anteriores | A | Consulta sobre prazos já existentes. |
+| Faixa de atrasados de meses anteriores (é da agenda, não dos avisos) | **Feito em 23/11/2026** | Na agenda da administração e na do interno; "Ver atrasados" abre a lista. |
 | Cobrar responsável | C | Cria aviso manual para outra pessoa: limite de uso, quem pode cobrar quem, registro. |
 | Histórico automático junto dos comentários | B | Registrar eventos (mudou status, prazo, responsável). Conferir se já há tabela de auditoria aproveitável. |
 | Duplicar projeto | B/D | Definir o que copia (tarefas, subtarefas, comprovantes, datas) e como ficam os IDs hierárquicos. |
@@ -47,12 +47,12 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 
 | Item | Classe | Observação |
 |---|---|---|
-| Subtarefas dentro da lista de tarefas | A | Consulta; RLS já limita ao escopo. |
-| Filtro "Só subtarefas" | A | Depende do item anterior. |
-| Contagem de "minhas pendências" por pessoa em Meus projetos | A | Conferir que não expõe dado de quem o interno não vê. |
+| Subtarefas dentro da lista de tarefas | **Feito em 23/11/2026** | Consulta; RLS já limita ao escopo. |
+| Filtro "Só subtarefas" | **Feito em 23/11/2026** | Depende do item anterior. |
+| Contagem de "minhas pendências" por pessoa em Meus projetos | **Feito em 23/11/2026** | Conferir que não expõe dado de quem o interno não vê. |
 | Comentários no nível da tarefa | B | Hoje os comentários ficam no projeto; conferir o modelo. |
 | Abas "Minhas / Da equipe" | C | "Da equipe" mostra trabalho de outras pessoas: define escopo de leitura e RLS. |
-| "Concluir" na linha | A/C | O protótipo não pede conclusão direta: o botão da linha é "Concluir e enviar para confirmação", e a administração continua confirmando (regra de 22/10/2026). É o atalho para o pedido que já existe; com comprovante exigido, leva ao envio. |
+| "Concluir" na linha | **Feito em 23/11/2026** | O protótipo não pede conclusão direta: o botão da linha é "Concluir e enviar para confirmação", e a administração continua confirmando (regra de 22/10/2026). É o atalho para o pedido que já existe; com comprovante exigido, leva ao envio. |
 | "Exportar PDF" para o colaborador | C | Precisa garantir mascaramento e escopo. |
 | "Novo" com mais opções | C | Depende do que o interno pode criar. |
 
@@ -93,7 +93,7 @@ Ordem pensada para entregar valor sem decisão primeiro, deixar as regras de pra
 - Entregável: análise dos comprovantes atualizada e uma lista de decisões por item da classe D.
 
 ### Fase 1: acabamentos de classe A (sem decisão nova)
-**Andamento (18/11/2026):** feitos todos os itens de Administração e do portal da lista abaixo. **Faltam**, e ficaram para a próxima rodada: a faixa de atrasados de meses anteriores nos avisos e, no colaborador interno, as subtarefas na lista de tarefas com "Só subtarefas", "Concluir" na linha e a contagem de "minhas pendências" por pessoa.
+**Andamento (23/11/2026): Fase 1 concluída.** Em 18/11 saíram os itens da administração e do portal; em 23/11, a faixa de atrasados de meses anteriores (que é da agenda), as subtarefas na lista do interno com "Só subtarefas", o "Concluir" na linha e as minhas pendências em Meus projetos. A próxima fase é a 2, que começa pela análise da etapa 2 dos comprovantes.
 
 Itens: "Próxima ocorrência", "Atribuição pendente", etiquetas e papel do responsável, correção do filtro no PDF, filtro por responsável e PDF na agenda, PDF do projeto, "Quem acessa" (só administração), faixa de atrasados de meses anteriores, subtarefas na lista de tarefas do interno com "Só subtarefas", contagem de pendências por pessoa, filtro Em andamento/Concluídos do portal.
 - Separar em 3 ou 4 commits por tela (tarefa, listas, agenda e PDFs, interno, portal).

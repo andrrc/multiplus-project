@@ -276,7 +276,9 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 ### T8. Minhas tarefas (colaboradores)
 
 **Como funciona.**
-- **Busca e filtros (16/11/2026):** campo "Buscar por nome, projeto, cliente ou ID", filtros de cliente e projeto e os botões de situação do prazo com contagem. "Minhas / Da equipe", "Só tarefas / só subtarefas" e Exportar PDF do protótipo ficaram de fora: dependem de permissão.
+- **Busca e filtros (16/11/2026):** campo "Buscar por nome, projeto, cliente ou ID", filtros de cliente e projeto e os botões de situação do prazo com contagem. "Minhas / Da equipe" (aprovada em 23/11/2026, mas muda permissão de leitura e começa por uma análise) e Exportar PDF do protótipo seguem de fora.
+- **Tarefas e subtarefas juntas (23/11/2026, colaborador interno):** a lista traz também as subtarefas em que ele é o responsável, cada uma com o código, a tarefa de origem ("Subtarefa de ...") e o mesmo prazo e status. Os botões **Tarefas e subtarefas**, **Só tarefas** e **Só subtarefas**, com contagem, vão na URL (`?tipo=tarefas` ou `?tipo=subtarefas`); busca, cliente, projeto e situação do prazo valem para os dois tipos, e "Aguardando outras pessoas" só para tarefas. Subtarefa de outra pessoa não aparece.
+- **Ação na linha (23/11/2026):** a coluna **Ação** tem "Concluir" nos itens dele que estão abertos e sem pedido pendente. O botão **não conclui direto**: envia o pedido de conclusão (a mesma ação da página do item), e a administração continua confirmando. Se o item exige comprovante, a linha mostra "Enviar comprovante", que leva à página do item. Item de outra pessoa, já pedido, fechado ou desativado não tem ação.
 - **Aguardando outras pessoas:** botão ao lado da situação do prazo, com contagem (`?aguardando=1`), e o mesmo número no painel do colaborador. Conta a tarefa aberta que tem pedido de conclusão esperando confirmação (dela ou de uma subtarefa) ou subtarefa em andamento atribuída a outra pessoa. A regra é `aguardaOutrasPessoas` (`src/lib/aguardando-outras-pessoas.ts`). **Limite:** a RLS só mostra as subtarefas dos colegas a quem está atribuído ao projeto; quem é apenas responsável pela tarefa não vê as dos colegas, então o aviso por subtarefa não aparece para ele (o aviso por pedido de conclusão aparece).
 - **Lista:** o colaborador vê, em ordem de prazo, as tarefas em que é responsável, está
   atribuído, ou é responsável por alguma subtarefa. Os cartões se reorganizam em uma
@@ -289,8 +291,8 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 
 **Detalhes técnicos.**
 - **Rotas:** `/minhas-tarefas` e `/minhas-tarefas/[id]`.
-- **Funções:** `listarTarefasAtribuidas` e `buscarTarefaParaColaborador`, que calcula
-  `podeConcluirTarefa` e `podeCriarSubtarefas`.
+- **Funções:** `listarTarefasAtribuidas` (que passou a devolver `meu`, se o item é dele), `listarSubtarefasAtribuidas` (só colaborador interno) e `buscarTarefaParaColaborador`, que calcula
+  `podeConcluirTarefa` e `podeCriarSubtarefas`. As regras do tipo e da ação da linha estão em `src/lib/minhas-tarefas-lista.ts`.
 - **RLS:** migrations `sprint4a_rls_rn007`, `rls_heranca_projetos_tarefas` e
   `acesso_contextual_tarefa`.
 - **Visibilidade:** o colaborador interno atribuído ao projeto chega às demais tarefas
@@ -367,6 +369,7 @@ registro de quem criou e quando.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | Minhas tarefas do colaborador interno com subtarefas, filtro de tipo e "Concluir" na linha |
 | 2026-11-18 | este commit | Papel do responsável na lista, "Próxima ocorrência" no resumo e situação do prazo no PDF |
 | 2026-11-17 | este commit | Comprovante exigido, envio pelo colaborador, conferência e devolução com motivo (etapa 1) |
 | 2026-11-16 | este commit | "Aguardando outras pessoas" em Minhas tarefas e no painel do colaborador interno |
