@@ -39,7 +39,7 @@ A pausa vale **só para o item que recebeu o pedido**: o pedido de uma subtarefa
 
 ### Fora do escopo
 
-Pedido de prazo e impedimento (etapa 3); página `/instrucoes`, foto de exemplo e avisos "comprovante confirmado ou devolvido" (etapa 4); o status "A iniciar" da subtarefa e o aviso de atraso a cada 3 dias com escalada (Fase 3 do planejamento). Esta análise só registra o que eles exigirão desta regra (seções 4 e 9).
+Pedido de prazo e impedimento (etapa 3); página `/instrucoes`, foto de exemplo e avisos "comprovante confirmado ou devolvido" (etapa 4); o status "A iniciar" da subtarefa e o aviso de atraso a cada 3 dias com escalada (Fase 6 do planejamento). Esta análise só registra o que eles exigirão desta regra (seções 4 e 9).
 
 ## 2. Permissões
 
@@ -138,7 +138,7 @@ Estas contas não passam por função compartilhada; cada uma precisa ser trocad
 
 - `src/lib/notificacoes.ts` `dispararPrazoProximo` (l. 250 a 310), chamada por `executarJobPrazo` e pela rota `src/app/api/jobs/notificacoes-prazo/route.ts` (cron das 08:00 em `ops/README.md`): seleciona tarefas ativas, não concluídas nem canceladas, com prazo dentro da antecedência. **Não olha o pedido**, então hoje o externo que já enviou continua recebendo "Prazo próximo". Recebe o fragmento "sem conferência em andamento" no `whereBase`. Roda com a role dona (`prisma`, sem RLS), portanto enxerga todos os pedidos.
 - O job **só cobre tarefas**, não subtarefas. É uma lacuna anterior a esta análise, e fica fora dela (pergunta 6).
-- **Não existe aviso de "prazo vencido"**: o enum `EventoNotificacao` só tem `PRAZO_PROXIMO`, `TAREFA_CONCLUIDA`, `CONCLUSAO_SOLICITADA`, `PROJETO_CONCLUIDO`, `NOVO_COMENTARIO` e `ATRIBUICAO_RECEBIDA`. Portanto "o aviso de atraso para durante a conferência" ainda não tem o que parar. A régua com escalada depois de 3 dias (Fase 3) deve nascer usando a mesma função, registrada aqui como requisito.
+- **Não existe aviso de "prazo vencido"**: o enum `EventoNotificacao` só tem `PRAZO_PROXIMO`, `TAREFA_CONCLUIDA`, `CONCLUSAO_SOLICITADA`, `PROJETO_CONCLUIDO`, `NOVO_COMENTARIO` e `ATRIBUICAO_RECEBIDA`. Portanto "o aviso de atraso para durante a conferência" ainda não tem o que parar. A régua com escalada depois de 3 dias (Fase 6) deve nascer usando a mesma função, registrada aqui como requisito.
 
 ### 4.5 Pontos revisados que **não** mudam
 
@@ -227,7 +227,7 @@ Cada pergunta traz a recomendação. As respostas da cliente de 2026-11-23 cobre
 3. **A pausa vale só para o item que recebeu o pedido?** **Recomendação:** sim. O pedido da subtarefa não pausa a tarefa-mãe. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
 4. **Colaborador interno concluindo item que não exige comprovante:** o prazo continua contando, e o diálogo "Concluir e enviar para confirmação" não pode dizer que ele para? **Recomendação:** sim, porque a cliente disse que a regra do interno é a mesma e hoje só item que exige comprovante aceita arquivo. Pedir a confirmação de que ela entendeu assim, pois o protótipo do interno escreve a pausa como regra geral do envio. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
 5. **Telas e contagens:** item em conferência sai de "Atrasados" e "Vencem em N dias", conta como em dia nos percentuais e **não ganha botão de filtro novo**? **Recomendação:** sim; aparece só em "Todos", com o selo. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
-6. **Avisos:** o aviso de véspera para durante a conferência e volta na devolução, e a futura escalada de atraso de 3 dias (Fase 3) usa a mesma função? **Recomendação:** sim. O job cobre só tarefas, não subtarefas, e o evento de "prazo vencido" não existe; ambos ficam fora desta etapa e registrados como dependência da Fase 3. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
+6. **Avisos:** o aviso de véspera para durante a conferência e volta na devolução, e a futura escalada de atraso de 3 dias (Fase 6) usa a mesma função? **Recomendação:** sim. O job cobre só tarefas, não subtarefas, e o evento de "prazo vencido" não existe; ambos ficam fora desta etapa e registrados como dependência da Fase 6. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
 7. **Data de conclusão gravada:** adiar para quando o portal precisar do "Feito nos últimos 30 dias"? **Recomendação:** sim, sem coluna agora. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
 8. **Refatoração:** aprova trocar as contas repetidas de `calcularDiasRestantes < 0` (seção 4.3) pela função única na própria tarefa de implementação? **Recomendação:** sim, é o que impede a regra de divergir entre telas. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.
 9. **Portal do cliente:** nada muda agora (seção 2); quando o anel de "obrigações em dia" for feito, usa uma função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos. **Recomendação:** registrar como requisito da análise do portal. — **Resposta:** confirmada pelo usuário, uma a uma, em 2026-11-23.

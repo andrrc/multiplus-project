@@ -134,7 +134,7 @@ execução diária às 08:00 (horário de Brasília). A última tentativa e as m
 sucesso aparecem nesta página, exclusiva do ADMIN. Desde 23/11/2026 o job ignora a tarefa em
 conferência (pedido de conclusão pendente com comprovantes): o item já foi entregue e o aviso volta se
 ele for devolvido ([análise](../analises/comprovantes-etapa2-prazo.md)). O job cobre só tarefas, não subtarefas, e não existe
-aviso de "prazo vencido"; a régua da Fase 3 deve usar a mesma função, `src/lib/prazo-em-conferencia.ts`.
+aviso de "prazo vencido"; a régua da Fase 6 deve usar a mesma função, `src/lib/prazo-em-conferencia.ts`.
 
 ### N4. Conclusão de tarefa e projeto (RF-023)
 

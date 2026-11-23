@@ -20,7 +20,7 @@ Item (tarefa ou subtarefa) com pedido de conclusão pendente que tem arquivos de
 
 - Módulo: [../funcionalidades/tarefas.md](../funcionalidades/tarefas.md) (limitação L7, que esta tarefa remove), `subtarefas.md`, `notificacoes.md`, `agenda.md`.
 - **Análise aprovada** (obrigatória, muda regra de prazo): [../analises/comprovantes-etapa2-prazo.md](../analises/comprovantes-etapa2-prazo.md). Aprovada em 2026-11-23, com as dez perguntas respondidas e a devolução (opção A) confirmada pela cliente.
-- Decisões que valem aqui: pausa **derivada** do pedido pendente com arquivos, **sem migration, sem RLS e sem coluna nova**; a pausa vale só para o item que recebeu o pedido; "A iniciar" da subtarefa e a régua de avisos da Fase 3 ficam para depois, reaproveitando a função única.
+- Decisões que valem aqui: pausa **derivada** do pedido pendente com arquivos, **sem migration, sem RLS e sem coluna nova**; a pausa vale só para o item que recebeu o pedido; "A iniciar" da subtarefa e a régua de avisos da Fase 6 ficam para depois, reaproveitando a função única.
 - Protótipos de referência: `telas-novas/sistema-gestao-multiplus-colaborador-externo/00-especificacao-colaborador-externo.md` (seção 3.3) e `telas-novas/colaborador-interno/00-especificacao-colaborador-interno.md` (seção 3.3). Dados dos protótipos são ilustrativos.
 
 ## 3. Escopo
@@ -49,7 +49,7 @@ Item (tarefa ou subtarefa) com pedido de conclusão pendente que tem arquivos de
 ## 4. Dependências
 
 - Tarefas que precisam estar integradas antes: `etapa2-analise` (a análise ainda só existe na branch dela; esta branch parte dela).
-- Tarefas que dependem desta: a régua de avisos da Fase 3 e a análise do portal (anel de "obrigações em dia"), ambas ainda não criadas, e o "A iniciar" da subtarefa.
+- Tarefas que dependem desta: a régua de avisos da Fase 6 e a análise do portal (anel de "obrigações em dia"), ambas ainda não criadas, e o "A iniciar" da subtarefa.
 
 ## 5. Contratos e interfaces relevantes
 
@@ -83,7 +83,7 @@ Para quem integra consolidar (esta tarefa não edita os dois documentos):
 
 - **`planejamento-diferencas-prototipos.md`, Fase 2:** etapa 2 dos comprovantes implementada (o prazo para durante a conferência), sem migration. A limitação L7 já foi removida de `docs/funcionalidades/tarefas.md`. Restam a etapa 3 (pedido de prazo e impedimento) e a etapa 4.
 - **`decisoes-desenvolvimento.md`:** registrar (a) a regra: pausa só com pedido pendente com arquivos, vale só para o item que recebeu o pedido, devolvido ou retirado volta com o **prazo original** (confirmado pela cliente em 2026-11-23); (b) a forma de guardar: derivada do pedido, sem coluna, migration ou RLS nova; (c) a ordem: etapa 2 antes do "A iniciar" da subtarefa.
-- **Dependências para as próximas fases:** a régua de avisos da Fase 3 (escalada depois de 3 dias) e o anel de "obrigações em dia" do portal devem usar `src/lib/prazo-em-conferencia.ts`; o portal exige função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos ao cliente. O "A iniciar" da subtarefa altera filtros por `EM_ANDAMENTO` que a pausa também toca (`idsDeClientesComAtraso`, `contarMinhasPendencias`, `solicitar_conclusao`).
+- **Dependências para as próximas fases:** a régua de avisos da Fase 6 (escalada depois de 3 dias) e o anel de "obrigações em dia" do portal devem usar `src/lib/prazo-em-conferencia.ts`; o portal exige função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos ao cliente. O "A iniciar" da subtarefa altera filtros por `EM_ANDAMENTO` que a pausa também toca (`idsDeClientesComAtraso`, `contarMinhasPendencias`, `solicitar_conclusao`).
 - **Lacuna anterior:** o job de avisos de prazo cobre só tarefas (não subtarefas) e o evento de "prazo vencido" não existe.
 - **Integração com a tarefa `duplicar-projeto`:** as duas editam `src/app/(painel)/projetos/[id]/page.tsx` (linhas diferentes) e acrescentam linha ao registro em `docs/tarefas/README.md`; quem integra resolve o encaixe.
 

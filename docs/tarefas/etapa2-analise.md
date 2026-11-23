@@ -83,7 +83,7 @@ Para quem integra consolidar (esta tarefa não edita os dois documentos):
 
 - **`planejamento-diferencas-prototipos.md`, Fase 2:** análise da etapa 2 escrita em [comprovantes-etapa2-prazo.md](../analises/comprovantes-etapa2-prazo.md) e aprovada pelo usuário em 2026-11-23. Nenhum código, banco ou teste foi alterado. A tarefa de implementação ainda não foi criada.
 - **`decisoes-desenvolvimento.md`:** análise aprovada pelo usuário em 2026-11-23. Registrar a forma de guardar a pausa (derivada do pedido, sem migration), a regra de devolução (prazo original, sem somar os dias da conferência; pergunta 1, confirmada pela cliente em 2026-11-23) e a ordem (etapa 2 antes do status "A iniciar" da subtarefa).
-- **Dependências para as próximas fases:** a régua de avisos da Fase 3 (escalada depois de 3 dias) deve usar a função única de "em conferência"; o anel de "obrigações em dia" do portal exige uma função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos ao cliente; o status "A iniciar" da subtarefa altera filtros por `EM_ANDAMENTO` que esta regra também toca.
+- **Dependências para as próximas fases:** a régua de avisos da Fase 6 (escalada depois de 3 dias) deve usar a função única de "em conferência"; o anel de "obrigações em dia" do portal exige uma função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos ao cliente; o status "A iniciar" da subtarefa altera filtros por `EM_ANDAMENTO` que esta regra também toca.
 - **Lacuna anterior a esta tarefa, para o planejamento:** o job de avisos de prazo cobre só tarefas (não subtarefas) e o evento de "prazo vencido" não existe no enum `EventoNotificacao`.
 - **Reservas para a tarefa de implementação:** `src/ui/**` e `src/lib/projetos-tarefas.ts`. Com a opção recomendada não há migration.
 
