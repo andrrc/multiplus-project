@@ -79,13 +79,19 @@ O levantamento precisa achar, com `grep` e leitura, **todo lugar** onde o prazo,
 
 ## 8. Notas para o planejamento e as decisões
 
-(Preencher ao terminar.) Registrar em `planejamento-diferencas-prototipos.md`, Fase 2: análise da etapa 2 escrita e aguardando aprovação.
+Para quem integra consolidar (esta tarefa não edita os dois documentos):
+
+- **`planejamento-diferencas-prototipos.md`, Fase 2:** análise da etapa 2 escrita em [comprovantes-etapa2-prazo.md](../analises/comprovantes-etapa2-prazo.md) e aprovada pelo usuário em 2026-11-23. Nenhum código, banco ou teste foi alterado. A tarefa de implementação ainda não foi criada.
+- **`decisoes-desenvolvimento.md`:** análise aprovada pelo usuário em 2026-11-23. Registrar a forma de guardar a pausa (derivada do pedido, sem migration), a regra de devolução (prazo original, sem somar os dias da conferência; pergunta 1, a confirmar com a cliente) e a ordem (etapa 2 antes do status "A iniciar" da subtarefa).
+- **Dependências para as próximas fases:** a régua de avisos da Fase 3 (escalada depois de 3 dias) deve usar a função única de "em conferência"; o anel de "obrigações em dia" do portal exige uma função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos ao cliente; o status "A iniciar" da subtarefa altera filtros por `EM_ANDAMENTO` que esta regra também toca.
+- **Lacuna anterior a esta tarefa, para o planejamento:** o job de avisos de prazo cobre só tarefas (não subtarefas) e o evento de "prazo vencido" não existe no enum `EventoNotificacao`.
+- **Reservas para a tarefa de implementação:** `src/ui/**` e `src/lib/projetos-tarefas.ts`. Com a opção recomendada não há migration.
 
 ## 9. Resumo da implementação (preenchido ao terminar)
 
-- Commits e arquivos alterados (resumo):
-- Decisões tomadas durante o trabalho:
-- Verificações executadas e resultado (comando e saída resumida):
-- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`):
-- Pendências e riscos:
-- Pergunta em aberto para a pessoa responsável:
+- Commits e arquivos alterados (resumo): nenhum commit (a branch não foi commitada nem publicada, como pedido). Arquivos: `docs/analises/comprovantes-etapa2-prazo.md` (novo) e este arquivo (seções 8 e 9).
+- Decisões tomadas durante o trabalho: as premissas das perguntas 1 a 7, listadas ao usuário antes da escrita, foram aceitas ("Sim, escreva") como base do texto; continuam marcadas como pendentes de validação na seção 9 da análise. Recomendação central: derivar a pausa do pedido pendente com arquivos, sem migration nem RLS.
+- Verificações executadas e resultado (comando e saída resumida): `bash scripts/agentes/verificar.sh` (sem `--completo`) em 2026-11-23: arquivos sensíveis ok, typecheck ok, lint ok, 359 testes unitários passando (51 arquivos). `git status` mostra só `docs/tarefas/etapa2-analise.md` (alterado) e `docs/analises/comprovantes-etapa2-prazo.md` (novo); nada commitado, então `git diff --stat origin/staging...HEAD` está vazio por não haver commit.
+- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`): nenhuma de teste. Lacunas de produto anteriores à tarefa: o job de prazo ignora subtarefas e não existe aviso de prazo vencido (`src/lib/notificacoes.ts`, `dispararPrazoProximo`; enum `EventoNotificacao` em `prisma/schema.prisma`). Falha atual da tela do externo: o item aguardando conferência continua contado como atrasado (`tela-externo.tsx`).
+- Pendências e riscos: a pergunta 1 (devolução) pode exigir validação com a cliente e, se a resposta for "prazo restante preservado", muda a recomendação para migration e trigger. A lista de testes existentes foi montada pelos nomes e pelo tema; o conteúdo deles será conferido na implementação.
+- Pergunta em aberto para a pessoa responsável: respondida: o usuário aprovou a opção A e as recomendações das perguntas 1 a 10 em 2026-11-23. Resta confirmar a pergunta 1 (devolução) com a cliente.
