@@ -8,6 +8,7 @@ vi.mock("@/lib/semaforo", () => ({ buscarLimitesSemaforo: vi.fn(async () => ({ d
 vi.mock("@/lib/projetos-tarefas", () => ({
   listarClientesParaProjeto: vi.fn(async () => []), listarProjetos: vi.fn(async () => []),
   listarItensAgenda: vi.fn(async () => []), listarResponsaveisParaFiltro: vi.fn(async () => []),
+  contarAtrasadosAnterioresAgenda: vi.fn(async () => 0),
 }));
 import AgendaPage from "@/app/(painel)/agenda/page";
 import { listarItensAgenda } from "@/lib/projetos-tarefas";

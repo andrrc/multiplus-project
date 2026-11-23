@@ -35,6 +35,7 @@ export function VisaoAgenda({
   parametros: filtros,
   periodo,
   filtrosUi,
+  atrasadosAnteriores,
 }: {
   rotaBase: string;
   hrefTarefa: (tarefaId: string) => string;
@@ -44,6 +45,8 @@ export function VisaoAgenda({
   periodo: ReturnType<typeof intervaloDoMes>;
   /** Filtros da página (cliente, projeto, responsável, visitas), quando o perfil os tem. */
   filtrosUi?: ReactNode;
+  /** Itens abertos e vencidos de meses anteriores ao exibido; `href` leva à lista com o filtro de atrasados. */
+  atrasadosAnteriores?: { total: number; href: string };
 }) {
   const { hoje, hojeCivil, atual, inicio, fim } = periodo;
   // Gera células suficientes para semanas completas e agrupa compromissos pelo dia do mês.
@@ -109,6 +112,15 @@ export function VisaoAgenda({
     <div className="mb-6 flex min-h-10 flex-wrap items-end justify-between gap-4"><h1 className="text-2xl">Agenda</h1></div>
 
     {filtrosUi}
+    {atrasadosAnteriores && atrasadosAnteriores.total > 0 && (
+      <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-controle border border-critico/25 bg-critico-cl px-4 py-2.5 text-[13.5px] text-critico">
+        <span>
+          <strong className="font-semibold">{atrasadosAnteriores.total} {atrasadosAnteriores.total === 1 ? "item atrasado" : "itens atrasados"}</strong>
+          {atrasadosAnteriores.total === 1 ? " de meses anteriores continua aberto." : " de meses anteriores continuam abertos."}
+        </span>
+        <Link href={atrasadosAnteriores.href} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2 md:min-h-8">Ver atrasados</Link>
+      </div>
+    )}
 
     <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
       <Link href={href({ data: anterior })} aria-label="Mês anterior" className={classeNavegacao}>{SETA_ESQUERDA}</Link>

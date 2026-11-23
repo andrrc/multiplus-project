@@ -4,7 +4,7 @@
  * perfil, então só entram tarefas do escopo dele; esta página não amplia nada.
  */
 import { exigirAcessoARota } from "@/server/auth/contexto";
-import { listarItensAgendaColaborador } from "@/lib/projetos-tarefas";
+import { contarAtrasadosAnterioresColaborador, listarItensAgendaColaborador } from "@/lib/projetos-tarefas";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { intervaloDoMes, VisaoAgenda, type ParametrosAgenda } from "../agenda/visao-agenda";
 
@@ -12,7 +12,11 @@ export default async function MinhaAgendaPage({ searchParams }: { searchParams: 
   const ctx = await exigirAcessoARota("/minha-agenda");
   const parametros = await searchParams;
   const periodo = intervaloDoMes(parametros.mes);
-  const [itens, limites] = await Promise.all([listarItensAgendaColaborador(ctx, periodo.inicio, periodo.fim), buscarLimitesSemaforo(ctx)]);
+  const [itens, limites, totalAtrasadosAnteriores] = await Promise.all([
+    listarItensAgendaColaborador(ctx, periodo.inicio, periodo.fim),
+    buscarLimitesSemaforo(ctx),
+    contarAtrasadosAnterioresColaborador(ctx, periodo.inicio),
+  ]);
   // Os filtros de cliente, projeto e visita da administração não valem aqui.
   return (
     <VisaoAgenda
@@ -22,6 +26,7 @@ export default async function MinhaAgendaPage({ searchParams }: { searchParams: 
       diasAmareloAte={limites.diasAmareloAte}
       parametros={{ mes: parametros.mes, visao: parametros.visao, dia: parametros.dia }}
       periodo={periodo}
+      atrasadosAnteriores={{ total: totalAtrasadosAnteriores, href: "/minhas-tarefas?situacao=atrasado" }}
     />
   );
 }
