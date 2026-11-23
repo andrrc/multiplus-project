@@ -11,7 +11,7 @@ import type { OrdemMeusProjetos, SituacaoMeusProjetos } from "@/lib/lista-meus-p
 
 const campoClasse = "h-11 w-full min-w-0 rounded-controle border border-linha-forte bg-branco px-3 font-[family-name:var(--font-interface)] text-sm text-ink focus:border-azul focus:outline-none focus:ring-[3px] focus:ring-azul/15 disabled:opacity-60 md:h-[38px] md:w-auto";
 
-const ABAS: Array<[SituacaoMeusProjetos, string]> = [["ativos", "Ativos"], ["atraso", "Com atraso"], ["concluidos", "Concluídos"], ["todos", "Todos"]];
+const ABAS: Array<[SituacaoMeusProjetos, string]> = [["ativos", "Ativos"], ["pendencias", "Com pendências minhas"], ["atraso", "Com atraso"], ["concluidos", "Concluídos"], ["todos", "Todos"]];
 
 type Estado = { busca: string; cliente: string; situacao: SituacaoMeusProjetos; ordem: OrdemMeusProjetos };
 
@@ -78,6 +78,7 @@ export function FiltrosMeusProjetos({
         <select aria-label="Ordenar" value={estado.ordem} disabled={pendente} onChange={(evento) => aplicar({ ...estado, ordem: evento.target.value as OrdemMeusProjetos })} className={campoClasse}>
           <option value="prazo">Ordenar por prazo</option>
           <option value="abertas">Ordenar por tarefas abertas</option>
+          <option value="minhas">Ordenar por minhas pendências</option>
           <option value="nome">Ordenar por nome</option>
         </select>
       </div>

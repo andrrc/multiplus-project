@@ -4,7 +4,6 @@ import { listarProjetosAtribuidos } from "@/lib/projetos-tarefas";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { buscarLimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
-import { calcularDiasRestantes } from "@/lib/datas";
 import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 import { AnelProgresso, StatusPonto, Vazio } from "@/ui/lista";
 import { interpretarBuscaLista } from "@/lib/busca-lista";
@@ -54,7 +53,6 @@ export default async function MeusProjetosPage({ searchParams }: { searchParams:
           {visiveis.map((p) => {
             const conclusao = calcularPercentualConclusao(p.tarefas);
             const abertas = p.tarefas.filter(tarefaEmAberto);
-            const atrasadas = abertas.filter((t) => t.prazo && calcularDiasRestantes(t.prazo) < 0).length;
             // A próxima entrega é a tarefa em aberto com o prazo mais próximo.
             const proxima = abertas.filter((t) => t.prazo).sort((a, b) => a.prazo!.getTime() - b.prazo!.getTime())[0];
             return (
@@ -79,9 +77,9 @@ export default async function MeusProjetosPage({ searchParams }: { searchParams:
                 </p>
                 <dl className="grid grid-cols-3 border-t border-linha">
                   {[
-                    { rotulo: "Tarefas abertas", valor: abertas.length, alerta: false },
-                    { rotulo: "Atrasadas", valor: atrasadas, alerta: atrasadas > 0 },
-                    { rotulo: "Concluídas", valor: p.tarefas.filter((t) => t.status === "CONCLUIDO").length, alerta: false },
+                    { rotulo: "Minhas pendências", valor: p.minhasPendencias, alerta: false },
+                    { rotulo: "Minhas atrasadas", valor: p.minhasAtrasadas, alerta: p.minhasAtrasadas > 0 },
+                    { rotulo: "Abertas na equipe", valor: abertas.length, alerta: false },
                   ].map((numero) => (
                     <div key={numero.rotulo} className="min-w-0 border-l border-linha px-3.5 py-3 first:border-l-0">
                       <dt className="truncate text-xs text-cinza">{numero.rotulo}</dt>
