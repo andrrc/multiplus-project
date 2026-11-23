@@ -8,7 +8,7 @@
 | **Agente responsável** | codex |
 | **Branch** | `codex/duplicar-projeto` (criada a partir de `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/codex-duplicar-projeto` |
-| **Estado** | aprovada |
+| **Estado** | implementada, aguardando revisão |
 | **Quem aprovou o escopo** | o usuário, em 2026-11-23 (as cinco decisões da seção 2) |
 | **Revisor** | claude |
 | **Criada em** | 2026-11-23 |
@@ -78,13 +78,13 @@ subtarefas do original em estado inicial, **sem datas e sem comprovantes enviado
 
 ## 6. Critérios de aceite
 
-- [ ] Só a administração vê o botão e só ela executa a duplicação (servidor e RLS); interno, externo e cliente recebem erro de permissão.
-- [ ] O projeto novo fica no **mesmo cliente**, com `status` inicial e sem datas, e recebe o próximo `numeroLocal` do cliente.
-- [ ] Tarefas e subtarefas ativas do original são copiadas, em estado inicial, com os campos da decisão 2, **sem** datas, comprovantes enviados, pedidos de conclusão, comentários, responsáveis e recorrência (a tarefa copiada não é recorrente).
-- [ ] A cópia é atômica: se algo falhar no meio, nada é criado.
-- [ ] O projeto original, as tarefas e os arquivos dele não mudam.
-- [ ] Projeto desativado, inexistente ou de outro cliente não é duplicado (erro claro).
-- [ ] Funciona em 375 px e no desktop, sem rolagem horizontal.
+- [x] Só a administração vê o botão e só ela executa a duplicação (servidor e RLS); interno, externo e cliente recebem erro de permissão.
+- [x] O projeto novo fica no **mesmo cliente**, com `status` inicial e sem datas, e recebe o próximo `numeroLocal` do cliente.
+- [x] Tarefas e subtarefas ativas do original são copiadas, em estado inicial, com os campos da decisão 2, **sem** datas, comprovantes enviados, pedidos de conclusão, comentários, responsáveis e recorrência (a tarefa copiada não é recorrente).
+- [x] A cópia é atômica: se algo falhar no meio, nada é criado.
+- [x] O projeto original, as tarefas e os arquivos dele não mudam.
+- [x] Projeto desativado, inexistente ou de outro cliente não é duplicado (erro claro).
+- [x] Funciona em 375 px e no desktop, sem rolagem horizontal.
 
 ## 7. Testes obrigatórios
 
@@ -96,13 +96,13 @@ subtarefas do original em estado inicial, **sem datas e sem comprovantes enviado
 
 ## 8. Notas para o planejamento e as decisões
 
-(Preencher ao terminar.) Registrar em `planejamento-diferencas-prototipos.md`, Fase 4: "Duplicar projeto" feito, com o que é copiado. Em `decisoes-desenvolvimento.md`: as decisões 1 a 5.
+- A Fase 4 pode registrar “Duplicar projeto” como concluído. A administração confirma a cópia de um projeto ativo no mesmo cliente e abre o resultado com o nome “Cópia de <nome do original>”. A cópia inclui tarefas e subtarefas ativas, descrições, etiquetas, configuração de comprovantes, antecedência e permissão de criar subtarefas.
+- As decisões 1 a 5 da seção 2 foram aplicadas. Na Fase 7, revisar o status inicial da subtarefa duplicada quando entrar “A iniciar” para subtarefas.
 
-## 9. Resumo da implementação (preenchido ao terminar)
+## 9. Resumo da implementação
 
-- Commits e arquivos alterados (resumo):
-- Decisões tomadas durante o trabalho:
-- Verificações executadas e resultado (comando e saída resumida):
-- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`):
-- Pendências e riscos:
-- Pergunta em aberto para a pessoa responsável:
+- **Arquivos alterados:** serviço em `src/lib/duplicar-projeto.ts`, entrada no detalhe e confirmação em `src/app/(painel)/projetos/[id]/`, testes em `tests/unit/`, `tests/integration/` e `tests/browser/`, além da página do módulo e deste resumo.
+- **Decisões de implementação:** confirmação em página dedicada. Prisma grava diretamente dentro de `comContextoDeUsuario`. Os valores padrão definem os status e o banco atribui números e autoria com os gatilhos existentes. A cópia não gera avisos.
+- **Verificações:** `bash scripts/agentes/verificar.sh` passou com typecheck, lint e 360 testes unitários. `bash scripts/agentes/verificar.sh --completo` passou com 360 testes unitários, 343 de integração e smoke e 8 jornadas de navegador. A jornada da tarefa verifica cancelamento, redirecionamento e ausência de rolagem horizontal em 375 px e desktop.
+- **Falha preexistente:** na primeira tentativa de `npm run test:browser`, o Next interrompeu a inicialização para emitir o aviso de segurança já documentado no onboarding. A repetição automática do script passou. A origem da interrupção está registrada no projeto.
+- **Pendência:** revisar o status inicial das subtarefas duplicadas junto com a Fase 7.

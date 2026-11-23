@@ -73,6 +73,7 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
             : <Etiqueta tom="apagado">Desativado</Etiqueta>}
           {projeto.ativo && <Link href={urlExportacaoPdf("/api/exportacao-pdf/projeto", { id })} className={botaoSecundario} title="Exporta o resumo do projeto e as tarefas ativas, sem o valor contratado">Exportar PDF</Link>}
           <Link href={`/projetos/${id}/editar`} className={botaoSecundario}>Editar</Link>
+          {projeto.ativo && <Link href={`/projetos/${id}/duplicar`} className={botaoSecundario}>Duplicar</Link>}
           {projeto.ativo ? (
             <BotaoConfirmacao
               rotulo="Desativar"
