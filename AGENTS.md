@@ -23,12 +23,34 @@ Antes de trabalhar, leia o estado atual do projeto. Ele fica nos arquivos, não 
 - `docs/decisoes-desenvolvimento.md`: decisões já tomadas, em ordem de data. Não as refaça.
 - `docs/funcionalidades/<modulo>.md`: como cada módulo funciona, com limitações e histórico.
 - `docs/pendencias-antes-producao.md`: o que precisa ser resolvido antes de ir para produção.
+- `docs/colaboracao-multiagente.md` e `docs/tarefas/`: como Claude Code e Codex trabalham em paralelo.
 - `git log --oneline -20`: o que foi feito por último.
 
 Mudança que altera dado, permissão ou regra de prazo começa por uma análise em
 `docs/analises/`, aprovada pelo usuário antes do código. Ao terminar um trabalho, atualize no
 mesmo commit o `planejamento-diferencas-prototipos.md` e a página do módulo em
-`docs/funcionalidades/`, para a próxima pessoa ou ferramenta saber o que mudou.
+`docs/funcionalidades/`, para a próxima pessoa ou ferramenta saber o que mudou. Em tarefa
+multiagente, o planejamento e as decisões são consolidados por quem integra (veja abaixo).
+
+## Trabalho com vários agentes
+
+Claude Code e Codex leem este mesmo arquivo (o `CLAUDE.md` só o importa). Quando os dois trabalham
+ao mesmo tempo, valem o protocolo em `docs/colaboracao-multiagente.md` e, para o Codex, o
+`docs/onboarding-codex.md`. Em resumo:
+
+- Cada agente recebe **uma tarefa** em `docs/tarefas/<id>.md`, com escopo, arquivos permitidos e
+  proibidos, dependências e critérios de aceite. Sem esse arquivo, a tarefa não começa.
+- Branch `claude/<id>` ou `codex/<id>`, a partir de `origin/staging`, em um worktree próprio fora do
+  projeto (`bash scripts/agentes/novo-worktree.sh <claude|codex> <id>`). Nunca commite em `staging`
+  ou `main`, nunca faça merge e nunca edite a branch ou a tarefa do outro agente.
+- Os arquivos compartilhados (schema e migrations, `navegacao.ts`, `globals.css`, `src/ui/**`,
+  `package*.json`, configuração de testes, CI, `ops/`, este arquivo) precisam ser **reservados** no
+  registro de tarefas antes de qualquer edição. Precisou de um que não reservou: pare e pergunte.
+- Só uma suíte de banco por vez na máquina (`bash scripts/agentes/verificar.sh --completo` faz a trava).
+- A integração é por Pull Request para `staging`, revisada e aprovada pelo usuário. Revisão cruzada gera
+  relatório (`docs/tarefas/MODELO-DE-REVISAO.md`), nunca commit na branch revisada.
+- Conflito de arquitetura ou de regra de negócio, e qualquer item do rol de "decisões que exigem
+  aprovação" (seção 12 do protocolo), vai para o usuário. Não decida sozinho.
 
 ## Comandos
 
@@ -47,7 +69,9 @@ e configure `TEST_DATABASE_URL` e `TEST_APP_DATABASE_URL` no `.env`.
 
 ## Git
 
-- Trabalhe direto na branch `staging`. Não crie branches nem worktrees.
+- **Agente único:** trabalhe direto na branch `staging`; não crie branches nem worktrees por conta
+  própria. Branch e worktree só existem em tarefa multiagente atribuída, criados pelo script de
+  `scripts/agentes/` (veja "Trabalho com vários agentes").
 - `main` é produção: não faça merge, push nem PR para ela sem pedido explícito.
 - Nunca use `git push --force` nem reescreva commits já publicados.
 - Adicione arquivos pelo caminho (`git add caminho`), nunca `git add -A`, `.` ou `commit -a`.
