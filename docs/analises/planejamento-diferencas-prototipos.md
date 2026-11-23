@@ -1,7 +1,7 @@
 # Planejamento: diferenças restantes entre os protótipos e o sistema
 
 - **Data:** 2026-11-17
-- **Status:** proposta para aprovação. Nada aqui foi implementado.
+- **Status:** em andamento (atualizado em 2026-11-23). Os itens marcados "Feito" já foram implementados; o resto segue como proposta.
 - **Origem:** lista de diferenças que sobraram depois da migração visual de `telas-novas/` e da etapa 1 dos comprovantes ([interface](../funcionalidades/interface.md), [mapeamento](../mapeamento-telas-talita.md)).
 - **Aviso:** a classificação de cada item é leitura da documentação e do schema, não de cada tela. Antes de começar um item, a análise dele confirma o que existe no código.
 
@@ -37,7 +37,7 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 | Faixa de atrasados de meses anteriores (é da agenda, não dos avisos) | **Feito em 23/11/2026** | Na agenda da administração e na do interno; "Ver atrasados" abre a lista. |
 | Cobrar responsável | C | Cria aviso manual para outra pessoa: limite de uso, quem pode cobrar quem, registro. |
 | Histórico automático junto dos comentários | B | Registrar eventos (mudou status, prazo, responsável). Conferir se já há tabela de auditoria aproveitável. |
-| Duplicar projeto | B/D | Definir o que copia (tarefas, subtarefas, comprovantes, datas) e como ficam os IDs hierárquicos. |
+| Duplicar projeto | **Feito em 23/11/2026** | Só a administração. Cria "Cópia de <nome>" no mesmo cliente, com as tarefas e subtarefas ativas em estado inicial, sem datas, responsáveis, recorrência, comprovantes enviados, pedidos, comentários, documentos, valor nem proposta. A numeração vem dos gatilhos existentes e não há migration nem aviso. A subtarefa nasce "Em andamento" até a Fase 7. |
 | Usuários: "Último acesso" | **Feito em 18/11/2026** | Gravado no login, visível só à administração ([análise](ultimo-acesso-e-cadastro-incompleto.md)). A data é a do login, não a do último uso. |
 | Usuários: lista única de clientes e externos e filtro por empresa | **Já existia** (16/11/2026) | A lista mostra clientes e externos, com coluna Empresa e filtro por empresa. Falta só escolher a empresa antes do perfil no cadastro (B/D). |
 | Clientes: filtro "Cadastro incompleto" | **Feito em 18/11/2026** | Sem segmento ou sem cidade, como no protótipo. |
@@ -60,7 +60,7 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 
 | Item | Classe | Observação |
 |---|---|---|
-| Parar o prazo durante a conferência e pausa de prazo | C | Etapa 2: mexe em semáforo, atrasos, agenda, portal e avisos. A pausa de prazo do interno entra junto, porque é a mesma regra. |
+| Parar o prazo durante a conferência e pausa de prazo | **Feito em 23/11/2026** | Etapa 2 ([análise](comprovantes-etapa2-prazo.md)): o item com pedido pendente com comprovantes sai de atraso, de "vence em breve" e dos avisos e mostra "Enviado em dd/mm". A pausa do interno é a mesma regra (só vale com comprovante). Derivada do pedido, sem migration nem RLS nova; o portal não muda. |
 | Pedido de prazo e impedimento | C | Etapa 3: quem decide, o que acontece com o prazo. |
 | Mensagens, página de Instruções, foto de exemplo | B/C | Etapa 4: mensagens restritas exigem análise de permissão. |
 
@@ -81,7 +81,7 @@ Regras que valem para todas as fases (AGENTS.md): trabalhar na `staging`, um com
 |---|---|---|
 | Telefone editável pelo próprio usuário | C | `Usuario.telefone` já existe; falta permitir a edição pelo dono. Segue a análise de formatação de telefone e o mascaramento. |
 | Tabela "Avisos que você recebe" | B/C | Preferências individuais por tipo e canal; hoje as preferências são por perfil. |
-| Status "A iniciar" de subtarefa | C | Muda o enum, o progresso, o semáforo e os testes. `StatusSubtarefa` hoje tem só Em andamento, Concluído e Cancelado. |
+| Status "A iniciar" de subtarefa | C | Muda o enum, o progresso, o semáforo e os testes. `StatusSubtarefa` hoje tem só Em andamento, Concluído e Cancelado. Ao entrar, revisar a cópia de projeto (a subtarefa copiada passa a nascer "A iniciar"), `solicitar_conclusao` (só aceita subtarefa `EM_ANDAMENTO`), `idsDeClientesComAtraso` e `contarMinhasPendencias`. |
 
 ## 3. Fases propostas
 
@@ -101,6 +101,8 @@ Itens: "Próxima ocorrência", "Atribuição pendente", etiquetas e papel do res
 - Estimativa: a fase mais rápida; cada tela é pequena.
 
 ### Fase 2: regras de prazo e comprovantes (etapas 2, 3 e 4)
+**Andamento (23/11/2026): etapa 2 concluída.** A análise foi aprovada no mesmo dia, com a devolução mantendo o prazo original (confirmada pela Talita), e a implementação saiu sem migration, com a função única `src/lib/prazo-em-conferencia.ts` ([tarefa](../tarefas/etapa2-prazo.md)). Faltam as etapas 3 (pedido de prazo e impedimento) e 4 (Instruções, foto de exemplo e mensagens).
+
 Itens: parar o prazo durante a conferência, pausa de prazo, pedido de prazo e impedimento, Instruções, foto de exemplo e mensagens.
 - Segue a ordem já definida na análise dos comprovantes: etapa 2 (com análise própria da regra de prazo), depois 3 e 4.
 - Depende das respostas da Fase 0.
@@ -112,9 +114,9 @@ Itens: abas "Minhas / Da equipe", Exportar PDF do colaborador, "Novo" com mais o
 - Testes de RLS para o perfil permitido e o negado.
 
 ### Fase 4: administração (dado novo)
-Itens: histórico automático, cobrar responsável, avisos com contexto e ações diretas, duplicar projeto e escolha da empresa antes do perfil no cadastro de usuário. ("Cadastro incompleto" e "Último acesso" foram feitos em 18/11/2026.)
+Itens: histórico automático, cobrar responsável, avisos com contexto e ações diretas, duplicar projeto e escolha da empresa antes do perfil no cadastro de usuário. ("Cadastro incompleto" e "Último acesso" foram feitos em 18/11/2026, e "Duplicar projeto" em 23/11/2026.)
 - Começar pelo histórico automático, porque avisos com contexto e outros itens podem reaproveitá-lo.
-- Duplicar projeto e Usuários com empresa exigem modelo definido antes (classe D).
+- Usuários com empresa exige modelo definido antes (classe D).
 
 ### Fase 5: portal do cliente
 Itens: unidades e seletor, Drive, trilha de etapas e atualizações, Relatórios e "Gerar relatório", "Ver como cliente".
@@ -126,7 +128,7 @@ Itens: régua de avisos, escalonamento, resumo mensal, "Avisos que você recebe"
 - Mexe no agendador de avisos e nas notificações em tempo real. Reaproveitar as análises `agendador-avisos-prazo` e `controle-total-notificacoes`.
 
 ### Fase 7: status "A iniciar" de subtarefa
-Item isolado porque muda o enum e vários cálculos (progresso, semáforo, painéis). Fazer só se a Talita confirmar que precisa; pode andar junto da Fase 2 se a regra de prazo já estiver aberta.
+Item isolado porque muda o enum e vários cálculos (progresso, semáforo, painéis). A Talita confirmou que precisa (23/11/2026). A etapa 2 já foi feita, então esta fase reaproveita a função única de prazo e revisa a cópia de projeto (a subtarefa copiada nasce "Em andamento" até aqui).
 
 ## 4. Perguntas para a Talita
 
@@ -148,10 +150,11 @@ Item isolado porque muda o enum e vários cálculos (progresso, semáforo, pain�
 - **Guarda das fotos:** sempre; não há limpeza automática. Falta definir backup e espaço em disco (ver [pendências antes da produção](../pendencias-antes-producao.md)).
 - **Pedido de prazo e impedimento:** decide o coordenador do item, a administração ou o interno do projeto (etapa 3).
 - **Regras já implementadas da etapa 1:** confirmadas em 2026-11-23 (tipos de arquivo, até 20 arquivos de 10 MB por envio e devolução com motivo obrigatório).
+- **Devolução na etapa 2:** o prazo volta com a data original, sem somar os dias da conferência (confirmado pela Talita em 2026-11-23, [análise](comprovantes-etapa2-prazo.md)).
 
 ## 5. Riscos e dependências
 
-- **Prazo:** etapa 2, pausa de prazo e "A iniciar" mexem nas mesmas regras de semáforo e progresso. Planejar juntas evita refazer testes duas vezes.
+- **Prazo:** a etapa 2 (inclusive a pausa do interno) foi feita em 23/11/2026, com a função única `src/lib/prazo-em-conferencia.ts`. O "A iniciar" da subtarefa e a régua de avisos da Fase 6 devem reaproveitá-la: o job de prazo hoje cobre só tarefas e não existe aviso de "prazo vencido".
 - **RLS:** todo item que amplia leitura (Da equipe, Quem acessa, Relatórios) exige testar o perfil negado. Itens de portal têm risco de vazar dado interno.
 - **Migrations:** o timestamp de cada migration nova precisa ser posterior à última da `origin/staging`; migration publicada é imutável.
 - **Dependência de respostas:** as Fases 2, 4, 5 e 6 só andam depois da Fase 0.
