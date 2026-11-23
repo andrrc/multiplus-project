@@ -185,12 +185,12 @@ describe("visão do colaborador", () => {
 
   it("o interno responsável pela subtarefa vê o instante do envio dela", async () => {
     const dele = await ownerDb.subtarefa.create({ data: { tarefaId: tarefaMae.id, titulo: "Subtarefa do interno", prazo: VENCIDO, comprovanteExigido: true, comprovanteQuantidade: 1, atribuidoAUsuarioId: interno.id } });
-    const comArquivo = await enviarPedido({ subtarefaId: dele.id }, 1);
+    await enviarPedido({ subtarefaId: dele.id }, 1);
     try {
       const lista = await listarSubtarefasAtribuidas(ctxInterno());
       expect(lista.find((s) => s.titulo === "Subtarefa do interno")?.emConferenciaDesde).toBeInstanceOf(Date);
     } finally {
-      await ownerDb.solicitacaoConclusao.delete({ where: { id: comArquivo.id } });
+      // Os pedidos e os arquivos da subtarefa saem junto (cascata).
       await ownerDb.subtarefa.delete({ where: { id: dele.id } });
     }
   });
@@ -238,6 +238,7 @@ describe("aviso de prazo próximo", () => {
   beforeEach(async () => {
     await ownerDb.registroEnvioPrazo.deleteMany();
     await ownerDb.notificacao.deleteMany();
+    await ownerDb.preferenciaNotificacao.update({ where: { perfil_evento: { perfil: "ADMIN", evento: "PRAZO_PROXIMO" } }, data: { email: true, inApp: true } });
   });
 
   afterEach(async () => {

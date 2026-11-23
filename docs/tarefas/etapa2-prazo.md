@@ -8,7 +8,7 @@
 | **Agente responsável** | claude |
 | **Branch** | `claude/etapa2-prazo` (criada a partir de `claude/etapa2-analise`, porque a análise ainda não está em `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/claude-etapa2-prazo` |
-| **Estado** | em andamento |
+| **Estado** | em andamento (código e testes unitários prontos; integração e navegador pendentes de execução) |
 | **Quem aprovou o escopo** | o usuário, em 2026-11-23, ao aprovar a análise e pedir o início da implementação |
 | **Revisor** | codex |
 
@@ -79,13 +79,19 @@ Item (tarefa ou subtarefa) com pedido de conclusão pendente que tem arquivos de
 
 ## 8. Notas para o planejamento e as decisões
 
-(Preencher ao terminar.) Registrar em `planejamento-diferencas-prototipos.md`, Fase 2: etapa 2 dos comprovantes implementada; remover a limitação L7 da página de tarefas.
+Para quem integra consolidar (esta tarefa não edita os dois documentos):
+
+- **`planejamento-diferencas-prototipos.md`, Fase 2:** etapa 2 dos comprovantes implementada (o prazo para durante a conferência), sem migration. A limitação L7 já foi removida de `docs/funcionalidades/tarefas.md`. Restam a etapa 3 (pedido de prazo e impedimento) e a etapa 4.
+- **`decisoes-desenvolvimento.md`:** registrar (a) a regra: pausa só com pedido pendente com arquivos, vale só para o item que recebeu o pedido, devolvido ou retirado volta com o **prazo original** (confirmado pela cliente em 2026-11-23); (b) a forma de guardar: derivada do pedido, sem coluna, migration ou RLS nova; (c) a ordem: etapa 2 antes do "A iniciar" da subtarefa.
+- **Dependências para as próximas fases:** a régua de avisos da Fase 3 (escalada depois de 3 dias) e o anel de "obrigações em dia" do portal devem usar `src/lib/prazo-em-conferencia.ts`; o portal exige função booleana `SECURITY DEFINER`, sem abrir leitura de pedidos ao cliente. O "A iniciar" da subtarefa altera filtros por `EM_ANDAMENTO` que a pausa também toca (`idsDeClientesComAtraso`, `contarMinhasPendencias`, `solicitar_conclusao`).
+- **Lacuna anterior:** o job de avisos de prazo cobre só tarefas (não subtarefas) e o evento de "prazo vencido" não existe.
+- **Integração com a tarefa `duplicar-projeto`:** as duas editam `src/app/(painel)/projetos/[id]/page.tsx` (linhas diferentes) e acrescentam linha ao registro em `docs/tarefas/README.md`; quem integra resolve o encaixe.
 
 ## 9. Resumo da implementação (preenchido ao terminar)
 
-- Commits e arquivos alterados (resumo):
-- Decisões tomadas durante o trabalho:
-- Verificações executadas e resultado (comando e saída resumida):
-- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`):
-- Pendências e riscos:
-- Pergunta em aberto para a pessoa responsável:
+- Commits e arquivos alterados (resumo): `c7cbf5a` (esta tarefa), `1d2ba62` (código e testes: função única `src/lib/prazo-em-conferencia.ts`; regras puras em `situacao-prazo`, `lista-tarefas`, `regras-projetos-tarefas`, `agenda-itens`, `painel`, `lista-meus-projetos`, `exportacao-pdf-tarefas`; consultas em `projetos-tarefas`, `clientes`, `notificacoes`; selo em `src/ui/indicador-dias-restantes.tsx` e `src/ui/lista.tsx`; 11 telas; `tests/unit/prazo-em-conferencia.unit.test.ts` e `tests/integration/prazo-em-conferencia.integration.test.ts`) e o commit de documentação (funcionalidades de tarefas, subtarefas, notificações, agenda e área do cliente, SRS RF-009, esta tarefa).
+- Decisões tomadas durante o trabalho: a branch parte de `claude/etapa2-analise` (desvio do protocolo, que manda partir de `origin/staging`), porque a análise aprovada ainda não está em `origin/staging`; `ItemAgenda.emConferenciaDesde` ficou opcional para não alterar fixtures de testes existentes; o item em conferência aparece só em "Todos" nas listas, sem botão de filtro novo (pergunta 5 da análise); a classe da agenda usa `bg-azul-cl text-azul-esc` (tokens já existentes).
+- Verificações executadas e resultado (comando e saída resumida): `npx tsc --noEmit` ok; `npm run lint` ok; `npx vitest run --config vitest.unit.config.mts` com 52 arquivos e 381 testes passando (359 anteriores mais 22 novos), sem alterar nenhuma asserção existente. **Não executadas:** a suíte de integração e smoke e as jornadas de navegador, porque o Postgres local (127.0.0.1:5434) estava fora do ar (Docker Desktop não estava rodando: `bash scripts/agentes/verificar.sh --completo` falhou com `ECONNREFUSED 127.0.0.1:5434`). O teste de integração novo foi escrito mas **ainda não foi executado**.
+- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`): nenhuma nos testes que rodaram. O servidor de desenvolvimento do Next recusou subir na primeira tentativa das jornadas (recusa conhecida do protocolo, seção 10).
+- Pendências e riscos: (1) rodar `bash scripts/agentes/verificar.sh --completo` com o Postgres no ar e corrigir o que o teste de integração novo acusar; (2) ampliar `tests/browser/comprovantes.spec.ts` (externo envia item atrasado e vê "Enviado em dd/mm"; devolvido volta a "Atrasado"; 375 px e desktop), ainda não feito; (3) não há teste unitário do texto do PDF (`indicadorPrazo` não é exportado); (4) conferir visualmente a tela do externo, a agenda e o painel a 375 px e no desktop; (5) caso-limite documentado na análise: externo que só tem uma subtarefa e vê a tarefa-mãe não lê o pedido da tarefa (RLS), então o prazo da tarefa-mãe segue normal para ele.
+- Pergunta em aberto para a pessoa responsável: pode subir o Docker Desktop (ou autorizar que eu o inicie) para eu rodar a suíte completa e fechar os itens (1) e (2)?

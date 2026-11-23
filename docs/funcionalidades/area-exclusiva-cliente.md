@@ -10,6 +10,8 @@ O cliente entra com as credenciais já criadas pela equipe e acompanha os projet
 
 O portal mostra status, datas, última movimentação, progresso dos projetos, tarefas, prazos, responsáveis e progresso agregado de subtarefas. O cliente não vê comentários, valor contratado nem conteúdo de subtarefa. A equipe continua usando `/meus-projetos` para sua própria visão.
 
+**Prazo em conferência (23/11/2026).** O portal não muda: ele mostra só o semáforo do projeto e a data da tarefa, e o projeto não tem pedido de conclusão. O cliente continua sem ler pedidos de conclusão nem arquivos de comprovante (RLS). Quando o anel de "obrigações em dia" do protótipo for feito, deve usar uma função booleana `SECURITY DEFINER`, sem data, autor, motivo ou arquivo ([análise](../analises/comprovantes-etapa2-prazo.md)).
+
 ## Quem pode fazer o quê
 
 | Ação | ADMIN | ADMIN_INTERNO | ADMIN_EXTERNO | CLIENTE |
