@@ -23,7 +23,8 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 
 | ID | Título | Agente | Branch | Estado | Arquivos compartilhados reservados | Revisor | Atualizado em |
 |---|---|---|---|---|---|---|---|
-| — | Nenhuma tarefa multiagente registrada | — | — | — | — | — | 2026-11-23 |
+| [etapa2-analise](etapa2-analise.md) | Análise da etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | `claude/etapa2-analise` | proposta | nenhum | codex | 2026-11-23 |
+| [duplicar-projeto](duplicar-projeto.md) | Duplicar projeto | codex | `codex/duplicar-projeto` | proposta | nenhum | claude | 2026-11-23 |
 
 ## Tarefas encerradas
 
