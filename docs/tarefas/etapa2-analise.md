@@ -8,8 +8,8 @@
 | **Agente responsável** | claude |
 | **Branch** | `claude/etapa2-analise` (criada a partir de `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/claude-etapa2-analise` |
-| **Estado** | proposta |
-| **Quem aprovou o escopo** | pendente (aguarda o usuário) |
+| **Estado** | aprovada |
+| **Quem aprovou o escopo** | o usuário, em 2026-11-23, ao pedir o início da tarefa |
 | **Revisor** | codex (revisão do texto e da cobertura do levantamento) |
 | **Criada em** | 2026-11-23 |
 
