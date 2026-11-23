@@ -120,13 +120,13 @@ Seguir `telas-novas/sistema-gestao-multiplus-colaborador-externo/01-minhas-taref
 
 ## 10. Perguntas em aberto
 
-Perguntas 1 a 6 foram enviadas à Talita em 2026-11-16 e aguardam resposta; a recomendação vale até lá.
+Perguntas 1 a 6 foram enviadas à Talita em 2026-11-16. Em 2026-11-23 chegaram as respostas das perguntas 4, 5 e 6; as perguntas 1, 2 e 3 (tipos, limites de arquivo e devolução com motivo) foram confirmadas no mesmo dia.
 
-1. **Quais tipos de arquivo?** Recomendação: fotos (JPEG, PNG, WebP), PDF, planilhas e documentos do Office, como na especificação. — **Resposta:** pendente (Talita).
-2. **Quantos arquivos por envio e de que tamanho?** Recomendação: até 20 por envio, 10 MB cada, com a foto reduzida no navegador. — **Resposta:** pendente (Talita).
-3. **Quem confere e a devolução exige motivo?** Recomendação: administração e interno do projeto, com motivo obrigatório quando o item exige comprovante. Muda a regra aprovada em 2026-10-22, em que só a administração decide. — **Resposta:** em 2026-11-17, aprovada a recomendação (você); a confirmação da Talita segue pendente. Implementado: o motivo é obrigatório quando o pedido tem comprovantes.
-4. **O prazo para de contar durante a conferência?** Recomendação: sim, só quando o pedido tem comprovante (etapa 2). — **Resposta:** pendente (Talita).
-5. **Por quanto tempo guardar as fotos?** Recomendação: decidir antes da produção; até lá, guardar sem apagar. A limpeza automática, se houver, entra como etapa à parte. — **Resposta:** pendente (Talita).
-6. **Quem decide pedido de prazo e impedimento?** Recomendação: o coordenador do item (administração ou interno do projeto), como na especificação (etapa 3). — **Resposta:** pendente (Talita).
+1. **Quais tipos de arquivo?** Recomendação: fotos (JPEG, PNG, WebP), PDF, planilhas e documentos do Office, como na especificação. — **Resposta:** em 2026-11-23, confirmado (implementado na etapa 1).
+2. **Quantos arquivos por envio e de que tamanho?** Recomendação: até 20 por envio, 10 MB cada, com a foto reduzida no navegador. — **Resposta:** em 2026-11-23, confirmado (implementado na etapa 1).
+3. **Quem confere e a devolução exige motivo?** Recomendação: administração e interno do projeto, com motivo obrigatório quando o item exige comprovante. Muda a regra aprovada em 2026-10-22, em que só a administração decide. — **Resposta:** em 2026-11-17, aprovada a recomendação (você); confirmada em 2026-11-23. Implementado: o motivo é obrigatório quando o pedido tem comprovantes.
+4. **O prazo para de contar durante a conferência?** Recomendação: sim, só quando o pedido tem comprovante (etapa 2). — **Resposta:** em 2026-11-23, sim, só quando o pedido tem comprovante (etapa 2).
+5. **Por quanto tempo guardar as fotos?** Recomendação: decidir antes da produção; até lá, guardar sem apagar. A limpeza automática, se houver, entra como etapa à parte. — **Resposta:** em 2026-11-23, sempre; sem limpeza automática. Backup e espaço em disco seguem nas pendências de produção.
+6. **Quem decide pedido de prazo e impedimento?** Recomendação: o coordenador do item (administração ou interno do projeto), como na especificação (etapa 3). — **Resposta:** em 2026-11-23, o coordenador do item: administração ou interno do projeto (etapa 3).
 7. **Começar pela etapa 1 e deixar o prazo (etapa 2) para depois?** Recomendação: sim. A etapa 1 não altera nenhuma regra de prazo e já resolve o envio e a conferência. — **Resposta:** em 2026-11-17, aprovada a recomendação.
 8. **Foto de exemplo e "o que enviar" na etapa 1 ou 4?** Recomendação: a lista "o que enviar" na etapa 1 (a tela de envio a usa); a foto de exemplo na etapa 4. — **Resposta:** em 2026-11-17, aprovada a recomendação.

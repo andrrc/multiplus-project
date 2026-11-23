@@ -132,15 +132,22 @@ Item isolado porque muda o enum e vários cálculos (progresso, semáforo, pain�
 
 1. ~~**Último acesso**~~ — decidido e feito em 18/11/2026 (você).
 2. ~~**Cadastro incompleto**~~ — decidido e feito em 18/11/2026: sem segmento ou sem cidade.
-3. **Duplicar projeto:** o que deve ser copiado (tarefas, subtarefas, datas, comprovantes exigidos)?
-4. **Colaborador "Da equipe":** o interno deve ver tarefas de outros colaboradores do mesmo projeto? Só leitura?
+3. ~~**Duplicar projeto**~~ — respondido em 2026-11-23: copia as tarefas e as subtarefas com status "A iniciar", sem datas e sem comprovantes enviados.
+4. ~~**Colaborador "Da equipe"**~~ — respondido em 2026-11-23: sim, como no protótipo `colaborador-interno/02-minhas-tarefas` (aba com tudo o que está aberto nos projetos dele, só leitura, com "Conferir" nos comprovantes de externos e "Cobrar" no externo atrasado). **Muda permissão de leitura: precisa de análise aprovada antes do código (Fase 3).**
 5. ~~**Concluir direto**~~ — o protótipo já responde: o interno continua enviando para confirmação.
-6. **Unidades do cliente:** o que é uma unidade (filial, obra, local)? Um projeto pertence a uma unidade?
-7. **Drive:** pasta compartilhada por cliente? Quem coloca o link?
-8. **Trilha de etapas:** as etapas são fixas por tipo de projeto ou definidas por projeto? O cliente vê comentários?
-9. **Relatórios:** o que entra no PDF do cliente, por período e por unidade? Há resumo mensal automático?
-10. **Régua de avisos e escalonamento:** quando avisar e quem recebe a escalada quando o responsável não age?
-11. **Subtarefa "A iniciar":** ela precisa desse status, ou "Em andamento" basta?
+6. ~~**Unidades do cliente**~~ — respondido em 2026-11-23: **unidade é o CNPJ** e **cada projeto pertence a um CNPJ** do cliente. Hoje o cliente tem um único CNPJ ou CPF, então isto pede dado novo (CNPJs do cliente e o vínculo do projeto) e análise antes do código (Fase 5).
+7. ~~**Drive**~~ — respondido em 2026-11-23: o link da pasta fica na ficha do cliente, preenchido pela administração, e aparece no portal.
+8. ~~**Trilha de etapas**~~ — respondido em 2026-11-23: as etapas são as tarefas do projeto, na ordem; projeto com mais de 6 tarefas mostra "X de Y entregas concluídas"; o cliente só vê comentários marcados "Visível ao cliente".
+9. ~~**Relatórios**~~ — respondido em 2026-11-23: período (mês atual, mês anterior, trimestre ou ano), unidade e as 5 seções do protótipo; **o resumo mensal por e-mail entra agora** (1º dia útil, com histórico), e não depois.
+10. ~~**Régua de avisos e escalonamento**~~ — respondido em 2026-11-23: **a administração recebe a escalada**; o escalonamento ao cliente fica desligado por padrão. A escalada acontece **depois de 3 dias de atraso** (recomendação aceita em 2026-11-23; o protótipo repete o aviso de atraso a cada 3 dias).
+11. ~~**Subtarefa "A iniciar"**~~ — respondido em 2026-11-23: incluir o status.
+
+### Respostas de 2026-11-23 aos comprovantes
+
+- **O prazo para de contar durante a conferência:** sim, só quando o pedido tem comprovante (etapa 2).
+- **Guarda das fotos:** sempre; não há limpeza automática. Falta definir backup e espaço em disco (ver [pendências antes da produção](../pendencias-antes-producao.md)).
+- **Pedido de prazo e impedimento:** decide o coordenador do item, a administração ou o interno do projeto (etapa 3).
+- **Regras já implementadas da etapa 1:** confirmadas em 2026-11-23 (tipos de arquivo, até 20 arquivos de 10 MB por envio e devolução com motivo obrigatório).
 
 ## 5. Riscos e dependências
 

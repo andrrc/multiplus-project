@@ -85,10 +85,12 @@ Este checklist reúne o que precisa ser resolvido antes de disponibilizar o sist
 - [ ] Confirmar que a rota autenticada impede acesso anônimo às imagens.
 - [ ] Testar imagem de comentário com cada perfil de usuário.
 - [ ] Definir backup e retenção das imagens.
-- [ ] Definir por quanto tempo guardar os comprovantes (fotos e arquivos) e se haverá limpeza automática; conferir que o backup do volume do MinIO os inclui e que o disco comporta o crescimento (até 20 arquivos de 10 MB por envio).
+- [x] Por quanto tempo guardar os comprovantes: **sempre**, sem limpeza automática (decidido em 23/11/2026).
+- [ ] Conferir que o backup do volume do MinIO inclui os comprovantes e que o disco comporta o crescimento, já que nada será apagado (até 20 arquivos de 10 MB por envio).
 - [ ] Confirmar com a Talita o aviso de privacidade (pessoas, placas e documentos pessoais nas fotos) e a política de acesso: o cliente nunca vê comprovantes.
 - [ ] Testar comportamento quando o storage estiver indisponível.
 - [ ] Informar no aviso de privacidade que o sistema registra a data e a hora do último acesso de cada usuário (só o último momento, sem IP nem aparelho, visível só à administração).
+- [ ] Atualizar o Next.js: o servidor de desenvolvimento avisa de uma vulnerabilidade conhecida a cada execução (o aviso sugere `next upgrade --agent=security`). Tratar como tarefa à parte, depois da Fase 1, lendo antes o guia em `node_modules/next/dist/docs/` e a [análise anterior](analises/atualizacao-seguranca-nextjs.md).
 
 ### 6. Job diário de notificações
 
