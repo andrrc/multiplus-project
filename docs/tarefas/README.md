@@ -25,6 +25,7 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 |---|---|---|---|---|---|---|---|
 | [etapa2-analise](etapa2-analise.md) | Análise da etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | `claude/etapa2-analise` | aprovada | nenhum | codex | 2026-11-23 |
 | [duplicar-projeto](duplicar-projeto.md) | Duplicar projeto | codex | `codex/duplicar-projeto` | aprovada | nenhum | claude | 2026-11-23 |
+| [etapa2-prazo](etapa2-prazo.md) | Etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | `claude/etapa2-prazo` | em andamento | `src/ui/**`, `src/lib/projetos-tarefas.ts` | codex | 2026-11-23 |
 
 ## Tarefas encerradas
 
