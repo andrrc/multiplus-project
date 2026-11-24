@@ -144,7 +144,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
 
       <div className="mb-6 empty:hidden">
         <CartaoPedidosPrazo tarefaId={id} alvo={{ tipo: "TAREFA", id }} prazoVigente={t.prazo}
-          previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto} pedidos={pedidosPrazo.porItem.get(id) ?? []} podeDecidir podeRetirar />
+          previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto} pedidos={pedidosPrazo.porItem.get(id) ?? []} podeDecidir podeRetirar={false} />
       </div>
 
       {subtarefasSemResponsavel.length > 0 && <div role="status" className="mb-6 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-3.5 text-sm text-ambar">
@@ -182,7 +182,7 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                   <div className="my-3 empty:hidden">
                     <CartaoPedidosPrazo tarefaId={id} alvo={{ tipo: "SUBTAREFA", id: s.id }} prazoVigente={s.prazo}
                       prazoDaTarefa={t.prazo} previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto}
-                      pedidos={pedidosPrazo.porItem.get(s.id) ?? []} podeDecidir podeRetirar />
+                      pedidos={pedidosPrazo.porItem.get(s.id) ?? []} podeDecidir podeRetirar={false} />
                   </div>
                   <EnviosComprovantes envios={envios.filter((envio) => envio.subtarefaId === s.id)} />
                   {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className={`mt-3 ${botaoSecundario}`}>Editar subtarefa</Link>}

@@ -149,6 +149,18 @@ describe("pedidos de prazo com a role restrita", () => {
     await expect(retirarPedidoPrazo(externo, novo.id)).resolves.toMatchObject({ status: "CANCELADO" });
   });
 
+  it("só o autor retira o pedido: administração, interno, cliente e outro externo são recusados", async () => {
+    const t = await criarTarefa();
+    const pedido = await solicitarPedidoPrazo(externo, tarefa(t.id), "PRAZO", novaData, "Motivo");
+    for (const ctx of [admin, interno, outroInterno, cliente, outroExterno]) {
+      await expect(retirarPedidoPrazo(ctx, pedido.id)).rejects.toThrow(/Sem permissão para retirar/);
+      await expect(comoUsuario(ctx, (tx) => tx.$queryRaw`SELECT id FROM cancelar_pedido_prazo(${pedido.id})`))
+        .rejects.toThrow(/Sem permissão para retirar/);
+    }
+    expect(await ownerDb.pedidoPrazo.findUniqueOrThrow({ where: { id: pedido.id } })).toMatchObject({ status: "PENDENTE" });
+    await expect(retirarPedidoPrazo(externo, pedido.id)).resolves.toMatchObject({ status: "CANCELADO" });
+  });
+
   it("na troca de responsável, mostra só a existência do pedido ao novo responsável", async () => {
     const t = await criarTarefa();
     const pedido = await solicitarPedidoPrazo(externo, tarefa(t.id), "PRAZO", novaData, "Texto privado");

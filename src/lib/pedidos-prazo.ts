@@ -134,7 +134,8 @@ export async function decidirPedidoPrazo(
 }
 
 export async function retirarPedidoPrazo(ctx: ContextoUsuario, id: string) {
-  if (ctx.perfil !== "ADMIN" && ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Sem permissão para retirar este pedido.");
+  // Só o autor retira; a administração recusa o pedido (com resposta) em vez de retirá-lo.
+  if (ctx.perfil !== "ADMIN_EXTERNO") throw new Error("Sem permissão para retirar este pedido.");
   return comContextoDeUsuario(ctx, async (tx) => {
     const [pedido] = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM cancelar_pedido_prazo(${id})`;
     return tx.pedidoPrazo.findUniqueOrThrow({ where: { id: pedido.id }, include: dadosDoAlvo });
