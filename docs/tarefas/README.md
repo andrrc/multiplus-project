@@ -23,7 +23,9 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 
 | ID | Título | Agente | Branch | Estado | Arquivos compartilhados reservados | Revisor | Atualizado em |
 |---|---|---|---|---|---|---|---|
-| _nenhuma_ | | | | | | | |
+| [etapa4a-foto-exemplo](etapa4a-foto-exemplo.md) | Foto de exemplo do comprovante (etapa 4a) | codex | `codex/etapa4a-foto-exemplo` | aprovada (pode começar) | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/projetos-tarefas.ts`, `src/ui/campos-comprovante.tsx` | claude | 2026-11-24 |
+| [etapa4b-instrucoes](etapa4b-instrucoes.md) | Página de Instruções de uso do externo (etapa 4b) | codex | `codex/etapa4b-instrucoes` | aprovada (na fila: aguarda a 4a) | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/navegacao.ts`, `src/lib/csp.ts` | claude | 2026-11-24 |
+| [etapa4c-mensagens](etapa4c-mensagens.md) | Mensagens com a Múltiplus (etapa 4c) | claude | `claude/etapa4c-mensagens` | aprovada (na fila: aguarda a 4b) | `prisma/schema.prisma`, `prisma/migrations/**` | codex | 2026-11-24 |
 
 ## Tarefas encerradas
 
