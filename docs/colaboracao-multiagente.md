@@ -66,6 +66,8 @@ bash scripts/agentes/remover-worktree.sh codex etapa2-prazo --apagar-branch
 git worktree list
 ```
 
+**Onde rodar os scripts: no Git Bash.** No Windows, o comando `bash` do PowerShell abre o **WSL**, e não o Git Bash; rodar ali criaria o worktree dentro do Linux (`/root/...`), sem `node_modules`, e o Git do Windows o veria como "prunable" (aconteceu duas vezes). Por isso os scripts **recusam rodar no WSL** sobre um repositório do Windows (`_ambiente.sh`) e explicam o que fazer. No PowerShell, chame o bash do Git pelo caminho: `& "C:\Program Files\Git\bin\bash.exe" scripts/agentes/novo-worktree.sh codex <id>`. Um repositório que mora dentro do próprio WSL (fora de `/mnt/`) continua funcionando.
+
 `remover-worktree.sh` recusa remover quando há alteração não commitada ou commit que ainda não está em `origin/staging`, e nunca usa `--force`.
 
 ## 6. Banco e portas (recursos compartilhados)

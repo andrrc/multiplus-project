@@ -11,6 +11,9 @@
 # comum do Git, que todos os worktrees compartilham, e é liberada ao fim (ou se o processo dono morrer).
 set -uo pipefail
 
+# Recusa rodar no WSL sobre um repositório do Windows (veja _ambiente.sh).
+. "$(dirname "${BASH_SOURCE[0]}")/_ambiente.sh"
+
 completo=0
 [ "${1:-}" = "--completo" ] && completo=1
 

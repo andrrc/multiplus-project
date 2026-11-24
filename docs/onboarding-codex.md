@@ -100,7 +100,7 @@ npm run db:seed                              # cria o administrador inicial e im
 npm run dev                                  # usa a primeira porta livre de 3001 a 3100
 ```
 
-Os detalhes e variáveis estão em `README.md` e `.env.example`. **Em worktree**, use `bash scripts/agentes/novo-worktree.sh`, que já copia o `.env` e instala as dependências.
+Os detalhes e variáveis estão em `README.md` e `.env.example`. **Em worktree**, use `bash scripts/agentes/novo-worktree.sh`, que já copia o `.env` e instala as dependências. **Rode os scripts no Git Bash**, e não no `bash` do PowerShell (que é o WSL): no WSL eles recusam rodar. No PowerShell use `& "C:\Program Files\Git\bin\bash.exe" scripts/agentes/<script>.sh <argumentos>`.
 
 ## 8. Como executar os testes
 

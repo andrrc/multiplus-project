@@ -10,6 +10,9 @@
 # o que não foi integrado. O banco e os serviços compartilhados não são tocados.
 set -euo pipefail
 
+# Recusa rodar no WSL sobre um repositório do Windows (veja _ambiente.sh).
+. "$(dirname "${BASH_SOURCE[0]}")/_ambiente.sh"
+
 agente="${1:-}"
 tarefa="${2:-}"
 apagar_branch=0

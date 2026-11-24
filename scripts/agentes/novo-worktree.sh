@@ -14,6 +14,9 @@
 # porque o projeto fica no OneDrive e uma pasta node_modules ali seria sincronizada à toa.
 set -euo pipefail
 
+# Recusa rodar no WSL sobre um repositório do Windows (veja _ambiente.sh).
+. "$(dirname "${BASH_SOURCE[0]}")/_ambiente.sh"
+
 uso() {
   sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-1}"
