@@ -175,12 +175,19 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
   ao prazo atual e acompanha a prorrogação.
 - **Criação da ocorrência:** a função SQL `concluir_tarefa` cria a próxima ocorrência na
   mesma transação da conclusão, sem duplicar se já existir uma com a mesma série e o mesmo
-  prazo. A versão vigente está em `20260928170000_dia_semana_recorrencia`.
+  prazo. A versão vigente está em `20261124150000_concluir_tarefa_data_da_serie`.
+- **Subtarefas copiadas:** o prazo de cada cópia é o da próxima ocorrência mais a distância da
+  subtarefa até a **data da série** da ocorrência atual (`dataDaSerieDaOcorrencia`, passada a
+  `concluir_tarefa` em `p_prazo_serie`), e não até o prazo vigente. Assim, prorrogar a tarefa
+  (pedido de prazo aprovado ou edição da administração) não desloca as subtarefas da ocorrência
+  seguinte; sem prorrogação o resultado é o de sempre. A prorrogação da própria subtarefa continua
+  sendo herdada pela cópia. Semanal sem dia fixo (só dado antigo) mede pelo prazo vigente.
 - **Campos da série:** `serieId`, `prazoOriginal`, `periodicidade` e `diaSemana`. Tarefas
   semanais antigas receberam o dia da semana do próprio prazo.
 - **Testes:**
   - `projetos-tarefas.unit.test.ts` (RN-008): periodicidades, meses curtos, dia
-    escolhido e prazo prorrogado dentro do ciclo (todas as âncoras de 1 a 31);
+    escolhido, prazo prorrogado dentro do ciclo e data da série (todas as âncoras de 1 a 31);
+  - `pedidos-prazo.integration.test.ts`: subtarefas da próxima ocorrência de uma tarefa prorrogada;
   - `projetos-tarefas-a4.integration.test.ts`: "persiste e aplica o dia semanal escolhido
     na próxima ocorrência".
 

@@ -1,6 +1,6 @@
 # Análise: as subtarefas da próxima ocorrência quando o prazo da tarefa foi prorrogado
 
-> Estado: **proposta, aguardando aprovação do usuário**. Mexe em regra de prazo da recorrência (função SQL `concluir_tarefa`), então não começa sem aprovação. Origem: achado 2 da [revisão da etapa 3](../tarefas/revisao-etapa3-pedido-prazo.md); a decisão de seguir a recomendação foi tomada em 2026-11-24.
+> Estado: **aprovada pelo usuário em 2026-11-24 e implementada** (a recomendação da pergunta 1, manter a herança da prorrogação da própria subtarefa, vale). Mexe em regra de prazo da recorrência (função SQL `concluir_tarefa`). Origem: achado 2 da [revisão da etapa 3](../tarefas/revisao-etapa3-pedido-prazo.md); a decisão de seguir a recomendação foi tomada em 2026-11-24.
 
 ## 1. O problema
 

@@ -201,7 +201,9 @@ A lista `/subtarefas` mostra as etiquetas de cada subtarefa abaixo do código, c
 ### S7. Replicação na recorrência
 
 Descrita em `tarefas.md`, na seção T5. Ao concluir uma tarefa recorrente, as subtarefas
-ativas e não canceladas são copiadas para a próxima ocorrência.
+ativas e não canceladas são copiadas para a próxima ocorrência. O prazo da cópia mantém a
+distância da subtarefa até a data da série da ocorrência atual, mesmo que a tarefa tenha tido o
+prazo prorrogado.
 
 ---
 
