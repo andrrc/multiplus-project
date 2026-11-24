@@ -369,6 +369,7 @@ registro de quem criou e quando.
 | L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
 | L6 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
 | L7 | Resolvida em 23/11/2026: o prazo para de contar durante a conferência de um envio com comprovante. | Ver T9 e a [análise](../analises/comprovantes-etapa2-prazo.md). |
+| L9 | Quem lê o pedido de conclusão mas não lê os arquivos (o colaborador externo atribuído à tarefa que não enviou, o novo responsável depois de uma reatribuição e o interno responsável sem atribuição ao projeto) não enxerga a pausa do prazo: a contagem de arquivos passa pelo RLS e dá zero para ele. | Para essas pessoas o item em conferência segue como atrasado. **Decidido em 23/11/2026 que elas devem ver a pausa**; a correção pede uma migration (coluna ou função que exponha só a existência de arquivo) e fica numa tarefa própria. Ver o achado 4 em `docs/tarefas/etapa2-prazo.md`. |
 | L8 | Retenção das fotos, backup do volume de arquivos e limpeza de arquivos antigos ainda não definidos. | Ver [pendências antes da produção](../pendencias-antes-producao.md). |
 
 ## Histórico de alterações

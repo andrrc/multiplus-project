@@ -8,7 +8,7 @@
 | **Agente responsável** | claude |
 | **Branch** | `claude/etapa2-prazo` (criada a partir de `claude/etapa2-analise`, porque a análise ainda não está em `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/claude-etapa2-prazo` |
-| **Estado** | em revisão (revisão cruzada do Codex recebida em 2026-11-23: achados 1, 2, 3, 5 e 6 corrigidos; falta a decisão do achado 4) |
+| **Estado** | em revisão (revisão cruzada do Codex recebida em 2026-11-23: achados 1, 2, 3, 5 e 6 corrigidos; o achado 4 foi decidido e depende de uma migration, em tarefa própria) |
 | **Quem aprovou o escopo** | o usuário, em 2026-11-23, ao aprovar a análise e pedir o início da implementação |
 | **Revisor** | codex |
 
@@ -102,5 +102,5 @@ Para quem integra consolidar (esta tarefa não edita os dois documentos):
   - Achado 5 (média, sem teste do texto do PDF): `tests/unit/exportacao-pdf-prazo.unit.test.ts` cobre a célula, o PDF do projeto e o da agenda (inclui o dia de Brasília). Não há teste do arquivo PDF gerado, só das linhas que o alimentam.
   - Achado 6 (média, ciclo sem passar pelas funções do domínio): `prazo-em-conferencia.integration.test.ts` ganhou o ciclo enviar, devolver, reenviar, retirar (prazo vencido) e confirmar, com `solicitarConclusao` e `registrar_arquivo_comprovante`, afirmando a pausa e o prazo em cada passo. A jornada `comprovantes.spec.ts` não foi alterada.
   - Achado 7 (baixa, decisão de dias de prazo repetida em telas): não tratado; é refatoração sem mudança de comportamento, fica para quando uma tela nova precisar da regra.
-  - Achado 4 (média, reatribuição durante a conferência: o novo responsável pode ver o pedido sem ver os arquivos, e a pausa some para ele): **aguarda decisão da pessoa responsável**, porque mexe em quem enxerga o quê (permissão). Nada foi alterado.
-- Pergunta em aberto para a pessoa responsável: o novo responsável de uma tarefa reatribuída durante a conferência deve ver a pausa (achado 4)? Depois disso, integrar em `staging`.
+  - Achado 4 (média, reatribuição durante a conferência: o novo responsável pode ver o pedido sem ver os arquivos, e a pausa some para ele): **decidido em 2026-11-23 pela pessoa responsável: o novo responsável deve ver a pausa**, sem ampliar a leitura dos arquivos. O problema é mais amplo que a reatribuição: o externo atribuído à tarefa que não enviou e o interno responsável sem atribuição ao projeto também leem o pedido e não leem os arquivos. A contagem de arquivos (`_count`) e o filtro `arquivos: { some: {} }` passam pelo RLS, então dão zero para eles. A função `solicitacao_tem_comprovantes` já existe, mas o Prisma não a chama em `where` nem em `include`; usá-la por pós-processamento cobriria uns dez pontos de leitura e não cobriria os filtros de cliente com atraso e de atrasados anteriores. A correção limpa é uma migration (por exemplo, uma coluna no pedido, mantida por trigger, que diga se há arquivo), o que esta tarefa proíbe. **Nada foi alterado no código**; a limitação está registrada como L9 em `docs/funcionalidades/tarefas.md`. Proposta: tarefa própria com análise, antes da Fase 6 (régua de avisos), que depende da mesma regra.
+- Pergunta em aberto para a pessoa responsável: abrir a tarefa própria do achado 4 (com migration) antes ou depois de integrar esta em `staging`?
