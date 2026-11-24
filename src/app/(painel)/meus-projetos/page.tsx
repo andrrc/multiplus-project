@@ -7,7 +7,7 @@ import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
 import { codigoProjeto } from "@/lib/identificadores-hierarquicos";
 import { AnelProgresso, StatusPonto, Vazio } from "@/ui/lista";
 import { interpretarBuscaLista } from "@/lib/busca-lista";
-import { interpretarOrdemMeusProjetos, interpretarSituacaoMeusProjetos, prepararMeusProjetos, tarefaEmAberto } from "@/lib/lista-meus-projetos";
+import { interpretarOrdemMeusProjetos, interpretarSituacaoMeusProjetos, prepararMeusProjetos, proximaEntrega, tarefaEmAberto } from "@/lib/lista-meus-projetos";
 import { FiltrosMeusProjetos } from "./filtros-meus-projetos";
 
 const status: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
@@ -53,8 +53,8 @@ export default async function MeusProjetosPage({ searchParams }: { searchParams:
           {visiveis.map((p) => {
             const conclusao = calcularPercentualConclusao(p.tarefas);
             const abertas = p.tarefas.filter(tarefaEmAberto);
-            // A próxima entrega é a tarefa em aberto com o prazo mais próximo.
-            const proxima = abertas.filter((t) => t.prazo).sort((a, b) => a.prazo!.getTime() - b.prazo!.getTime())[0];
+            // A próxima entrega é a tarefa em aberto com o prazo mais próximo que ainda conta (a que aguarda conferência não entra).
+            const proxima = proximaEntrega(abertas);
             return (
               <li key={p.id} className="relative min-w-0 rounded-cartao border border-linha bg-branco hover:border-linha-forte">
                 <div className="flex items-start justify-between gap-4 px-5 pt-[18px]">
@@ -90,7 +90,7 @@ export default async function MeusProjetosPage({ searchParams }: { searchParams:
                 <div className="flex items-center justify-between gap-3 border-t border-linha px-5 py-3">
                   <div className="min-w-0">
                     <p className="text-xs text-cinza">Próxima entrega</p>
-                    <p className="truncate text-[13.5px] font-medium">{proxima ? proxima.nome : <span className="font-normal text-faint">Nenhuma tarefa em aberto</span>}</p>
+                    <p className="truncate text-[13.5px] font-medium">{proxima ? proxima.nome : <span className="font-normal text-faint">{abertas.some((t) => t.emConferenciaDesde) ? "Aguardando conferência" : "Nenhuma tarefa em aberto"}</span>}</p>
                   </div>
                   {proxima && <IndicadorSemaforoProjeto prazo={proxima.prazo} status={proxima.status} limites={limites} />}
                 </div>

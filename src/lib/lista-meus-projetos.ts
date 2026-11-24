@@ -61,6 +61,16 @@ export function interpretarOrdemMeusProjetos(valor: string | string[] | undefine
 
 export const tarefaEmAberto = (tarefa: TarefaDoProjeto) => tarefa.ativo && tarefa.status !== "CONCLUIDO" && tarefa.status !== "CANCELADO";
 
+/**
+ * Próxima entrega do projeto: a tarefa em aberto com o prazo mais próximo que ainda conta. A tarefa que aguarda conferência
+ * (etapa 2 dos comprovantes) não entra: o prazo dela está parado, então não é "a próxima".
+ */
+export function proximaEntrega<T extends TarefaDoProjeto>(tarefas: readonly T[]): T | undefined {
+  return tarefas
+    .filter((tarefa) => tarefaEmAberto(tarefa) && !tarefa.emConferenciaDesde && tarefa.prazo)
+    .sort((a, b) => a.prazo!.getTime() - b.prazo!.getTime())[0];
+}
+
 /** Tarefas em aberto cujo prazo já passou. */
 export const tarefasAtrasadas = (projeto: { tarefas: TarefaDoProjeto[] }) =>
   projeto.tarefas.filter((tarefa) => tarefaEmAberto(tarefa) && !tarefa.emConferenciaDesde && tarefa.prazo && calcularDiasRestantes(tarefa.prazo) < 0).length;

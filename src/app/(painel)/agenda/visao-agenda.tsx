@@ -10,6 +10,7 @@ import { calcularDiasRestantes } from "@/lib/datas";
 import { intervaloDoMes } from "@/lib/agenda-periodo";
 import type { ItemAgenda } from "@/lib/projetos-tarefas";
 import { classeDoItemAgenda, COR_BARRA_AGENDA, COR_ITEM_AGENDA, ROTULO_CLASSE_AGENDA } from "@/lib/agenda-itens";
+import { rotuloEnviadoEm } from "@/lib/prazo-em-conferencia";
 import { botaoSecundario } from "@/ui/botoes";
 import { Cartao } from "@/ui/cartao";
 
@@ -89,7 +90,7 @@ export function VisaoAgenda({
         <div className="min-w-0">
           {item.projetada ? <p className="break-words font-medium text-ink">{item.nome}</p> : <Link href={hrefTarefa(item.id)} className="block break-words font-medium text-ink hover:text-azul-esc">{item.nome}</Link>}
           <p className="mt-0.5 break-words text-[12.5px] text-cinza">{item.projeto.cliente.razaoSocial} · {item.projeto.nome}</p>
-          <p className="mt-1 text-xs text-cinza">{ROTULO_CLASSE_AGENDA[classe]}{item.responsavel ? ` · ${item.responsavel.nome}` : ""}</p>
+          <p className="mt-1 text-xs text-cinza">{ROTULO_CLASSE_AGENDA[classe]}{classe === "conferencia" && item.emConferenciaDesde ? ` · ${rotuloEnviadoEm(item.emConferenciaDesde)}` : ""}{item.responsavel ? ` · ${item.responsavel.nome}` : ""}</p>
         </div>
       </li>
     );

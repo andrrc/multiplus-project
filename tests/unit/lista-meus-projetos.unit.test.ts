@@ -1,6 +1,6 @@
 /** "Meus projetos" do colaborador interno: busca, cliente, abas com contagem e ordenação. */
 import { describe, expect, it } from "vitest";
-import { contarMinhasPendencias, interpretarOrdemMeusProjetos, interpretarSituacaoMeusProjetos, prepararMeusProjetos } from "@/lib/lista-meus-projetos";
+import { contarMinhasPendencias, interpretarOrdemMeusProjetos, interpretarSituacaoMeusProjetos, prepararMeusProjetos, proximaEntrega } from "@/lib/lista-meus-projetos";
 
 const passado = new Date("2000-01-01T00:00:00Z");
 const futuro = new Date("2999-01-01T00:00:00Z");
@@ -96,5 +96,26 @@ describe("contarMinhasPendencias", () => {
 
   it("sem itens, zero", () => {
     expect(contarMinhasPendencias([], [], hoje)).toEqual({ pendencias: 0, atrasadas: 0 });
+  });
+});
+
+describe("próxima entrega", () => {
+  const cedo = new Date("2999-01-01T00:00:00Z");
+  const tarde = new Date("2999-06-01T00:00:00Z");
+  const enviado = new Date("2026-11-12T15:00:00Z");
+
+  it("é a tarefa aberta com o prazo mais próximo", () => {
+    const tarefas = [{ ...aberta(tarde), nome: "Tarde" }, { ...aberta(cedo), nome: "Cedo" }];
+    expect(proximaEntrega(tarefas)?.nome).toBe("Cedo");
+  });
+
+  it("a tarefa que aguarda conferência não é a próxima, mesmo com o prazo mais antigo", () => {
+    const tarefas = [{ ...aberta(passado), nome: "Em conferência", emConferenciaDesde: enviado }, { ...aberta(tarde), nome: "Com prazo correndo" }];
+    expect(proximaEntrega(tarefas)?.nome).toBe("Com prazo correndo");
+  });
+
+  it("sem prazo correndo não há próxima entrega; tarefa fechada e sem prazo não contam", () => {
+    expect(proximaEntrega([{ ...aberta(passado), emConferenciaDesde: enviado }])).toBeUndefined();
+    expect(proximaEntrega([aberta(null), { ativo: true, status: "CONCLUIDO", prazo: cedo }])).toBeUndefined();
   });
 });

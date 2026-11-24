@@ -25,8 +25,9 @@ import {
   listarSubtarefasAtribuidas,
   listarSubtarefasPrazos,
   listarTarefasAtribuidas,
+  solicitarConclusao,
 } from "@/lib/projetos-tarefas";
-import { fecharConexoes, limparFixtures, ownerDb } from "./setup/helpers";
+import { comoUsuario, fecharConexoes, limparFixtures, ownerDb } from "./setup/helpers";
 
 const VENCIDO = new Date("2000-01-10T00:00:00.000Z");
 const FUTURO = new Date("2999-01-01T00:00:00.000Z");
@@ -270,5 +271,66 @@ describe("aviso de prazo próximo", () => {
     expect(resultado.encontradas).toBe(1);
     const avisos = await ownerDb.notificacao.findMany({ where: { evento: "PRAZO_PROXIMO" }, select: { entidadeId: true } });
     expect(avisos.map((a) => a.entidadeId)).toContain(tarefa.id);
+  });
+});
+
+describe("ciclo real do envio (pelas funções do domínio, sem criar pedido direto no banco)", () => {
+  let n = 0;
+  /** O colaborador anexa um comprovante pela função do banco, como a rota de envio faz depois de guardar o arquivo. */
+  const anexar = (tarefaId: string) => {
+    n += 1;
+    return comoUsuario(ctxExterno(), (tx) => tx.$queryRaw`
+      SELECT registrar_arquivo_comprovante('TAREFA', ${tarefaId}, ${`comprovantes/ciclo-${n}.jpg`}, ${`foto-${n}.jpg`}, 'image/jpeg', 2048) AS id
+    `);
+  };
+  const enviar = async (tarefaId: string) => {
+    await anexar(tarefaId);
+    return solicitarConclusao(ctxExterno(), "TAREFA", tarefaId, "Segue.");
+  };
+
+  it("envia, devolve, reenvia, retira e confirma: a pausa acompanha cada passo e o prazo cadastrado nunca muda", async () => {
+    const cliente = await novoCliente("Ciclo Ltda", "20000000000105");
+    const projeto = await ownerDb.projeto.create({ data: { clienteId: cliente.id, nome: "P ciclo" } });
+    const tarefa = await ownerDb.tarefa.create({ data: { projetoId: projeto.id, nome: "Vencida do ciclo", prazo: VENCIDO, status: "EM_ANDAMENTO", comprovanteExigido: true, comprovanteQuantidade: 1, responsavelUsuarioId: externo.id } });
+    await ownerDb.atribuicao.create({ data: { usuarioId: externo.id, entidadeTipo: "TAREFA", entidadeId: tarefa.id } });
+    const pausa = async () => (await listarPrazos(ctxAdmin(), { pendentes: true })).find((t) => t.id === tarefa.id)?.emConferenciaDesde ?? null;
+    const prazoNoBanco = async () => (await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefa.id }, select: { prazo: true } })).prazo?.getTime();
+    try {
+      expect(await pausa()).toBeNull();
+
+      // Envio: a pausa começa no instante do pedido (relógio do banco).
+      const primeiro = await enviar(tarefa.id);
+      const pedido = await ownerDb.solicitacaoConclusao.findUniqueOrThrow({ where: { id: primeiro.solicitacao.id }, select: { solicitadoEm: true } });
+      expect((await pausa())?.getTime()).toBe(pedido.solicitadoEm.getTime());
+      expect(await prazoNoBanco()).toBe(VENCIDO.getTime());
+
+      // Devolução: o prazo volta a contar, com a mesma data.
+      await devolver(primeiro.solicitacao.id);
+      expect(await pausa()).toBeNull();
+      expect(await prazoNoBanco()).toBe(VENCIDO.getTime());
+
+      // Reenvio: pausa de novo, a partir do novo pedido.
+      const segundo = await enviar(tarefa.id);
+      expect(segundo.solicitacao.id).not.toBe(primeiro.solicitacao.id);
+      expect(await pausa()).toBeInstanceOf(Date);
+
+      // Retirada de um prazo vencido: volta a contar e segue atrasado.
+      await cancelarSolicitacaoConclusao(ctxAdmin(), segundo.solicitacao.id);
+      expect(await pausa()).toBeNull();
+      expect(await prazoNoBanco()).toBe(VENCIDO.getTime());
+
+      // Novo envio e confirmação: o item conclui e deixa de estar pendente.
+      const terceiro = await enviar(tarefa.id);
+      expect(await pausa()).toBeInstanceOf(Date);
+      await decidirSolicitacaoConclusao(ctxAdmin(), terceiro.solicitacao.id, true);
+      expect(await pausa()).toBeNull();
+      expect((await ownerDb.tarefa.findUniqueOrThrow({ where: { id: tarefa.id } })).status).toBe("CONCLUIDO");
+      expect(await prazoNoBanco()).toBe(VENCIDO.getTime());
+    } finally {
+      await ownerDb.tarefa.delete({ where: { id: tarefa.id } });
+      await ownerDb.atribuicao.deleteMany({ where: { entidadeId: { in: [projeto.id, tarefa.id] } } });
+      await ownerDb.projeto.delete({ where: { id: projeto.id } });
+      await ownerDb.cliente.delete({ where: { id: cliente.id } });
+    }
   });
 });
