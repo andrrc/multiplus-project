@@ -8,8 +8,8 @@
 | **Agente responsável** | claude |
 | **Branch** | `claude/pausa-prazo-visibilidade` (criada a partir de `origin/staging`, **depois** de a `etapa2-prazo` estar integrada) |
 | **Worktree** | `~/multiplus-worktrees/claude-pausa-prazo-visibilidade` |
-| **Estado** | proposta (a análise ainda não foi aprovada) |
-| **Quem aprovou o escopo** | pendente de validação |
+| **Estado** | aprovada (começa depois que a `etapa2-prazo` estiver integrada em `staging`) |
+| **Quem aprovou o escopo** | o usuário, em 2026-11-23, ao aprovar a opção A da análise |
 | **Revisor** | codex |
 
 ## 1. Objetivo
@@ -19,7 +19,7 @@ Quem enxerga o pedido de conclusão de um item em conferência (novo responsáve
 ## 2. Contexto da funcionalidade
 
 - Módulo: [../funcionalidades/tarefas.md](../funcionalidades/tarefas.md) (limitação L9, que esta tarefa remove), `subtarefas.md`, `notificacoes.md`.
-- **Análise obrigatória** (muda dado e regra de prazo): [../analises/pausa-prazo-visibilidade-pedido.md](../analises/pausa-prazo-visibilidade-pedido.md). **Pendente de aprovação.** Não comece sem ela aprovada.
+- **Análise obrigatória** (muda dado e regra de prazo): [../analises/pausa-prazo-visibilidade-pedido.md](../analises/pausa-prazo-visibilidade-pedido.md). Aprovada em 2026-11-23 (opção A; sem envios reais de comprovante na VPS).
 - Decisão já tomada (2026-11-23): quem enxerga o pedido deve ver a pausa, sem ampliar a leitura dos arquivos. Registrada em [etapa2-prazo.md](etapa2-prazo.md), achado 4.
 - Esta tarefa muda dado, RLS (nenhuma política) e regra de prazo: sim. Link da análise acima.
 
@@ -86,4 +86,4 @@ Quem enxerga o pedido de conclusão de um item em conferência (novo responsáve
 - Verificações executadas e resultado (comando e saída resumida):
 - Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`):
 - Pendências e riscos:
-- Pergunta em aberto para a pessoa responsável: aprova a opção A da análise e existem envios reais na VPS?
+- Pergunta em aberto para a pessoa responsável: nenhuma (a opção A foi aprovada e não há envios reais na VPS).

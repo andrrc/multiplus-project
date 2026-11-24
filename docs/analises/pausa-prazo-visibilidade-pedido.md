@@ -1,6 +1,6 @@
 # Análise: a pausa do prazo para quem lê o pedido mas não lê os arquivos
 
-> Estado: **proposta, aguardando aprovação**. Mexe em dado (coluna nova), em RLS (nenhuma política muda, mas a regra de prazo passa a depender de um dado novo) e em regra de prazo, então não começa sem a sua aprovação. Origem: achado 4 da revisão cruzada da `etapa2-prazo` ([relatório do Codex](../tarefas/etapa2-prazo-revisao.md), na branch `codex/revisao-etapa2-prazo`). Decisão já tomada em 2026-11-23: **quem enxerga o pedido deve ver a pausa**, sem ampliar a leitura dos arquivos.
+> Estado: **aprovada em 2026-11-23 pelo usuário (opção A, sem envios reais de comprovante na VPS)**. Mexe em dado (coluna nova), em RLS (nenhuma política muda, mas a regra de prazo passa a depender de um dado novo) e em regra de prazo, então não começa sem a sua aprovação. Origem: achado 4 da revisão cruzada da `etapa2-prazo` ([relatório do Codex](../tarefas/etapa2-prazo-revisao.md), na branch `codex/revisao-etapa2-prazo`). Decisão já tomada em 2026-11-23: **quem enxerga o pedido deve ver a pausa**, sem ampliar a leitura dos arquivos.
 
 ## 1. O problema
 
@@ -63,5 +63,5 @@ Os pedidos já gravados precisam receber a contagem. O trigger de imutabilidade 
 
 ## 7. O que preciso que você decida
 
-1. Aprova a **opção A** (coluna no pedido)?
-2. Já existem envios de comprovante reais na VPS? Se sim, a migration precisa preencher a contagem deles com cuidado; se não, o preenchimento é trivial.
+1. Aprova a **opção A** (coluna no pedido)? **Aprovada.**
+2. Já existem envios de comprovante reais na VPS? **Não** (resposta do usuário em 2026-11-23). O preenchimento dos pedidos existentes só precisa cobrir os dados de teste e de staging; a migration ainda deve preencher a coluna de quem já tiver pedido, por segurança.
