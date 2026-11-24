@@ -23,6 +23,7 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 
 | ID | Título | Agente | Branch | Estado | Arquivos compartilhados reservados | Revisor | Atualizado em |
 |---|---|---|---|---|---|---|---|
+| [etapa3-pedido-prazo](etapa3-pedido-prazo.md) | Pedido de prazo e impedimento (etapa 3 dos comprovantes) | codex | `codex/etapa3-pedido-prazo` | aprovada | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/projetos-tarefas.ts` | claude | 2026-11-24 |
 
 ## Tarefas encerradas
 
