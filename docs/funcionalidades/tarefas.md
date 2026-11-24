@@ -282,8 +282,10 @@ Em conferência ou com o item fechado, o envio fica bloqueado. Item sem prazo ac
 
 A administração e o colaborador interno atribuído ao projeto encontram os pendentes no painel
 **Aguardando sua decisão** e respondem no detalhe do item. A recusa exige resposta.
-A decisão libera o item para novo pedido. O autor pode retirar o próprio pedido pendente,
-e o fechamento do item cancela pedidos pendentes.
+A decisão libera o item para novo pedido. **Só o autor retira** o próprio pedido pendente
+(a administração e o interno recusam, com resposta; a função do banco recusa qualquer outro perfil), e o
+fechamento do item cancela pedidos pendentes. A aprovação continua permitida com o item em conferência
+de comprovantes: a pausa e o prazo novo se combinam.
 
 A aprovação da prorrogação grava a data solicitada e guarda no histórico o prazo na abertura
 e o prazo substituído. Se houver edição de prazo entre o pedido e a aprovação, a tela pede

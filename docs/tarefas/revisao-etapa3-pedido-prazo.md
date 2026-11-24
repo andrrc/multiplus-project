@@ -59,3 +59,5 @@ Nenhuma nova. Não rodei as jornadas de navegador, então não reproduzi a falha
 1. **Subtarefas da próxima ocorrência (achado 2).** Quando a tarefa recorrente tem o prazo prorrogado, as subtarefas copiadas devem manter a mesma distância da data da série (05/02 no exemplo) ou a distância ao prazo vigente (26/01)? Recomendação: manter a distância em relação à data da série, o que exige ajustar `concluir_tarefa` (regra de prazo, fora do escopo do Codex, tarefa separada).
 2. **Retirada pela administração (achado 3).** A administração pode retirar o pedido do externo ou só recusar? Recomendação: só o autor retira; a administração recusa.
 3. **Aprovar em conferência (achado 4).** Pode aprovar prorrogação enquanto o item está em conferência? Recomendação: sim, sem mudança (a pausa continua valendo).
+
+**Respostas do usuário (2026-11-24): seguir as três recomendações.** Achado 2: medir pela data da série, com [análise](../analises/subtarefas-da-recorrencia-prorrogada.md) aguardando aprovação. Achado 3: só o autor retira, corrigido pela migration `20261124140000_pedido_prazo_so_autor_retira`. Achado 4: mantido como está.
