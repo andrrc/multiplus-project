@@ -35,7 +35,11 @@ async function listarDestinatarios(evento: EventoNotificacao, usuarioIds: string
   const preferencias = await prisma.preferenciaNotificacao.findMany({
     where: { evento, OR: [{ email: true }, { inApp: true }] },
   });
-  const perfis = preferencias.map((preferencia) => preferencia.perfil);
+  const perfis = preferencias.map((preferencia) => preferencia.perfil).filter((perfil) => {
+    if (evento === EventoNotificacao.PEDIDO_PRAZO_RECEBIDO) return perfil === "ADMIN" || perfil === "ADMIN_INTERNO";
+    if (evento === EventoNotificacao.PEDIDO_PRAZO_RESPONDIDO) return perfil === "ADMIN_EXTERNO";
+    return true;
+  });
   // Deduplica ids e limita a consulta a contas ativas dos perfis com preferência configurada.
   const usuarios = await prisma.usuario.findMany({
     where: {
@@ -72,9 +76,11 @@ export async function dispararEventoNotificacao(evento: EventoNotificacao, dados
         destinatario.perfil,
       );
 
-      if (dados.dedupeKey && evento === EventoNotificacao.PRAZO_PROXIMO) {
+      const reservaEnvio = evento === EventoNotificacao.PRAZO_PROXIMO ||
+        evento === EventoNotificacao.PEDIDO_PRAZO_RECEBIDO || evento === EventoNotificacao.PEDIDO_PRAZO_RESPONDIDO;
+      if (dados.dedupeKey && reservaEnvio) {
         try {
-          // Reserva uma chave por destinatário; a restrição única impede reenvio do mesmo aviso diário.
+          // A chave por destinatário é única mesmo quando a preferência habilita só o e-mail.
           await prisma.registroEnvioPrazo.create({ data: { chave: `${dados.dedupeKey}:${destinatario.id}` } });
         } catch (erro) {
           if ((erro as { code?: string }).code === "P2002") return;

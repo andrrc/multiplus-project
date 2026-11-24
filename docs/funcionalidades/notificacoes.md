@@ -21,6 +21,12 @@ avisado.
 | Projeto concluído | O projeto é marcado como concluído | Somente Talita, se a preferência ADMIN estiver habilitada | Não | Cliente vinculado, se a preferência CLIENTE estiver habilitada |
 | Novo comentário | Alguém comenta em registro acessível | Conforme acesso e preferência | Conforme acesso e preferência | Cliente vinculado recebe aviso sem conteúdo, se habilitado |
 | Atribuição recebida | Nova atribuição de projeto, tarefa ou subtarefa | Sim | Sim | Não |
+| Pedido de prazo recebido | Externo envia pedido de prazo ou impedimento | Administração ativa | Interno ativo atribuído ao projeto | Não |
+| Pedido de prazo respondido | Coordenador aprova ou recusa | Não | Externo que enviou o pedido | Não |
+
+Os dois eventos de pedido de prazo têm e-mail e aviso no sistema habilitados inicialmente
+para os quatro perfis. O envio segue os destinatários da tabela. Cada evento usa uma chave
+por pedido e destinatário, inclusive quando só o e-mail está habilitado.
 
 ## Quem pode fazer o quê
 

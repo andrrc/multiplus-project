@@ -123,13 +123,18 @@ pedido de prazo, o prazo do item muda e o sistema guarda o prazo anterior. **Nen
 
 ## 8. Notas para o planejamento e as decisões
 
-(Preencher ao terminar.) Registrar em `planejamento-diferencas-prototipos.md`, Fase 2: etapa 3 feita; faltam só a etapa 4 e, se a Talita pedir, o efeito automático do impedimento aceito. Em `decisoes-desenvolvimento.md`: as respostas às duas questões "a conferir" e qualquer decisão tomada durante a implementação.
+Para quem integra, após a entrega, registrar a conclusão da etapa 3 no planejamento da Fase 2 e consolidar estas decisões:
+
+- Em uma troca de responsável, o novo responsável vê apenas o aviso de que há um pedido pendente no item. O autor, o motivo e o histórico continuam sujeitos às permissões de leitura da análise.
+- O histórico guarda o prazo na abertura do pedido e, na aprovação de uma prorrogação, o prazo efetivamente substituído.
+- Sem linha de preferência para um evento, `listarDestinatarios` não seleciona o perfil. A migration cadastra os dois eventos com ambos os canais ligados para os quatro perfis.
 
 ## 9. Resumo da implementação (preenchido ao terminar)
 
-- Commits e arquivos alterados (resumo):
-- Decisões tomadas durante o trabalho:
-- Verificações executadas e resultado (comando e saída resumida):
-- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`):
-- Pendências e riscos:
-- Pergunta em aberto para a pessoa responsável:
+- **Fluxo implementado.** Pedidos de prazo e impedimento em tarefas e subtarefas, com histórico, retirada, decisão delegada e confirmação quando o prazo vigente mudou. O painel mostra as decisões pendentes e o autor recebe a resposta no cartão e no aviso.
+- **Arquivos alterados.** Schema e migration em `prisma/`. Regras, consultas e avisos em `src/lib/`. Server Actions, cartões, diálogo e painel em `src/app/`. Testes unitários, de integração e de navegador em `tests/`. Documentação dos módulos em `docs/funcionalidades/`.
+- **Decisões tomadas.** O fluxo segue as duas aprovações da seção 8 e usa `calcularProximaOcorrencia` após o rebase sobre os commits `4528285` e `151c1f8`. O teste mensal de 31/01 para 01/02 verifica a preservação da ocorrência de fevereiro. Os avisos reutilizam o registro de idempotência do job de prazo, com chaves próprias por pedido.
+- **Verificações.** `npx prisma generate` passou após o rebase e após a edição do schema. `bash scripts/agentes/verificar.sh` e `bash scripts/agentes/verificar.sh --completo` passaram no Git Bash. A verificação completa incluiu typecheck, lint, 395 testes unitários, 370 de integração e smoke e 10 jornadas de navegador. A jornada nova conferiu os avisos e a ausência de rolagem horizontal em 375 px e no desktop.
+- **Falhas preexistentes.** A primeira inicialização do Next no Playwright apresentou a recusa já registrada no onboarding e o script prosseguiu na segunda tentativa. Uma falha inicial da busca de Meus projetos não se repetiu em `origin/staging` (`npx playwright test tests/browser/colaborador.spec.ts -g "colaborador interno"`) nem na verificação final da tarefa.
+- **Pendências e riscos.** A série semanal legada sem dia fixo segue o intervalo de sete dias a partir do prazo vigente, conforme `151c1f8`. O teste de integração usa envio de e-mail simulado. Continuam abertas a etapa 4 e a definição de um efeito automático para impedimento aceito, caso a Talita o solicite.
+- **Perguntas para a pessoa responsável.** Nenhuma para o escopo atual.

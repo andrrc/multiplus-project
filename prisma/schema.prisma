@@ -44,6 +44,20 @@ enum EventoNotificacao {
   PROJETO_CONCLUIDO
   NOVO_COMENTARIO
   ATRIBUICAO_RECEBIDA
+  PEDIDO_PRAZO_RECEBIDO
+  PEDIDO_PRAZO_RESPONDIDO
+}
+
+enum TipoPedidoPrazo {
+  PRAZO
+  IMPEDIMENTO
+}
+
+enum StatusPedidoPrazo {
+  PENDENTE
+  APROVADO
+  RECUSADO
+  CANCELADO
 }
 
 enum StatusSolicitacaoConclusao {
@@ -163,6 +177,8 @@ model Usuario {
   comentarios           Comentario[]
   solicitacoesConclusao SolicitacaoConclusao[] @relation("SolicitacaoConclusaoSolicitante")
   decisoesConclusao     SolicitacaoConclusao[] @relation("SolicitacaoConclusaoDecisor")
+  pedidosPrazo          PedidoPrazo[]          @relation("PedidoPrazoSolicitante")
+  decisoesPrazo         PedidoPrazo[]          @relation("PedidoPrazoDecisor")
   arquivosComprovante   ArquivoComprovante[]   @relation("ArquivoComprovanteAutor")
   notificacoes          Notificacao[]
   tokensAcesso          TokenAcesso[]
@@ -457,6 +473,7 @@ model Tarefa {
   comentarios           Comentario[]
   solicitacoesConclusao SolicitacaoConclusao[]
   arquivosComprovante   ArquivoComprovante[]
+  pedidosPrazo          PedidoPrazo[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -501,6 +518,7 @@ model Subtarefa {
   comentarios           Comentario[]
   solicitacoesConclusao SolicitacaoConclusao[]
   arquivosComprovante   ArquivoComprovante[]
+  pedidosPrazo          PedidoPrazo[]
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -575,6 +593,35 @@ model SolicitacaoConclusao {
   @@index([tarefaId, solicitadoEm])
   @@index([subtarefaId, solicitadoEm])
   @@map("solicitacoes_conclusao")
+}
+
+/// Histórico de prorrogações e impedimentos, escrito pelas funções do banco.
+model PedidoPrazo {
+  id                 String            @id @default(cuid())
+  tarefaId           String?
+  tarefa             Tarefa?           @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  subtarefaId        String?
+  subtarefa          Subtarefa?        @relation(fields: [subtarefaId], references: [id], onDelete: Cascade)
+  tipo               TipoPedidoPrazo
+  solicitadoPorId    String?
+  solicitadoPor      Usuario?          @relation("PedidoPrazoSolicitante", fields: [solicitadoPorId], references: [id], onDelete: SetNull)
+  solicitadoPorNome  String
+  solicitadoEm       DateTime          @default(now())
+  prazoAtual         DateTime?
+  prazoNovo          DateTime?
+  prazoSubstituido   DateTime?
+  motivo             String
+  status             StatusPedidoPrazo  @default(PENDENTE)
+  decididoPorId      String?
+  decididoPor        Usuario?          @relation("PedidoPrazoDecisor", fields: [decididoPorId], references: [id], onDelete: SetNull)
+  decididoPorNome    String?
+  decididoEm         DateTime?
+  respostaDecisao    String?
+
+  @@index([status, solicitadoEm])
+  @@index([tarefaId, solicitadoEm])
+  @@index([subtarefaId, solicitadoEm])
+  @@map("pedidos_prazo")
 }
 
 /// Arquivo de comprovante enviado pelo colaborador. Nasce como rascunho (sem solicitação) e passa a fazer parte

@@ -103,6 +103,8 @@ const chamadaPorEvento: Record<EventoNotificacao, string> = {
   PRAZO_PROXIMO: "Há uma tarefa chegando ao prazo.",
   TAREFA_CONCLUIDA: "Uma tarefa foi concluída.",
   CONCLUSAO_SOLICITADA: "Há uma solicitação de conclusão aguardando decisão ou um resultado para consultar.",
+  PEDIDO_PRAZO_RECEBIDO: "Há um pedido de prazo ou impedimento aguardando sua decisão.",
+  PEDIDO_PRAZO_RESPONDIDO: "O coordenador respondeu ao seu pedido de prazo ou impedimento.",
   PROJETO_CONCLUIDO: "Um projeto foi concluído.",
   NOVO_COMENTARIO: "Há um novo comentário para você.",
   ATRIBUICAO_RECEBIDA: "Uma nova atribuição foi recebida.",

@@ -114,6 +114,14 @@ em `/tarefas/[id]`. O interno atribuído ao projeto passou a enxergar também os
 subtarefa do projeto (antes só os das subtarefas atribuídas a ele). Detalhes em
 [Tarefas](tarefas.md) (T6b) e na [análise](../analises/comprovantes-colaborador-externo.md).
 
+### Pedido de prazo e impedimento
+
+O responsável externo abre a subtarefa no detalhe da tarefa para pedir mais prazo ou informar
+um impedimento. Há um pedido pendente por subtarefa. A administração ou o interno atribuído ao
+projeto decide no mesmo cartão. Na aprovação da prorrogação, a tela avisa se a data pedida
+ultrapassa o prazo da tarefa principal ou a previsão do projeto. A aprovação atualiza apenas
+a data da subtarefa. Veja o [fluxo completo em Tarefas](tarefas.md#pedido-de-prazo-e-impedimento-etapa-3-dos-comprovantes).
+
 ### S4. Painel de subtarefas (RF-037)
 
 **Como funciona.**

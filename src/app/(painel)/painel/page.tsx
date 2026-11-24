@@ -1,12 +1,14 @@
 /**
  * Painel (protótipo 02-painel da administradora): resumo do dia com o que está atrasado, o que vence
- * nos próximos dias, as conclusões aguardando confirmação e os projetos em andamento. Usa só as
- * consultas que já existem; não cria dados novos.
+ * nos próximos dias, as conclusões aguardando confirmação, os pedidos de prazo pendentes
+ * e os projetos em andamento.
  */
 import Link from "next/link";
 import { auth } from "@/server/auth";
 import { exigirAcessoARota } from "@/server/auth/contexto";
 import { PainelInterno } from "./painel-interno";
+import { PedidosPrazoPendentes } from "./pedidos-prazo-pendentes";
+import { listarPedidosPrazoPendentes } from "@/lib/pedidos-prazo";
 import { listarPrazos, listarProjetos, listarSolicitacoesConclusaoPendentes, listarSubtarefasPrazos } from "@/lib/projetos-tarefas";
 import { buscarLimitesSemaforo, type LimitesSemaforo } from "@/lib/semaforo";
 import { calcularPercentualConclusao } from "@/lib/regras-projetos-tarefas";
@@ -52,12 +54,13 @@ export default async function PainelPage() {
     return <PainelInterno ctx={ctx} nome={sessao?.user?.name ?? ""} />;
   }
   const agora = new Date();
-  const [tarefas, subtarefas, solicitacoes, projetos, limites] = await Promise.all([
+  const [tarefas, subtarefas, solicitacoes, projetos, limites, pedidosPrazo] = await Promise.all([
     listarPrazos(ctx, { pendentes: true }),
     listarSubtarefasPrazos(ctx, { pendentes: true }),
     listarSolicitacoesConclusaoPendentes(ctx),
     listarProjetos(ctx),
     buscarLimitesSemaforo(ctx),
+    listarPedidosPrazoPendentes(ctx),
   ]);
 
   const itens: ItemPainel[] = [
@@ -105,6 +108,7 @@ export default async function PainelPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         <div className="flex min-w-0 flex-col gap-6">
+          <PedidosPrazoPendentes pedidos={pedidosPrazo} perfil="ADMIN" />
           {solicitacoes.length > 0 && (
             <Cartao id="confirmacoes" titulo={<>Aguardando sua confirmação <span className="rounded-full bg-papel px-2 py-px text-xs font-semibold tabular-nums text-ink">{solicitacoes.length}</span></>} semMargem>
               <ul>

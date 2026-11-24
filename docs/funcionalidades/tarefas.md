@@ -274,6 +274,24 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 
 **Detalhes técnicos.** `papelDoResponsavel` (`src/lib/papel-responsavel.ts`), `proximaOcorrenciaDaTarefa` (`src/lib/regras-projetos-tarefas.ts`, usa `calcularProximaOcorrencia`, a mesma conta da conclusão e da agenda) e `situacaoDoItem` e `filtrarPorSituacao` (`src/lib/lista-tarefas.ts`). Sem dado novo e sem mudança de permissão. Testes: `papel-responsavel.unit.test.ts`, `proxima-ocorrencia-tarefa.unit.test.ts` e `situacao-lista-tarefas.unit.test.ts`.
 
+### Pedido de prazo e impedimento (etapa 3 dos comprovantes)
+
+No detalhe da tarefa, o colaborador externo responsável pode pedir uma nova data ou informar
+um impedimento pelo botão **Não consigo cumprir este prazo**. O motivo é obrigatório.
+Em conferência ou com o item fechado, o envio fica bloqueado. Item sem prazo aceita impedimento.
+
+A administração e o colaborador interno atribuído ao projeto encontram os pendentes no painel
+**Aguardando sua decisão** e respondem no detalhe do item. A recusa exige resposta.
+A decisão libera o item para novo pedido. O autor pode retirar o próprio pedido pendente,
+e o fechamento do item cancela pedidos pendentes.
+
+A aprovação da prorrogação grava a data solicitada e guarda no histórico o prazo na abertura
+e o prazo substituído. Se houver edição de prazo entre o pedido e a aprovação, a tela pede
+confirmação da data vigente. A prorrogação fica antes da próxima ocorrência da série e
+conserva a âncora `prazoOriginal`. Na série semanal legada sem dia fixo, o cálculo existente
+soma sete dias ao prazo vigente. Pedidos aguardando decisão e impedimentos mantêm a contagem
+do prazo. Aceitar impedimento registra a decisão para o autor.
+
 ### T7. Desativar e reativar (RF-039)
 
 **Como funciona.**

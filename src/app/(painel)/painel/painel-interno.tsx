@@ -1,7 +1,7 @@
 /**
  * Painel do colaborador interno (protótipo colaborador-interno/01-painel). Resume o que está com ele:
- * a semana, o que está atrasado e o que vence, as tarefas por prazo e os projetos. Usa só as consultas
- * existentes; o que depende de dados novos (comprovantes) não aparece.
+ * a semana, o que está atrasado e o que vence, as tarefas por prazo, os projetos e os pedidos
+ * de prazo que aguardam sua decisão.
  */
 import Link from "next/link";
 import { calcularDiasRestantes } from "@/lib/datas";
@@ -13,6 +13,8 @@ import type { ContextoUsuario } from "@/lib/prisma-app";
 import { Cartao } from "@/ui/cartao";
 import { IndicadorSemaforoProjeto } from "@/ui/indicador-dias-restantes";
 import { StatusPonto } from "@/ui/status-ponto";
+import { PedidosPrazoPendentes } from "./pedidos-prazo-pendentes";
+import { listarPedidosPrazoPendentes } from "@/lib/pedidos-prazo";
 
 const DIAS_ADIANTE = 7;
 const STATUS_TAREFA: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência" };
@@ -32,7 +34,9 @@ const diaDaSemana = (indice: number, agora: Date) => {
 
 export async function PainelInterno({ ctx, nome }: { ctx: ContextoUsuario; nome: string }) {
   const agora = new Date();
-  const [tarefas, projetos, limites] = await Promise.all([listarTarefasAtribuidas(ctx), listarProjetosAtribuidos(ctx), buscarLimitesSemaforo(ctx)]);
+  const [tarefas, projetos, limites, pedidosPrazo] = await Promise.all([
+    listarTarefasAtribuidas(ctx), listarProjetosAtribuidos(ctx), buscarLimitesSemaforo(ctx), listarPedidosPrazoPendentes(ctx),
+  ]);
   const abertas = tarefas.filter((t) => t.status !== "CONCLUIDO" && t.status !== "CANCELADO");
   // Item aguardando conferência de um envio com comprovante não conta atraso nem entrega da semana (etapa 2).
   const dias = (t: { prazo: Date | null; emConferenciaDesde?: Date | null }) => (t.prazo && !t.emConferenciaDesde ? calcularDiasRestantes(t.prazo, agora) : null);
@@ -79,6 +83,7 @@ export async function PainelInterno({ ctx, nome }: { ctx: ContextoUsuario; nome:
         ))}
       </section>
 
+      {pedidosPrazo.length > 0 && <div className="mb-6"><PedidosPrazoPendentes pedidos={pedidosPrazo} perfil="ADMIN_INTERNO" /></div>}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         <Cartao
           titulo={<>Fazer agora <span className="rounded-full bg-papel px-2 py-px text-xs font-semibold tabular-nums text-ink">{abertas.length}</span></>}
