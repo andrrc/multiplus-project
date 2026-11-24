@@ -10,7 +10,7 @@
 | **Agente responsável** | codex |
 | **Branch** | `codex/etapa3-pedido-prazo` (criada a partir de `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/codex-etapa3-pedido-prazo` |
-| **Estado** | aprovada |
+| **Estado** | integrada em 2026-11-24 (revisão cruzada em [revisao-etapa3-pedido-prazo.md](revisao-etapa3-pedido-prazo.md)) |
 | **Quem aprovou o escopo** | o usuário, em 2026-11-24 (análise aprovada e criação da tarefa) |
 | **Revisor** | claude |
 | **Criada em** | 2026-11-24 |

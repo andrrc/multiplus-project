@@ -23,7 +23,7 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 
 | ID | Título | Agente | Branch | Estado | Arquivos compartilhados reservados | Revisor | Atualizado em |
 |---|---|---|---|---|---|---|---|
-| [etapa3-pedido-prazo](etapa3-pedido-prazo.md) | Pedido de prazo e impedimento (etapa 3 dos comprovantes) | codex | `codex/etapa3-pedido-prazo` | aprovada | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/projetos-tarefas.ts` | claude | 2026-11-24 |
+| _nenhuma_ | | | | | | | |
 
 ## Tarefas encerradas
 
@@ -35,3 +35,4 @@ Depois do merge, a linha sai da tabela acima e vai para esta, só com ID, títul
 | [duplicar-projeto](duplicar-projeto.md) | Duplicar projeto | codex | 2026-11-23 | sem PR (merge local em `staging`) |
 | [etapa2-prazo](etapa2-prazo.md) | Etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | 2026-11-23 | sem PR (merge local em `staging`) |
 | [pausa-prazo-visibilidade](pausa-prazo-visibilidade.md) | A pausa do prazo para quem lê o pedido mas não lê os arquivos | claude | 2026-11-24 | sem PR (merge local em `staging`) |
+| [etapa3-pedido-prazo](etapa3-pedido-prazo.md) | Pedido de prazo e impedimento (etapa 3 dos comprovantes) | codex | 2026-11-24 | sem PR (merge local em `staging`); [revisão](revisao-etapa3-pedido-prazo.md) |
