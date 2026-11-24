@@ -101,7 +101,7 @@ Itens: "Próxima ocorrência", "Atribuição pendente", etiquetas e papel do res
 - Estimativa: a fase mais rápida; cada tela é pequena.
 
 ### Fase 2: regras de prazo e comprovantes (etapas 2, 3 e 4)
-**Andamento (23/11/2026): etapa 2 concluída.** A análise foi aprovada no mesmo dia, com a devolução mantendo o prazo original (confirmada pela Talita), e a implementação saiu sem migration, com a função única `src/lib/prazo-em-conferencia.ts` ([tarefa](../tarefas/etapa2-prazo.md)). Faltam as etapas 3 (pedido de prazo e impedimento) e 4 (Instruções, foto de exemplo e mensagens).
+**Andamento (23/11/2026): etapa 2 concluída.** A análise foi aprovada no mesmo dia, com a devolução mantendo o prazo original (confirmada pela Talita), e a implementação saiu sem migration, com a função única `src/lib/prazo-em-conferencia.ts` ([tarefa](../tarefas/etapa2-prazo.md)). Faltam as etapas 3 (pedido de prazo e impedimento) e 4 (Instruções, foto de exemplo e mensagens). **Pendência da etapa 2:** quem lê o pedido mas não lê os arquivos (novo responsável depois de reatribuição, segundo externo atribuído, interno responsável sem atribuição ao projeto) ainda vê o item em conferência como atrasado. Decidido em 23/11/2026 que deve ver a pausa; a correção é a tarefa [pausa-prazo-visibilidade](../tarefas/pausa-prazo-visibilidade.md), com [análise aprovada](pausa-prazo-visibilidade-pedido.md) (coluna no pedido, migration).
 
 Itens: parar o prazo durante a conferência, pausa de prazo, pedido de prazo e impedimento, Instruções, foto de exemplo e mensagens.
 - Segue a ordem já definida na análise dos comprovantes: etapa 2 (com análise própria da regra de prazo), depois 3 e 4.
