@@ -231,6 +231,14 @@ o grupo e a ausência de rolagem lateral a 375 px.
 **Pendências desta área.** Dependem de etapas seguintes da [análise dos comprovantes](../analises/comprovantes-colaborador-externo.md): parar o
 prazo durante a conferência (etapa 2), pedido de prazo e impedimento (etapa 3), mensagens e a página de Instruções com foto de exemplo (etapa 4).
 
+### Pedidos de prazo no detalhe do item
+
+O botão **Não consigo cumprir este prazo** abre um diálogo com as opções de prorrogação e
+impedimento. O cartão **Pedidos de prazo** exibe o estado e a resposta. Na troca de responsável,
+o novo colaborador vê apenas a informação de que há um pedido pendente. A administração
+e o interno atribuído ao projeto abrem os pendentes pelo bloco **Aguardando sua decisão**
+nos seus respectivos painéis.
+
 ### Painéis e Configurações
 
 **Como funciona.** O **Painel da administradora** (`/painel`, agora a tela inicial) tem quatro indicadores (atrasados, vencem em 7 dias,

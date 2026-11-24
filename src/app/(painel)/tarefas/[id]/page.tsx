@@ -8,6 +8,8 @@ import { exigirAcessoARota } from "@/server/auth/contexto";
 import { buscarTarefa, listarEnviosDaTarefa, listarPessoasParaProjeto } from "@/lib/projetos-tarefas";
 import { proximaOcorrenciaDaTarefa } from "@/lib/regras-projetos-tarefas";
 import { EnviosComprovantes } from "@/app/(painel)/projetos/envios-comprovantes";
+import { CartaoPedidosPrazo } from "@/app/(painel)/minhas-tarefas/[id]/pedido-prazo/cartao";
+import { carregarPedidosPrazo } from "@/lib/pedidos-prazo";
 import { descricaoDaExigencia } from "@/lib/comprovantes-arquivos";
 import {
   concluirTarefaAction,
@@ -55,11 +57,12 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
   const { subtarefa: subtarefaSelecionada } = await searchParams;
   const t = await buscarTarefa(ctx, id, true);
   if (!t) notFound();
-  const [{ pessoas, usuarios }, catalogoEtiquetas, limites, envios] = await Promise.all([
+  const [{ pessoas, usuarios }, catalogoEtiquetas, limites, envios, pedidosPrazo] = await Promise.all([
     listarPessoasParaProjeto(ctx, t.projeto.clienteId),
     listarEtiquetas(ctx),
     buscarLimitesSemaforo(ctx),
     listarEnviosDaTarefa(ctx, id),
+    carregarPedidosPrazo(ctx, id, t.subtarefas.map((s) => s.id)),
   ]);
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.ativo && s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
   const proximaOcorrencia = proximaOcorrenciaDaTarefa(t);
@@ -139,6 +142,11 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
         )}
       </FaixaResumo>
 
+      <div className="mb-6 empty:hidden">
+        <CartaoPedidosPrazo tarefaId={id} alvo={{ tipo: "TAREFA", id }} prazoVigente={t.prazo}
+          previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto} pedidos={pedidosPrazo.porItem.get(id) ?? []} podeDecidir podeRetirar />
+      </div>
+
       {subtarefasSemResponsavel.length > 0 && <div role="status" className="mb-6 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-3.5 text-sm text-ambar">
         <strong className="font-semibold">Atribuição pendente:</strong> {subtarefasSemResponsavel.length} {subtarefasSemResponsavel.length === 1 ? "subtarefa está" : "subtarefas estão"} sem responsável.
         <Link href={`/tarefas/${id}?subtarefa=${subtarefasSemResponsavel[0].id}#subtarefa-${subtarefasSemResponsavel[0].id}`} className="ml-1 font-semibold underline underline-offset-2">Atribuir agora</Link>
@@ -171,6 +179,11 @@ export default async function TarefaDetalhePage({ params, searchParams }: { para
                   <p className="mt-2 text-xs text-cinza">Criado por: {s.criadoPorNome ?? "Registro anterior"} · {dataHora(s.criadoEm)}</p>
                   <EtiquetasSubtarefa nomes={s.etiquetas} catalogo={catalogoEtiquetas} />
                   {s.comprovanteExigido && <p className="mt-2 text-[13px] text-cinza">Exige comprovante: <b className="font-medium text-ink">{descricaoDaExigencia(s.comprovanteQuantidade)}</b></p>}
+                  <div className="my-3 empty:hidden">
+                    <CartaoPedidosPrazo tarefaId={id} alvo={{ tipo: "SUBTAREFA", id: s.id }} prazoVigente={s.prazo}
+                      prazoDaTarefa={t.prazo} previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto}
+                      pedidos={pedidosPrazo.porItem.get(s.id) ?? []} podeDecidir podeRetirar />
+                  </div>
                   <EnviosComprovantes envios={envios.filter((envio) => envio.subtarefaId === s.id)} />
                   {t.ativo && s.ativo && <Link href={`/tarefas/${id}/subtarefas/${s.id}/editar`} className={`mt-3 ${botaoSecundario}`}>Editar subtarefa</Link>}
                   {t.ativo && s.ativo && <form action={atualizarResponsavelSubtarefaFormAction.bind(null, s.id)} className="mt-4 flex flex-wrap items-end gap-2"><label className="grid gap-1 text-xs font-medium">Responsável<select name="responsavelId" required defaultValue={s.atribuidoAUsuarioId ? `usuario:${s.atribuidoAUsuarioId}` : s.atribuidoAId ?? ""} className={`${inputClass} min-w-[220px]`}><option value="" disabled>Selecione</option><optgroup label="Equipe Múltiplus">{usuarios.map(u => <option key={u.id} value={`usuario:${u.id}`}>{u.nome}</option>)}</optgroup><optgroup label="Pessoas envolvidas">{pessoas.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</optgroup></select></label><button className={botaoSecundario}>Salvar responsável</button></form>}

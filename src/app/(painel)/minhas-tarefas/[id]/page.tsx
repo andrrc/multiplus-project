@@ -20,18 +20,24 @@ import { BlocoLateral, Cartao, CartaoLateral, CelulaResumo, FaixaResumo, Trilha 
 import { CelulaPrazo, StatusPonto } from "@/ui/lista";
 import { EnviosComprovantes } from "@/app/(painel)/projetos/envios-comprovantes";
 import { EnviarComprovante } from "./enviar-comprovante";
+import { carregarPedidosPrazo } from "@/lib/pedidos-prazo";
+import { CartaoPedidosPrazo } from "./pedido-prazo/cartao";
 
 const status: Record<StatusSubtarefa, string> = { EM_ANDAMENTO: "Em andamento", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 const statusTarefa: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluída", CANCELADO: "Cancelada" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(v) : null;
 const dataHora = (v: Date) => formatarDataHoraBrasilia(v);
 
-export default async function MinhaTarefaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MinhaTarefaDetalhePage({ params, searchParams }: {
+  params: Promise<{ id: string }>; searchParams: Promise<{ subtarefa?: string }>;
+}) {
   const ctx = await exigirAcessoARota("/minhas-tarefas");
   const { id } = await params;
   const [t, limites] = await Promise.all([buscarTarefaParaColaborador(ctx, id), buscarLimitesSemaforo(ctx)]);
   if (!t) notFound();
-  const catalogoEtiquetas = await listarEtiquetas(ctx);
+  const [catalogoEtiquetas, pedidosPrazo, { subtarefa: subtarefaSelecionada }] = await Promise.all([
+    listarEtiquetas(ctx), carregarPedidosPrazo(ctx, id, t.subtarefas.map((s) => s.id)), searchParams,
+  ]);
   const subtarefasSemResponsavel = t.subtarefas.filter(s => s.status !== StatusSubtarefa.CANCELADO && !s.atribuidoAId && !s.atribuidoAUsuarioId);
   const subtarefasConcluidas = t.subtarefas.filter(s => s.status === StatusSubtarefa.CONCLUIDO).length;
   const tarefaAberta = t.status !== "CONCLUIDO" && t.status !== "CANCELADO";
@@ -85,6 +91,11 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
         </Cartao>
       </div>
     )}
+    <div className="mb-6 empty:hidden">
+      <CartaoPedidosPrazo tarefaId={id} alvo={{ tipo: "TAREFA", id }} prazoVigente={t.prazo}
+        previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto} estado={pedidosPrazo.estados.get(id)}
+        pedidos={pedidosPrazo.porItem.get(id) ?? []} podeDecidir={ctx.perfil === "ADMIN_INTERNO"} podeRetirar={ctx.perfil === "ADMIN_EXTERNO"} />
+    </div>
     {t.enviosDaTarefa.some((envio) => envio.arquivos.length > 0 || envio.status === "PENDENTE") && <div className="mb-6"><EnviosComprovantes envios={t.enviosDaTarefa} titulo="Comprovantes da tarefa" /></div>}
 
     {subtarefasSemResponsavel.length > 0 && <div role="status" className="mb-6 rounded-cartao border border-ambar/25 bg-ambar-cl px-5 py-3.5 text-sm text-ambar"><strong className="font-semibold">Atribuição pendente:</strong> {subtarefasSemResponsavel.length} {subtarefasSemResponsavel.length === 1 ? "subtarefa está" : "subtarefas estão"} sem responsável. A administração precisa definir quem ficará responsável.</div>}
@@ -112,7 +123,7 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
         acao={t.podeCriarSubtarefas ? <Link href={`/minhas-tarefas/${id}/subtarefas/nova`} className={botaoPrimarioPequeno}>+ Nova subtarefa</Link> : undefined}
       >
         {t.subtarefas.length === 0 ? <p className="px-5 py-8 text-center text-sm text-cinza">Nenhuma subtarefa nesta tarefa.</p> : t.subtarefas.map(s => (
-          <details key={s.id} className="group border-t border-linha first:border-t-0">
+          <details key={s.id} id={`subtarefa-${s.id}`} open={subtarefaSelecionada === s.id} className="group border-t border-linha first:border-t-0">
             <summary className="grid cursor-pointer list-none gap-2 px-5 py-3.5 hover:bg-cabecalho xl:grid-cols-[minmax(0,1fr)_96px_104px_150px_18px] xl:items-center xl:gap-3 [&::-webkit-details-marker]:hidden">
               <span className="min-w-0">
                 <span className="block break-words font-medium text-ink">{s.titulo}</span>
@@ -147,6 +158,12 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
                       />
                     </div>
                   : <form action={concluirSubtarefaFormAction.bind(null, s.id)} className="mt-3"><button className={botaoPrimarioPequeno}>Solicitar conclusão</button></form>)}
+              <div className="mt-3 empty:hidden">
+                <CartaoPedidosPrazo tarefaId={id} alvo={{ tipo: "SUBTAREFA", id: s.id }} prazoVigente={s.prazo}
+                  prazoDaTarefa={t.prazo} previsaoDoProjeto={pedidosPrazo.previsaoDoProjeto}
+                  estado={pedidosPrazo.estados.get(s.id)} pedidos={pedidosPrazo.porItem.get(s.id) ?? []}
+                  podeDecidir={ctx.perfil === "ADMIN_INTERNO"} podeRetirar={ctx.perfil === "ADMIN_EXTERNO"} />
+              </div>
               <EnviosComprovantes envios={s.envios} />
               <Comentarios alvo={{ subtarefaId: s.id }} nivel="subtarefa" entidadeId={s.id} tarefaId={t.id} />
             </div>

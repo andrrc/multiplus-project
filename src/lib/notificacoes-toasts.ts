@@ -56,9 +56,11 @@ export function tipoToastDoEvento(evento: EventoNotificacao): TipoToast {
       return "sucesso";
     case "PRAZO_PROXIMO":
     case "CONCLUSAO_SOLICITADA":
+    case "PEDIDO_PRAZO_RECEBIDO":
       return "aviso";
     case "NOVO_COMENTARIO":
     case "ATRIBUICAO_RECEBIDA":
+    case "PEDIDO_PRAZO_RESPONDIDO":
       return "informacao";
   }
 }
