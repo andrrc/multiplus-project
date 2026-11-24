@@ -117,8 +117,8 @@ BEGIN
       CASE WHEN p_tipo = 'TAREFA' THEN t."periodicidade"::text END,
       t."prazoOriginal", t."diaSemana",
       NOT (t."ativo" AND p."ativo" AND c."ativo")
-        OR (CASE WHEN p_tipo = 'TAREFA' THEN t."status"::text IN ('Concluído', 'Cancelado')
-                 ELSE NOT s."ativo" OR s."status" IN ('CONCLUIDO', 'CANCELADO') END),
+        OR t."status" IN ('Concluído', 'Cancelado')
+        OR (p_tipo = 'SUBTAREFA' AND (NOT s."ativo" OR s."status" IN ('CONCLUIDO', 'CANCELADO'))),
       EXISTS (
         SELECT 1 FROM "solicitacoes_conclusao" sc
         WHERE sc."status" = 'PENDENTE' AND sc."quantidadeArquivos" > 0
@@ -322,9 +322,9 @@ BEGIN
   IF TG_TABLE_NAME = 'tarefas' THEN
     UPDATE "pedidos_prazo" SET "status" = 'CANCELADO', "decididoEm" = CURRENT_TIMESTAMP
     WHERE "status" = 'PENDENTE' AND (
-      "tarefaId" = NEW."id" OR (NOT NEW."ativo" AND "subtarefaId" IN (
+      "tarefaId" = NEW."id" OR "subtarefaId" IN (
         SELECT "id" FROM "subtarefas" WHERE "tarefaId" = NEW."id"
-      ))
+      )
     );
   ELSE
     UPDATE "pedidos_prazo" SET "status" = 'CANCELADO', "decididoEm" = CURRENT_TIMESTAMP

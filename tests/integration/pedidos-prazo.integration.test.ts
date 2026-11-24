@@ -181,6 +181,31 @@ describe("pedidos de prazo com a role restrita", () => {
     expect(await ownerDb.pedidoPrazo.findUnique({ where: { id: pendente.id } })).toMatchObject({ status: "CANCELADO" });
   });
 
+  it.each(["CONCLUIDO", "CANCELADO"] as const)(
+    "cancela o pedido da subtarefa quando a tarefa principal fica %s",
+    async (status) => {
+      const t = await criarTarefa();
+      const s = await ownerDb.subtarefa.create({
+        data: { tarefaId: t.id, titulo: "Subtarefa aberta", prazo, atribuidoAUsuarioId: externo.usuarioId },
+      });
+      const pedido = await solicitarPedidoPrazo(externo, subtarefa(s.id), "PRAZO", novaData, "Motivo");
+
+      if (status === "CONCLUIDO") await concluirTarefa(admin, t.id);
+      else await ownerDb.tarefa.update({ where: { id: t.id }, data: { status } });
+
+      expect(await ownerDb.pedidoPrazo.findUniqueOrThrow({ where: { id: pedido.id } })).toMatchObject({ status: "CANCELADO" });
+      await expect(decidirPedidoPrazo(interno, pedido.id, true, "", null)).rejects.toThrow(/já foi respondido ou retirado/);
+      await expect(comoUsuario(interno, (tx) =>
+        tx.$queryRaw`SELECT id FROM decidir_pedido_prazo(${pedido.id}, true, NULL, false, NULL)`,
+      )).rejects.toThrow(/item está fechado/);
+      await expect(solicitarPedidoPrazo(externo, subtarefa(s.id), "PRAZO", novaData, "Novo pedido"))
+        .rejects.toThrow(/item está fechado/);
+      expect(await ownerDb.subtarefa.findUniqueOrThrow({ where: { id: s.id } })).toMatchObject({
+        status: "EM_ANDAMENTO", prazo,
+      });
+    },
+  );
+
   it("bloqueia pedidos na conferência e recusa datas passadas ou iguais ao prazo no banco", async () => {
     const t = await criarTarefa({ comprovanteExigido: true, comprovanteQuantidade: 1 });
     await expect(pedirDireto(externo, t.id, `${ano}-01-31`)).rejects.toThrow(/posterior ao prazo/);
