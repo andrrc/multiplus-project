@@ -334,3 +334,94 @@ describe("ciclo real do envio (pelas funções do domínio, sem criar pedido dir
     }
   });
 });
+
+describe("pausa para quem lê o pedido mas não lê os arquivos (achado 4 da revisão cruzada)", () => {
+  let externo2: { id: string };
+  let interno2: { id: string };
+  let tarefaDoSegundoExterno: { id: string };
+  let tarefaReatribuida: { id: string };
+  let tarefaDoInternoSemProjeto: { id: string };
+  const ctxExterno2 = () => ({ usuarioId: externo2.id, perfil: "ADMIN_EXTERNO" as const });
+  const ctxInterno2 = () => ({ usuarioId: interno2.id, perfil: "ADMIN_INTERNO" as const });
+
+  beforeAll(async () => {
+    externo2 = await ownerDb.usuario.create({ data: { nome: "Segundo externo", email: "externo2.prazo@teste.local", perfil: "ADMIN_EXTERNO" } });
+    interno2 = await ownerDb.usuario.create({ data: { nome: "Interno sem projeto", email: "interno2.prazo@teste.local", perfil: "ADMIN_INTERNO" } });
+    const nova = (nome: string, extra: object = {}) =>
+      ownerDb.tarefa.create({ data: { projetoId: projetoConferencia.id, nome, prazo: VENCIDO, status: "EM_ANDAMENTO", comprovanteExigido: true, comprovanteQuantidade: 1, responsavelUsuarioId: externo.id, ...extra } });
+    // Dois externos atribuídos à mesma tarefa: o segundo não enviou nada.
+    tarefaDoSegundoExterno = await nova("Visão do segundo externo");
+    await ownerDb.atribuicao.createMany({ data: [externo.id, externo2.id].map((usuarioId) => ({ usuarioId, entidadeTipo: "TAREFA" as const, entidadeId: tarefaDoSegundoExterno.id })) });
+    // A administração troca o responsável durante a conferência.
+    tarefaReatribuida = await nova("Reatribuída em conferência");
+    await ownerDb.atribuicao.create({ data: { usuarioId: externo.id, entidadeTipo: "TAREFA", entidadeId: tarefaReatribuida.id } });
+    // Interno responsável pela tarefa, mas sem atribuição ao projeto.
+    tarefaDoInternoSemProjeto = await nova("Interno responsável sem projeto", { responsavelUsuarioId: interno2.id });
+    for (const tarefa of [tarefaDoSegundoExterno, tarefaReatribuida, tarefaDoInternoSemProjeto]) await enviarPedido({ tarefaId: tarefa.id }, 1);
+    await ownerDb.tarefa.update({ where: { id: tarefaReatribuida.id }, data: { responsavelUsuarioId: externo2.id } });
+    await ownerDb.atribuicao.create({ data: { usuarioId: externo2.id, entidadeTipo: "TAREFA", entidadeId: tarefaReatribuida.id } });
+  });
+
+  it("o segundo externo atribuído e o novo responsável veem a pausa, sem ler nenhum arquivo", async () => {
+    const tarefas = await listarTarefasAtribuidas(ctxExterno2());
+    const por = Object.fromEntries(tarefas.map((t) => [t.nome, t.emConferenciaDesde]));
+    expect(por["Visão do segundo externo"]).toBeInstanceOf(Date);
+    expect(por["Reatribuída em conferência"]).toBeInstanceOf(Date);
+    const arquivosVisiveis = await comContextoDeUsuario(ctxExterno2(), (tx) => tx.arquivoComprovante.count());
+    expect(arquivosVisiveis).toBe(0);
+  });
+
+  it("o interno responsável sem atribuição ao projeto vê a pausa, sem ler nenhum arquivo, e a faixa de atrasados não a conta", async () => {
+    const tarefas = await listarTarefasAtribuidas(ctxInterno2());
+    expect(tarefas.find((t) => t.nome === "Interno responsável sem projeto")?.emConferenciaDesde).toBeInstanceOf(Date);
+    expect(await comContextoDeUsuario(ctxInterno2(), (tx) => tx.arquivoComprovante.count())).toBe(0);
+    expect(await contarAtrasadosAnterioresColaborador(ctxInterno2(), new Date("2026-11-01T00:00:00.000Z"))).toBe(0);
+  });
+
+  it("o pedido sem arquivo continua sem pausa para quem só lê o pedido", async () => {
+    const semArquivo = await ownerDb.tarefa.create({ data: { projetoId: projetoConferencia.id, nome: "Sem arquivo para o segundo", prazo: VENCIDO, status: "EM_ANDAMENTO", responsavelUsuarioId: externo.id } });
+    await ownerDb.atribuicao.createMany({ data: [externo.id, externo2.id].map((usuarioId) => ({ usuarioId, entidadeTipo: "TAREFA" as const, entidadeId: semArquivo.id })) });
+    await enviarPedido({ tarefaId: semArquivo.id }, 0);
+    const tarefas = await listarTarefasAtribuidas(ctxExterno2());
+    expect(tarefas.find((t) => t.nome === "Sem arquivo para o segundo")?.emConferenciaDesde).toBeNull();
+  });
+});
+
+describe("contagem de arquivos guardada no pedido (quantidadeArquivos)", () => {
+  it("acompanha o ciclo real: o envio com 2 anexos nasce com 2 e o pedido sem anexo fica com 0", async () => {
+    const cliente = await novoCliente("Contagem Ltda", "20000000000106");
+    const projeto = await ownerDb.projeto.create({ data: { clienteId: cliente.id, nome: "P contagem" } });
+    const comArquivos = await ownerDb.tarefa.create({ data: { projetoId: projeto.id, nome: "Com dois anexos", prazo: VENCIDO, status: "EM_ANDAMENTO", comprovanteExigido: true, comprovanteQuantidade: 2, responsavelUsuarioId: externo.id } });
+    const semArquivos = await ownerDb.tarefa.create({ data: { projetoId: projeto.id, nome: "Sem anexo", prazo: VENCIDO, status: "EM_ANDAMENTO", responsavelUsuarioId: externo.id } });
+    for (const tarefa of [comArquivos, semArquivos]) await ownerDb.atribuicao.create({ data: { usuarioId: externo.id, entidadeTipo: "TAREFA", entidadeId: tarefa.id } });
+    try {
+      for (let i = 0; i < 2; i += 1) {
+        await comoUsuario(ctxExterno(), (tx) => tx.$queryRaw`SELECT registrar_arquivo_comprovante('TAREFA', ${comArquivos.id}, ${`comprovantes/contagem-${i}.jpg`}, ${`foto-${i}.jpg`}, 'image/jpeg', 2048) AS id`);
+      }
+      const envio = await solicitarConclusao(ctxExterno(), "TAREFA", comArquivos.id);
+      const simples = await solicitarConclusao(ctxExterno(), "TAREFA", semArquivos.id);
+      const contagem = (id: string) => ownerDb.solicitacaoConclusao.findUniqueOrThrow({ where: { id }, select: { quantidadeArquivos: true } });
+      expect((await contagem(envio.solicitacao.id)).quantidadeArquivos).toBe(2);
+      expect((await contagem(simples.solicitacao.id)).quantidadeArquivos).toBe(0);
+      // Devolver o envio não muda a contagem do histórico.
+      await devolver(envio.solicitacao.id);
+      expect((await contagem(envio.solicitacao.id)).quantidadeArquivos).toBe(2);
+    } finally {
+      await ownerDb.tarefa.deleteMany({ where: { id: { in: [comArquivos.id, semArquivos.id] } } });
+      await ownerDb.atribuicao.deleteMany({ where: { entidadeId: { in: [comArquivos.id, semArquivos.id] } } });
+      await ownerDb.projeto.delete({ where: { id: projeto.id } });
+      await ownerDb.cliente.delete({ where: { id: cliente.id } });
+    }
+  });
+
+  it("o banco recusa criar o pedido com contagem diferente de zero e mudá-la fora do gatilho dos arquivos, inclusive para a administração", async () => {
+    await expect(ownerDb.solicitacaoConclusao.create({
+      data: { tarefaId: tarefaNormal.id, solicitadoPorId: externo.id, solicitadoPorNome: "Externo prazo", statusAnterior: "EM_ANDAMENTO", quantidadeArquivos: 3 },
+    })).rejects.toThrow(/mantida pelo banco/);
+
+    // Pedido pendente com arquivo (o da tarefa "Em conferência"): a administração não consegue mexer na contagem.
+    await expect(comoUsuario(ctxAdmin(), (tx) => tx.solicitacaoConclusao.update({ where: { id: pedidoConferencia.id }, data: { quantidadeArquivos: 0 } }))).rejects.toThrow(/histórico de solicitação é imutável/);
+    const depois = await ownerDb.solicitacaoConclusao.findUniqueOrThrow({ where: { id: pedidoConferencia.id }, select: { quantidadeArquivos: true } });
+    expect(depois.quantidadeArquivos).toBe(2);
+  });
+});

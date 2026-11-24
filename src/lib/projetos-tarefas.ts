@@ -656,7 +656,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
         projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
         // O pedido mais recente de cada item vale para "aguardando outras pessoas" (pendente) e para os grupos de
         // comprovante (pendente = aguardando conferência; rejeitado = devolvida). Pendente é sempre o mais recente.
-        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true, solicitadoEm: true, _count: { select: { arquivos: true } } } },
+        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true, solicitadoEm: true, quantidadeArquivos: true } },
         subtarefas: {
           where: { ativo: true },
           select: {
@@ -664,7 +664,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
             ativo: true,
             atribuidoAId: true,
             atribuidoAUsuarioId: true,
-            solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true, solicitadoEm: true, _count: { select: { arquivos: true } } } },
+            solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true, solicitadoEm: true, quantidadeArquivos: true } },
           },
         },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
@@ -720,7 +720,7 @@ export async function listarSubtarefasAtribuidas(ctx: ContextoUsuario) {
         status: true,
         ativo: true,
         comprovanteExigido: true,
-        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { status: true, solicitadoEm: true, _count: { select: { arquivos: true } } } },
+        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { status: true, solicitadoEm: true, quantidadeArquivos: true } },
         tarefa: {
           select: {
             id: true,
@@ -842,7 +842,7 @@ async function carregarEnvios(tx: Prisma.TransactionClient, ctx: ContextoUsuario
     orderBy: { solicitadoEm: "desc" },
     select: {
       id: true, tarefaId: true, subtarefaId: true, status: true, solicitadoPorId: true, solicitadoPorNome: true, solicitadoEm: true,
-      observacaoEnvio: true, decididoPorNome: true, decididoEm: true, comentarioDecisao: true,
+      observacaoEnvio: true, decididoPorNome: true, decididoEm: true, comentarioDecisao: true, quantidadeArquivos: true,
       arquivos: { select: { id: true, nomeOriginal: true, tipo: true, tamanhoBytes: true, enviadoEm: true }, orderBy: { enviadoEm: "asc" } },
     },
   });

@@ -237,13 +237,18 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
   devolvido ou retirado, o prazo volta a contar na hora, **com a mesma data** (os dias da conferência
   não são somados). Pedido sem arquivo (item que não exige comprovante) continua contando. A pausa
   vale só para o item que recebeu o pedido: o pedido de uma subtarefa não pausa a tarefa-mãe. É
-  derivada do pedido, sem coluna nova, e vem de uma função única, `src/lib/prazo-em-conferencia.ts`
-  ([análise](../analises/comprovantes-etapa2-prazo.md)).
+  derivada do pedido e vem de uma função única, `src/lib/prazo-em-conferencia.ts`
+  ([análise](../analises/comprovantes-etapa2-prazo.md)). Desde 24/11/2026 ela lê `quantidadeArquivos`,
+  guardada no próprio pedido e mantida pelo banco, e não a contagem dos arquivos: quem lê o pedido mas
+  não lê os arquivos (RLS) vê a mesma pausa que a administração
+  ([análise](../analises/pausa-prazo-visibilidade-pedido.md)).
 
 **Detalhes técnicos.**
 - **Dados:** colunas `comprovanteExigido`, `comprovanteQuantidade` e `comprovanteInstrucoes` em
   `tarefas` e `subtarefas`; `observacaoEnvio` em `solicitacoes_conclusao`; tabela
-  `arquivos_comprovante` (rascunho sem pedido; depois do envio, imutável e nunca apagada).
+  `arquivos_comprovante` (rascunho sem pedido; depois do envio, imutável e nunca apagada);
+  `quantidadeArquivos` em `solicitacoes_conclusao` (24/11/2026), atualizada por um gatilho quando um
+  arquivo entra no envio; o gatilho de imutabilidade recusa mudá-la de outro jeito.
 - **Banco:** `registrar_arquivo_comprovante` (anexar, só item aberto que exige e sem envio
   pendente, até 20 arquivos), `solicitar_conclusao` (agora confere a quantidade e anexa os
   rascunhos), `pode_decidir_solicitacao_delegada` e `habilitar_decisao_delegada` (decisão do
@@ -369,13 +374,14 @@ registro de quem criou e quando.
 | L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
 | L6 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
 | L7 | Resolvida em 23/11/2026: o prazo para de contar durante a conferência de um envio com comprovante. | Ver T9 e a [análise](../analises/comprovantes-etapa2-prazo.md). |
-| L9 | Quem lê o pedido de conclusão mas não lê os arquivos (o colaborador externo atribuído à tarefa que não enviou, o novo responsável depois de uma reatribuição e o interno responsável sem atribuição ao projeto) não enxerga a pausa do prazo: a contagem de arquivos passa pelo RLS e dá zero para ele. | Para essas pessoas o item em conferência segue como atrasado. **Decidido em 23/11/2026 que elas devem ver a pausa**; a correção pede uma migration (coluna ou função que exponha só a existência de arquivo) e fica numa tarefa própria. Ver o achado 4 em `docs/tarefas/etapa2-prazo.md`. |
+| L9 | Resolvida em 24/11/2026: quem lê o pedido mas não lê os arquivos (segundo externo atribuído, novo responsável depois de reatribuição, interno responsável sem atribuição ao projeto) passa a ver a pausa do prazo. | A contagem de arquivos fica no pedido (`quantidadeArquivos`). Ver T9 e a [análise](../analises/pausa-prazo-visibilidade-pedido.md). |
 | L8 | Retenção das fotos, backup do volume de arquivos e limpeza de arquivos antigos ainda não definidos. | Ver [pendências antes da produção](../pendencias-antes-producao.md). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-24 | este commit | A pausa do prazo passa a valer também para quem lê o pedido mas não lê os arquivos (`quantidadeArquivos` no pedido) |
 | 2026-11-23 | este commit | O prazo para de contar durante a conferência de um envio com comprovante (etapa 2) |
 | 2026-11-23 | este commit | Minhas tarefas do colaborador interno com subtarefas, filtro de tipo e "Concluir" na linha |
 | 2026-11-18 | este commit | Papel do responsável na lista, "Próxima ocorrência" no resumo e situação do prazo no PDF |

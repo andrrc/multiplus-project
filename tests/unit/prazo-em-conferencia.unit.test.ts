@@ -20,23 +20,22 @@ const VENCIDO = new Date("2026-11-10T00:00:00.000Z");
 const ENVIO = new Date("2026-11-12T14:00:00.000Z");
 
 describe("emConferenciaDesde: quando o prazo para", () => {
-  it("pedido pendente com arquivo (contagem do banco) está em conferência e devolve o instante do envio", () => {
-    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, _count: { arquivos: 2 } }])).toEqual(ENVIO);
+  it("pedido pendente com arquivo (contagem guardada no pedido) está em conferência e devolve o instante do envio", () => {
+    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, quantidadeArquivos: 2 }])).toEqual(ENVIO);
   });
 
-  it("aceita a lista de arquivos no lugar da contagem (envios da página do item)", () => {
-    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, arquivos: [{ id: "a" }] }])).toEqual(ENVIO);
+  it("vale a contagem do pedido, não a lista de arquivos que a pessoa consegue ler (RLS)", () => {
+    // Quem lê o pedido mas não lê os arquivos recebe a lista vazia; a pausa tem de continuar valendo para ele.
+    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, quantidadeArquivos: 1, arquivos: [] } as never])).toEqual(ENVIO);
   });
 
   it("pedido pendente SEM arquivo (item que não exige comprovante) continua contando", () => {
-    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, _count: { arquivos: 0 } }])).toBeNull();
-    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, arquivos: [] }])).toBeNull();
-    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO }])).toBeNull();
+    expect(emConferenciaDesde([{ status: "PENDENTE", solicitadoEm: ENVIO, quantidadeArquivos: 0 }])).toBeNull();
   });
 
   it("pedido devolvido, retirado ou aprovado não pausa: o prazo volta a contar", () => {
     for (const status of ["REJEITADA", "CANCELADA", "APROVADA"]) {
-      expect(emConferenciaDesde([{ status, solicitadoEm: ENVIO, _count: { arquivos: 3 } }])).toBeNull();
+      expect(emConferenciaDesde([{ status, solicitadoEm: ENVIO, quantidadeArquivos: 3 }])).toBeNull();
     }
   });
 
@@ -48,8 +47,8 @@ describe("emConferenciaDesde: quando o prazo para", () => {
 
   it("com vários pedidos no histórico, vale o pendente com arquivo", () => {
     const historico = [
-      { status: "REJEITADA", solicitadoEm: new Date("2026-11-05T12:00:00.000Z"), _count: { arquivos: 1 } },
-      { status: "PENDENTE", solicitadoEm: ENVIO, _count: { arquivos: 1 } },
+      { status: "REJEITADA", solicitadoEm: new Date("2026-11-05T12:00:00.000Z"), quantidadeArquivos: 1 },
+      { status: "PENDENTE", solicitadoEm: ENVIO, quantidadeArquivos: 1 },
     ];
     expect(emConferenciaDesde(historico)).toEqual(ENVIO);
   });

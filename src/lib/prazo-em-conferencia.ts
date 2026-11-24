@@ -13,12 +13,15 @@ import type { Prisma } from "@prisma/client";
 
 const FUSO_HORARIO = "America/Sao_Paulo";
 
-/** Pedido de conclusão como as consultas o entregam: com a contagem de arquivos ou a própria lista deles. */
+/**
+ * Pedido de conclusão como as consultas o entregam. `quantidadeArquivos` fica no próprio pedido (mantida pelo banco), porque
+ * quem lê o pedido nem sempre lê os arquivos (RLS): contar os arquivos na consulta daria zero para o novo responsável depois
+ * de uma reatribuição, para o segundo externo atribuído e para o interno responsável sem atribuição ao projeto.
+ */
 export type PedidoParaPrazo = {
   status: string;
   solicitadoEm: Date;
-  _count?: { arquivos: number };
-  arquivos?: readonly unknown[];
+  quantidadeArquivos: number;
 };
 
 /**
@@ -26,7 +29,7 @@ export type PedidoParaPrazo = {
  * `solicitadoEm` vem do relógio do banco (default da coluna), nunca do aparelho do colaborador.
  */
 export function emConferenciaDesde(pedidos: readonly PedidoParaPrazo[] | null | undefined): Date | null {
-  const pedido = pedidos?.find((candidato) => candidato.status === "PENDENTE" && (candidato._count?.arquivos ?? candidato.arquivos?.length ?? 0) > 0);
+  const pedido = pedidos?.find((candidato) => candidato.status === "PENDENTE" && candidato.quantidadeArquivos > 0);
   return pedido ? pedido.solicitadoEm : null;
 }
 
@@ -42,11 +45,11 @@ export function rotuloEnviadoEm(enviadoEm: Date): string {
  */
 export const PEDIDO_PENDENTE_PARA_PRAZO = {
   where: { status: "PENDENTE" },
-  select: { status: true, solicitadoEm: true, _count: { select: { arquivos: true } } },
+  select: { status: true, solicitadoEm: true, quantidadeArquivos: true },
   take: 1,
 } satisfies Prisma.Tarefa$solicitacoesConclusaoArgs;
 
 /** Filtro de consulta: o item NÃO está em conferência (o prazo dele conta). Para `idsDeClientesComAtraso` e para o job de avisos. */
 export const SEM_CONFERENCIA_EM_ANDAMENTO = {
-  solicitacoesConclusao: { none: { status: "PENDENTE", arquivos: { some: {} } } },
+  solicitacoesConclusao: { none: { status: "PENDENTE", quantidadeArquivos: { gt: 0 } } },
 } satisfies Prisma.TarefaWhereInput & Prisma.SubtarefaWhereInput;
