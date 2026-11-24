@@ -23,9 +23,6 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 
 | ID | Título | Agente | Branch | Estado | Arquivos compartilhados reservados | Revisor | Atualizado em |
 |---|---|---|---|---|---|---|---|
-| [etapa2-analise](etapa2-analise.md) | Análise da etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | `claude/etapa2-analise` | aprovada | nenhum | codex | 2026-11-23 |
-| [duplicar-projeto](duplicar-projeto.md) | Duplicar projeto | codex | `codex/duplicar-projeto` | aprovada | nenhum | claude | 2026-11-23 |
-| [etapa2-prazo](etapa2-prazo.md) | Etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | `claude/etapa2-prazo` | em andamento | `src/ui/**`, `src/lib/projetos-tarefas.ts` | codex | 2026-11-23 |
 | [pausa-prazo-visibilidade](pausa-prazo-visibilidade.md) | A pausa do prazo para quem lê o pedido mas não lê os arquivos | claude | `claude/pausa-prazo-visibilidade` | aprovada | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/projetos-tarefas.ts` | codex | 2026-11-23 |
 
 ## Tarefas encerradas
@@ -34,4 +31,6 @@ Depois do merge, a linha sai da tabela acima e vai para esta, só com ID, títul
 
 | ID | Título | Agente | Integrada em | Pull Request |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| [etapa2-analise](etapa2-analise.md) | Análise da etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | 2026-11-23 | sem PR (merge local em `staging`) |
+| [duplicar-projeto](duplicar-projeto.md) | Duplicar projeto | codex | 2026-11-23 | sem PR (merge local em `staging`) |
+| [etapa2-prazo](etapa2-prazo.md) | Etapa 2 dos comprovantes (o prazo para durante a conferência) | claude | 2026-11-23 | sem PR (merge local em `staging`) |
