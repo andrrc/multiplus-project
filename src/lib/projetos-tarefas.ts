@@ -15,7 +15,7 @@ import { comContextoDeUsuario, type ContextoUsuario } from "@/lib/prisma-app";
 import { salvarEtiquetasSubtarefa, type EtiquetaSelecionada } from "@/lib/etiquetas";
 import { contarAtrasadosAnteriores } from "@/lib/agenda-itens";
 import { contarMinhasPendencias } from "@/lib/lista-meus-projetos";
-import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
+import { calcularProximaOcorrencia, calcularPercentualEmDia, dataDaSerieDaOcorrencia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 import { aguardaOutrasPessoas } from "@/lib/aguardando-outras-pessoas";
 import { emConferenciaDesde, PEDIDO_PENDENTE_PARA_PRAZO, SEM_CONFERENCIA_EM_ANDAMENTO } from "@/lib/prazo-em-conferencia";
@@ -342,8 +342,11 @@ export async function decidirSolicitacaoConclusao(
       const proximoPrazo = atual.tarefa.periodicidade && atual.tarefa.prazo
         ? calcularProximaOcorrencia(atual.tarefa.prazo, atual.tarefa.periodicidade, atual.tarefa.prazoOriginal ?? atual.tarefa.prazo, atual.tarefa.diaSemana)
         : null;
+      const dataDaSerie = atual.tarefa.periodicidade && atual.tarefa.prazo
+        ? dataDaSerieDaOcorrencia(atual.tarefa.prazo, atual.tarefa.periodicidade, atual.tarefa.prazoOriginal ?? atual.tarefa.prazo, atual.tarefa.diaSemana)
+        : null;
       const resultado = await tx.$queryRaw<{ tarefa_id: string; proxima_id: string | null }[]>`
-        SELECT * FROM concluir_tarefa(${atual.tarefa.id}, CAST(${proximoPrazo} AS timestamp))
+        SELECT * FROM concluir_tarefa(${atual.tarefa.id}, CAST(${proximoPrazo} AS timestamp), CAST(${dataDaSerie} AS timestamp))
       `;
       proximaId = resultado[0]?.proxima_id ?? null;
     } else if (aprovar && atual.subtarefa) {
@@ -1348,8 +1351,11 @@ export async function concluirTarefa(ctx: ContextoUsuario, tarefaId: string) {
     const prazo = atual.periodicidade && atual.prazo
       ? calcularProximaOcorrencia(atual.prazo, atual.periodicidade, atual.prazoOriginal ?? atual.prazo, atual.diaSemana)
       : null;
+    const dataDaSerie = atual.periodicidade && atual.prazo
+      ? dataDaSerieDaOcorrencia(atual.prazo, atual.periodicidade, atual.prazoOriginal ?? atual.prazo, atual.diaSemana)
+      : null;
     const resultado = await tx.$queryRaw<{ tarefa_id: string; proxima_id: string | null }[]>`
-      SELECT * FROM concluir_tarefa(${tarefaId}, CAST(${prazo} AS timestamp))
+      SELECT * FROM concluir_tarefa(${tarefaId}, CAST(${prazo} AS timestamp), CAST(${dataDaSerie} AS timestamp))
     `;
     const tarefa = await tx.tarefa.findUniqueOrThrow({ where: { id: tarefaId } });
     const proxima = resultado[0]?.proxima_id

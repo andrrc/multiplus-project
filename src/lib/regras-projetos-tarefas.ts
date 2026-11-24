@@ -47,6 +47,24 @@ function ocorrenciaMensalDaSerie(original: Date, indice: number, passoEmMeses: n
 }
 
 /**
+ * Índice da ocorrência a que o prazo pertence: a maior data da série que não passa dele (0 é a própria âncora).
+ * O índice por meses civis pode ter avançado um ciclo quando o prazo foi prorrogado para depois da data da série
+ * (31/01 prorrogado para 01/02 cai no mês de 28/02, mas ainda é a ocorrência de 31/01); por isso recuamos
+ * enquanto a data do índice ultrapassa o prazo.
+ */
+function indiceDaOcorrenciaMensal(atual: Date, original: Date, passoEmMeses: number): number {
+  const mesesDecorridos =
+    (atual.getUTCFullYear() - original.getUTCFullYear()) * 12 +
+    (atual.getUTCMonth() - original.getUTCMonth());
+  // A quantidade inteira de ciclos evita arredondar datas para uma ocorrência futura indevida.
+  let indice = Math.max(0, Math.floor(mesesDecorridos / passoEmMeses));
+  while (indice > 0 && ocorrenciaMensalDaSerie(original, indice, passoEmMeses).getTime() > atual.getTime()) {
+    indice -= 1;
+  }
+  return indice;
+}
+
+/**
  * RN-008 — calcula a próxima ocorrência sempre ancorada no prazo original da série.
  *
  * O prazo atual pode ter sido prorrogado (pedido de prazo aprovado), desde que fique antes da próxima ocorrência;
@@ -80,23 +98,34 @@ export function calcularProximaOcorrencia(
   const passoEmMeses = mesesDaPeriodicidade(periodicidade);
   if (passoEmMeses === null) return null;
 
-  // Calcula quantos meses civis separam a ocorrência atual da âncora original.
-  const mesesDecorridos =
-    (atual.getUTCFullYear() - original.getUTCFullYear()) * 12 +
-    (atual.getUTCMonth() - original.getUTCMonth());
-  // A quantidade inteira de ciclos evita arredondar datas para uma ocorrência futura indevida.
-  let ocorrenciasDecorridas = Math.max(0, Math.floor(mesesDecorridos / passoEmMeses));
-  // O índice por mês pode ter avançado um ciclo quando o prazo foi prorrogado para depois da data da série
-  // (31/01 prorrogado para 01/02 cai no mês de 28/02, mas ainda é a ocorrência de 31/01). A ocorrência a que o
-  // prazo pertence é a maior data da série que não passa dele; por isso recuamos enquanto a data do índice o ultrapassa.
-  while (
-    ocorrenciasDecorridas > 0 &&
-    ocorrenciaMensalDaSerie(original, ocorrenciasDecorridas, passoEmMeses).getTime() > atual.getTime()
-  ) {
-    ocorrenciasDecorridas -= 1;
+  return ocorrenciaMensalDaSerie(original, indiceDaOcorrenciaMensal(atual, original, passoEmMeses) + 1, passoEmMeses);
+}
+
+/**
+ * Data da série da ocorrência atual: a ocorrência a que o prazo vigente pertence, mesmo depois de uma prorrogação.
+ * Serve de referência para as subtarefas copiadas à próxima ocorrência. Sem série (sem periodicidade, ou semanal
+ * sem dia fixo, que só existe em dado antigo), devolve o próprio prazo, que é a medida de antes.
+ */
+export function dataDaSerieDaOcorrencia(
+  prazoAtual: DataLike,
+  periodicidade: PeriodicidadeLike | null | undefined,
+  prazoOriginal: DataLike = prazoAtual,
+  diaSemana?: number | null,
+): Date | null {
+  if (!periodicidade) return null;
+  const atual = dataUTC(prazoAtual);
+  const original = dataUTC(prazoOriginal);
+
+  if (periodicidade === "SEMANAL") {
+    if (diaSemana == null || !Number.isInteger(diaSemana) || diaSemana < 0 || diaSemana > 6) return atual;
+    // O dia escolhido mais recente que não passa do prazo (o próprio prazo, quando já cai nele).
+    const diasDesde = (atual.getUTCDay() - diaSemana + 7) % 7;
+    return new Date(atual.getTime() - diasDesde * 24 * 60 * 60 * 1000);
   }
 
-  return ocorrenciaMensalDaSerie(original, ocorrenciasDecorridas + 1, passoEmMeses);
+  const passoEmMeses = mesesDaPeriodicidade(periodicidade);
+  if (passoEmMeses === null) return null;
+  return ocorrenciaMensalDaSerie(original, indiceDaOcorrenciaMensal(atual, original, passoEmMeses), passoEmMeses);
 }
 
 /**

@@ -133,6 +133,28 @@ describe("pedidos de prazo com a role restrita", () => {
     });
   });
 
+  it("as subtarefas da próxima ocorrência medem a distância pela data da série, não pelo prazo prorrogado", async () => {
+    const proximoDe = async (t: { id: string }) => {
+      const proxima = (await concluirTarefa(admin, t.id)).proxima;
+      if (!proxima) throw new Error("A próxima ocorrência deveria existir.");
+      return ownerDb.subtarefa.findFirstOrThrow({ where: { tarefaId: proxima.id } });
+    };
+    // Subtarefa cinco dias antes da data da série (31/01): 26/01. A próxima ocorrência é 28/02, então a cópia fica em 23/02.
+    const dadosSubtarefa = (tarefaId: string) => ({ tarefaId, titulo: "Subtarefa da série", prazo: data(`${ano}-01-26`) });
+
+    const semPedido = await criarTarefa({ periodicidade: "MENSAL", prazoOriginal: prazo });
+    await ownerDb.subtarefa.create({ data: dadosSubtarefa(semPedido.id) });
+    expect((await proximoDe(semPedido)).prazo).toEqual(data(`${ano}-02-23`));
+
+    const prorrogada = await criarTarefa({ periodicidade: "MENSAL", prazoOriginal: prazo });
+    await ownerDb.subtarefa.create({ data: dadosSubtarefa(prorrogada.id) });
+    const pedido = await solicitarPedidoPrazo(externo, tarefa(prorrogada.id), "PRAZO", `${ano}-02-20`, "Motivo");
+    await decidirPedidoPrazo(interno, pedido.id, true, "", null);
+    expect(await ownerDb.tarefa.findUniqueOrThrow({ where: { id: prorrogada.id } })).toMatchObject({ prazo: data(`${ano}-02-20`) });
+    // A conta antiga mediria até 20/02 (25 dias) e levaria a cópia para 03/02.
+    expect((await proximoDe(prorrogada)).prazo).toEqual(data(`${ano}-02-23`));
+  });
+
   it("serializa criação e decisão concorrentes e permite novo pedido depois da resposta", async () => {
     const t = await criarTarefa();
     const criacoes = await Promise.allSettled([pedirDireto(externo, t.id), pedirDireto(externo, t.id)]);

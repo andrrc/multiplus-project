@@ -6,6 +6,7 @@ import {
   calcularUltimaAtualizacaoProjeto,
   calcularPercentualEmDia,
   calcularProximaOcorrencia,
+  dataDaSerieDaOcorrencia,
   estaAtrasada,
   filtrarAtivos,
   projetarOcorrenciasFuturas,
@@ -131,6 +132,50 @@ describe("RN-008 — próxima ocorrência ancorada no prazo original", () => {
 
   it("não calcula próxima ocorrência sem periodicidade", () => {
     expect(calcularProximaOcorrencia(data("2026-09-10"), null)).toBeNull();
+  });
+});
+
+describe("RN-008 — data da série da ocorrência atual", () => {
+  it("devolve a data da série mesmo com o prazo prorrogado dentro do ciclo", () => {
+    const original = data("2026-01-31");
+    expect(dataDaSerieDaOcorrencia(original, "MENSAL", original)).toEqual(original);
+    expect(dataDaSerieDaOcorrencia(data("2026-02-01"), "MENSAL", original)).toEqual(original);
+    expect(dataDaSerieDaOcorrencia(data("2026-02-28"), "MENSAL", original)).toEqual(data("2026-02-28"));
+    expect(dataDaSerieDaOcorrencia(data("2026-03-15"), "MENSAL", original)).toEqual(data("2026-02-28"));
+    expect(dataDaSerieDaOcorrencia(data("2026-02-10"), "ANUAL", original)).toEqual(original);
+  });
+
+  it("semanal com dia fixo volta ao dia escolhido; sem dia fixo ou sem periodicidade não há série", () => {
+    // 15/09/2026 é terça-feira (2); 17/09 é quinta-feira.
+    expect(dataDaSerieDaOcorrencia(data("2026-09-15"), "SEMANAL", undefined, 2)).toEqual(data("2026-09-15"));
+    expect(dataDaSerieDaOcorrencia(data("2026-09-17"), "SEMANAL", undefined, 2)).toEqual(data("2026-09-15"));
+    expect(dataDaSerieDaOcorrencia(data("2026-09-14"), "SEMANAL", undefined, 2)).toEqual(data("2026-09-08"));
+    expect(dataDaSerieDaOcorrencia(data("2026-09-17"), "SEMANAL")).toEqual(data("2026-09-17"));
+    expect(dataDaSerieDaOcorrencia(data("2026-09-17"), null)).toBeNull();
+  });
+
+  it("para todas as âncoras e periodicidades, é a data da série do ciclo e anda junto com a próxima", () => {
+    const passos = { MENSAL: 1, TRIMESTRAL: 3, SEMESTRAL: 6, ANUAL: 12 } as const;
+    const umDia = 24 * 60 * 60 * 1000;
+    for (const [periodicidade, passo] of Object.entries(passos)) {
+      for (let dia = 1; dia <= 31; dia += 1) {
+        const original = new Date(Date.UTC(2027, 0, dia));
+        const serie = (i: number) => {
+          const meses = original.getUTCMonth() + i * passo;
+          const ano = original.getUTCFullYear() + Math.floor(meses / 12);
+          const mes = meses % 12;
+          return new Date(Date.UTC(ano, mes, Math.min(dia, new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate())));
+        };
+        for (let i = 0; i < 6; i += 1) {
+          for (let t = serie(i).getTime(); t < serie(i + 1).getTime(); t += umDia) {
+            const prazo = new Date(t);
+            const rotulo = `${periodicidade}, âncora dia ${dia}, prazo ${prazo.toISOString().slice(0, 10)}`;
+            expect(dataDaSerieDaOcorrencia(prazo, periodicidade as keyof typeof passos, original), rotulo).toEqual(serie(i));
+            expect(calcularProximaOcorrencia(prazo, periodicidade as keyof typeof passos, original), rotulo).toEqual(serie(i + 1));
+          }
+        }
+      }
+    }
   });
 });
 
