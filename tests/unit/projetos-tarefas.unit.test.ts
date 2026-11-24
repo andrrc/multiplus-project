@@ -82,6 +82,47 @@ describe("RN-008 — próxima ocorrência ancorada no prazo original", () => {
     expect(calcularProximaOcorrencia(data("2028-01-31"), "MENSAL", data("2028-01-31"))).toEqual(data("2028-02-29"));
   });
 
+  it("mantém a próxima ocorrência quando o prazo foi prorrogado dentro do ciclo", () => {
+    const original = data("2026-01-31");
+    // 31/01 prorrogado para 01/02 (já no mês de fevereiro): a próxima segue sendo 28/02, não 31/03.
+    expect(calcularProximaOcorrencia(data("2026-02-01"), "MENSAL", original)).toEqual(data("2026-02-28"));
+    expect(calcularProximaOcorrencia(data("2026-02-27"), "MENSAL", original)).toEqual(data("2026-02-28"));
+    // 28/02 prorrogado para 15/03: a próxima segue sendo 31/03.
+    expect(calcularProximaOcorrencia(data("2026-03-15"), "MENSAL", original)).toEqual(data("2026-03-31"));
+    // Dia 10 prorrogado para o mês seguinte, ainda antes da próxima data da série.
+    expect(calcularProximaOcorrencia(data("2026-02-05"), "MENSAL", data("2026-01-10"))).toEqual(data("2026-02-10"));
+    // Trimestral e anual com a âncora no dia 31.
+    expect(calcularProximaOcorrencia(data("2026-02-10"), "TRIMESTRAL", original)).toEqual(data("2026-04-30"));
+    expect(calcularProximaOcorrencia(data("2026-02-10"), "ANUAL", original)).toEqual(data("2027-01-31"));
+  });
+
+  it("acerta a próxima de qualquer prazo entre duas datas da série, para todas as âncoras e periodicidades", () => {
+    const passos = { MENSAL: 1, TRIMESTRAL: 3, SEMESTRAL: 6, ANUAL: 12 } as const;
+    const umDia = 24 * 60 * 60 * 1000;
+    for (const [periodicidade, passo] of Object.entries(passos)) {
+      for (let dia = 1; dia <= 31; dia += 1) {
+        const original = new Date(Date.UTC(2027, 0, dia));
+        const serie = (i: number) => {
+          const meses = original.getUTCMonth() + i * passo;
+          const ano = original.getUTCFullYear() + Math.floor(meses / 12);
+          const mes = meses % 12;
+          return new Date(Date.UTC(ano, mes, Math.min(dia, new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate())));
+        };
+        for (let i = 0; i < 6; i += 1) {
+          const atual = serie(i);
+          const proxima = serie(i + 1);
+          // Na própria data da série e em todos os dias até a véspera da próxima.
+          for (let t = atual.getTime(); t < proxima.getTime(); t += umDia) {
+            expect(
+              calcularProximaOcorrencia(new Date(t), periodicidade as keyof typeof passos, original),
+              `${periodicidade}, âncora dia ${dia}, prazo ${new Date(t).toISOString().slice(0, 10)}`,
+            ).toEqual(proxima);
+          }
+        }
+      }
+    }
+  });
+
   it("repete semanalmente no dia escolhido", () => {
     // 10/09/2026 é quinta-feira; 2 representa terça-feira.
     expect(calcularProximaOcorrencia(data("2026-09-10"), "SEMANAL", undefined, 2)).toEqual(data("2026-09-15"));

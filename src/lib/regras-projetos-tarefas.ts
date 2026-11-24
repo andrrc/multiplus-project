@@ -38,7 +38,21 @@ function mesesDaPeriodicidade(periodicidade: PeriodicidadeLike): number | null {
   }
 }
 
-/** RN-008 — calcula a próxima ocorrência sempre ancorada no prazo original da série. */
+function ocorrenciaMensalDaSerie(original: Date, indice: number, passoEmMeses: number): Date {
+  const mesesDoAlvo = original.getUTCMonth() + indice * passoEmMeses;
+  // Normaliza o deslocamento de meses em ano e mês, mesmo ao atravessar dezembro.
+  const ano = original.getUTCFullYear() + Math.floor(mesesDoAlvo / 12);
+  const mes = ((mesesDoAlvo % 12) + 12) % 12;
+  return dataMensalAncorada(ano, mes, original.getUTCDate());
+}
+
+/**
+ * RN-008 — calcula a próxima ocorrência sempre ancorada no prazo original da série.
+ *
+ * O prazo atual pode ter sido prorrogado (pedido de prazo aprovado), desde que fique antes da próxima ocorrência;
+ * a ocorrência seguinte continua sendo a mesma que seria sem a prorrogação. Limite: semanal sem `diaSemana`
+ * soma sete dias ao prazo atual e, por isso, acompanha a prorrogação (tarefas novas sempre guardam o dia).
+ */
 export function calcularProximaOcorrencia(
   prazoAtual: DataLike,
   periodicidade: PeriodicidadeLike | null | undefined,
@@ -71,14 +85,18 @@ export function calcularProximaOcorrencia(
     (atual.getUTCFullYear() - original.getUTCFullYear()) * 12 +
     (atual.getUTCMonth() - original.getUTCMonth());
   // A quantidade inteira de ciclos evita arredondar datas para uma ocorrência futura indevida.
-  const ocorrenciasDecorridas = Math.max(0, Math.floor(mesesDecorridos / passoEmMeses));
-  const proximoIndice = ocorrenciasDecorridas + 1;
-  const mesesDoAlvo = original.getUTCMonth() + proximoIndice * passoEmMeses;
-  // Normaliza o deslocamento de meses em ano e mês, mesmo ao atravessar dezembro.
-  const ano = original.getUTCFullYear() + Math.floor(mesesDoAlvo / 12);
-  const mes = ((mesesDoAlvo % 12) + 12) % 12;
+  let ocorrenciasDecorridas = Math.max(0, Math.floor(mesesDecorridos / passoEmMeses));
+  // O índice por mês pode ter avançado um ciclo quando o prazo foi prorrogado para depois da data da série
+  // (31/01 prorrogado para 01/02 cai no mês de 28/02, mas ainda é a ocorrência de 31/01). A ocorrência a que o
+  // prazo pertence é a maior data da série que não passa dele; por isso recuamos enquanto a data do índice o ultrapassa.
+  while (
+    ocorrenciasDecorridas > 0 &&
+    ocorrenciaMensalDaSerie(original, ocorrenciasDecorridas, passoEmMeses).getTime() > atual.getTime()
+  ) {
+    ocorrenciasDecorridas -= 1;
+  }
 
-  return dataMensalAncorada(ano, mes, original.getUTCDate());
+  return ocorrenciaMensalDaSerie(original, ocorrenciasDecorridas + 1, passoEmMeses);
 }
 
 /**
