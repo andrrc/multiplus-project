@@ -169,15 +169,18 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
 
 **Detalhes técnicos.**
 - **Cálculo da data:** `calcularProximaOcorrencia`, em `src/lib/regras-projetos-tarefas.ts`,
-  sempre ancorado em `prazoOriginal`.
+  sempre ancorado em `prazoOriginal`. A ocorrência a que o prazo atual pertence é a maior data da
+  série que não passa dele, então um prazo prorrogado (por exemplo 31/01 para 01/02) não pula um
+  ciclo: a próxima continua 28/02. Limite: semanal sem `diaSemana` (só dado antigo) soma sete dias
+  ao prazo atual e acompanha a prorrogação.
 - **Criação da ocorrência:** a função SQL `concluir_tarefa` cria a próxima ocorrência na
   mesma transação da conclusão, sem duplicar se já existir uma com a mesma série e o mesmo
   prazo. A versão vigente está em `20260928170000_dia_semana_recorrencia`.
 - **Campos da série:** `serieId`, `prazoOriginal`, `periodicidade` e `diaSemana`. Tarefas
   semanais antigas receberam o dia da semana do próprio prazo.
 - **Testes:**
-  - `projetos-tarefas.unit.test.ts` (RN-008): periodicidades, meses curtos e dia
-    escolhido;
+  - `projetos-tarefas.unit.test.ts` (RN-008): periodicidades, meses curtos, dia
+    escolhido e prazo prorrogado dentro do ciclo (todas as âncoras de 1 a 31);
   - `projetos-tarefas-a4.integration.test.ts`: "persiste e aplica o dia semanal escolhido
     na próxima ocorrência".
 
