@@ -8,7 +8,7 @@
 | **Agente responsável** | claude |
 | **Branch** | `claude/etapa2-prazo` (criada a partir de `claude/etapa2-analise`, porque a análise ainda não está em `origin/staging`) |
 | **Worktree** | `~/multiplus-worktrees/claude-etapa2-prazo` |
-| **Estado** | em revisão (código, testes e documentação prontos; falta conferência visual e a revisão cruzada) |
+| **Estado** | em revisão (código, testes, documentação e conferência visual prontos; falta a revisão cruzada) |
 | **Quem aprovou o escopo** | o usuário, em 2026-11-23, ao aprovar a análise e pedir o início da implementação |
 | **Revisor** | codex |
 
@@ -66,7 +66,7 @@ Item (tarefa ou subtarefa) com pedido de conclusão pendente que tem arquivos de
 - [ ] `idsDeClientesComAtraso` e o job `dispararPrazoProximo` ignoram o item em conferência.
 - [ ] As contas repetidas de `calcularDiasRestantes < 0` nas telas passam pela função única.
 - [ ] Nenhuma migration, política de RLS, coluna nova ou leitura nova para `CLIENTE`; o portal fica como está.
-- [ ] Funciona em 375 px e no desktop, sem rolagem horizontal; só tokens de `globals.css`.
+- [x] Funciona em 375 px e no desktop, sem rolagem horizontal; só tokens de `globals.css`. (Conferido no navegador em 23/11/2026, veja a seção 9.)
 - [ ] Permissão e visibilidade conferidas por perfil, com teste do permitido e do negado.
 
 ## 7. Testes obrigatórios
@@ -93,5 +93,6 @@ Para quem integra consolidar (esta tarefa não edita os dois documentos):
 - Decisões tomadas durante o trabalho: a branch parte de `claude/etapa2-analise` (desvio do protocolo, que manda partir de `origin/staging`), porque a análise aprovada ainda não está em `origin/staging`; `ItemAgenda.emConferenciaDesde` ficou opcional para não alterar fixtures de testes existentes; o item em conferência aparece só em "Todos" nas listas, sem botão de filtro novo (pergunta 5 da análise); a classe da agenda usa `bg-azul-cl text-azul-esc` (tokens já existentes).
 - Verificações executadas e resultado (comando e saída resumida): `bash scripts/agentes/verificar.sh --completo` em 2026-11-23, com o Postgres local no ar: arquivos sensíveis ok, typecheck ok, lint ok, 52 arquivos e 381 testes unitários passando (359 anteriores mais 22 novos), 43 arquivos e 350 testes de integração e smoke passando (337 anteriores mais 13 novos, de `prazo-em-conferencia.integration.test.ts`) e 8 jornadas de navegador passando (7 anteriores mais `comprovantes-prazo.spec.ts`). Nenhuma asserção existente foi alterada. A primeira tentativa, sem o Docker, falhou só por `ECONNREFUSED 127.0.0.1:5434`.
 - Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`): nenhuma nos testes que rodaram. O servidor de desenvolvimento do Next recusou subir na primeira tentativa das jornadas (recusa conhecida do protocolo, seção 10).
-- Pendências e riscos: (1) conferir visualmente a tela do externo, a agenda e o painel a 375 px e no desktop (a jornada nova só confere a ausência de rolagem lateral e os textos); (2) não há teste unitário do texto do PDF (`indicadorPrazo` não é exportado); (3) caso-limite documentado na análise: externo que só tem uma subtarefa e vê a tarefa-mãe não lê o pedido da tarefa (RLS), então o prazo da tarefa-mãe segue normal para ele; (4) a branch parte de `claude/etapa2-analise` e leva os commits da análise, que ainda não estão em `origin/staging`.
+- Pendências e riscos: (1) a conferência visual foi feita em 23/11/2026 (veja o item abaixo); (2) não há teste unitário do texto do PDF (`indicadorPrazo` não é exportado); (3) caso-limite documentado na análise: externo que só tem uma subtarefa e vê a tarefa-mãe não lê o pedido da tarefa (RLS), então o prazo da tarefa-mãe segue normal para ele; (4) a branch parte de `claude/etapa2-analise` e leva os commits da análise, que ainda não estão em `origin/staging`.
+- Conferência visual (2026-11-23, servidor local em banco isolado com 9 itens de exemplo: 7 tarefas e 2 subtarefas; 375 px e 1280 px): tela do externo (`/minhas-tarefas` e a página da tarefa-mãe), painel, agenda (mês e lista), listas de tarefas e subtarefas, página da tarefa e do projeto, e contagem de clientes com atraso. Resultado: os itens em conferência aparecem azuis com "Enviado em 23/11" e saem de "Atrasados" e "Vencem em N dias" em todas as telas; os atrasados reais (inclusive a tarefa-mãe e o pedido sem comprovante) seguem contando; o percentual "em dia" do painel (56%, 5 de 9) e o das subtarefas (50%, 1 de 2) batem com a regra; sem rolagem lateral e sem erro no console. Não conferido: o texto do PDF, a tela de cliente com atraso só por conferência (coberta por teste de integração). Observação de interface (não é defeito da regra): o pedido sem comprovante aparece na seção "Aguardando conferência" do externo, mas mantém "Atrasado N dias", porque a regra só pausa o prazo com arquivo anexado; se a Talita estranhar, vale revisar o nome da seção.
 - Pergunta em aberto para a pessoa responsável: abrir o Pull Request para `staging` (com a revisão cruzada do Codex, conforme o protocolo)?
