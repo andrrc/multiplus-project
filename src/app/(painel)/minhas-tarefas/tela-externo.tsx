@@ -18,6 +18,8 @@ type TarefaExterno = {
   prazo: Date | null;
   status: string;
   periodicidade: string | null;
+  /** Envio com comprovante aguardando conferência: o prazo não conta (etapa 2). */
+  emConferenciaDesde?: Date | null;
   projeto: { nome: string };
   subtarefas: Array<{ status: string }>;
   comprovanteExigido: boolean;
@@ -67,14 +69,15 @@ export function TelaTarefasExterno({
   const devolvidas = abertas.filter((t) => t.situacaoEnvio === "devolvida");
   const aguardando = abertas.filter((t) => t.situacaoEnvio === "aguardando");
   const paraFazer = abertas.filter((t) => t.situacaoEnvio !== "devolvida" && t.situacaoEnvio !== "aguardando");
-  const dias = (t: TarefaExterno) => (t.prazo ? calcularDiasRestantes(t.prazo) : null);
+  // Item aguardando conferência de um envio com comprovante não conta atraso nem vencimento.
+  const dias = (t: TarefaExterno) => (t.prazo && !t.emConferenciaDesde ? calcularDiasRestantes(t.prazo) : null);
   const atrasadas = abertas.filter((t) => (dias(t) ?? 0) < 0).length;
   const proximas = abertas.filter((t) => { const d = dias(t); return d !== null && d >= 0 && d <= limites.diasAmareloAte; }).length;
   const primeiroNome = nome.trim().split(/\s+/)[0] || "colaborador";
 
   const cartao = (t: TarefaExterno, esmaecido: boolean) => {
     const d = dias(t);
-    const classe = classeDoItemAgenda({ status: t.status, projetada: false }, d ?? 9999, limites.diasAmareloAte);
+    const classe = classeDoItemAgenda({ status: t.status, projetada: false, emConferenciaDesde: t.emConferenciaDesde }, d ?? 9999, limites.diasAmareloAte);
     const concluidasSub = t.subtarefas.filter((s) => s.status === "CONCLUIDO").length;
     return (
       <li key={t.id} className={`relative overflow-hidden rounded-cartao border border-linha bg-branco ${esmaecido ? "opacity-75" : ""}`}>
@@ -85,7 +88,7 @@ export function TelaTarefasExterno({
             <span className="mt-1 block truncate text-[13px] text-cinza">{t.projeto.nome}</span>
             <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-cinza">
               {t.prazo && <span className="inline-flex items-center gap-1.5 tabular-nums text-ink">{icone(<><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>)}{formatarData(t.prazo)}</span>}
-              {!fechada(t) && <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} />}
+              {!fechada(t) && <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} emConferenciaDesde={t.emConferenciaDesde} />}
               {t.subtarefas.length > 0 && <span className="inline-flex items-center gap-1.5 tabular-nums">{icone(<><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h.01M4 12h.01M4 18h.01" /></>)}{concluidasSub}/{t.subtarefas.length} subtarefas</span>}
               {t.periodicidade && <span className="inline-flex items-center gap-1.5">{icone(<><path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></>)}{RECORRENCIA[t.periodicidade] ?? t.periodicidade}</span>}
               {t.comprovanteExigido && !fechada(t) && <span className="inline-flex items-center gap-1.5">{icone(<><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" /><circle cx="12" cy="13" r="3.5" /></>)}{descricaoDaExigencia(t.comprovanteQuantidade)}</span>}

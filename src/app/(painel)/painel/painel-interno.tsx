@@ -34,7 +34,8 @@ export async function PainelInterno({ ctx, nome }: { ctx: ContextoUsuario; nome:
   const agora = new Date();
   const [tarefas, projetos, limites] = await Promise.all([listarTarefasAtribuidas(ctx), listarProjetosAtribuidos(ctx), buscarLimitesSemaforo(ctx)]);
   const abertas = tarefas.filter((t) => t.status !== "CONCLUIDO" && t.status !== "CANCELADO");
-  const dias = (t: { prazo: Date | null }) => (t.prazo ? calcularDiasRestantes(t.prazo, agora) : null);
+  // Item aguardando conferência de um envio com comprovante não conta atraso nem entrega da semana (etapa 2).
+  const dias = (t: { prazo: Date | null; emConferenciaDesde?: Date | null }) => (t.prazo && !t.emConferenciaDesde ? calcularDiasRestantes(t.prazo, agora) : null);
   const atrasadas = abertas.filter((t) => (dias(t) ?? 0) < 0);
   const vencem = abertas.filter((t) => { const d = dias(t); return d !== null && d >= 0 && d < DIAS_ADIANTE; });
   const aguardando = abertas.filter((t) => t.aguardandoOutras);
@@ -94,7 +95,7 @@ export async function PainelInterno({ ctx, nome }: { ctx: ContextoUsuario; nome:
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:justify-end">
                     <StatusPonto status={t.status}>{STATUS_TAREFA[t.status] ?? t.status}</StatusPonto>
-                    <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} />
+                    <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} emConferenciaDesde={t.emConferenciaDesde} />
                   </div>
                 </li>
               ))}

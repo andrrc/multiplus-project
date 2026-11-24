@@ -3,10 +3,11 @@
  * No prazo, Sem prazo). A regra de cores do semáforo continua em `indicador-dias-restantes.tsx`;
  * aqui só se decide em qual grupo cada item cai, com o mesmo limite de dias.
  */
-export type SituacaoPrazo = "atrasado" | "proximo" | "prazo" | "sem" | "fechado";
+// "conferencia": envio com comprovante aguardando conferência; o prazo não conta (etapa 2 dos comprovantes).
+export type SituacaoPrazo = "atrasado" | "proximo" | "prazo" | "sem" | "fechado" | "conferencia";
 
 /** Valor do parâmetro `situacao` da URL: "todos" ou uma das situações de itens abertos. */
-export type FiltroSituacao = "todos" | Exclude<SituacaoPrazo, "fechado">;
+export type FiltroSituacao = "todos" | Exclude<SituacaoPrazo, "fechado" | "conferencia">;
 
 const FILTROS_VALIDOS: FiltroSituacao[] = ["todos", "atrasado", "proximo", "prazo", "sem"];
 
@@ -18,13 +19,15 @@ export function interpretarSituacao(valor?: string | string[]): FiltroSituacao {
 
 /**
  * Classifica um item. `diasRestantes` é negativo quando venceu e `null` quando não há prazo;
- * itens concluídos, cancelados ou desativados ficam em "fechado" e não entram nos grupos.
+ * itens concluídos, cancelados ou desativados ficam em "fechado" e não entram nos grupos. Item em conferência
+ * (`emConferencia`) também fica fora dos grupos de prazo: aparece só em "Todos", com o selo "Enviado em dd/mm".
  */
 export function situacaoDoPrazo(
-  { diasRestantes, fechado }: { diasRestantes: number | null; fechado: boolean },
+  { diasRestantes, fechado, emConferencia = false }: { diasRestantes: number | null; fechado: boolean; emConferencia?: boolean },
   diasAmareloAte: number,
 ): SituacaoPrazo {
   if (fechado) return "fechado";
+  if (emConferencia) return "conferencia";
   if (diasRestantes === null) return "sem";
   if (diasRestantes < 0) return "atrasado";
   if (diasRestantes <= diasAmareloAte) return "proximo";
@@ -37,7 +40,7 @@ export type ContagemSituacoes = Record<FiltroSituacao, number>;
 export function contarSituacoes(situacoes: SituacaoPrazo[]): ContagemSituacoes {
   const contagem: ContagemSituacoes = { todos: situacoes.length, atrasado: 0, proximo: 0, prazo: 0, sem: 0 };
   for (const situacao of situacoes) {
-    if (situacao !== "fechado") contagem[situacao] += 1;
+    if (situacao !== "fechado" && situacao !== "conferencia") contagem[situacao] += 1;
   }
   return contagem;
 }

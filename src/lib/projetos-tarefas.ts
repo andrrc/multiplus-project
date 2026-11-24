@@ -18,6 +18,7 @@ import { contarMinhasPendencias } from "@/lib/lista-meus-projetos";
 import { calcularProximaOcorrencia, calcularPercentualEmDia, projetarOcorrenciasFuturas, type TarefaParaProjecao } from "@/lib/regras-projetos-tarefas";
 import { definirAtivo } from "@/lib/desativacao";
 import { aguardaOutrasPessoas } from "@/lib/aguardando-outras-pessoas";
+import { emConferenciaDesde, PEDIDO_PENDENTE_PARA_PRAZO, SEM_CONFERENCIA_EM_ANDAMENTO } from "@/lib/prazo-em-conferencia";
 import { situacaoDaTarefaDoColaborador, situacaoDoEnvio } from "@/lib/comprovantes-arquivos";
 import { dispararNotificacaoAtribuicaoRecebida } from "@/lib/notificacoes";
 import { validarUrlHttp } from "@/lib/validacao-url";
@@ -176,6 +177,8 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
         responsavel: { select: { nome: true, temAcesso: true } },
         responsavelUsuario: { select: { nome: true, perfil: true } },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
+        // Pedido pendente: com comprovante, o item está em conferência e o prazo não conta (etapa 2).
+        solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO,
       },
       orderBy: [{ prazo: "asc" }, { nome: "asc" }],
     });
@@ -196,6 +199,7 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
     // Só inclui o campo agregado quando a chamada pediu progresso, preservando os demais usos.
     return tarefas.map(tarefa => ({
       ...tarefa,
+      emConferenciaDesde: emConferenciaDesde(tarefa.solicitacoesConclusao),
       ...(incluirProgresso ? { progressoSubtarefas: progresso.get(tarefa.id) ?? { concluidas: 0, total: 0 } } : {}),
     }));
   });
@@ -204,15 +208,19 @@ export async function listarPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos 
 /** Lista subtarefas com contexto de tarefa, projeto e responsável para a tela de prazos. */
 export async function listarSubtarefasPrazos(ctx: ContextoUsuario, filtros: FiltrosPrazos = {}) {
   exigirAdministrador(ctx);
-  return comContextoDeUsuario(ctx, (tx) => tx.subtarefa.findMany({
-    where: whereSubtarefas(filtros),
-    include: {
-      tarefa: { select: { id: true, nome: true, numeroLocal: true, projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } } } },
-      atribuidoA: { select: { nome: true } },
-      atribuidoAUsuario: { select: { nome: true } },
-    },
-    orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { titulo: "asc" }],
-  }));
+  return comContextoDeUsuario(ctx, async (tx) => {
+    const subtarefas = await tx.subtarefa.findMany({
+      where: whereSubtarefas(filtros),
+      include: {
+        tarefa: { select: { id: true, nome: true, numeroLocal: true, projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } } } },
+        atribuidoA: { select: { nome: true } },
+        atribuidoAUsuario: { select: { nome: true } },
+        solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO,
+      },
+      orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { titulo: "asc" }],
+    });
+    return subtarefas.map((subtarefa) => ({ ...subtarefa, emConferenciaDesde: emConferenciaDesde(subtarefa.solicitacoesConclusao) }));
+  });
 }
 
 /** Mostra à ADMIN as solicitações pendentes com o item e a hierarquia de contexto. */
@@ -412,6 +420,8 @@ export type ItemAgenda = {
   projeto: { id: string; nome: string; cliente: { id: string; razaoSocial: string } };
   responsavel: { nome: string } | null;
   projetada: boolean;
+  /** Envio com comprovante aguardando conferência (etapa 2): o prazo não conta. A ocorrência projetada nunca está em conferência. */
+  emConferenciaDesde?: Date | null;
 };
 
 /** Combina prazos cadastrados e recorrências futuras projetadas para o intervalo da agenda. */
@@ -434,10 +444,11 @@ export async function listarItensAgendaColaborador(ctx: ContextoUsuario, inicio:
       projeto: { select: { id: true, nome: true, cliente: { select: { id: true, razaoSocial: true } } } },
       responsavel: { select: { nome: true } },
       responsavelUsuario: { select: { nome: true } },
+      solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO,
     },
     orderBy: [{ prazo: "asc" }, { nome: "asc" }],
   }));
-  return montarItensAgenda(tarefas, inicio, fim, false);
+  return montarItensAgenda(tarefas.map((tarefa) => ({ ...tarefa, emConferenciaDesde: emConferenciaDesde(tarefa.solicitacoesConclusao) })), inicio, fim, false);
 }
 
 /**
@@ -453,14 +464,14 @@ export async function contarAtrasadosAnterioresAgenda(ctx: ContextoUsuario, inic
 export async function contarAtrasadosAnterioresColaborador(ctx: ContextoUsuario, inicioDoMes: Date): Promise<number> {
   if (ctx.perfil !== "ADMIN_INTERNO") throw new Error("Agenda disponível somente para o colaborador interno.");
   const tarefas = await comContextoDeUsuario(ctx, (tx) => tx.tarefa.findMany({
-    where: { ativo: true, projeto: { ativo: true }, status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] }, prazo: { lt: inicioDoMes } },
+    where: { ativo: true, projeto: { ativo: true }, status: { notIn: [StatusTarefa.CONCLUIDO, StatusTarefa.CANCELADO] }, prazo: { lt: inicioDoMes }, ...SEM_CONFERENCIA_EM_ANDAMENTO },
     select: { prazo: true, status: true, ativo: true },
   }));
   return contarAtrasadosAnteriores(tarefas, inicioDoMes);
 }
 
 /** Transforma tarefas em itens da agenda: ocorrências gravadas no período mais as futuras projetadas. */
-function montarItensAgenda<T extends TarefaParaProjecao & { nome: string; prazo: Date | null; status: StatusTarefa; periodicidade: Periodicidade | null; projeto: ItemAgenda["projeto"]; responsavel: { nome: string } | null; responsavelUsuario: { nome: string } | null }>(tarefas: T[], inicio: Date, fim: Date, apenasVisitas: boolean | undefined): ItemAgenda[] {
+function montarItensAgenda<T extends TarefaParaProjecao & { nome: string; prazo: Date | null; status: StatusTarefa; periodicidade: Periodicidade | null; projeto: ItemAgenda["projeto"]; responsavel: { nome: string } | null; responsavelUsuario: { nome: string } | null; emConferenciaDesde?: Date | null }>(tarefas: T[], inicio: Date, fim: Date, apenasVisitas: boolean | undefined): ItemAgenda[] {
   // O predicado também atua como proteção de tipo para prazos nulos.
   const noPeriodo = (prazo: Date | null): prazo is Date => Boolean(prazo && prazo >= inicio && prazo <= fim);
   const itens: ItemAgenda[] = [];
@@ -468,14 +479,14 @@ function montarItensAgenda<T extends TarefaParaProjecao & { nome: string; prazo:
   for (const tarefa of tarefas) {
     // Inclui a ocorrência gravada quando está no período e corresponde ao filtro de visita.
     if (noPeriodo(tarefa.prazo) && (!apenasVisitas || tarefa.status === StatusTarefa.VISITA_REUNIAO_AGENDADA)) {
-      itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: false });
+      itens.push({ id: tarefa.id, nome: tarefa.nome, prazo: tarefa.prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: false, emConferenciaDesde: tarefa.emConferenciaDesde ?? null });
     }
     // Tarefas sem recorrência ou prazo não geram ocorrências futuras.
     if (!tarefa.periodicidade || !tarefa.prazo) continue;
     // Projeta recorrências somente para a janela solicitada e marca-as como virtuais.
     for (const prazo of projetarOcorrenciasFuturas(tarefa, inicio, fim, materializadas)) {
       if (apenasVisitas && tarefa.status !== StatusTarefa.VISITA_REUNIAO_AGENDADA) continue;
-      itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: true });
+      itens.push({ id: `projetada-${tarefa.id}-${prazo.toISOString()}`, nome: tarefa.nome, prazo, status: tarefa.status, projeto: tarefa.projeto, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario, projetada: true, emConferenciaDesde: null });
     }
   }
   // A chave composta evita duplicar a mesma atividade quando séries recorrentes coincidem.
@@ -485,13 +496,13 @@ function montarItensAgenda<T extends TarefaParaProjecao & { nome: string; prazo:
 }
 
 /** Calcula o indicador de prazo das tarefas usando a regra compartilhada do domínio. */
-export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusTarefa }>) {
-  return calcularPercentualEmDia(tarefas.map((tarefa) => ({ ativo: tarefa.ativo, prazo: tarefa.prazo, status: tarefa.status })));
+export function indicadorDePrazos(tarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusTarefa; emConferenciaDesde?: Date | null }>) {
+  return calcularPercentualEmDia(tarefas.map((tarefa) => ({ ativo: tarefa.ativo, prazo: tarefa.prazo, status: tarefa.status, emConferenciaDesde: tarefa.emConferenciaDesde })));
 }
 
 /** Subtarefas sem prazo não entram no denominador do indicador de pontualidade. */
-export function indicadorDePrazosSubtarefas(subtarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusSubtarefa }>) {
-  return calcularPercentualEmDia(subtarefas.filter((subtarefa) => subtarefa.prazo !== null).map((subtarefa) => ({ ativo: subtarefa.ativo, prazo: subtarefa.prazo, status: subtarefa.status })));
+export function indicadorDePrazosSubtarefas(subtarefas: Array<{ ativo: boolean; prazo: Date | null; status: StatusSubtarefa; emConferenciaDesde?: Date | null }>) {
+  return calcularPercentualEmDia(subtarefas.filter((subtarefa) => subtarefa.prazo !== null).map((subtarefa) => ({ ativo: subtarefa.ativo, prazo: subtarefa.prazo, status: subtarefa.status, emConferenciaDesde: subtarefa.emConferenciaDesde })));
 }
 
 /** Busca projeto e seus itens para detalhe administrativo, com opção de incluir desativados. */
@@ -504,7 +515,7 @@ export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, inc
         cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } },
         tarefas: {
           where: incluirDesativados ? {} : { ativo: true },
-          include: { responsavel: { select: { nome: true } }, responsavelUsuario: { select: { nome: true } }, subtarefas: { where: incluirDesativados ? {} : { ativo: true } } },
+          include: { responsavel: { select: { nome: true } }, responsavelUsuario: { select: { nome: true } }, solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO, subtarefas: { where: incluirDesativados ? {} : { ativo: true }, include: { solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO } } },
           orderBy: [{ prazo: "asc" }, { nome: "asc" }],
         },
         documentos: { where: incluirDesativados ? {} : { ativo: true }, orderBy: { criadoEm: "desc" } },
@@ -512,7 +523,15 @@ export async function buscarProjeto(ctx: ContextoUsuario, projetoId: string, inc
       },
     });
     // Unifica pessoa envolvida e usuário da equipe no campo que a tela apresenta como responsável.
-    return projeto ? { ...projeto, tarefas: projeto.tarefas.map((tarefa) => ({ ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario })) } : null;
+    return projeto ? {
+      ...projeto,
+      tarefas: projeto.tarefas.map((tarefa) => ({
+        ...tarefa,
+        responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario,
+        emConferenciaDesde: emConferenciaDesde(tarefa.solicitacoesConclusao),
+        subtarefas: tarefa.subtarefas.map((subtarefa) => ({ ...subtarefa, emConferenciaDesde: emConferenciaDesde(subtarefa.solicitacoesConclusao) })),
+      })),
+    } : null;
   });
 }
 
@@ -526,18 +545,25 @@ export async function buscarTarefa(ctx: ContextoUsuario, tarefaId: string, inclu
         projeto: { include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true } } } },
         responsavel: { select: { id: true, nome: true, temAcesso: true } },
         responsavelUsuario: { select: { id: true, nome: true, perfil: true } },
+        solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO,
         subtarefas: {
           where: incluirDesativados ? {} : { ativo: true },
           include: {
             atribuidoA: { select: { nome: true } },
             atribuidoAUsuario: { select: { nome: true } },
+            solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO,
           },
           orderBy: { criadoEm: "asc" },
         },
       },
     });
     // A interface recebe uma única propriedade para os dois tipos de responsável.
-    return tarefa ? { ...tarefa, responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario } : null;
+    return tarefa ? {
+      ...tarefa,
+      responsavel: tarefa.responsavel ?? tarefa.responsavelUsuario,
+      emConferenciaDesde: emConferenciaDesde(tarefa.solicitacoesConclusao),
+      subtarefas: tarefa.subtarefas.map((subtarefa) => ({ ...subtarefa, emConferenciaDesde: emConferenciaDesde(subtarefa.solicitacoesConclusao) })),
+    } : null;
   });
 }
 
@@ -554,13 +580,22 @@ export async function listarProjetosAtribuidos(ctx: ContextoUsuario) {
     const pessoaEnvolvidaId = usuario?.pessoaEnvolvidaId ?? null;
     const projetos = await tx.projeto.findMany({
       where: { id: { in: [...atribuicoes.map((a) => a.entidadeId), ...tarefas.map((tarefa) => tarefa.projetoId)] }, ativo: true },
-      include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true } }, tarefas: { where: { ativo: true }, select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true, responsavelUsuarioId: true, responsavelId: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true, prazo: true, atribuidoAUsuarioId: true, atribuidoAId: true } } } } },
+      include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true } }, tarefas: { where: { ativo: true }, select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true, responsavelUsuarioId: true, responsavelId: true, solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true, prazo: true, atribuidoAUsuarioId: true, atribuidoAId: true, solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO } } } } },
       orderBy: { dataPrevistaConclusao: "asc" },
     });
     // "Minhas pendências" e "minhas atrasadas": os itens abertos em que o colaborador é o responsável (usuário ou pessoa envolvida).
     const euNaTarefa = (t: { responsavelUsuarioId: string | null; responsavelId: string | null }) => t.responsavelUsuarioId === ctx.usuarioId || (!!pessoaEnvolvidaId && t.responsavelId === pessoaEnvolvidaId);
     const euNaSubtarefa = (s: { atribuidoAUsuarioId: string | null; atribuidoAId: string | null }) => s.atribuidoAUsuarioId === ctx.usuarioId || (!!pessoaEnvolvidaId && s.atribuidoAId === pessoaEnvolvidaId);
-    return projetos.map((projeto) => {
+    return projetos.map((projetoBruto) => {
+      // O instante do envio acompanha cada tarefa e subtarefa: item em conferência não conta atraso (etapa 2).
+      const projeto = {
+        ...projetoBruto,
+        tarefas: projetoBruto.tarefas.map((t) => ({
+          ...t,
+          emConferenciaDesde: emConferenciaDesde(t.solicitacoesConclusao),
+          subtarefas: t.subtarefas.map((s) => ({ ...s, emConferenciaDesde: emConferenciaDesde(s.solicitacoesConclusao) })),
+        })),
+      };
       const { pendencias, atrasadas } = contarMinhasPendencias(
         projeto.tarefas.filter(euNaTarefa),
         projeto.tarefas.flatMap((t) => t.subtarefas.filter(euNaSubtarefa)),
@@ -580,7 +615,8 @@ export async function buscarProjetoAtribuido(ctx: ContextoUsuario, projetoId: st
     ]);
     // O id da URL não basta: sem um vínculo próprio, o resultado é ocultado.
     if (!acessoAoProjeto && tarefas.length === 0) return null;
-    return tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } }, documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } }, tarefas: { where: { ativo: true }, select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } } }, orderBy: { prazo: "asc" } } } });
+    const projeto = await tx.projeto.findFirst({ where: { id: projetoId, ativo: true }, include: { cliente: { select: { razaoSocial: true, numeroIdentificacao: true, documentos: { where: { ativo: true, projetoId: null }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } } } }, documentos: { where: { ativo: true }, select: { id: true, nome: true, link: true }, orderBy: { criadoEm: "desc" } }, tarefas: { where: { ativo: true }, select: { id: true, numeroLocal: true, nome: true, prazo: true, status: true, ativo: true, solicitacoesConclusao: PEDIDO_PENDENTE_PARA_PRAZO, subtarefas: { where: { ativo: true }, select: { status: true, ativo: true } } }, orderBy: { prazo: "asc" } } } });
+    return projeto ? { ...projeto, tarefas: projeto.tarefas.map((tarefa) => ({ ...tarefa, emConferenciaDesde: emConferenciaDesde(tarefa.solicitacoesConclusao) })) } : null;
   });
 }
 
@@ -620,7 +656,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
         projeto: { select: { id: true, nome: true, numeroLocal: true, cliente: { select: { id: true, razaoSocial: true, numeroIdentificacao: true } } } },
         // O pedido mais recente de cada item vale para "aguardando outras pessoas" (pendente) e para os grupos de
         // comprovante (pendente = aguardando conferência; rejeitado = devolvida). Pendente é sempre o mais recente.
-        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true } },
+        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true, solicitadoEm: true, _count: { select: { arquivos: true } } } },
         subtarefas: {
           where: { ativo: true },
           select: {
@@ -628,7 +664,7 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
             ativo: true,
             atribuidoAId: true,
             atribuidoAUsuarioId: true,
-            solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true } },
+            solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { id: true, status: true, comentarioDecisao: true, solicitadoEm: true, _count: { select: { arquivos: true } } } },
           },
         },
         _count: { select: { subtarefas: { where: { ativo: true, status: { not: StatusSubtarefa.CANCELADO }, atribuidoAId: null, atribuidoAUsuarioId: null } } } },
@@ -639,8 +675,9 @@ export async function listarTarefasAtribuidas(ctx: ContextoUsuario) {
     const atribuidasATarefa = new Set(atribuicoes.map((a) => a.entidadeId));
     return tarefas.map((tarefa) => {
       const pendentes = <T extends { status: string }>(lista: T[]) => lista.filter((pedido) => pedido.status === StatusSolicitacaoConclusao.PENDENTE);
-      const subtarefas = tarefa.subtarefas.map((sub) => ({ ...sub, solicitacoesConclusao: pendentes(sub.solicitacoesConclusao) }));
-      const doColaborador = { ...tarefa, solicitacoesConclusao: pendentes(tarefa.solicitacoesConclusao), subtarefas };
+      // Pedido pendente com comprovante = em conferência: o prazo do item não conta (etapa 2).
+      const subtarefas = tarefa.subtarefas.map((sub) => ({ ...sub, emConferenciaDesde: emConferenciaDesde(sub.solicitacoesConclusao), solicitacoesConclusao: pendentes(sub.solicitacoesConclusao) }));
+      const doColaborador = { ...tarefa, emConferenciaDesde: emConferenciaDesde(tarefa.solicitacoesConclusao), solicitacoesConclusao: pendentes(tarefa.solicitacoesConclusao), subtarefas };
       const meu = atribuidasATarefa.has(tarefa.id) || tarefa.responsavelUsuarioId === ctx.usuarioId || (!!eu.pessoaEnvolvidaId && tarefa.responsavelId === eu.pessoaEnvolvidaId);
       const { situacao, motivoDevolucao } = situacaoDaTarefaDoColaborador(
         {
@@ -683,7 +720,7 @@ export async function listarSubtarefasAtribuidas(ctx: ContextoUsuario) {
         status: true,
         ativo: true,
         comprovanteExigido: true,
-        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { status: true } },
+        solicitacoesConclusao: { orderBy: { solicitadoEm: "desc" }, take: 1, select: { status: true, solicitadoEm: true, _count: { select: { arquivos: true } } } },
         tarefa: {
           select: {
             id: true,
@@ -698,6 +735,7 @@ export async function listarSubtarefasAtribuidas(ctx: ContextoUsuario) {
     return subtarefas.map(({ solicitacoesConclusao, ...subtarefa }) => ({
       ...subtarefa,
       pedidoPendente: solicitacoesConclusao[0]?.status === StatusSolicitacaoConclusao.PENDENTE,
+      emConferenciaDesde: emConferenciaDesde(solicitacoesConclusao),
     }));
   });
 }
@@ -778,12 +816,14 @@ export async function buscarTarefaParaColaborador(ctx: ContextoUsuario, tarefaId
       enviosDaTarefa: envios.filter((envio) => envio.tarefaId === tarefa.id),
       rascunhosDaTarefa: rascunhos.filter((arquivo) => arquivo.tarefaId === tarefa.id),
       situacaoEnvioDaTarefa: situacaoDoEnvio(tarefa, envios.find((envio) => envio.tarefaId === tarefa.id) ?? null),
+      emConferenciaDesde: emConferenciaDesde(envios.filter((envio) => envio.tarefaId === tarefa.id)),
       subtarefas: tarefa.subtarefas.map((subtarefa) => ({
         ...subtarefa,
         solicitacaoConclusao: solicitacoesPorSubtarefa.get(subtarefa.id) ?? null,
         envios: envios.filter((envio) => envio.subtarefaId === subtarefa.id),
         rascunhos: rascunhos.filter((arquivo) => arquivo.subtarefaId === subtarefa.id),
         situacaoEnvio: situacaoDoEnvio(subtarefa, envios.find((envio) => envio.subtarefaId === subtarefa.id) ?? null),
+        emConferenciaDesde: emConferenciaDesde(envios.filter((envio) => envio.subtarefaId === subtarefa.id)),
         responsavelDaSessao: subtarefa.atribuidoAUsuarioId === ctx.usuarioId
           || (usuario?.pessoaEnvolvidaId != null && subtarefa.atribuidoAId === usuario.pessoaEnvolvidaId),
       })),

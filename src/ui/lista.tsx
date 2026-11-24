@@ -144,16 +144,18 @@ export function CelulaPrazo({
   status,
   ativo,
   limites,
+  emConferenciaDesde = null,
 }: {
   prazo: Date | null;
   status: string;
   ativo: boolean;
   limites: LimitesSemaforo;
+  emConferenciaDesde?: Date | null;
 }) {
   return (
     <div className="flex flex-col items-start gap-1">
       {prazo && <span className="tabular-nums text-ink">{formatarData(prazo)}</span>}
-      <IndicadorSemaforoProjeto prazo={prazo} status={status} ativo={ativo} limites={limites} />
+      <IndicadorSemaforoProjeto prazo={prazo} status={status} ativo={ativo} limites={limites} emConferenciaDesde={emConferenciaDesde} />
     </div>
   );
 }

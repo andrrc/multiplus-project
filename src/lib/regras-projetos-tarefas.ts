@@ -103,6 +103,8 @@ export type TarefaParaIndicador = {
   prazo: DataLike | null | undefined;
   status?: string | null;
   concluida?: boolean;
+  /** Envio com comprovante aguardando conferência: o prazo não conta, então o item está em dia. */
+  emConferenciaDesde?: Date | null;
 };
 
 export type IndicadorEmDia = {
@@ -123,8 +125,8 @@ export function calcularPercentualEmDia(
 ): IndicadorEmDia {
   // O denominador considera apenas registros ativos.
   const ativas = tarefas.filter((tarefa) => tarefa.ativo);
-  // Concluídas não atrasam; tarefas sem prazo também permanecem elegíveis como em dia.
-  const emDia = ativas.filter((tarefa) => !estaAtrasada(tarefa.prazo, tarefaConcluida(tarefa), hoje)).length;
+  // Concluídas e itens em conferência não atrasam; tarefas sem prazo também permanecem elegíveis como em dia.
+  const emDia = ativas.filter((tarefa) => !estaAtrasada(tarefa.prazo, tarefaConcluida(tarefa) || !!tarefa.emConferenciaDesde, hoje)).length;
 
   return {
     total: ativas.length,

@@ -65,13 +65,13 @@ export default async function PainelPage() {
       id: t.id, tipo: "Tarefa", titulo: t.nome, href: `/tarefas/${t.id}`,
       contexto: `${t.projeto.cliente.razaoSocial} · ${t.projeto.nome}`,
       responsavel: t.responsavel?.nome ?? t.responsavelUsuario?.nome ?? null,
-      prazo: t.prazo, statusRotulo: STATUS_TAREFA[t.status] ?? t.status, visita: t.status === "VISITA_REUNIAO_AGENDADA",
+      prazo: t.prazo, statusRotulo: STATUS_TAREFA[t.status] ?? t.status, visita: t.status === "VISITA_REUNIAO_AGENDADA", emConferenciaDesde: t.emConferenciaDesde,
     })),
     ...subtarefas.map((s): ItemPainel => ({
       id: s.id, tipo: "Subtarefa", titulo: s.titulo, href: `/tarefas/${s.tarefa.id}?subtarefa=${s.id}`,
       contexto: `${s.tarefa.projeto.cliente.razaoSocial} · ${s.tarefa.projeto.nome}`,
       responsavel: s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? null,
-      prazo: s.prazo, statusRotulo: "Em andamento", visita: false,
+      prazo: s.prazo, statusRotulo: "Em andamento", visita: false, emConferenciaDesde: s.emConferenciaDesde,
     })),
   ];
   const { atrasados, proximos } = separarItensPainel(itens, DIAS_ADIANTE, agora);

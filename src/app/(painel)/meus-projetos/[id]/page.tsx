@@ -23,7 +23,7 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
   const documentos = [...p.documentos, ...p.cliente.documentos];
   const conclusao = calcularPercentualConclusao(p.tarefas);
   const abertas = p.tarefas.filter((t) => t.status !== "CONCLUIDO" && t.status !== "CANCELADO");
-  const atrasadas = abertas.filter((t) => t.prazo && calcularDiasRestantes(t.prazo) < 0).length;
+  const atrasadas = abertas.filter((t) => !t.emConferenciaDesde && t.prazo && calcularDiasRestantes(t.prazo) < 0).length;
 
   return <div className="w-full max-w-[1280px]">
     <Trilha itens={[{ rotulo: "Meus projetos", href: "/meus-projetos" }, { rotulo: p.cliente.razaoSocial }]} />
@@ -68,7 +68,7 @@ export default async function MeuProjetoDetalhePage({ params }: { params: Promis
                     {progresso && progresso.total > 0 && <p className="mt-px text-[12.5px] tabular-nums text-cinza">{progresso.concluidas} de {progresso.total} subtarefas</p>}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <CelulaPrazo prazo={t.prazo} status={t.status} ativo limites={limites} />
+                    <CelulaPrazo prazo={t.prazo} status={t.status} ativo limites={limites} emConferenciaDesde={t.emConferenciaDesde} />
                     <StatusPonto status={t.status}>{taskStatus[t.status] ?? t.status}</StatusPonto>
                   </div>
                 </li>

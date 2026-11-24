@@ -201,6 +201,8 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 **Como funciona.** Subtarefas exibem o mesmo indicador global de prazo que projetos e tarefas nas listas e nos detalhes. Nas listas, o indicador de atraso já informa que o prazo passou; não há um segundo rótulo “Atrasada” na mesma coluna. O atraso aparece numa caixa vermelha sólida com texto branco. O vermelho é só para prazo vencido; do dia do prazo até o limite configurado pelo ADMIN em `/notificacoes` (padrão 5 dias), âmbar; a contagem é em dias corridos, incluindo fins de semana. Concluída permanece verde, cancelada fica cinza e sem prazo sem cor.
 
+**Envio em conferência (23/11/2026).** Subtarefa com pedido de conclusão pendente que tem comprovantes não conta atraso: o selo mostra "Enviado em dd/mm" e ela só aparece em "Todos" (fora de Atrasados, Vencem em até N dias e No prazo). A pausa vale só para a subtarefa; a tarefa-mãe continua contando ([análise](../analises/comprovantes-etapa2-prazo.md)).
+
 **Detalhes técnicos.** Reutiliza `IndicadorSemaforoProjeto` e `buscarLimitesSemaforo`. A lista respeita os filtros e o acesso já existentes. Testes unitários e de integração em `indicador-dias-restantes.unit.test.ts` e `semaforo-rf009.integration.test.ts`.
 
 ### S9. Horários de criação e comentários em Brasília
@@ -234,6 +236,7 @@ ativas e não canceladas são copiadas para a próxima ocorrência.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | O prazo da subtarefa para de contar durante a conferência de um envio com comprovante (etapa 2) |
 | 2026-11-18 | este commit | Etiquetas na lista de subtarefas e situação do prazo no PDF |
 | 2026-11-17 | este commit | Comprovante exigido na subtarefa: envio, conferência e devolução com motivo (etapa 1) |
 | 2026-11-16 | este commit | Busca de texto e ordenação pelos cabeçalhos na lista; o PDF leva a mesma busca e ordem |

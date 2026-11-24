@@ -42,6 +42,8 @@ type LinhaMinhas = {
   cliente: { razaoSocial: string };
   prazo: Date | null;
   status: string;
+  /** Envio com comprovante aguardando conferência: o prazo não conta (etapa 2). */
+  emConferenciaDesde?: Date | null;
   aguardandoOutras: boolean;
   acao: ReturnType<typeof acaoDaLinha>;
 };
@@ -96,6 +98,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
     cliente: { razaoSocial: t.projeto.cliente.razaoSocial },
     prazo: t.prazo,
     status: t.status,
+    emConferenciaDesde: t.emConferenciaDesde,
     aguardandoOutras: t.aguardandoOutras,
     acao: acaoDaLinha({ tipo: "tarefa", meu: t.meu, status: t.status, ativo: t.ativo, comprovanteExigido: t.comprovanteExigido, pedidoPendente: t.solicitacoesConclusao.length > 0 }),
   }));
@@ -111,6 +114,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
     cliente: { razaoSocial: s.tarefa.projeto.cliente.razaoSocial },
     prazo: s.prazo,
     status: s.status,
+    emConferenciaDesde: s.emConferenciaDesde,
     aguardandoOutras: false,
     acao: acaoDaLinha({ tipo: "subtarefa", meu: true, status: s.status, ativo: s.ativo, comprovanteExigido: s.comprovanteExigido, pedidoPendente: s.pedidoPendente }),
   }));
@@ -122,7 +126,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
     .filter((linha) => tipoNaLista(linha.tipo, tipoFiltro))
     .map((linha) => ({
       linha,
-      situacao: situacaoDoItem({ prazo: linha.prazo, status: linha.status, ativo: true }, limites.diasAmareloAte),
+      situacao: situacaoDoItem({ prazo: linha.prazo, status: linha.status, ativo: true, emConferenciaDesde: linha.emConferenciaDesde }, limites.diasAmareloAte),
     }))
     // Prazo mais próximo primeiro, sem prazo no fim; a ordenação é estável, então tarefa e subtarefa de mesmo prazo mantêm a ordem.
     .sort((a, b) => (a.linha.prazo?.getTime() ?? Infinity) - (b.linha.prazo?.getTime() ?? Infinity));
@@ -182,7 +186,7 @@ export default async function MinhasTarefasPage({ searchParams }: { searchParams
                 <TextoPrincipal>{l.projeto.nome}</TextoPrincipal>
                 <TextoSecundario>{l.cliente.razaoSocial}</TextoSecundario>
               </CelulaLista>
-              <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={l.prazo} status={l.status} ativo limites={limites} /></CelulaLista>
+              <CelulaLista rotulo="Prazo"><CelulaPrazo prazo={l.prazo} status={l.status} ativo limites={limites} emConferenciaDesde={l.emConferenciaDesde} /></CelulaLista>
               <CelulaLista rotulo="Status"><StatusPonto status={l.status}>{status[l.status] ?? l.status}</StatusPonto></CelulaLista>
               <CelulaLista rotulo="Ação">
                 {/* Acima do link esticado do título, para o botão continuar clicável. */}

@@ -92,7 +92,7 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
     <FaixaResumo rotulo="Resumo da tarefa" colunas={3}>
       <CelulaResumo rotulo="Prazo">
         {t.prazo ? <span>{data(t.prazo)}</span> : <span className="text-faint">Sem prazo</span>}
-        <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} />
+        <IndicadorSemaforoProjeto prazo={t.prazo} status={t.status} limites={limites} emConferenciaDesde={t.emConferenciaDesde} />
       </CelulaResumo>
       <CelulaResumo rotulo="Subtarefas">
         <span>{subtarefasConcluidas} de {t.subtarefas.length}</span>
@@ -119,7 +119,7 @@ export default async function MinhaTarefaDetalhePage({ params }: { params: Promi
                 <span className="mt-px block text-[12.5px] tabular-nums text-faint">{codigoSubtarefa(t.projeto.cliente.numeroIdentificacao, t.projeto.numeroLocal, t.numeroLocal, s.numeroLocal)}</span>
               </span>
               <span className="truncate text-[13px] text-ink">{s.atribuidoA?.nome ?? s.atribuidoAUsuario?.nome ?? <span className="text-faint">Sem responsável</span>}</span>
-              <CelulaPrazo prazo={s.prazo} status={s.status} ativo limites={limites} />
+              <CelulaPrazo prazo={s.prazo} status={s.status} ativo limites={limites} emConferenciaDesde={s.emConferenciaDesde} />
               <span className="flex flex-wrap items-center gap-2">
                 <StatusPonto status={s.status}>{status[s.status]}</StatusPonto>
                 {s.solicitacaoConclusao && <Etiqueta tom="atencao">Aguardando confirmação</Etiqueta>}

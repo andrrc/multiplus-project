@@ -33,6 +33,9 @@ A apresentação do calendário está em adaptação visual aos modelos da Múlt
   recorrente ainda não criada (fundo azul claro com borda tracejada, identificada como
   "Tarefa recorrente").
 - **Filtros:** por cliente, por projeto, **por responsável** (18/11/2026; pessoa envolvida, equipe ou "Sem responsável") e "Só visitas/reuniões".
+- **Em conferência (23/11/2026):** a tarefa com pedido de conclusão pendente que tem comprovantes ganha a
+  classe "Em conferência" (azul claro, na legenda), nem atrasada nem "vence em breve", e fica fora da faixa de
+  atrasados de meses anteriores ([análise](../analises/comprovantes-etapa2-prazo.md)). Na lista por dia e no painel do dia o item mostra "Em conferência · Enviado em dd/mm" (dia de Brasília); no PDF, a situação sai como "Enviado em dd/mm". A agenda lista só tarefas, não subtarefas.
 - **Faixa de atrasados (23/11/2026):** quando há itens abertos e vencidos em meses anteriores ao exibido, uma faixa vermelha avisa "N itens atrasados de meses anteriores continuam abertos" e o link "Ver atrasados" abre a lista de tarefas atrasadas (na agenda da administração, com os filtros de cliente, projeto e responsável em uso; na do colaborador interno, em Minhas tarefas). Sem ela, o atraso do mês passado sumia ao navegar para o mês atual. Concluído, cancelado, desativado e sem prazo não contam; o dia do prazo ainda não é atraso. `contarAtrasadosAnteriores` (`src/lib/agenda-itens.ts`), `contarAtrasadosAnterioresAgenda` e `contarAtrasadosAnterioresColaborador` (`src/lib/projetos-tarefas.ts`); o colaborador interno só conta o que a RLS já entrega a ele.
 - **Exportar PDF (18/11/2026):** o botão "Exportar PDF" da barra de filtros gera a agenda do mês, em lista (data, item, projeto, cliente, responsável e situação do prazo), com os mesmos filtros da tela. A ocorrência futura de tarefa recorrente sai como "Próxima ocorrência", sem situação de prazo.
 - **Mês vazio:** a tela avisa que não há prazos no mês.
@@ -95,6 +98,7 @@ O colaborador externo não tem agenda.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | Classe "Em conferência" para a tarefa com envio de comprovante aguardando conferência (etapa 2) |
 | 2026-11-23 | este commit | Faixa de atrasados de meses anteriores na agenda da administração e do colaborador interno |
 | 2026-11-18 | este commit | Filtro por responsável e Exportar PDF do mês na agenda da administração |
 | 2026-11-13 | este commit | Agenda do colaborador interno (`/minha-agenda`), com consulta própria limitada ao escopo dele ([análise](../analises/restricao-externo-e-agenda-interno.md)) |

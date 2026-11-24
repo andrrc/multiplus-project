@@ -26,7 +26,7 @@ const projetoStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAM
 const tarefaStatus: Record<string, string> = { A_INICIAR: "A iniciar", EM_ANDAMENTO: "Em andamento", AGUARDANDO_DOCUMENTO_CLIENTE: "Aguardando documento", VISITA_REUNIAO_AGENDADA: "Visita/reunião agendada", PROTOCOLADO: "Protocolado", SOB_ANALISE_ORGAO_AMBIENTAL: "Sob análise do órgão", COM_EXIGENCIA_A_CUMPRIR: "Com exigência", CONCLUIDO: "Concluído", CANCELADO: "Cancelado" };
 const data = (v: Date | null) => v ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(v) : null;
 
-type ItemComPrazo = { ativo: boolean; status: string; prazo: Date | null };
+type ItemComPrazo = { ativo: boolean; status: string; prazo: Date | null; emConferenciaDesde?: Date | null };
 /** Item ainda em aberto: ativo e nem concluído nem cancelado. */
 const emAberto = (item: ItemComPrazo) => item.ativo && item.status !== "CONCLUIDO" && item.status !== "CANCELADO";
 const plural = (n: number, singular: string, pluralTexto: string) => `${n} ${n === 1 ? singular : pluralTexto}`;
@@ -44,7 +44,8 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
   // Pendências: itens abertos já vencidos e tarefas que vencem dentro do limite do semáforo.
   const tarefasAbertas = projeto.tarefas.filter(emAberto);
   const subtarefasAbertas = tarefasAbertas.flatMap((t) => t.subtarefas.filter(emAberto));
-  const diasDe = (item: ItemComPrazo) => (item.prazo ? calcularDiasRestantes(item.prazo) : null);
+  // Item em conferência (pedido pendente com comprovante) não conta atraso nem vencimento: o prazo dele está parado.
+  const diasDe = (item: ItemComPrazo) => (item.prazo && !item.emConferenciaDesde ? calcularDiasRestantes(item.prazo) : null);
   const tarefasAtrasadas = tarefasAbertas.filter((t) => (diasDe(t) ?? 0) < 0).length;
   const subtarefasAtrasadas = subtarefasAbertas.filter((s) => (diasDe(s) ?? 0) < 0).length;
   const totalAtrasadas = tarefasAtrasadas + subtarefasAtrasadas;
@@ -171,7 +172,7 @@ export default async function ProjetoDetalhePage({ params, searchParams }: { par
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 xl:grid xl:grid-cols-[104px_178px_44px] xl:justify-items-start">
-                        <CelulaPrazo prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} />
+                        <CelulaPrazo prazo={t.prazo} status={t.status} ativo={t.ativo} limites={limites} emConferenciaDesde={t.emConferenciaDesde} />
                         {t.ativo ? (
                           <>
                             <StatusInline status={t.status} label={tarefaStatus[t.status]} opcoes={Object.entries(tarefaStatus).map(([valor, label]) => ({ valor, label }))} action={alterarStatusTarefaAction.bind(null, t.id)} />

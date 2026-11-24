@@ -131,7 +131,10 @@ concluída.
 Descrito em `tarefas.md`, na seção T9. A antecedência global pode ser alterada nesta tela;
 quando a tarefa define sua própria antecedência, ela prevalece. O job é preparado para
 execução diária às 08:00 (horário de Brasília). A última tentativa e as métricas do último
-sucesso aparecem nesta página, exclusiva do ADMIN.
+sucesso aparecem nesta página, exclusiva do ADMIN. Desde 23/11/2026 o job ignora a tarefa em
+conferência (pedido de conclusão pendente com comprovantes): o item já foi entregue e o aviso volta se
+ele for devolvido ([análise](../analises/comprovantes-etapa2-prazo.md)). O job cobre só tarefas, não subtarefas, e não existe
+aviso de "prazo vencido"; a régua da Fase 6 deve usar a mesma função, `src/lib/prazo-em-conferencia.ts`.
 
 ### N4. Conclusão de tarefa e projeto (RF-023)
 
@@ -171,6 +174,7 @@ tarefa/dia/destinatário e não é acessível pela role `multiplus_app`.
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | O aviso de prazo próximo não vale para tarefa em conferência de um envio com comprovante (etapa 2) |
 | 2026-11-16 | este commit | Botão "Marcar como não lido" nos avisos já lidos (`marcarNotificacaoNaoLida`, só da própria conta) |
 | 2026-11-16 | este commit | Abrir a central deixa de marcar todos os avisos como lidos; o sinal em tempo real passa a informar a operação (migration `20261116120000_notificacao_operacao_no_sinal`), para um aviso marcado como não lido voltar à caixa e ao contador sem abrir toast |
 | 2026-11-16 | este commit | Textos de leitura no masculino, como no protótipo: "Marcar todos como lidos" e "Marcar como lido" |

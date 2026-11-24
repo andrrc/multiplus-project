@@ -4,6 +4,7 @@ import { calcularDiasRestantes } from "@/ui/indicador-dias-restantes";
 import { formatarDataCadastro, formatarDataHoraBrasilia } from "@/lib/datas";
 import { interpretarResponsavel, type ResponsavelFiltro } from "@/lib/filtro-responsavel";
 import { numeroCliente } from "@/lib/formatacao";
+import { rotuloEnviadoEm } from "@/lib/prazo-em-conferencia";
 import {
   buscarProjeto,
   listarClientesParaProjeto,
@@ -124,9 +125,11 @@ function textoFiltros(
   return partes.join("  ·  ");
 }
 
-function indicadorPrazo(prazo: Date | null, status: string, limites: { diasAmareloAte: number }): Celula {
+export function indicadorPrazo(prazo: Date | null, status: string, limites: { diasAmareloAte: number }, emConferenciaDesde?: Date | null): Celula {
   if (status === "CONCLUIDO") return { texto: "Concluído", tom: "normal", detalhe: prazo ? formatarDataCadastro(prazo) : undefined, algarismos: !!prazo };
   if (status === "CANCELADO") return { texto: "Cancelado", tom: "neutro", detalhe: prazo ? formatarDataCadastro(prazo) : undefined, algarismos: !!prazo };
+  // Envio com comprovante aguardando conferência: o prazo não conta (a tela mostra o mesmo texto).
+  if (emConferenciaDesde) return { texto: rotuloEnviadoEm(emConferenciaDesde), tom: "neutro", detalhe: prazo ? formatarDataCadastro(prazo) : undefined, algarismos: true };
   if (!prazo) return { texto: "Sem prazo", tom: "neutro" };
 
   const dias = calcularDiasRestantes(prazo);
@@ -206,7 +209,7 @@ function linhaTarefa(tarefa: Awaited<ReturnType<typeof listarPrazos>>[number], l
     const concluidas = tarefa.progressoSubtarefas?.concluidas ?? 0;
     linha.push({ texto: `${concluidas}/${total}`, centralizada: true, algarismos: true });
   }
-  linha.push(indicadorPrazo(tarefa.prazo, tarefa.status, limites));
+  linha.push(indicadorPrazo(tarefa.prazo, tarefa.status, limites, tarefa.emConferenciaDesde));
   linha.push({ texto: STATUS_TAREFA[tarefa.status] ?? tarefa.status });
   return linha;
 }
@@ -219,7 +222,7 @@ function linhaSubtarefa(subtarefa: Awaited<ReturnType<typeof listarSubtarefasPra
     { texto: subtarefa.tarefa.projeto.cliente.razaoSocial },
     { texto: numeroCliente(subtarefa.tarefa.projeto.cliente.numeroIdentificacao), centralizada: true, algarismos: true },
     { texto: subtarefa.atribuidoA?.nome ?? subtarefa.atribuidoAUsuario?.nome ?? "—" },
-    indicadorPrazo(subtarefa.prazo, subtarefa.status, limites),
+    indicadorPrazo(subtarefa.prazo, subtarefa.status, limites, subtarefa.emConferenciaDesde),
     { texto: STATUS_SUBTAREFA[subtarefa.status] ?? subtarefa.status },
   ];
 }
@@ -472,9 +475,30 @@ async function gerarExportacaoProjetoPdf(ctx: ContextoUsuario, params: URLSearch
     `Previsão de conclusão: ${projeto.dataPrevistaConclusao ? formatarDataCadastro(projeto.dataPrevistaConclusao) : "sem previsão"}`,
     `Tarefas concluídas: ${conclusao.total === 0 ? "—" : `${conclusao.concluidas}/${conclusao.total}`}`,
   ].join("  ·  ");
+  const linhas = linhasDoProjeto(projeto, limites);
+  return gerarBufferPdf(projeto.nome, `${linhas.length} ${linhas.length === 1 ? "tarefa" : "tarefas"}`, resumo, COLUNAS_PROJETO, LARGURAS_PROJETO, linhas);
+}
+
+/** Linhas do PDF do projeto: as tarefas abertas primeiro. Separada para o texto do prazo (inclusive "Enviado em") ser testável. */
+export function linhasDoProjeto(
+  projeto: {
+    numeroLocal: number;
+    cliente: { numeroIdentificacao: number };
+    tarefas: Array<{
+      nome: string;
+      numeroLocal: number;
+      prazo: Date | null;
+      status: string;
+      emConferenciaDesde?: Date | null;
+      responsavel: { nome: string } | null;
+      subtarefas: Array<{ status: string }>;
+    }>;
+  },
+  limites: { diasAmareloAte: number },
+): Linha[] {
   const fechada = (status: string) => status === "CONCLUIDO" || status === "CANCELADO";
   const tarefas = [...projeto.tarefas].sort((a, b) => Number(fechada(a.status)) - Number(fechada(b.status)));
-  const linhas: Linha[] = tarefas.map(tarefa => {
+  return tarefas.map(tarefa => {
     const subtarefas = tarefa.subtarefas.filter(item => item.status !== "CANCELADO");
     const concluidas = subtarefas.filter(item => item.status === "CONCLUIDO").length;
     return [
@@ -482,11 +506,10 @@ async function gerarExportacaoProjetoPdf(ctx: ContextoUsuario, params: URLSearch
       { texto: codigoTarefa(projeto.cliente.numeroIdentificacao, projeto.numeroLocal, tarefa.numeroLocal), algarismos: true },
       { texto: tarefa.responsavel?.nome ?? "—" },
       { texto: subtarefas.length === 0 ? "—" : `${concluidas}/${subtarefas.length}`, centralizada: true, algarismos: subtarefas.length > 0 },
-      indicadorPrazo(tarefa.prazo, tarefa.status, limites),
+      indicadorPrazo(tarefa.prazo, tarefa.status, limites, tarefa.emConferenciaDesde),
       { texto: STATUS_TAREFA[tarefa.status] ?? tarefa.status },
     ];
   });
-  return gerarBufferPdf(projeto.nome, `${linhas.length} ${linhas.length === 1 ? "tarefa" : "tarefas"}`, resumo, COLUNAS_PROJETO, LARGURAS_PROJETO, linhas);
 }
 
 const COLUNAS_AGENDA = ["Data", "Item", "Projeto", "Cliente", "Responsável", "Situação"];
@@ -520,7 +543,24 @@ async function gerarExportacaoAgendaPdf(ctx: ContextoUsuario, params: URLSearchP
     `Responsável: ${labelResponsavel(responsavel, responsaveisOpcoes)}`,
     `Tipo: ${apenasVisitas ? "Só visitas e reuniões" : "Todos"}`,
   ].join("  ·  ");
-  const linhas: Linha[] = itens.map(item => [
+  const linhas = linhasDaAgenda(itens, limites);
+  return gerarBufferPdf("Agenda", `${linhas.length} ${linhas.length === 1 ? "item" : "itens"}`, resumo, COLUNAS_AGENDA, LARGURAS_AGENDA, linhas);
+}
+
+/** Linhas do PDF da agenda. Separada para o texto do prazo (inclusive "Enviado em") ser testável. */
+export function linhasDaAgenda(
+  itens: Array<{
+    prazo: Date;
+    nome: string;
+    status: string;
+    projetada: boolean;
+    emConferenciaDesde?: Date | null;
+    projeto: { nome: string; cliente: { razaoSocial: string } };
+    responsavel: { nome: string } | null;
+  }>,
+  limites: { diasAmareloAte: number },
+): Linha[] {
+  return itens.map((item): Linha => [
     { texto: formatarDataCadastro(item.prazo), algarismos: true },
     {
       texto: item.nome,
@@ -531,9 +571,8 @@ async function gerarExportacaoAgendaPdf(ctx: ContextoUsuario, params: URLSearchP
     { texto: item.projeto.cliente.razaoSocial },
     { texto: item.responsavel?.nome ?? "—" },
     // A ocorrência futura ainda não existe como tarefa, então não tem situação de prazo.
-    item.projetada ? { texto: "Próxima ocorrência", tom: "neutro" } : indicadorPrazo(item.prazo, item.status, limites),
+    item.projetada ? { texto: "Próxima ocorrência", tom: "neutro" } : indicadorPrazo(item.prazo, item.status, limites, item.emConferenciaDesde),
   ]);
-  return gerarBufferPdf("Agenda", `${linhas.length} ${linhas.length === 1 ? "item" : "itens"}`, resumo, COLUNAS_AGENDA, LARGURAS_AGENDA, linhas);
 }
 
 export async function gerarExportacaoTarefasPdf(ctx: ContextoUsuario, params: URLSearchParams, tipo: TipoExportacao) {

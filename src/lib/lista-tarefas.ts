@@ -24,12 +24,12 @@ function abertosPrimeiro<T extends { status: string; ativo: boolean }>(itens: T[
 }
 
 /** Situação do prazo de uma tarefa ou subtarefa, com o mesmo limite do semáforo; a tela e o PDF usam esta conta. */
-export function situacaoDoItem(item: { prazo: Date | null; status: string; ativo: boolean }, diasAmareloAte: number): SituacaoPrazo {
-  return situacaoDoPrazo({ diasRestantes: item.prazo ? calcularDiasRestantes(item.prazo) : null, fechado: fechado(item) }, diasAmareloAte);
+export function situacaoDoItem(item: { prazo: Date | null; status: string; ativo: boolean; emConferenciaDesde?: Date | null }, diasAmareloAte: number): SituacaoPrazo {
+  return situacaoDoPrazo({ diasRestantes: item.prazo ? calcularDiasRestantes(item.prazo) : null, fechado: fechado(item), emConferencia: !!item.emConferenciaDesde }, diasAmareloAte);
 }
 
 /** Aplica o botão de situação do prazo da lista: "todos" mantém tudo, inclusive os itens fechados. */
-export function filtrarPorSituacao<T extends { prazo: Date | null; status: string; ativo: boolean }>(itens: readonly T[], filtro: FiltroSituacao, diasAmareloAte: number): T[] {
+export function filtrarPorSituacao<T extends { prazo: Date | null; status: string; ativo: boolean; emConferenciaDesde?: Date | null }>(itens: readonly T[], filtro: FiltroSituacao, diasAmareloAte: number): T[] {
   return filtro === "todos" ? [...itens] : itens.filter((item) => situacaoDoItem(item, diasAmareloAte) === filtro);
 }
 

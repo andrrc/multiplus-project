@@ -231,8 +231,14 @@ A listagem administrativa de tarefas está em adaptação visual aos modelos da 
   decidido na fila nem no painel: ali há o atalho "Conferir comprovantes".
 - **Devolução:** o item volta ao colaborador em "Devolvidas para correção", com o motivo.
   O novo envio é outro pedido; o anterior fica no histórico do item.
-- **O que não muda (etapa 1):** o prazo continua contando durante a conferência. A regra de
-  parar o prazo é a etapa 2 ([análise](../analises/comprovantes-colaborador-externo.md)).
+- **O prazo para durante a conferência (etapa 2, 23/11/2026):** enquanto houver pedido pendente com
+  arquivos, o item está "em conferência": sai de atraso, de "vence em breve" e do aviso de prazo, e o
+  selo mostra "Enviado em dd/mm" (dia do envio, no horário de Brasília). Aprovado, o item conclui;
+  devolvido ou retirado, o prazo volta a contar na hora, **com a mesma data** (os dias da conferência
+  não são somados). Pedido sem arquivo (item que não exige comprovante) continua contando. A pausa
+  vale só para o item que recebeu o pedido: o pedido de uma subtarefa não pausa a tarefa-mãe. É
+  derivada do pedido, sem coluna nova, e vem de uma função única, `src/lib/prazo-em-conferencia.ts`
+  ([análise](../analises/comprovantes-etapa2-prazo.md)).
 
 **Detalhes técnicos.**
 - **Dados:** colunas `comprovanteExigido`, `comprovanteQuantidade` e `comprovanteInstrucoes` em
@@ -362,13 +368,15 @@ registro de quem criou e quando.
 | L4 | A listagem `/tarefas` só mostra tarefas ativas e não tem "Mostrar desativadas" (RF-039). | Uma tarefa desativada só é encontrada pela URL direta, então na prática não dá para reativá-la pela interface. |
 | L5 | Subtarefas copiadas na recorrência não levam o responsável. | Não se sabe se é intencional. **Confirmar com a Administradora.** |
 | L6 | O campo `serieEncerradaEm` existe, mas nenhuma tela o preenche. | Encerrar uma série é feito removendo a recorrência na edição. |
-| L7 | O prazo continua contando enquanto o envio de comprovante aguarda conferência (regra da etapa 2). | Um item aguardando conferência pode aparecer como atrasado. |
+| L7 | Resolvida em 23/11/2026: o prazo para de contar durante a conferência de um envio com comprovante. | Ver T9 e a [análise](../analises/comprovantes-etapa2-prazo.md). |
+| L9 | Quem lê o pedido de conclusão mas não lê os arquivos (o colaborador externo atribuído à tarefa que não enviou, o novo responsável depois de uma reatribuição e o interno responsável sem atribuição ao projeto) não enxerga a pausa do prazo: a contagem de arquivos passa pelo RLS e dá zero para ele. | Para essas pessoas o item em conferência segue como atrasado. **Decidido em 23/11/2026 que elas devem ver a pausa**; a correção pede uma migration (coluna ou função que exponha só a existência de arquivo) e fica numa tarefa própria. Ver o achado 4 em `docs/tarefas/etapa2-prazo.md`. |
 | L8 | Retenção das fotos, backup do volume de arquivos e limpeza de arquivos antigos ainda não definidos. | Ver [pendências antes da produção](../pendencias-antes-producao.md). |
 
 ## Histórico de alterações
 
 | Data | Commit | Alteração |
 |---|---|---|
+| 2026-11-23 | este commit | O prazo para de contar durante a conferência de um envio com comprovante (etapa 2) |
 | 2026-11-23 | este commit | Minhas tarefas do colaborador interno com subtarefas, filtro de tipo e "Concluir" na linha |
 | 2026-11-18 | este commit | Papel do responsável na lista, "Próxima ocorrência" no resumo e situação do prazo no PDF |
 | 2026-11-17 | este commit | Comprovante exigido, envio pelo colaborador, conferência e devolução com motivo (etapa 1) |

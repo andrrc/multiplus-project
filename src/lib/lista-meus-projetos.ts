@@ -14,7 +14,7 @@ export type OrdemMeusProjetos = "prazo" | "nome" | "abertas" | "minhas";
 const SITUACOES: SituacaoMeusProjetos[] = ["ativos", "pendencias", "atraso", "concluidos", "todos"];
 const ORDENS: OrdemMeusProjetos[] = ["prazo", "nome", "abertas", "minhas"];
 
-type TarefaDoProjeto = { ativo: boolean; status: string; prazo: Date | null };
+type TarefaDoProjeto = { ativo: boolean; status: string; prazo: Date | null; emConferenciaDesde?: Date | null };
 type ProjetoDaLista = {
   nome: string;
   status: string;
@@ -27,7 +27,7 @@ type ProjetoDaLista = {
   minhasPendencias?: number;
 };
 
-type ItemDoResponsavel = { ativo: boolean; status: string; prazo: Date | null };
+type ItemDoResponsavel = { ativo: boolean; status: string; prazo: Date | null; emConferenciaDesde?: Date | null };
 
 /**
  * "Minhas pendências" e "minhas atrasadas" de um projeto (protótipo interno/03): os itens abertos em que o colaborador é o
@@ -45,7 +45,8 @@ export function contarMinhasPendencias(
   ];
   return {
     pendencias: abertas.length,
-    atrasadas: abertas.filter((item) => item.prazo !== null && calcularDiasRestantes(item.prazo, hoje) < 0).length,
+    // Item em conferência segue pendente, mas o prazo dele não conta: não é atrasado.
+    atrasadas: abertas.filter((item) => !item.emConferenciaDesde && item.prazo !== null && calcularDiasRestantes(item.prazo, hoje) < 0).length,
   };
 }
 
@@ -60,9 +61,19 @@ export function interpretarOrdemMeusProjetos(valor: string | string[] | undefine
 
 export const tarefaEmAberto = (tarefa: TarefaDoProjeto) => tarefa.ativo && tarefa.status !== "CONCLUIDO" && tarefa.status !== "CANCELADO";
 
+/**
+ * Próxima entrega do projeto: a tarefa em aberto com o prazo mais próximo que ainda conta. A tarefa que aguarda conferência
+ * (etapa 2 dos comprovantes) não entra: o prazo dela está parado, então não é "a próxima".
+ */
+export function proximaEntrega<T extends TarefaDoProjeto>(tarefas: readonly T[]): T | undefined {
+  return tarefas
+    .filter((tarefa) => tarefaEmAberto(tarefa) && !tarefa.emConferenciaDesde && tarefa.prazo)
+    .sort((a, b) => a.prazo!.getTime() - b.prazo!.getTime())[0];
+}
+
 /** Tarefas em aberto cujo prazo já passou. */
 export const tarefasAtrasadas = (projeto: { tarefas: TarefaDoProjeto[] }) =>
-  projeto.tarefas.filter((tarefa) => tarefaEmAberto(tarefa) && tarefa.prazo && calcularDiasRestantes(tarefa.prazo) < 0).length;
+  projeto.tarefas.filter((tarefa) => tarefaEmAberto(tarefa) && !tarefa.emConferenciaDesde && tarefa.prazo && calcularDiasRestantes(tarefa.prazo) < 0).length;
 
 const projetoAtivo = (projeto: { status: string }) => projeto.status !== "CONCLUIDO" && projeto.status !== "CANCELADO";
 

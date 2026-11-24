@@ -16,6 +16,8 @@ export type ItemPainel = {
   /** Rótulo do status, já em português. */
   statusRotulo: string;
   visita: boolean;
+  /** Envio com comprovante aguardando conferência: o item não conta atraso nem vencimento. */
+  emConferenciaDesde?: Date | null;
 };
 
 export type ItemPainelComDias = ItemPainel & { dias: number };
@@ -23,11 +25,11 @@ export type ItemPainelComDias = ItemPainel & { dias: number };
 /** Atrasados (mais antigos primeiro) e itens que vencem até `ateDias` dias (por data, do mais próximo ao mais distante). */
 export function separarItensPainel(itens: ItemPainel[], ateDias: number, agora: Date = new Date()) {
   const comDias: ItemPainelComDias[] = itens
-    .filter((item): item is ItemPainel & { prazo: Date } => item.prazo !== null)
+    .filter((item): item is ItemPainel & { prazo: Date } => item.prazo !== null && !item.emConferenciaDesde)
     .map((item) => ({ ...item, dias: calcularDiasRestantes(item.prazo, agora) }));
   const atrasados = comDias.filter((item) => item.dias < 0).sort((a, b) => a.dias - b.dias);
   const proximos = comDias.filter((item) => item.dias >= 0 && item.dias <= ateDias).sort((a, b) => a.dias - b.dias);
-  return { atrasados, proximos, semPrazo: itens.length - comDias.length };
+  return { atrasados, proximos, semPrazo: itens.filter((item) => item.prazo === null).length };
 }
 
 /** Itens em dia entre os abertos: os que não estão atrasados, contando os sem prazo. */
