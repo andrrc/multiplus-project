@@ -23,7 +23,7 @@ confere antes, em `origin/staging`, se o arquivo compartilhado que precisa já n
 
 | ID | Título | Agente | Branch | Estado | Arquivos compartilhados reservados | Revisor | Atualizado em |
 |---|---|---|---|---|---|---|---|
-| [pausa-prazo-visibilidade](pausa-prazo-visibilidade.md) | A pausa do prazo para quem lê o pedido mas não lê os arquivos | claude | `claude/pausa-prazo-visibilidade` | aprovada | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/projetos-tarefas.ts` | codex | 2026-11-23 |
+| [pausa-prazo-visibilidade](pausa-prazo-visibilidade.md) | A pausa do prazo para quem lê o pedido mas não lê os arquivos | claude | `claude/pausa-prazo-visibilidade` | em revisão | `prisma/schema.prisma`, `prisma/migrations/**`, `src/lib/projetos-tarefas.ts` | codex | 2026-11-23 |
 
 ## Tarefas encerradas
 

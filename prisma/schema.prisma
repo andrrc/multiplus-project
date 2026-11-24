@@ -567,6 +567,8 @@ model SolicitacaoConclusao {
   comentarioDecisao String?
   /// Observação opcional escrita pelo colaborador ao enviar os comprovantes.
   observacaoEnvio   String?
+  /// Quantos arquivos o envio tem, mantida pelo banco (gatilho dos arquivos). Existe para a pausa do prazo valer para quem lê o pedido mas não lê os arquivos.
+  quantidadeArquivos Int                       @default(0)
   arquivos          ArquivoComprovante[]
 
   @@index([status, solicitadoEm])

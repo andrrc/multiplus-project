@@ -30,6 +30,10 @@ Para a administração e para quem enviou, a pausa aparece certa. A divergência
 | B. Pós-processamento com a função existente | Depois de cada consulta, perguntar à função quais pedidos têm arquivo. | Sem migration. | Dez pontos de código; os filtros de cliente e de atrasados anteriores ficam sem a correção; mais consultas por tela. |
 | C. Não corrigir | Registrar a limitação (já está como L9). | Nada a fazer. | Contraria a decisão de 2026-11-23. |
 
+### Como a contagem é mantida (ajuste na implementação, 24/11/2026)
+
+A análise previa gravar a contagem no `INSERT` do pedido, dentro de `solicitar_conclusao`. Na implementação a contagem é mantida por um **gatilho nos arquivos** (`arquivo_comprovante_atualiza_quantidade`, depois de `INSERT` ou de `UPDATE` de `solicitacaoId`), porque a função liga os arquivos ao pedido com um `UPDATE` depois de criá-lo e o gatilho cobre qualquer caminho, inclusive os dados de teste criados direto no banco. O gatilho de imutabilidade do pedido foi redefinido a partir da versão vigente: exige contagem zero na criação e só aceita mudá-la quando chamada pelo gatilho dos arquivos (`pg_trigger_depth() > 1`), sem mexer na decisão. `solicitar_conclusao` não mudou. Mesmo resultado, menos código a manter.
+
 ### Por que a coluna é segura
 
 - Os arquivos entram no pedido no momento do envio e **nunca são apagados depois**, então a contagem gravada no `INSERT` do pedido não muda. Não precisa de trigger para mantê-la.

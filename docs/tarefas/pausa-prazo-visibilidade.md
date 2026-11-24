@@ -8,7 +8,7 @@
 | **Agente responsável** | claude |
 | **Branch** | `claude/pausa-prazo-visibilidade` (criada a partir de `origin/staging`, **depois** de a `etapa2-prazo` estar integrada) |
 | **Worktree** | `~/multiplus-worktrees/claude-pausa-prazo-visibilidade` |
-| **Estado** | aprovada (começa depois que a `etapa2-prazo` estiver integrada em `staging`) |
+| **Estado** | em revisão (código, testes e documentação prontos em 2026-11-24; falta a revisão cruzada) |
 | **Quem aprovou o escopo** | o usuário, em 2026-11-23, ao aprovar a opção A da análise |
 | **Revisor** | codex |
 
@@ -81,9 +81,9 @@ Quem enxerga o pedido de conclusão de um item em conferência (novo responsáve
 
 ## 9. Resumo da implementação (preenchido ao terminar)
 
-- Commits e arquivos alterados (resumo):
-- Decisões tomadas durante o trabalho:
-- Verificações executadas e resultado (comando e saída resumida):
-- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`):
-- Pendências e riscos:
+- Commits e arquivos alterados (resumo): migration `20261124120000_pausa_prazo_quantidade_arquivos` (coluna `quantidadeArquivos`, preenchimento dos pedidos existentes, gatilho dos arquivos e gatilho de imutabilidade redefinido); `prisma/schema.prisma` (um campo); `src/lib/prazo-em-conferencia.ts` (tipo, `emConferenciaDesde`, `PEDIDO_PENDENTE_PARA_PRAZO`, `SEM_CONFERENCIA_EM_ANDAMENTO`); `src/lib/projetos-tarefas.ts` (três `select` do colaborador e `carregarEnvios`); testes unitário e de integração; `docs/funcionalidades/tarefas.md` e a análise.
+- Decisões tomadas durante o trabalho: a contagem é mantida por **gatilho nos arquivos**, e não gravada no `INSERT` do pedido como a análise previa (ajuste registrado na análise): a função `solicitar_conclusao` liga os arquivos depois de criar o pedido, e o gatilho cobre qualquer caminho, inclusive fixtures de teste. As telas de conferência da administração (`painel/page.tsx`, `subtarefas/page.tsx`, `listarSolicitacoesConclusaoPendentes`) continuam contando os arquivos que a administração lê, porque mostram "Conferir N comprovantes".
+- Verificações executadas e resultado (comando e saída resumida): `bash scripts/agentes/verificar.sh --completo` em 2026-11-24, com o Postgres local no ar: arquivos sensíveis ok, typecheck ok, lint ok, 54 arquivos e 390 testes unitários, 44 arquivos e 362 testes de integração e smoke (357 anteriores mais 5 novos) e 9 jornadas de navegador, tudo passando, código de saída 0. Nenhuma asserção existente foi alterada; o único ajuste em teste antigo foi o formato da fixture do `emConferenciaDesde` (`_count` virou `quantidadeArquivos`), com a mesma asserção.
+- Falhas preexistentes encontradas (com o comando que as reproduz em `origin/staging`): nenhuma até aqui.
+- Pendências e riscos: o preenchimento dos pedidos existentes foi verificado executando o trecho da migration contra um pedido já devolvido com 3 arquivos (contagem passou de 0 para 3 e o gatilho voltou a ficar ativo); a migration inteira foi aplicada do zero no banco de teste. Não foi aplicada sobre um banco com dados reais.
 - Pergunta em aberto para a pessoa responsável: nenhuma (a opção A foi aprovada e não há envios reais na VPS).
